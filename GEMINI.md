@@ -1,0 +1,3 @@
+# Workspace Mandates
+
+@AGENTS.md
