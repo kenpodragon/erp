@@ -12,30 +12,22 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] `infra/`: Docker, GitHub Actions, and GCP configuration
 - [ ] **Google Cloud Platform Setup**
   - [x] Create docs/INIT_INFRA.md guide.
-  - [ ] Create GCP Project.
-  - [ ] Enable Cloud Run, Cloud SQL, and Secret Manager APIs.
-  - [ ] Provision a PostgreSQL instance on Cloud SQL.
-- [ ] **Authentication & Security**
-  - [ ] Setup Firebase Project for Google SSO.
-  - [ ] Setup Stripe Account and API Keys (Publishable, Secret, Webhook).
-  - [ ] Configure Google Play Games Services for achievements integration.
+  - [x] Create GCP Project.
+  - [x] Enable Cloud Run, Cloud SQL, and Secret Manager APIs.
+  - [x] Provision a PostgreSQL instance on Cloud SQL.
+- [x] **Authentication & Security**
+  - [x] Setup Firebase Project for Google SSO.
+  - [x] Setup Stripe Account and API Keys (Publishable, Secret, Webhook).  
 - [ ] **Environment Configuration**
   - [ ] Create `.env.example` templates for all services.
   - [ ] Update .gitignore to not track any .env files for all services.
+  - [ ] Create local `.env` files for all services to secrets can be added and initial testing can be created.
 
-## Phase 2: Containerization & Local Dev 🐳
-- [ ] **Dockerize Services**
-  - [ ] Create `Dockerfile` for `backend/`.
-  - [ ] Create `Dockerfile` for `frontend/`.
-  - [ ] Create `Dockerfile` for `admin/`.
-- [ ] **Orchestration**
-  - [ ] Create `docker-compose.yml` for local multi-container development.
-  - [ ] Ensure local networking between Backend and Frontend.
-
-## Phase 3: "Hello World" Implementation 🚀
+## Phase 2: "Hello World" Implementation 🚀
 - [ ] **Backend API (Python/FastAPI)**
   - [ ] Initial `/health` and `/hello` endpoints.
   - [ ] Basic SQLModel/SQLAlchemy setup for Postgres connection.
+  - [ ] Secure PGSQL connection from local enviroment. (Add user other than pgsql)
   - [ ] Firebase Admin SDK integration for token validation.
 - [ ] **Frontend UI (React/TS)**
   - [ ] Scaffold with Vite.
@@ -45,14 +37,33 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [ ] Scaffold with Vite.
   - [ ] Basic dashboard for managing game state/users.
 
-## Phase 4: CI/CD & Deployment 🤖
+  ## Phase 3: Containerization & Local Dev 🐳
+- [ ] **Dockerize Services**
+  - [ ] Create `Dockerfile` for `backend/`.
+  - [ ] Create `Dockerfile` for `frontend/`.
+  - [ ] Create `Dockerfile` for `admin/`.
+- [ ] **Orchestration**
+  - [ ] Create `docker-compose.yml` for local multi-container development.
+  - [ ] Ensure local networking between Backend and Frontend.
+
+## Phase 4: Manual Deployment & Cloud Connectivity 🚀
+- [ ] **Manual GCP Deployment**
+  - [ ] Build and Push Backend, Frontend, and Admin images to Artifact Registry.
+  - [ ] Deploy services to Cloud Run via `gcloud` CLI (us-east1).
+- [ ] **Cloud SQL Connectivity & Security**
+  - [ ] Configure Cloud SQL instance to allow Cloud Run connections (IAM/VPC).
+  - [ ] Implement and verify secure SSL connection between Cloud Run and Cloud SQL.
+  - [ ] Set up Cloud SQL Auth Proxy for local secure testing if needed.
+  - [ ] Update PostgreSQL security (Service Account permissions and DB users).
+
+## Phase 5: CI/CD & Deployment 🤖
 - [ ] **GitHub Actions**
   - [ ] Create `.github/workflows/deploy.yml`.
   - [ ] Workflow: Build Docker images -> Push to Google Artifact Registry -> Deploy to Cloud Run.
 - [ ] **Deployment Documentation**
   - [ ] Create `DEPLOY.md` with step-by-step instructions for manual and automated deploys.
 
-## Phase 5: Narrative Integration (The "ERP" Core) 📚
+## Phase 6: Narrative Integration (The "ERP" Core) 📚
 - [ ] **Book Processing**
   - [ ] Implement utility to read/parse `.docx` files from `../Books`.
   - [ ] Design DB schema for Chapters, Enemies, and Narrative triggers.
