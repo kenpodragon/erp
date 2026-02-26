@@ -18,7 +18,7 @@ We use GCP for hosting (Cloud Run), database (Cloud SQL), and secret management.
      - Provision a Cloud SQL for PostgreSQL instance.
      - Note the `Instance Connection Name` for the Backend configuration.
   4. **Artifact Registry:**
-     - Create a Docker repository named `erp-images` in your preferred region (e.g., `us-central1`).
+     - Create a Docker repository named `erp-images` in your preferred region (e.g., `us-east1`).
 
 ## 2. Firebase & Google SSO
 Firebase handles our Authentication and tie-in with Google Play.
@@ -42,7 +42,7 @@ To automate deployment to Cloud Run.
 3. **GitHub Secrets:** Add the following to your repository settings (Settings > Secrets and variables > Actions):
    - `GCP_PROJECT_ID`: Your GCP Project ID.
    - `GCP_SA_KEY`: The contents of your Service Account JSON key.
-   - `GCP_REGION`: The region (e.g., `us-central1`).
+   - `GCP_REGION`: The region (e.g., `us-east1`).
 
 ## 4. Stripe Payments
 Stripe handles microtransactions, subscriptions, and donations.

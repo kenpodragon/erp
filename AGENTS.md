@@ -25,9 +25,10 @@ To build a high-fidelity, narrative-driven incremental game that serves as a gat
 ## 📜 Documentation Hierarchy
 When in doubt, consult these files in order:
 1. `AGENTS.md`: Core mandates and structure (This file).
-2. `@docs/REQUIREMENTS.md`: What needs to be built.
-3. `@docs/ARCHITECTURE.md`: How it is built.
-4. `@docs/TODO.md`: What is being built *now*.
+2. `@docs/ROADMAP.md`: High-level project phases.
+3. `@docs/REQUIREMENTS.md`: What needs to be built.
+4. `@docs/ARCHITECTURE.md`: How it is built.
+5. `@docs/TODO.md`: What is being built *now*.
 5. `@docs/INIT_INFRA.md`: Environment setup.
 6. `@../Books/BOOKS.md`: Narrative source mapping.
 
