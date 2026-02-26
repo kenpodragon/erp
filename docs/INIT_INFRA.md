@@ -44,7 +44,25 @@ To automate deployment to Cloud Run.
    - `GCP_SA_KEY`: The contents of your Service Account JSON key.
    - `GCP_REGION`: The region (e.g., `us-central1`).
 
-## 4. Local Environment
+## 4. Stripe Payments
+Stripe handles microtransactions, subscriptions, and donations.
+
+- **Account Signup:** [Stripe Dashboard](https://dashboard.stripe.com/register)
+- **Setup Steps:**
+  1. **Activate Account:** Complete the business activation to process live payments (or use Test Mode for development).
+  2. **API Keys:**
+     - Go to Developers > API keys.
+     - Copy the **Publishable key** (for Frontend).
+     - Copy the **Secret key** (for Backend).
+  3. **Webhook Setup:**
+     - Go to Developers > Webhooks.
+     - Add an endpoint for your backend (e.g., `https://api.elysium-rising.com/v1/payments/webhook`).
+     - Select events like `checkout.session.completed` and `customer.subscription.deleted`.
+     - Copy the **Webhook Secret** for Backend verification.
+  4. **Products & Prices:**
+     - Create Products in the Stripe Dashboard for subscriptions and microtransactions to get their `Price IDs`.
+
+## 5. Local Environment
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 2. Install [Google Cloud SDK (gcloud CLI)](https://cloud.google.com/sdk/docs/install).
 3. Run `gcloud auth login` and `gcloud auth configure-docker`.

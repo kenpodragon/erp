@@ -23,10 +23,29 @@ This document describes the technical architecture of the Elysium Rising mmorPg 
 - **Engine:** PostgreSQL
 - **Schema Management:** SQL scripts in `db/` folder.
 
-### Authentication & Social
+### Social & Authentication
 - **Provider:** Firebase Authentication (Google SSO)
 - **Integration:** Google Play Games Services for achievements.
 - **Social:** Discord API for chat and community features.
+
+### Audio & Music
+- **Narration:** Eleven Reader (API-based streaming of book chapters).
+- **Music:** SUNO (Thematic tracks with persistent caching and randomized playlist generation).
+
+### AI Assets
+- **Images:** AI-driven generation (e.g., Stable Diffusion or Google Imagen) for character and enemy sprites based on narrative context.
+- **Persistence:** Generated assets (audio/image) are stored in Google Cloud Storage and cached via CDN for global delivery.
+
+### Payments
+- **Provider:** Stripe
+- **Features:** Microtransactions, Subscriptions, and Donations.
+
+## Core Gameplay Loop
+1. **Generation:** Player generates *Elysium Essence* via active clicking or passive auto-generation.
+2. **Listen & Progress:** Players must listen to the Eleven Reader audio narration for the current chapter node. Progression is gated by the audio duration (1x speed).
+3. **Upgrade:** Use Essence to upgrade character stats, purchase equipment, and unlock auto-generation tiers.
+4. **Story Beat Bosses:** At narrative nodes, players encounter bosses derived from the book. Success depends on character stats and active engagement.
+5. **Chapter Transition:** Upon completing all nodes and defeating the final chapter boss, players transition to the next chapter.
 
 ### Infrastructure & Deployment
 - **Containerization:** Docker (separate containers for frontend, backend, and admin).

@@ -17,6 +17,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [ ] Provision a PostgreSQL instance on Cloud SQL.
 - [ ] **Authentication & Security**
   - [ ] Setup Firebase Project for Google SSO.
+  - [ ] Setup Stripe Account and API Keys (Publishable, Secret, Webhook).
   - [ ] Configure Google Play Games Services for achievements integration.
 - [ ] **Environment Configuration**
   - [ ] Create `.env.example` templates for all services.
@@ -55,8 +56,10 @@ This document tracks the initial setup and development phases for the Elysium Ri
 - [ ] **Book Processing**
   - [ ] Implement utility to read/parse `.docx` files from `../Books`.
   - [ ] Design DB schema for Chapters, Enemies, and Narrative triggers.
+  - [ ] Create Agentic AI book parser - break the book into chapters and story beats. From there create characters and enemies (based on existing characters or enamies), unique locations from the chapters. Generate new characters (with animations). Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
 - [ ] **Audio Integration**
   - [ ] Research Eleven Reader API for streaming background audio.
+  - [ ] Research Eleven SUNO API for streaming background audio.
 
 ---
 *Last Updated: 2026-02-26*
