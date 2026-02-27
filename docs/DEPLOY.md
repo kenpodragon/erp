@@ -53,38 +53,42 @@ docker-compose up --build
 ---
 
 ## 3. Manual Cloud Deployment
-We use a specialized script to push local configurations to Google Cloud Run while keeping Docker images clean of secrets.
+We use specialized scripts to push local configurations to Google Cloud Run via **Google Secret Manager**. This keeps Docker images clean of secrets and ensures secure variable management.
 
 ### How the Postfix Logic Works
-The deployment script is environment-agnostic. It looks for variables ending in `_LIVE` in your `.env` files and uses them to override the base variable in the cloud.
+The deployment scripts are environment-agnostic. They look for variables ending in `_LIVE` in your `.env` files and use them to override the base variable in the cloud.
 - **Example:** `DATABASE_URL_LIVE` becomes `DATABASE_URL` on the Cloud Run server.
 
 ### Run the Deploy Script
+This script builds your Docker images, pushes them to Artifact Registry, updates your Secrets in Secret Manager, and redeploys the services.
 ```bash
 # Full rebuild and redeploy
 python infra/deploy_cloud.py
 ```
 
-### Update Environment Variables Only
+### Update Environment Variables (Secrets) Only
 If you only changed `.env` files and don't need to rebuild the code, use this faster script:
 ```bash
 python infra/push_env.py
 ```
-This script handles building, pushing to Artifact Registry, and updating Cloud Run with environment variables.
+This script updates the secrets in Google Secret Manager and triggers a new revision in Cloud Run to mount the updated `.env` file.
 
 ---
 
-## 4. Automated CI/CD (GitHub Actions)
-The project is configured to deploy automatically whenever code is pushed to the `main` branch.
+## 4. Automated CI/CD (Google Cloud Build)
+The project is configured to deploy automatically via **Google Cloud Build** whenever code is pushed to the `main` branch.
 
-### Setup GitHub Secrets
-Go to your repository **Settings > Secrets and variables > Actions** and add:
+### How it works
+Cloud Build uses the `cloudbuild.yaml` file in the root directory to:
+1.  **Test Backend:** Runs `pytest` on the backend code.
+2.  **Lint Frontend/Admin:** Runs `npm run lint` for both UI projects.
+3.  **Build & Push:** Creates Docker images and pushes them to Artifact Registry.
+4.  **Deploy:** Deploys the new images to Cloud Run, mounting secrets from Secret Manager.
 
-1. **`GCP_PROJECT_ID`**: `elysium-rising-erp`
-2. **`GCP_SA_KEY`**: Content of your Service Account JSON key.
-3. **`BACKEND_ENV`**: Copy/paste entire `backend/.env`.
-4. **`FRONTEND_ENV`**: Copy/paste entire `frontend/.env`.
-5. **`ADMIN_ENV`**: Copy/paste entire `admin/.env`.
+### Setup Requirements
+1.  **Connect Repository:** Connect this GitHub repository to Google Cloud Build in the GCP Console.
+2.  **Secret Manager:** Ensure secrets (`erp-backend-env`, `erp-frontend-env`, `erp-admin-env`) exist in Secret Manager. Use `python infra/migrate_secrets.py` to sync them from your local environment.
+3.  **Permissions:** The Cloud Build Service Account needs `Cloud Run Admin` and `Secret Manager Secret Accessor` roles.
 
 ### Deployment URLs (Friendly)
 - **Game:** https://play.does-god-exist.org

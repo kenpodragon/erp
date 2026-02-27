@@ -5,6 +5,14 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ---
 *Updated: 2026-02-27*
 
+## 022726_Stuff
+ **Things to do**
+ - [x] Migrate off GitHub Actions and move to Google Cloud (including migration of cloud secrets into google). Update update ENV script and manual deploy scripts with these new bits.
+ - [ ] Update Agents.md to ensure that during dev tests and test cases are created (whenever development is done)
+ - [x] Update commit pipeline to ensure tests are being executed when building (Added backend pytest and frontend/admin linting to cloudbuild.yaml)
+ - [ ] Review BACKEND/ADMIN/FRONTEND and implement testing frameworks for all current code
+
+
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 
@@ -43,7 +51,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Create profanity blocklist file (simple text list in backend).
 
 - [ ] **7.4 — Character System API** *(RECS §4.3, FR-4.8 through FR-4.11)*
-  - [x] Create SQLModel models for `character_classes` and `player_characters`.
+  - [ ] Create SQLModel models for `character_classes` and `player_characters`.
   - [ ] `GET /api/game/classes` — public endpoint, return available classes (where `is_available = true`).
   - [ ] `POST /api/players/me/characters` — validate name (uniqueness, format, profanity), check MVP 1-character limit (409 if exists), copy base stats from class, create character record. Also initialize `player_progress` (Book 1, Ch 1, Scene 1, Beat 1) and `player_essence` (balance=0, rate=0).
   - [ ] `GET /api/players/me/characters` — list player's characters with class info.

@@ -1,0 +1,151 @@
+steps:
+  # -------------------------------------------------------------------------
+  # BACKEND: Test, Build, Push, Deploy
+  # -------------------------------------------------------------------------
+
+  # 1. Test Backend
+  - name: 'python:3.13-slim'
+    id: 'test-backend'
+    dir: 'backend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update && apt-get install -y build-essential libpq-dev
+        pip install -r requirements.txt
+        pytest
+
+  # 2. Build Backend Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend'
+    args: 
+      - 'build'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
+      - './backend'
+    waitFor: ['test-backend']
+
+  # 3. Push Backend Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend'
+    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend']
+    waitFor: ['build-backend']
+
+  # 4. Deploy Backend
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-backend'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'erp-backend'
+      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
+      - '--region', 'us-east1'
+      - '--add-cloudsql-instances', '$PROJECT_ID:us-east1:erp-pg-db-j7q9dk'
+      - '--set-secrets', '/app/.env=erp-backend-env:latest'
+      - '--allow-unauthenticated'
+      - '--port', '8000'
+    waitFor: ['push-backend']
+
+  # -------------------------------------------------------------------------
+  # FRONTEND: Lint, Build, Push, Deploy
+  # -------------------------------------------------------------------------
+
+  # 5. Lint Frontend
+  - name: 'node:20-slim'
+    id: 'lint-frontend'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        npm install
+        npm run lint
+
+  # 6. Build Frontend Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
+    args: 
+      - 'build'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
+      - './frontend'
+    waitFor: ['lint-frontend']
+
+  # 7. Push Frontend Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend'
+    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend']
+    waitFor: ['build-frontend']
+
+  # 8. Deploy Frontend
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-frontend'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'erp-frontend'
+      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
+      - '--region', 'us-east1'
+      - '--set-secrets', '/app/.env=erp-frontend-env:latest'
+      - '--allow-unauthenticated'
+      - '--port', '5173'
+    waitFor: ['push-frontend']
+
+  # -------------------------------------------------------------------------
+  # ADMIN: Lint, Build, Push, Deploy
+  # -------------------------------------------------------------------------
+
+  # 9. Lint Admin
+  - name: 'node:20-slim'
+    id: 'lint-admin'
+    dir: 'admin'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        npm install
+        npm run lint
+
+  # 10. Build Admin Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-admin'
+    args: 
+      - 'build'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
+      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
+      - './admin'
+    waitFor: ['lint-admin']
+
+  # 11. Push Admin Image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-admin'
+    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin']
+    waitFor: ['build-admin']
+
+  # 12. Deploy Admin
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-admin'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'erp-admin'
+      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
+      - '--region', 'us-east1'
+      - '--set-secrets', '/app/.env=erp-admin-env:latest'
+      - '--allow-unauthenticated'
+      - '--port', '5174'
+    waitFor: ['push-admin']
+
+images:
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
+
+options:
+  logging: CLOUD_LOGGING
