@@ -240,7 +240,8 @@ def run_phase1(conn, book_number: int, ai: AIProvider,
     chapters = _extract_chapters_from_docx(docx_path)
     logger.info("Found %d chapters in %s", len(chapters), docx_path.name)
 
-    tracker.set_book(book_number, book_meta["title"], phase=1)
+    tracker.set_book(book_number, book_meta["title"], phase=1, total_chapters=len(chapters))
+    # tracker.set_chapters is now redundant but kept for safety
     tracker.set_chapters(len(chapters))
 
     for ch_data in chapters:

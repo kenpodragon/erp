@@ -2,6 +2,9 @@
 
 This document tracks the initial setup and development phases for the Elysium Rising mmorPg (ERP).
 
+---
+*Updated: 2026-02-27*
+
 ## Phase 6: Narrative Integration (The "ERP" Core) 📚
 - [ ] **Book Processing**
   - [x] Create requirements for the Book processor (BOOK_AGENT_READER.md)
@@ -12,19 +15,12 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Add a pause between books, ask to continue, change model, or exit...
   - [x] Verify that a pause occurs at the end of the Phase 1 to Phase 2 transition.
   - [x] Update requirements a bit to identify "mini-bosses" and "big boss" for the chapter. These should be specific entities in the scenes (one mini-boss per scene), and one big boss per chapter. (Should contain canonical references to the text and something the mini-boss or BIG boss would say or do - how this variant of them is different than the regular entity entry for the scene/chapter).
-  - [ ] Create a dump table CSV export or something that can be used to import/export data from the DB (save these for future initialization in other DBs - can be CSVs or other files that would be loaded in, along with a python script to load them).
+  - [x] Create a dump table CSV export or something that can be used to import/export data from the DB (save these for future initialization in other DBs - can be CSVs or other files that would be loaded in, along with a python script to load them).
   
  - [ ] **Book Processing Phase 3**
   - [ ] Add in some hidden/secret enemies Variants of ********** (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 
-  - [ ] Check for missing data in the locations tables, entitiy tables (e.g. base description, emotional state, sounds, smells, equipment, abiliites). If missing generate. 
-
-
-  
-  
-  
-  
-  
-  
+  - [ ] Check for missing data in the locations tables, entitiy tables (e.g. base description, emotional state, sounds, smells, equipment, abiliites). If missing generate.
+  - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)  
   
   ## Phase Later
   - [ ] **MISC**
@@ -40,7 +36,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
 
 
 ---
-*Last Updated: 2026-02-26*
+*Updated: 2026-02-26*
 
 ## Phase 1: Infrastructure & Project Structure 🏗️
 - [x] **Define Directory Structure**

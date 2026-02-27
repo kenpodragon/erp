@@ -389,7 +389,8 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
         return
 
     logger.info("Phase 2 — Book %d: %s (%d chapters)", book_number, book_meta["title"], len(chapters))
-    tracker.set_book(book_number, book_meta["title"], phase=2)
+    tracker.set_book(book_number, book_meta["title"], phase=2, total_chapters=len(chapters))
+    # tracker.set_chapters is now redundant but kept for safety
     tracker.set_chapters(len(chapters))
 
     for chapter in chapters:

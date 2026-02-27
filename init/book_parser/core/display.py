@@ -108,6 +108,7 @@ class ProgressTracker:
     """Manages a Live display with a progress bar + status line."""
 
     def __init__(self) -> None:
+        # Use auto_refresh=True and refresh_per_second for smoother ETA
         self.progress = make_progress()
         self._book_task = None
         self._chapter_task = None
@@ -115,28 +116,35 @@ class ProgressTracker:
         self._live: Optional[Live] = None
 
     def start(self) -> None:
-        self._live = Live(self.progress, console=console, refresh_per_second=4)
+        self._live = Live(self.progress, console=console, refresh_per_second=10)
         self._live.start()
 
     def stop(self) -> None:
         if self._live:
             self._live.stop()
 
-    def set_book(self, book_number: int, title: str, phase: int) -> None:
+    def set_book(self, book_number: int, title: str, phase: int, total_chapters: int = 0) -> None:
         if self._book_task is not None:
             self.progress.remove_task(self._book_task)
+        
+        # The main phase task tracks chapters
         self._book_task = self.progress.add_task(
             f"[cyan]Phase {phase} — Book {book_number}: {title}",
-            total=None, start=False
+            total=total_chapters if total_chapters > 0 else None
         )
-        self.progress.start_task(self._book_task)
 
     def set_chapters(self, total: int) -> None:
+        """Legacy helper, now mostly handled by set_book."""
         if self._chapter_task is not None:
             self.progress.remove_task(self._chapter_task)
         self._chapter_task = self.progress.add_task("[white]Chapters", total=total)
 
     def advance_chapter(self, chapter_title: str = "") -> None:
+        if self._book_task is not None:
+            label = f"[cyan]Phase {1} — Chapter: {chapter_title}" if chapter_title else "Chapters"
+            # We don't change description, just advance
+            self.progress.advance(self._book_task)
+        
         if self._chapter_task is not None:
             label = f"[white]Chapter: {chapter_title}" if chapter_title else "[white]Chapters"
             self.progress.update(self._chapter_task, advance=1, description=label)

@@ -59,7 +59,7 @@ MIN_ENTITIES_PER_CHAPTER = 10
 
 # ── AI Models ──────────────────────────────────────────────────────────────
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 RECOMMENDED_MODELS = {
     "claude": [
@@ -86,18 +86,18 @@ RECOMMENDED_MODELS = {
     ],
     "gemini": [
         {
-            "id": "gemini-1.5-flash",
-            "name": "Gemini 1.5 Flash",
+            "id": "gemini-2.0-flash",
+            "name": "Gemini 2.0 Flash",
             "desc": "Economy Fallback. Extremely fast, good for basic structural splitting if token limits are a concern.",
         },
         {
-            "id": "gemini-2.0-flash",
-            "name": "Gemini 2.0 Flash",
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
             "desc": "Recommended for Phase 1/2. Optimized for speed and cost. Great for high-volume text splitting and raw data extraction.",
         },
         {
-            "id": "gemini-1.5-pro",
-            "name": "Gemini 1.5 Pro",
+            "id": "gemini-2.5-pro",
+            "name": "Gemini 2.5 Pro",
             "desc": "Recommended for Phase 3/4. Best for complex entity resolution, cross-chapter consistency, and character generation.",
         },        
         {

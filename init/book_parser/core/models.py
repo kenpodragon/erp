@@ -45,7 +45,7 @@ class MiniBossExtension(BaseModel):
 
 class EntityExtraction(BaseModel):
     canonical_name: str = Field(description="The definitive name for this entity")
-    entity_type: Literal["character", "creature", "object", "environment", "manifestation", "group", "other"]
+    entity_type: Literal["character", "creature", "object", "environment", "manifestation", "group", "event", "other"]
     is_new: bool = Field(description="True if this entity has not appeared in any prior scene this book")
     role: Literal["ally", "enemy", "neutral", "unknown", "mini-boss", "big-boss"] = Field(default="unknown")
     is_present: bool = Field(default=True, description="False if entity is only mentioned, not physically present")
