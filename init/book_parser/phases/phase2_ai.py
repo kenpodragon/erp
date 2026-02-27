@@ -31,10 +31,90 @@ from core.db import (
 from core.display import ProgressTracker
 from core.models import (
     Phase2Response, EntityExtraction, LocationExtraction, SemanticTag,
-    BeatEntityGroup,
+    BeatEntityGroup, ChapterBossResponse, MiniBossExtension, BigBossExtension
 )
 
 logger = logging.getLogger("book_parser.phase2")
+
+# ── Boss Prompts ──────────────────────────────────────────────────────────
+
+BIG_BOSS_SYSTEM_PROMPT = """You are a narrative director. Analyse the list of entities found in
+this chapter and designate ONE of them as the 'BIG BOSS'. This should be the chapter's primary
+antagonist or the most significant narrative threat.
+
+Provide:
+- boss_name: A grand/evocative title.
+- additional_description: Their overwhelming presence and power.
+- text_references: Why they are the chapter's ultimate threat.
+- action_or_quote: Their most iconic line or deadly ability.
+- variant_differences: How this 'Big Boss' version surpasses all others in this chapter.
+"""
+
+
+def _persist_mini_boss(conn, scene_id: int, mini_boss: MiniBossExtension,
+                      ai_provider: str, ai_model_id: str) -> None:
+    """Create a new boss-variant entity for the scene."""
+    boss_id = upsert_entity(
+        conn,
+        canonical_name=mini_boss.boss_name,
+        entity_type="creature",
+        is_generated=True,
+        base_description=mini_boss.additional_description,
+        boss_text_references=mini_boss.text_references,
+        boss_action_quote=mini_boss.action_or_quote,
+        boss_variant_differences=mini_boss.variant_differences,
+        first_scene_id=scene_id,
+        ai_provider=ai_provider,
+        ai_model_id=ai_model_id,
+    )
+
+    upsert_entity_scene_appearance(
+        conn,
+        entity_id=boss_id,
+        scene_id=scene_id,
+        role="mini-boss",
+        is_present=True,
+        ai_provider=ai_provider,
+        ai_model_id=ai_model_id,
+    )
+
+
+def _process_chapter_big_boss(conn, ch_id: int, 
+                             entities_in_chapter: list[str],
+                             ai: AIProvider) -> None:
+    """Select and persist a Big Boss for the chapter."""
+    if not entities_in_chapter:
+        return
+
+    user_prompt = f"Entities found in this chapter:\n{', '.join(entities_in_chapter)}\n\nIdentify the BIG BOSS."
+    
+    try:
+        json_text, provider, model_id = ai.call(
+            system_prompt=BIG_BOSS_SYSTEM_PROMPT,
+            user_prompt=user_prompt,
+            response_model=ChapterBossResponse,
+        )
+        result: ChapterBossResponse = ai.parse_response(json_text, ChapterBossResponse)
+        
+        if result.big_boss:
+            bb = result.big_boss
+            
+            upsert_entity(
+                conn,
+                canonical_name=bb.boss_name,
+                entity_type="creature",
+                is_generated=True,
+                base_description=bb.additional_description,
+                boss_text_references=bb.text_references,
+                boss_action_quote=bb.action_or_quote,
+                boss_variant_differences=bb.variant_differences,
+                ai_provider=provider,
+                ai_model_id=model_id,
+            )
+            logger.info("  Designated BIG BOSS: %s", bb.boss_name)
+
+    except Exception as e:
+        logger.error("  Failed to extract Big Boss for chapter %d: %s", ch_id, e)
 
 # ── Prompts ────────────────────────────────────────────────────────────────
 
@@ -55,6 +135,11 @@ ENTITY RULES:
 - For entities already seen in previous scenes: set is_new=false and populate only *_delta fields
   for anything that changed. Leave delta fields null if nothing changed.
 - For brand-new entities: set is_new=true and populate base_* fields from the text.
+
+MINI-BOSS RULE:
+- In every scene, if any 'enemy' entities are present, you MUST designate one of them as a 'mini-boss'.
+- This can be an existing named enemy or a specialized variant (e.g., 'Alpha Wolf' vs 'Wolf').
+- Provide detailed info in the 'mini_boss' field: additional_description, text_references, action_or_quote, and variant_differences.
 
 LOCATION RULES:
 - Identify the primary location for this scene.
@@ -170,7 +255,7 @@ def _persist_entities(conn, scene_id: int, response: Phase2Response,
         )
         name_to_id[entity.canonical_name] = entity_id
 
-        for alias in entity.aliases:
+        for alias in (entity.aliases or []):
             upsert_entity_alias(conn, entity_id, alias, context=None)
 
         upsert_entity_scene_appearance(
@@ -378,6 +463,10 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
                 _persist_location(conn, scene_id, result.location, provider, model_id)
                 _persist_tags(conn, beats, result, provider, model_id)
 
+                # Persist mini-boss if designated
+                if result.mini_boss:
+                    _persist_mini_boss(conn, scene_id, result.mini_boss, provider, model_id)
+
             # Update known entities for next scene context
             new_names = {e.canonical_name for e in result.entities}
             chapter_entity_names |= new_names
@@ -392,6 +481,9 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
                 len(result.semantic_tags),
                 provider,
             )
+
+        # Designated BIG BOSS for the entire chapter
+        _process_chapter_big_boss(conn, ch_id, list(chapter_entity_names), ai)
 
         # Mark chapter done
         with transaction(conn):

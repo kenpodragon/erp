@@ -190,17 +190,22 @@ def _select_model(provider: str, current_id: str) -> str:
     return choice
 
 
-def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], ai) -> bool:
+def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], ai, is_completion: bool = False) -> bool:
     """
-    Prompt the user before starting a phase.
+    Prompt the user before starting or after completing a phase/book.
     Shows current token usage and allows model selection.
     Returns True to continue, False to stop.
     """
-    title = f"Phase {phase}: {phase_name}"
-    if book_info:
-        title += f" for Book {book_info['book_number']}: {book_info['title']}"
-
-    console.print(f"\n[bold cyan]─── {title} ───[/bold cyan]")
+    if is_completion:
+        title = f"COMPLETED: Phase {phase} ({phase_name})"
+        if book_info:
+            title += f" for Book {book_info['book_number']}: {book_info['title']}"
+        console.print(f"\n[bold green]✅ {title}[/bold green]")
+    else:
+        title = f"NEXT: Phase {phase} ({phase_name})"
+        if book_info:
+            title += f" for Book {book_info['book_number']}: {book_info['title']}"
+        console.print(f"\n[bold cyan]─── {title} ───[/bold cyan]")
     
     # Show Usage
     table = Table(title="Current Token Usage (Session)", show_header=True, header_style="bold magenta", box=None)
@@ -210,18 +215,17 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
     table.add_row("Gemini", f"{ai.usage.gemini_tokens:,}")
     console.print(table)
 
-    console.print(f"Current Models: [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
+    console.print(f"Active Models: [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
     
     while True:
-        action = console.input(
-            "\n[bold yellow]Actions:[/bold yellow] [bold](s)[/bold]tart, [bold](m)[/bold]odel select, [bold](c)[/bold]lear-db, [bold](q)[/bold]uit: "
-        ).strip().lower()
+        prompt_text = "\n[bold yellow]Actions:[/bold yellow] [bold](c)[/bold]ontinue, [bold](m)[/bold]odel select, [bold](l)[/bold]ear-db, [bold](q)[/bold]uit: "
+        action = console.input(prompt_text).strip().lower()
 
-        if action == "s":
+        if action in ("c", "s"): # 's' for backward compatibility with 'start'
             return True
         if action == "q":
             return False
-        if action == "c":
+        if action == "l":
             return "clear"
         if action == "m":
             # Model selection

@@ -231,28 +231,34 @@ def get_location_by_name(conn, canonical_name: str) -> Optional[dict]:
 # ── Entities ───────────────────────────────────────────────────────────────
 
 def upsert_entity(conn, canonical_name: str, entity_type: str, is_generated: bool,
-                  base_description: Optional[str], base_emotional_state: Optional[str],
-                  base_sounds: Optional[str], base_smells: Optional[str],
-                  base_equipment: Optional[str], base_abilities: Optional[str],
-                  first_scene_id: Optional[int], ai_provider: str, ai_model_id: str) -> int:
+                  base_description: Optional[str] = None, 
+                  base_emotional_state: Optional[str] = None,
+                  base_sounds: Optional[str] = None, base_smells: Optional[str] = None,
+                  base_equipment: Optional[str] = None, base_abilities: Optional[str] = None,
+                  boss_text_references: Optional[str] = None,
+                  boss_action_quote: Optional[str] = None,
+                  boss_variant_differences: Optional[str] = None,
+                  first_scene_id: Optional[int] = None, 
+                  ai_provider: str = "", ai_model_id: str = "") -> int:
     with conn.cursor() as cur:
         cur.execute("""
             INSERT INTO entities (canonical_name, entity_type, is_generated, base_description,
                                   base_emotional_state, base_sounds, base_smells, base_equipment,
-                                  base_abilities, first_appearance_scene_id, ai_provider, ai_model_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                  base_abilities, boss_text_references, boss_action_quote,
+                                  boss_variant_differences, first_appearance_scene_id, 
+                                  ai_provider, ai_model_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (canonical_name)
             DO UPDATE SET entity_type = EXCLUDED.entity_type,
                           base_description = COALESCE(entities.base_description, EXCLUDED.base_description),
-                          base_emotional_state = COALESCE(entities.base_emotional_state, EXCLUDED.base_emotional_state),
-                          base_sounds = COALESCE(entities.base_sounds, EXCLUDED.base_sounds),
-                          base_smells = COALESCE(entities.base_smells, EXCLUDED.base_smells),
-                          base_equipment = COALESCE(entities.base_equipment, EXCLUDED.base_equipment),
-                          base_abilities = COALESCE(entities.base_abilities, EXCLUDED.base_abilities),
+                          boss_text_references = COALESCE(entities.boss_text_references, EXCLUDED.boss_text_references),
+                          boss_action_quote = COALESCE(entities.boss_action_quote, EXCLUDED.boss_action_quote),
+                          boss_variant_differences = COALESCE(entities.boss_variant_differences, EXCLUDED.boss_variant_differences),
                           updated_at = CURRENT_TIMESTAMP
             RETURNING id
         """, (canonical_name, entity_type, is_generated, base_description, base_emotional_state,
               base_sounds, base_smells, base_equipment, base_abilities,
+              boss_text_references, boss_action_quote, boss_variant_differences,
               first_scene_id, ai_provider, ai_model_id))
         return cur.fetchone()[0]
 
@@ -267,12 +273,14 @@ def upsert_entity_alias(conn, entity_id: int, alias: str, context: Optional[str]
 
 
 def upsert_entity_scene_appearance(conn, entity_id: int, scene_id: int, role: str,
-                                   is_present: bool, description_delta: Optional[str],
-                                   emotional_state_delta: Optional[str],
-                                   equipment_delta: Optional[str],
-                                   exit_reason: Optional[str], entry_context: Optional[str],
-                                   relationships: Optional[str],
-                                   ai_provider: str, ai_model_id: str) -> int:
+                                   is_present: bool = True, 
+                                   description_delta: Optional[str] = None,
+                                   emotional_state_delta: Optional[str] = None,
+                                   equipment_delta: Optional[str] = None,
+                                   exit_reason: Optional[str] = None, 
+                                   entry_context: Optional[str] = None,
+                                   relationships: Optional[str] = None,
+                                   ai_provider: str = "", ai_model_id: str = "") -> int:
     with conn.cursor() as cur:
         cur.execute("""
             INSERT INTO entity_scene_appearances

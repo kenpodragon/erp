@@ -34,13 +34,22 @@ class Phase1Response(BaseModel):
 
 # ── Phase 2: AI Semantic Extraction ───────────────────────────────────────
 
+class MiniBossExtension(BaseModel):
+    source_entity_name: str = Field(description="The canonical_name of the base entity this boss is a variant of")
+    boss_name: str = Field(description="The unique name for this boss variant (e.g. 'Gorgon Queen')")
+    additional_description: str = Field(description="Physical traits, aura, and presence")
+    text_references: str = Field(description="Specific lines or actions from the text that justify their boss status")
+    action_or_quote: str = Field(description="A signature move, iconic action, or dialogue/quote")
+    variant_differences: str = Field(description="How this version is significantly more dangerous or distinct from the base entity")
+
+
 class EntityExtraction(BaseModel):
     canonical_name: str = Field(description="The definitive name for this entity")
     entity_type: Literal["character", "creature", "object", "environment", "manifestation", "group", "other"]
     is_new: bool = Field(description="True if this entity has not appeared in any prior scene this book")
-    role: Literal["ally", "enemy", "neutral", "unknown"]
+    role: Literal["ally", "enemy", "neutral", "unknown", "mini-boss", "big-boss"]
     is_present: bool = Field(default=True, description="False if entity is only mentioned, not physically present")
-    aliases: list[str] = Field(default_factory=list, description="Other names used for this entity in this scene")
+    aliases: Optional[list[str]] = Field(default_factory=list, description="Other names used for this entity in this scene")
     is_generated: bool = Field(default=False, description="True if AI created this entity to meet minimum count requirements, not from text")
 
     # Base fields — populate only when is_new=True
@@ -64,7 +73,7 @@ class EntityExtraction(BaseModel):
 
 class BeatEntityAssignment(BaseModel):
     entity_name: str = Field(description="Must match canonical_name of an entity in this response")
-    role: Literal["ally", "enemy", "neutral", "unknown"]
+    role: Literal["ally", "enemy", "neutral", "unknown", "mini-boss", "big-boss"]
     is_primary: bool = Field(default=False, description="True if this is the main threat or focus of the beat")
     beat_context: Optional[str] = Field(default=None, description="What this entity does in this beat")
 
@@ -106,6 +115,20 @@ class Phase2Response(BaseModel):
     location: Optional[LocationExtraction] = None
     beat_entities: list[BeatEntityGroup]
     semantic_tags: list[SemanticTag]
+    mini_boss: Optional[MiniBossExtension] = Field(default=None, description="Detailed info if this scene has a mini-boss")
+
+
+class BigBossExtension(BaseModel):
+    source_entity_name: str = Field(description="The name of the most prominent antagonist in the entire chapter")
+    boss_name: str = Field(description="Evocative title for the chapter boss (e.g. 'The Sentinel of Shadows')")
+    additional_description: str
+    text_references: str
+    action_or_quote: str
+    variant_differences: str
+
+
+class ChapterBossResponse(BaseModel):
+    big_boss: Optional[BigBossExtension] = None
 
 
 # ── Phase 3: Consistency & Standardization ────────────────────────────────
