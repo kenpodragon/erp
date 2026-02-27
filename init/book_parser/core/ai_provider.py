@@ -36,6 +36,10 @@ class TokenLimitError(Exception):
     """Raised when both providers have exhausted their quotas."""
 
 
+class TruncatedResponseError(Exception):
+    """Raised when an AI response is cut off by the max_tokens limit."""
+
+
 class ProviderRateLimitError(Exception):
     """Raised by a single provider when its quota is hit."""
 
@@ -79,6 +83,12 @@ class AIProvider:
     def current_model(self) -> str:
         return self.claude_model if self._current_provider == "claude" else self.gemini_model
 
+    def set_primary_provider(self, provider: str) -> None:
+        """Manually set the primary provider."""
+        if provider in ("claude", "gemini"):
+            self._current_provider = provider
+            logger.info("Primary provider set to: %s", provider)
+
     def update_model(self, provider: str, model_id: str) -> None:
         """Manually update the model for a specific provider."""
         if provider == "claude":
@@ -88,7 +98,7 @@ class AIProvider:
             # In the new SDK, the model is passed per call, but we can store it here
 
     def _switch_to_gemini(self) -> None:
-        logger.warning("Switching from Claude to Gemini fallback")
+        logger.warning("Permanent switch: Gemini is now the primary provider for this session")
         self._current_provider = "gemini"
 
     def call(self, system_prompt: str, user_prompt: str,
@@ -109,12 +119,14 @@ class AIProvider:
                     return self._call_gemini(system_prompt, user_prompt, response_model)
                 else:
                     raise TokenLimitError("No AI providers are configured or available")
-            except ProviderRateLimitError as e:
+            except (ProviderRateLimitError, TruncatedResponseError) as e:
                 last_error = e
                 if self._current_provider == "claude":
                     self._switch_to_gemini()
                     continue
                 else:
+                    if isinstance(e, TruncatedResponseError):
+                        raise # Phase logic will handle second-tier retry with ultra-concise
                     raise TokenLimitError("Both Claude and Gemini have hit their rate/token limits") from e
 
         raise TokenLimitError(f"All providers exhausted: {last_error}") from last_error
@@ -144,6 +156,10 @@ class AIProvider:
         tokens = response.usage.input_tokens + response.usage.output_tokens
         self.usage.add("claude", tokens)
         logger.debug("Claude used %d tokens (cumulative: %d)", tokens, self.usage.claude_tokens)
+
+        if response.stop_reason == "max_tokens":
+            logger.warning("Claude response truncated by max_tokens limit")
+            raise TruncatedResponseError("Claude response truncated by max_tokens limit")
 
         if response_model:
             text = self._extract_json(text)
@@ -184,18 +200,27 @@ class AIProvider:
                 text = self._extract_json(text)
                 self._validate_json(text, response_model)
         else:
-            text = response.text
-
-        # Token usage estimation (Gemini 2.0 SDK provides usage if available)
-        if response.usage_metadata:
-            tokens = response.usage_metadata.total_token_count
-        else:
-            estimated_tokens = len(user_prompt.split()) + len(text.split())
-            tokens = estimated_tokens
+                    text = response.text
+                    
+                    # Token usage estimation
+                    if response.usage_metadata:
+                        tokens = response.usage_metadata.total_token_count
+                    else:
+                        estimated_tokens = len(user_prompt.split()) + len(text.split())
+                        tokens = estimated_tokens
+                        
+                    self.usage.add("gemini", tokens)
             
-        self.usage.add("gemini", tokens)
-
-        return text, "gemini", self.gemini_model
+                    # Check for truncation in Gemini (depends on SDK version, candidates[0].finish_reason)
+                    try:
+                        if hasattr(response, 'candidates') and response.candidates[0].finish_reason == 2: # 2 is MAX_TOKENS
+                            logger.warning("Gemini response truncated by max_tokens limit")
+                            raise TruncatedResponseError("Gemini response truncated by max_tokens limit")
+                    except (AttributeError, IndexError):
+                        pass
+            
+                    return text, "gemini", self.gemini_model
+            
 
     def _extract_json(self, text: str) -> str:
         """Strip markdown code fences if present."""

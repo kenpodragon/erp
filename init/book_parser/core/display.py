@@ -14,7 +14,7 @@ from rich.logging import RichHandler
 from rich.panel import Panel
 from rich.progress import (
     BarColumn, MofNCompleteColumn, Progress, SpinnerColumn,
-    TaskProgressColumn, TextColumn, TimeElapsedColumn,
+    TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn,
 )
 from rich.table import Table
 from rich.text import Text
@@ -97,6 +97,8 @@ def make_progress() -> Progress:
         MofNCompleteColumn(),
         TaskProgressColumn(),
         TimeElapsedColumn(),
+        TextColumn("•"),
+        TimeRemainingColumn(),
         console=console,
         transient=False,
     )
@@ -211,11 +213,18 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
     table = Table(title="Current Token Usage (Session)", show_header=True, header_style="bold magenta", box=None)
     table.add_column("Provider", style="dim")
     table.add_column("Tokens Used", justify="right")
-    table.add_row("Claude", f"{ai.usage.claude_tokens:,}")
-    table.add_row("Gemini", f"{ai.usage.gemini_tokens:,}")
+    table.add_column("Status", justify="center")
+    
+    claude_status = "[bold green]PRIMARY[/bold green]" if ai.current_provider == "claude" else "[dim]Backup[/dim]"
+    gemini_status = "[bold green]PRIMARY[/bold green]" if ai.current_provider == "gemini" else "[dim]Backup[/dim]"
+    
+    table.add_row("Claude", f"{ai.usage.claude_tokens:,}", claude_status)
+    table.add_row("Gemini", f"{ai.usage.gemini_tokens:,}", gemini_status)
     console.print(table)
 
-    console.print(f"Active Models: [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
+    claude_label = f"[bold green]Claude (Primary):[/bold green]" if ai.current_provider == "claude" else "Claude:"
+    gemini_label = f"[bold green]Gemini (Primary):[/bold green]" if ai.current_provider == "gemini" else "Gemini:"
+    console.print(f"Active Models: {claude_label} {ai.claude_model} | {gemini_label} {ai.gemini_model}")
     
     while True:
         prompt_text = "\n[bold yellow]Actions:[/bold yellow] [bold](c)[/bold]ontinue, [bold](m)[/bold]odel select, [bold](l)[/bold]ear-db, [bold](q)[/bold]uit: "
@@ -228,17 +237,28 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
         if action == "l":
             return "clear"
         if action == "m":
-            # Model selection
+            # Model selection menu
             new_claude = _select_model("claude", ai.claude_model)
             ai.update_model("claude", new_claude)
             
             new_gemini = _select_model("gemini", ai.gemini_model)
             ai.update_model("gemini", new_gemini)
-            
-            console.print(f"\n[green]Models updated:[/green] [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
-            continue
 
-        console.print("[red]Invalid action. Please enter s, m, or q.[/red]")
+            # Primary Provider selection
+            console.print("\n[bold magenta]Select Primary Provider:[/bold magenta]")
+            console.print(f"  1. [bold]Claude[/bold]  {'[green](Current Primary)[/green]' if ai.current_provider == 'claude' else ''}")
+            console.print(f"  2. [bold]Gemini[/bold]  {'[green](Current Primary)[/green]' if ai.current_provider == 'gemini' else ''}")
+            p_choice = console.input(f"Choice (1 or 2, enter to keep current): ").strip()
+            if p_choice == "1":
+                ai.set_primary_provider("claude")
+            elif p_choice == "2":
+                ai.set_primary_provider("gemini")
+            
+            console.print(f"\n[green]Settings updated.[/green]")
+            # Re-render status screen
+            return prompt_phase_start(phase, phase_name, book_info, ai, is_completion)
+
+        console.print("[red]Invalid action. Please enter c, m, l, or q.[/red]")
 
 
 def prompt_confirm(message: str) -> bool:
@@ -267,4 +287,3 @@ def warn_incomplete_run(run: dict) -> bool:
         f"   Last completed chapter: {run.get('last_chapter_number', 'none')}\n"
         f"   Started at: {run['started_at']}\n"
     )
-    return prompt_confirm("Resume from this point?")

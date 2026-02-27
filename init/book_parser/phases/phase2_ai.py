@@ -18,7 +18,7 @@ from config import (
     BOOK_BY_NUMBER, MIN_ENTITIES_PER_BEAT, MIN_ENTITIES_PER_SCENE,
     MIN_ENTITIES_PER_CHAPTER,
 )
-from core.ai_provider import AIProvider
+from core.ai_provider import AIProvider, TruncatedResponseError
 from core.db import (
     get_book_id, get_chapters_for_book, get_scenes_for_chapter, get_beats_for_scene,
     get_entities_summary, get_location_by_name, get_entity_by_name,
@@ -439,12 +439,22 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
                 scene_text, beats, known_entities, len(chapter_entity_names)
             )
 
-            # First AI call
-            json_text, provider, model_id = ai.call(
-                system_prompt=SYSTEM_PROMPT,
-                user_prompt=user_prompt,
-                response_model=Phase2Response,
-            )
+            try:
+                # First AI call
+                json_text, provider, model_id = ai.call(
+                    system_prompt=SYSTEM_PROMPT,
+                    user_prompt=user_prompt,
+                    response_model=Phase2Response,
+                )
+            except TruncatedResponseError:
+                logger.warning("    Response truncated — retrying with ULTRA-CONCISE directive")
+                ultra_concise_prompt = user_prompt + "\n\nCRITICAL: The previous response was truncated. You MUST be extremely brief. Use telegraphic style (keywords only) for descriptions and deltas. Maximum 10 words per description."
+                json_text, provider, model_id = ai.call(
+                    system_prompt=SYSTEM_PROMPT,
+                    user_prompt=ultra_concise_prompt,
+                    response_model=Phase2Response,
+                )
+
             result: Phase2Response = ai.parse_response(json_text, Phase2Response)
 
             # Check minimums; retry once if needed

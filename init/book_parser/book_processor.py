@@ -199,13 +199,15 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
             click.echo("\n[bold green]✓ All processing is complete.[/bold green]")
             return
 
-        # Check for an interrupted prior run and ask to resume
+        # Check for an interrupted prior run and show note, but don't prompt
         incomplete = get_incomplete_run(conn)
         if incomplete:
-            resume = warn_incomplete_run(incomplete)
-            if not resume:
-                click.echo("Exiting — no changes made.")
-                return
+            from core.display import console
+            console.print(
+                f"\n[bold yellow]⚠  Note:[/bold yellow] Resuming from interrupted run.\n"
+                f"   Book {incomplete['book_number']}: {incomplete['book_title']}, Phase {incomplete['phase']}\n"
+                f"   Last completed chapter: {incomplete.get('last_chapter_number', 'none')}\n"
+            )
 
         # Determine resume point
         current_phase, current_book = next_action

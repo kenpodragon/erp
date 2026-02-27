@@ -14,7 +14,9 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Update requirements a bit to identify "mini-bosses" and "big boss" for the chapter. These should be specific entities in the scenes (one mini-boss per scene), and one big boss per chapter. (Should contain canonical references to the text and something the mini-boss or BIG boss would say or do - how this variant of them is different than the regular entity entry for the scene/chapter).
   - [ ] Create a dump table CSV export or something that can be used to import/export data from the DB (save these for future initialization in other DBs - can be CSVs or other files that would be loaded in, along with a python script to load them).
   
+ - [ ] **Book Processing Phase 3**
   - [ ] Add in some hidden/secret enemies Variants of ********** (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 
+  - [ ] Check for missing data in the locations tables, entitiy tables (e.g. base description, emotional state, sounds, smells, equipment, abiliites). If missing generate. 
 
 
   
