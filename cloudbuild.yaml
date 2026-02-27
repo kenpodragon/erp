@@ -173,4 +173,4 @@ images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
 
 options:
-  logging: CLOUD_LOGGING
+  logging: CLOUD_LOGGING_ONLY
