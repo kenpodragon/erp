@@ -4,12 +4,12 @@ This roadmap outlines the development phases for the Elysium Rising mmorPg (ERP)
 
 ## Phase 0: Foundation & Infrastructure (Current) 🏗️
 *Goal: Establish the technical baseline and project environment.*
-- [ ] **Infrastructure Setup:** GCP Project, Cloud SQL (Postgres), Cloud Run, and Secret Manager.
-- [ ] **Authentication:** Firebase/Google SSO integration.
-- [ ] **Scaffolding:** 
-    - [ ] Python/FastAPI Backend skeleton.
-    - [ ] React/Vite Frontend & Admin skeleton.
-    - [ ] Dockerization and GitHub Actions CI/CD.
+- [x] **Infrastructure Setup:** GCP Project, Cloud SQL (Postgres), Cloud Run, and Secret Manager.
+- [x] **Authentication:** Firebase/Google SSO integration.
+- [x] **Scaffolding:** 
+    - [x] Python/FastAPI Backend skeleton.
+    - [x] React/Vite Frontend & Admin skeleton.
+    - [x] Dockerization and GitHub Actions CI/CD.
 - [ ] **Documentation:** Finalize Requirements, Architecture, and initial Data Models.
 
 ## Phase 1: Core Loop & Immersion (Alpha) 🎮

@@ -4,16 +4,24 @@ This document tracks the initial setup and development phases for the Elysium Ri
 
 ## Phase 6: Narrative Integration (The "ERP" Core) 📚
 - [ ] **Book Processing**
-  - [ ] Implement utility to read/parse `.docx` files from `../Books`.
-  - [ ] Design DB schema for Chapters, Enemies, and Narrative triggers.
-  - [ ] Create Agentic AI book parser - break the book into chapters and story beats. From there create characters and enemies (based on existing characters or enamies), unique locations from the chapters. Generate new characters (with animations). Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
+  - [x] Create requirements for the Book processor (BOOK_AGENT_READER.md)
+  - [ ] Create Book processor
+  - [ ] Execute processing and load to DB
+  
+  
+  
+  
+  
+  
+  
+  ## Phase Later: Graphics, sound effects.
+  - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
 - [ ] **Audio Integration**
   - [ ] Research Eleven Reader API for streaming background audio.
   - [ ] Research Eleven SUNO API for streaming background audio.
 
 ## BGL: Before Going Live
 - [ ] **Security Testing**
-  - [ ] Remove db-check from backend to prevent database information from leaking.
 
 
 ---

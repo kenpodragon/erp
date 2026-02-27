@@ -48,9 +48,7 @@ def read_default():
         "message": "Welcome to the ERP API",
         "endpoints": {
             "health": "/health",
-            "hello": "/hello",
-            "db_check": "/db-check",
-            "docs": "/docs"
+            "hello": "/hello"
         }
     }
 
@@ -74,24 +72,6 @@ def health_check(session: Session = Depends(get_session)):
 @app.get("/hello")
 def read_root():
     return {"message": "Hello from the ERP Backend!"}
-
-@app.get("/db-check")
-def db_check(session: Session = Depends(get_session)):
-    try:
-        # Perform a simple SELECT 1 to verify connection
-        session.exec(text("SELECT 1"))
-        
-        # Try to list tables to show it's actually connecting and can query
-        result = session.exec(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"))
-        tables = [row[0] for row in result]
-        
-        return {
-            "status": "connected",
-            "database": "PostgreSQL",
-            "tables": tables
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
