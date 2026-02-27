@@ -472,6 +472,8 @@ FodyWeavers.xsd
 \
 # Playwright
 **/node_modules/
+/testing/test-results/
+/testing/playright-report/
 test-results/
 playwright-report/
 blob-report/
