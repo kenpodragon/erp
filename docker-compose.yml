@@ -11,6 +11,17 @@ services:
     environment:
       - ENVIRONMENT=development
 
+  backend-test:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=sqlite:///./test.db
+    command: pytest
+
   frontend:
     build:
       context: ./frontend
@@ -24,6 +35,14 @@ services:
     depends_on:
       - backend
 
+  frontend-lint:
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run lint
+
   admin:
     build:
       context: ./admin
@@ -36,6 +55,14 @@ services:
       - /app/node_modules
     depends_on:
       - backend
+
+  admin-lint:
+    build:
+      context: ./admin
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+    command: npm run lint
 
 networks:
   default:

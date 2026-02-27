@@ -1,27 +1,9 @@
 steps:
   # -------------------------------------------------------------------------
-  # BACKEND: Test, Build, Push, Deploy
+  # BACKEND: Build, Push, Deploy
   # -------------------------------------------------------------------------
 
-  # 1. Test Backend
-  - name: 'python:3.13-slim'
-    id: 'test-backend'
-    dir: 'backend'
-    entrypoint: 'bash'
-    env:
-      - 'DATABASE_URL=sqlite:///./test.db'
-    args:
-      - '-c'
-      - |
-        if [ "$_SKIP_TESTS" = "true" ]; then
-          echo "Skipping tests as requested."
-          exit 0
-        fi
-        apt-get update && apt-get install -y build-essential libpq-dev
-        pip install -r requirements.txt
-        pytest
-
-  # 2. Build Backend Image
+  # 1. Build Backend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-backend'
     args: 
@@ -31,9 +13,8 @@ steps:
       - '-t'
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
       - './backend'
-    waitFor: ['test-backend']
 
-  # 3. Push Backend Image
+  # 2. Push Backend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-backend'
     args:
@@ -41,7 +22,7 @@ steps:
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
     waitFor: ['build-backend']
 
-  # 4. Deploy Backend
+  # 3. Deploy Backend
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-backend'
     entrypoint: 'gcloud'
@@ -63,25 +44,10 @@ steps:
     waitFor: ['push-backend']
 
   # -------------------------------------------------------------------------
-  # FRONTEND: Lint, Build, Push, Deploy
+  # FRONTEND: Build, Push, Deploy
   # -------------------------------------------------------------------------
 
-  # 5. Lint Frontend
-  - name: 'node:20-slim'
-    id: 'lint-frontend'
-    dir: 'frontend'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        if [ "$_SKIP_TESTS" = "true" ]; then
-          echo "Skipping linting as requested."
-          exit 0
-        fi
-        npm install
-        npm run lint
-
-  # 6. Build Frontend Image
+  # 4. Build Frontend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-frontend'
     args: 
@@ -91,9 +57,8 @@ steps:
       - '-t'
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
       - './frontend'
-    waitFor: ['lint-frontend']
 
-  # 7. Push Frontend Image
+  # 5. Push Frontend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-frontend'
     args:
@@ -101,7 +66,7 @@ steps:
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
     waitFor: ['build-frontend']
 
-  # 8. Deploy Frontend
+  # 6. Deploy Frontend
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-frontend'
     entrypoint: 'gcloud'
@@ -121,25 +86,10 @@ steps:
     waitFor: ['push-frontend']
 
   # -------------------------------------------------------------------------
-  # ADMIN: Lint, Build, Push, Deploy
+  # ADMIN: Build, Push, Deploy
   # -------------------------------------------------------------------------
 
-  # 9. Lint Admin
-  - name: 'node:20-slim'
-    id: 'lint-admin'
-    dir: 'admin'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        if [ "$_SKIP_TESTS" = "true" ]; then
-          echo "Skipping linting as requested."
-          exit 0
-        fi
-        npm install
-        npm run lint
-
-  # 10. Build Admin Image
+  # 7. Build Admin Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-admin'
     args: 
@@ -149,9 +99,8 @@ steps:
       - '-t'
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
       - './admin'
-    waitFor: ['lint-admin']
 
-  # 11. Push Admin Image
+  # 8. Push Admin Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-admin'
     args:
@@ -159,7 +108,7 @@ steps:
       - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
     waitFor: ['build-admin']
 
-  # 12. Deploy Admin
+  # 9. Deploy Admin
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-admin'
     entrypoint: 'gcloud'
@@ -185,9 +134,6 @@ images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
-
-substitutions:
-  _SKIP_TESTS: 'false'
 
 options:
   logging: CLOUD_LOGGING_ONLY
