@@ -44,8 +44,15 @@ function App() {
       setBackendError(null)
 
       if (currentUser) {
-        // Verify token with backend
+        // First, ensure the user is registered/logged in with the backend
         try {
+          const loginRes = await api.post('/api/auth/login')
+          if (!loginRes.ok) {
+            setBackendError(`Backend login failed: ${loginRes.status}`)
+            return
+          }
+
+          // Now fetch the full profile
           const res = await api.get('/api/players/me')
           if (res.ok) {
             const data = await res.json()

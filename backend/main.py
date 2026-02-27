@@ -170,6 +170,10 @@ async def login(token: dict = Depends(get_current_player), session: Session = De
     }
 
 
+@app.get("/debug-routes")
+def list_routes():
+    return [{"path": route.path, "name": route.name} for route in app.routes]
+
 @app.get("/api/players/me")
 async def get_my_profile(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     """
@@ -181,7 +185,8 @@ async def get_my_profile(token: dict = Depends(get_current_player), session: Ses
         firebase_uid = token.get("uid")
         player = session.exec(select(Player).where(Player.firebase_uid == firebase_uid)).first()
         if not player:
-            raise HTTPException(status_code=404, detail="Player profile not found")
+            logger.warning("Profile not found in DB for Firebase UID: %s", firebase_uid)
+            raise HTTPException(status_code=404, detail="Player profile not found. Please login first.")
 
     settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
     if not settings:
