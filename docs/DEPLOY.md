@@ -61,12 +61,14 @@ The deployment script is environment-agnostic. It looks for variables ending in 
 
 ### Run the Deploy Script
 ```bash
-# Ensure you are authenticated with gcloud first
-gcloud auth login
-gcloud auth configure-docker us-east1-docker.pkg.dev
-
-# Run the deployment
+# Full rebuild and redeploy
 python infra/deploy_cloud.py
+```
+
+### Update Environment Variables Only
+If you only changed `.env` files and don't need to rebuild the code, use this faster script:
+```bash
+python infra/push_env.py
 ```
 This script handles building, pushing to Artifact Registry, and updating Cloud Run with environment variables.
 
@@ -91,7 +93,22 @@ Go to your repository **Settings > Secrets and variables > Actions** and add:
 
 ---
 
-## 5. Troubleshooting
+## 5. Cloud Management & Cost Saving
+You can stop all cloud services (Cloud SQL and Cloud Run) when not developing to save costs.
+
+### Stop All Services
+```bash
+python infra/stop_cloud.py
+```
+
+### Start All Services
+```bash
+python infra/start_cloud.py
+```
+
+---
+
+## 6. Troubleshooting
 - **CORS Errors:** Ensure the URL you are accessing from is listed in `backend/main.py` under `CORSMiddleware`.
 - **404 on Custom Domains:** This usually means SSL certificates are still provisioning. Check progress with:
   `gcloud beta run domain-mappings describe --domain play.does-god-exist.org --region us-east1`

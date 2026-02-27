@@ -3,10 +3,6 @@ import subprocess
 import sys
 
 def get_env_vars(env_file):
-    """
-    Parses a .env file.
-    If a variable exists both as KEY and KEY_LIVE, KEY_LIVE is used as KEY.
-    """
     if not os.path.exists(env_file):
         print("Warning: " + env_file + " not found.")
         return []
@@ -20,7 +16,6 @@ def get_env_vars(env_file):
                     key, val = line.split('=', 1)
                     raw_vars[key.strip()] = val.strip()
     
-    # Process overrides
     final_vars = {}
     for key, val in raw_vars.items():
         if key.endswith('_LIVE'):
@@ -66,6 +61,11 @@ def deploy_service(name, dir_path, project_id, region, port, cloud_sql=None):
     subprocess.run(deploy_cmd, check=True, shell=True)
 
 def main():
+    # Force the script to look for files relative to the project root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    os.chdir(project_root)
+
     PROJECT_ID = "elysium-rising-erp"
     REGION = "us-east1"
     CLOUD_SQL = "elysium-rising-erp:us-east1:erp-pg-db-j7q9dk"
