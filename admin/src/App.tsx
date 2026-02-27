@@ -1,16 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
-import { api } from './api'
 import './App.css'
+
+interface HealthData {
+  status: string;
+  database: string;
+  database_error?: string;
+  environment: string;
+}
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
-  const [authEnabled, setAuthEnabled] = useState(false)
+  // Derive authEnabled from the imported auth object directly during initialization
+  const [authEnabled] = useState(() => !!auth)
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
   const [backendVerified, setBackendVerified] = useState<boolean | null>(null)
   const [clientIp, setClientIp] = useState<string>('')
-  const [health, setHealth] = useState<any>(null)
+  const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -18,60 +25,16 @@ function App() {
   const ALLOWED_EMAILS = (import.meta.env.VITE_ALLOWED_EMAILS || '').split(',').map((e: string) => e.trim()).filter(Boolean)
   const ALLOWED_IPS = (import.meta.env.VITE_ALLOWED_IPS || '').split(',').map((i: string) => i.trim()).filter(Boolean)
 
-  // Health checks (public endpoints — no auth needed)
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const helloRes = await fetch(`${API_URL}/hello`)
-        const helloData = await helloRes.json()
-        setApiMessage(helloData.message)
-
-        const healthRes = await fetch(`${API_URL}/health`)
-        const healthData = await healthRes.json()
-        setHealth(healthData)
-      } catch (err) {
-        console.error("Status check failed:", err)
-        setApiMessage('Offline')
-      }
-    }
-    fetchStatus()
-
-    // Fetch client IP for UX display + client-side pre-check
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => setClientIp(data.ip))
-      .catch(err => console.error("Failed to get IP:", err))
-  }, [])
-
-  // Firebase auth listener
-  useEffect(() => {
-    if (!auth) return
-
-    setAuthEnabled(true)
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && clientIp) {
-        checkAuthorization(currentUser)
-      } else if (currentUser && !clientIp) {
-        // IP not loaded yet — will re-run when clientIp updates
-      } else {
-        setUser(null)
-        setIsAuthorized(null)
-        setBackendVerified(null)
-      }
-    })
-    return () => unsubscribe()
-  }, [clientIp])
-
-  const checkAuthorization = async (currentUser: User) => {
+  const checkAuthorization = useCallback(async (currentUser: User) => {
     const userEmail = (currentUser.email || '').trim().toLowerCase()
     const currentIp = clientIp.trim()
 
     // Step 1: Client-side quick check (UX only — can be bypassed)
-    const emailOk = ALLOWED_EMAILS.length === 0 || ALLOWED_EMAILS.some(e => e.toLowerCase() === userEmail)
+    const emailOk = ALLOWED_EMAILS.length === 0 || ALLOWED_EMAILS.some((e: string) => e.toLowerCase() === userEmail)
     const ipOk = ALLOWED_IPS.length === 0 || ALLOWED_IPS.includes(currentIp)
 
     if (!emailOk || !ipOk) {
-      signOut(auth)
+      if (auth) await signOut(auth)
       setUser(null)
       setIsAuthorized(false)
       setBackendVerified(null)
@@ -97,7 +60,7 @@ function App() {
         console.error('Admin backend check failed:', res.status, await res.text())
         // Backend rejected — token invalid, email/IP not whitelisted server-side
         setBackendVerified(false)
-        signOut(auth)
+        if (auth) await signOut(auth)
         setUser(null)
         setIsAuthorized(false)
       }
@@ -105,7 +68,49 @@ function App() {
       console.error('Admin backend check error:', err)
       setBackendVerified(null) // Backend unreachable — don't block, just note it
     }
-  }
+  }, [ALLOWED_EMAILS, ALLOWED_IPS, API_URL, clientIp])
+
+  // Health checks (public endpoints — no auth needed)
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const helloRes = await fetch(`${API_URL}/hello`)
+        const helloData = await helloRes.json()
+        setApiMessage(helloData.message)
+
+        const healthRes = await fetch(`${API_URL}/health`)
+        const healthData = await healthRes.json()
+        setHealth(healthData)
+      } catch (err) {
+        console.error("Status check failed:", err)
+        setApiMessage('Offline')
+      }
+    }
+    fetchStatus()
+
+    // Fetch client IP for UX display + client-side pre-check
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => setClientIp(data.ip))
+      .catch(err => console.error("Failed to get IP:", err))
+  }, [API_URL])
+
+  useEffect(() => {
+    if (!auth) return
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && clientIp) {
+        checkAuthorization(currentUser)
+      } else if (currentUser && !clientIp) {
+        // IP not loaded yet — will re-run when clientIp updates
+      } else {
+        setUser(null)
+        setIsAuthorized(null)
+        setBackendVerified(null)
+      }
+    })
+    return () => unsubscribe()
+  }, [clientIp, checkAuthorization])
 
   const handleLogin = async () => {
     if (!auth || !googleProvider) {
@@ -114,8 +119,12 @@ function App() {
     }
     try {
       await signInWithPopup(auth, googleProvider)
-    } catch (err: any) {
-      alert("Admin Login failed: " + err.message)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert("Admin Login failed: " + err.message)
+      } else {
+        alert("Admin Login failed: An unknown error occurred")
+      }
     }
   }
 

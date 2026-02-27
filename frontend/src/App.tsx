@@ -1,15 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import { api } from './api'
 import './App.css'
 
+interface HealthData {
+  status: string;
+  database: string;
+  database_error?: string;
+  environment: string;
+}
+
+interface PlayerProfile {
+  id: number;
+  firebase_uid: string;
+  email: string;
+  google_display_name: string | null;
+  google_avatar_url: string | null;
+  alias: string | null;
+  avatar_preset_key: string | null;
+  custom_avatar_url: string | null;
+  terms_accepted_at: string | null;
+  uid?: string; // Add this for compatibility with the verified log line
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null)
-  const [authEnabled, setAuthEnabled] = useState(false)
-  const [backendUser, setBackendUser] = useState<any>(null)
+  // Use state initializer to avoid synchronous setState in useEffect
+  const [authEnabled] = useState(() => !!auth)
+  const [backendUser, setBackendUser] = useState<PlayerProfile | null>(null)
   const [backendError, setBackendError] = useState<string | null>(null)
-  const [health, setHealth] = useState<any>(null)
+  const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -31,47 +52,50 @@ function App() {
       }
     }
     fetchStatus()
+  }, [API_URL])
+
+  const verifyUserWithBackend = useCallback(async () => {
+    // First, ensure the user is registered/logged in with the backend
+    try {
+      const loginRes = await api.post('/api/auth/login')
+      if (!loginRes.ok) {
+        setBackendError(`Backend login failed: ${loginRes.status}`)
+        return
+      }
+
+      // Now fetch the full profile
+      const res = await api.get('/api/players/me')
+      if (res.ok) {
+        const data = await res.json()
+        setBackendUser(data)
+      } else if (res.status === 401) {
+        setBackendError('Session expired or invalid token')
+      } else if (res.status === 403) {
+        const data = await res.json()
+        setBackendError(data.error || 'Account suspended')
+      } else {
+        setBackendError(`Backend returned ${res.status}`)
+      }
+    } catch {
+      setBackendError('Could not reach backend')
+    }
   }, [])
 
   // Firebase auth listener + backend verification
   useEffect(() => {
     if (!auth) return
 
-    setAuthEnabled(true)
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
       setBackendUser(null)
       setBackendError(null)
 
       if (currentUser) {
-        // First, ensure the user is registered/logged in with the backend
-        try {
-          const loginRes = await api.post('/api/auth/login')
-          if (!loginRes.ok) {
-            setBackendError(`Backend login failed: ${loginRes.status}`)
-            return
-          }
-
-          // Now fetch the full profile
-          const res = await api.get('/api/players/me')
-          if (res.ok) {
-            const data = await res.json()
-            setBackendUser(data)
-          } else if (res.status === 401) {
-            setBackendError('Session expired or invalid token')
-          } else if (res.status === 403) {
-            const data = await res.json()
-            setBackendError(data.error || 'Account suspended')
-          } else {
-            setBackendError(`Backend returned ${res.status}`)
-          }
-        } catch {
-          setBackendError('Could not reach backend')
-        }
+        verifyUserWithBackend()
       }
     })
     return () => unsubscribe()
-  }, [])
+  }, [verifyUserWithBackend])
 
   const handleLogin = async () => {
     if (!auth || !googleProvider) {
@@ -80,9 +104,13 @@ function App() {
     }
     try {
       await signInWithPopup(auth, googleProvider)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err)
-      alert("Login failed: " + err.message)
+      if (err instanceof Error) {
+        alert("Login failed: " + err.message)
+      } else {
+        alert("Login failed: An unknown error occurred")
+      }
     }
   }
 
@@ -126,7 +154,7 @@ function App() {
             <p>Welcome, <strong>{user.email}</strong></p>
             {backendUser && (
               <p style={{ color: '#4caf50', fontSize: '0.85em' }}>
-                Backend verified (uid: {backendUser.uid})
+                Backend verified (uid: {backendUser.id || backendUser.firebase_uid})
               </p>
             )}
             {backendError && (

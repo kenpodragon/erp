@@ -1,5 +1,5 @@
-import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,12 +11,12 @@ const firebaseConfig = {
 };
 
 // Defensive check: If API key is missing, don't initialize but don't crash the whole JS bundle
-let auth: any = null;
-let googleProvider: any = null;
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
 if (firebaseConfig.apiKey) {
     try {
-        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         auth = getAuth(app);
         googleProvider = new GoogleAuthProvider();
         console.log("Firebase initialized successfully");

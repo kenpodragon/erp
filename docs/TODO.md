@@ -8,9 +8,9 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## 022726_Stuff
  **Things to do**
  - [x] Migrate off GitHub Actions and move to Google Cloud (including migration of cloud secrets into google). Update update ENV script and manual deploy scripts with these new bits.
- - [ ] Update Agents.md to ensure that during dev tests and test cases are created (whenever development is done)
+ - [x] Update Agents.md to ensure that during dev tests and test cases are created (whenever development is done)
  - [x] Update commit pipeline to ensure tests are being executed when building (Added backend pytest and frontend/admin linting to cloudbuild.yaml)
- - [ ] Review BACKEND/ADMIN/FRONTEND and implement testing frameworks for all current code
+ - [x] Review BACKEND/ADMIN/FRONTEND and implement testing frameworks for all current code
 
 
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭

@@ -1,6 +1,6 @@
-# ERP Deployment Guide
+# ERP Deployment & Testing Guide
 
-This guide covers how to run and deploy the Elysium Rising mmorPg (ERP) stack in various environments.
+This guide covers how to run, test, and deploy the Elysium Rising mmorPg (ERP) stack.
 
 ## 1. Local Development (No Docker)
 This is the fastest way to develop. Each service runs directly on your host machine.
@@ -37,85 +37,97 @@ npm run dev
 
 ---
 
-## 2. Local Orchestration (Docker Compose)
-Use this to test the containerized versions of the services and ensure they interact correctly.
+## 2. Local Verification & Testing (Docker)
+Before pushing to the cloud, you should verify your changes locally using Docker Compose.
+
+### Running the Full Test Suite
+We have a unified test runner that executes backend `pytest`, frontend linting/building, and admin linting/building in isolated containers.
+
+**Windows:**
+```powershell
+./run_tests.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x run_tests.sh
+./run_tests.sh
+```
+
+### Individual Service Verification
+- **Backend Tests:** `docker-compose run --rm backend-test`
+- **Frontend Lint/Build:** `docker-compose run --rm frontend-test`
+- **Admin Lint/Build:** `docker-compose run --rm admin-test`
+
+---
+
+## 3. Local Orchestration (Docker Compose)
+Use this to run the entire stack in containers.
 
 ```bash
 # From the project root
 docker-compose up --build
 ```
-- **Backend:** http://localhost:8000
-- **Frontend:** http://localhost:5173
-- **Admin:** http://localhost:5174
-
-*Note: Your local `.env` files are automatically mounted into the containers.*
+*Note: Your local `.env` files are automatically used by the containers.*
 
 ---
 
-## 3. Manual Cloud Deployment
-We use specialized scripts to push local configurations to Google Cloud Run via **Google Secret Manager**. This keeps Docker images clean of secrets and ensures secure variable management.
+## 4. Manual Cloud Deployment
+We use specialized scripts to push local configurations directly to Google Cloud Run. This method uses temporary YAML files to handle complex values (like JSON credentials) securely.
 
 ### How the Postfix Logic Works
-The deployment scripts are environment-agnostic. They look for variables ending in `_LIVE` in your `.env` files and use them to override the base variable in the cloud.
+The scripts look for variables ending in `_LIVE` in your `.env` files and use them to override the base variable in the cloud.
 - **Example:** `DATABASE_URL_LIVE` becomes `DATABASE_URL` on the Cloud Run server.
 
-### Run the Deploy Script
-This script builds your Docker images, pushes them to Artifact Registry, updates your Secrets in Secret Manager, and redeploys the services.
-```bash
-# Full rebuild and redeploy
+### Run the Full Deploy Script
+This script builds Docker images, pushes them to Artifact Registry, and redeploys the services with updated environment variables.
+```powershell
 python infra/deploy_cloud.py
 ```
 
-### Update Environment Variables (Secrets) Only
+### Sync Environment Variables Only
 If you only changed `.env` files and don't need to rebuild the code, use this faster script:
-```bash
+```powershell
 python infra/push_env.py
 ```
-This script updates the secrets in Google Secret Manager and triggers a new revision in Cloud Run to mount the updated `.env` file.
 
 ---
 
-## 4. Automated CI/CD (Google Cloud Build)
-The project is configured to deploy automatically via **Google Cloud Build** whenever code is pushed to the `main` branch.
+## 5. Automated CI/CD (Google Cloud Build)
+The project is configured to deploy automatically whenever code is pushed to the `main` branch.
 
 ### How it works
-Cloud Build uses the `cloudbuild.yaml` file in the root directory to:
-1.  **Test Backend:** Runs `pytest` on the backend code.
-2.  **Lint Frontend/Admin:** Runs `npm run lint` for both UI projects.
-3.  **Build & Push:** Creates Docker images and pushes them to Artifact Registry.
-4.  **Deploy:** Deploys the new images to Cloud Run, mounting secrets from Secret Manager.
+Cloud Build uses the `cloudbuild.yaml` file to:
+1.  **Build Images:** Creates Docker images for Backend, Frontend, and Admin.
+2.  **Push:** Uploads images to Google Artifact Registry.
+3.  **Deploy:** Deploys the images to Cloud Run.
+
+*Note: Tests and Linting are handled **locally** via `run_tests` to ensure the cloud pipeline remains fast and reliable.*
 
 ### Setup Requirements
 1.  **Connect Repository:** Connect this GitHub repository to Google Cloud Build in the GCP Console.
-2.  **Secret Manager:** Ensure secrets (`erp-backend-env`, `erp-frontend-env`, `erp-admin-env`) exist in Secret Manager. Use `python infra/migrate_secrets.py` to sync them from your local environment.
-3.  **Permissions:** The Cloud Build Service Account needs `Cloud Run Admin` and `Secret Manager Secret Accessor` roles.
+2.  **IAM Permissions:** The Service Account running the build (e.g., `github-deployer@...`) must have:
+    -   `roles/logging.logWriter`
+    -   `roles/run.admin`
+    -   `roles/iam.serviceAccountUser`
+    -   `roles/artifactregistry.admin`
 
-### Deployment URLs (Friendly)
+### Deployment URLs
 - **Game:** https://play.does-god-exist.org
 - **API:** https://api.does-god-exist.org
 - **Admin:** https://admin.does-god-exist.org
 
 ---
 
-## 5. Cloud Management & Cost Saving
+## 6. Cloud Management & Cost Saving
 You can stop all cloud services (Cloud SQL and Cloud Run) when not developing to save costs.
 
 ### Stop All Services
-```bash
+```powershell
 python infra/stop_cloud.py
 ```
 
 ### Start All Services
-```bash
+```powershell
 python infra/start_cloud.py
 ```
-
----
-
-## 6. Troubleshooting
-- **CORS Errors:** Ensure the URL you are accessing from is listed in `backend/main.py` under `CORSMiddleware`.
-- **404 on Custom Domains:** This usually means SSL certificates are still provisioning. Check progress with:
-  `gcloud beta run domain-mappings describe --domain play.does-god-exist.org --region us-east1`
-- **Database Connection Failed:**
-  - Locally: Check if your IP is whitelisted in Cloud SQL -> Connections.
-  - Cloud: Ensure the Cloud Run service has the Cloud SQL instance attached.

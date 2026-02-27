@@ -1,0 +1,13 @@
+{
+  "name": "erp-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Elysium Rising mmorPg Root",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "typescript": "^5.7.3"
+  }
+}
