@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Type
 
 import anthropic
-import google.generativeai as genai
+from google import genai
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
@@ -52,7 +52,7 @@ class AIProvider:
 
     _current_provider: str = field(default="claude", init=False)
     _claude_client: Optional[anthropic.Anthropic] = field(default=None, init=False)
-    _gemini_client = field(default=None, init=False)
+    _gemini_client: Optional[genai.Client] = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -64,8 +64,7 @@ class AIProvider:
 
         gemini_key = os.getenv("GOOGLE_API_KEY")
         if gemini_key:
-            genai.configure(api_key=gemini_key)
-            self._gemini_client = genai.GenerativeModel(self.gemini_model)
+            self._gemini_client = genai.Client(api_key=gemini_key)
         else:
             logger.warning("GOOGLE_API_KEY not set — Gemini disabled")
 
@@ -76,6 +75,14 @@ class AIProvider:
     @property
     def current_model(self) -> str:
         return self.claude_model if self._current_provider == "claude" else self.gemini_model
+
+    def update_model(self, provider: str, model_id: str) -> None:
+        """Manually update the model for a specific provider."""
+        if provider == "claude":
+            self.claude_model = model_id
+        elif provider == "gemini":
+            self.gemini_model = model_id
+            # In the new SDK, the model is passed per call, but we can store it here
 
     def _switch_to_gemini(self) -> None:
         logger.warning("Switching from Claude to Gemini fallback")
@@ -143,19 +150,20 @@ class AIProvider:
 
     def _call_gemini(self, system_prompt: str, user_prompt: str,
                      response_model: Optional[Type[BaseModel]]) -> tuple[str, str, str]:
-        full_prompt = f"{system_prompt}\n\n{user_prompt}"
-
-        gen_config = {}
+        config = {
+            "system_instruction": system_prompt,
+            "temperature": 0.3,
+        }
+        
         if response_model:
-            gen_config = {
-                "response_mime_type": "application/json",
-                "temperature": 0.3,
-            }
+            config["response_mime_type"] = "application/json"
+            config["response_schema"] = response_model
 
         try:
-            response = self._gemini_client.generate_content(
-                full_prompt,
-                generation_config=gen_config,
+            response = self._gemini_client.models.generate_content(
+                model=self.gemini_model,
+                contents=user_prompt,
+                config=config,
             )
         except Exception as e:
             err_str = str(e).lower()
@@ -163,14 +171,26 @@ class AIProvider:
                 raise ProviderRateLimitError(f"Gemini quota error: {e}") from e
             raise
 
-        text = response.text
-        # Gemini doesn't always expose token counts — estimate
-        estimated_tokens = len(full_prompt.split()) + len(text.split())
-        self.usage.add("gemini", estimated_tokens)
-
+        # The new SDK handles Pydantic validation if response_schema is passed
         if response_model:
-            text = self._extract_json(text)
-            self._validate_json(text, response_model)
+            # response.parsed will be the Pydantic object
+            if response.parsed:
+                text = response.parsed.model_dump_json()
+            else:
+                text = response.text
+                text = self._extract_json(text)
+                self._validate_json(text, response_model)
+        else:
+            text = response.text
+
+        # Token usage estimation (Gemini 2.0 SDK provides usage if available)
+        if response.usage_metadata:
+            tokens = response.usage_metadata.total_token_count
+        else:
+            estimated_tokens = len(user_prompt.split()) + len(text.split())
+            tokens = estimated_tokens
+            
+        self.usage.add("gemini", tokens)
 
         return text, "gemini", self.gemini_model
 

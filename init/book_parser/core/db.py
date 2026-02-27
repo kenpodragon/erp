@@ -523,28 +523,27 @@ def get_table_counts(conn) -> dict:
 
 def clear_all_book_tables(conn) -> dict:
     """
-    Truncate all book-processing tables in dependency order (CASCADE).
+    Clear all book-processing tables in dependency order using DELETE.
     Returns the counts that existed before clearing.
     """
     counts = get_table_counts(conn)
+    tables = [
+        "review_items",
+        "processing_runs",
+        "semantic_tags",
+        "entity_beat_appearances",
+        "entity_scene_appearances",
+        "location_scene_appearances",
+        "entity_aliases",
+        "location_aliases",
+        "story_beats",
+        "scenes",
+        "entities",
+        "locations",
+        "chapters",
+        "books"
+    ]
     with conn.cursor() as cur:
-        # Single CASCADE truncate handles all dependencies
-        cur.execute("""
-            TRUNCATE TABLE
-                review_items,
-                processing_runs,
-                semantic_tags,
-                entity_beat_appearances,
-                entity_scene_appearances,
-                location_scene_appearances,
-                entity_aliases,
-                location_aliases,
-                story_beats,
-                scenes,
-                entities,
-                locations,
-                chapters,
-                books
-            RESTART IDENTITY CASCADE
-        """)
+        for table in tables:
+            cur.execute(f"DELETE FROM {table}")
     return counts

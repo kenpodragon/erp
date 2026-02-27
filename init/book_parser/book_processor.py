@@ -211,6 +211,26 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
 
         ai = AIProvider()
 
+        # Initial prompt at start
+        from core.display import prompt_phase_start
+        start_action = prompt_phase_start(current_phase, PHASE_NAMES[current_phase], 
+                                  BOOK_BY_NUMBER[current_book] if current_phase in (1,2) else None, ai)
+        
+        if start_action == "clear":
+            # Reuse clear-db logic
+            confirmed = prompt_typed_confirm(
+                "This will permanently delete ALL book processing data from the database.",
+                confirm_word="CONFIRM",
+            )
+            if confirmed:
+                with transaction(conn):
+                    clear_all_book_tables(conn)
+                click.echo("Database cleared. Please restart the processor.")
+            return
+        elif not start_action:
+            click.echo("Exiting — no changes made.")
+            return
+
         with ProgressTracker() as tracker:
             # Iterate through all phases sequentially
             for phase in range(1, 5):
@@ -229,22 +249,22 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
                             )
                             continue
 
-                        # Ask to proceed between books (except the very first one)
+                        # Ask to proceed between books or phases
                         if phase > current_phase or (phase == current_phase and bn > current_book):
                             print_status(get_processing_status(conn), get_next_action(conn))
-                            if not prompt_confirm(
-                                f"Proceed with Phase {phase} ({phase_name}) for "
-                                f"Book {bn}: {book['title']}?"
-                            ):
-                                click.echo("Stopping as requested.")
+                            loop_action = prompt_phase_start(phase, phase_name, book, ai)
+                            
+                            if loop_action == "clear":
+                                confirmed = prompt_typed_confirm(
+                                    "This will permanently delete ALL book processing data.",
+                                    confirm_word="CONFIRM",
+                                )
+                                if confirmed:
+                                    with transaction(conn):
+                                        clear_all_book_tables(conn)
+                                    click.echo("Database cleared. Exiting.")
                                 return
-
-                        # Ask to proceed to a new phase
-                        if bn == BOOK_REGISTRY[0]["book_number"] and phase > 1:
-                            if not prompt_confirm(
-                                f"\nAll books complete for Phase {phase - 1}. "
-                                f"Start Phase {phase} ({phase_name})?"
-                            ):
+                            elif not loop_action:
                                 click.echo("Stopping as requested.")
                                 return
 
@@ -274,13 +294,23 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
                         continue
 
                     # Confirm before starting cross-book phase
-                    print_status(get_processing_status(conn), get_next_action(conn))
-                    if not prompt_confirm(
-                        f"\nAll books complete through Phase {phase - 1}. "
-                        f"Start Phase {phase} ({phase_name})?"
-                    ):
-                        click.echo("Stopping as requested.")
-                        return
+                    if phase > current_phase:
+                        print_status(get_processing_status(conn), get_next_action(conn))
+                        cross_action = prompt_phase_start(phase, phase_name, None, ai)
+                        
+                        if cross_action == "clear":
+                            confirmed = prompt_typed_confirm(
+                                "This will permanently delete ALL book processing data.",
+                                confirm_word="CONFIRM",
+                            )
+                            if confirmed:
+                                with transaction(conn):
+                                    clear_all_book_tables(conn)
+                                click.echo("Database cleared. Exiting.")
+                            return
+                        elif not cross_action:
+                            click.echo("Stopping as requested.")
+                            return
 
                     try:
                         _run_cross_book_phase(conn, phase, ai, tracker)

@@ -50,8 +50,55 @@ MIN_ENTITIES_PER_SCENE   = 3
 MIN_ENTITIES_PER_CHAPTER = 10
 
 # ── AI Models ──────────────────────────────────────────────────────────────
-CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+RECOMMENDED_MODELS = {
+    "claude": [
+        {
+            "id": "claude-haiku-4-5-20251001",
+            "name": "Claude Haiku 4.5",
+            "desc": "Recommended for Phase 1/2. Fastest and most cost-efficient. Ideal for high-volume text splitting and raw entity extraction.",
+        },
+        {
+            "id": "claude-sonnet-4-6",
+            "name": "Claude Sonnet 4.6",
+            "desc": "Recommended for Phase 3/4. Best balance of intelligence and cost. Excellent for entity resolution and consistency checks.",
+        },
+        {
+            "id": "claude-opus-4-6",
+            "name": "Claude Opus 4.6",
+            "desc": "Recommended for Phase 5. Most capable model. Use for final creative generation and narrative-rich output.",
+        },
+        {
+            "id": "claude-3-5-sonnet-20241022",
+            "name": "Claude 3.5 Sonnet",
+            "desc": "Legacy Stable. Reliable fallback if newer models behave unexpectedly.",
+        }
+    ],
+    "gemini": [
+        {
+            "id": "gemini-1.5-flash",
+            "name": "Gemini 1.5 Flash",
+            "desc": "Economy Fallback. Extremely fast, good for basic structural splitting if token limits are a concern.",
+        },
+        {
+            "id": "gemini-2.0-flash",
+            "name": "Gemini 2.0 Flash",
+            "desc": "Recommended for Phase 1/2. Optimized for speed and cost. Great for high-volume text splitting and raw data extraction.",
+        },
+        {
+            "id": "gemini-1.5-pro",
+            "name": "Gemini 1.5 Pro",
+            "desc": "Recommended for Phase 3/4. Best for complex entity resolution, cross-chapter consistency, and character generation.",
+        },        
+        {
+            "id": "gemini-3.0-flash",
+            "name": "Gemini 3.0 Flash",
+            "desc": "Latest Generation. Improved reasoning while maintaining high throughput.",
+        }
+    ]
+}
 
 # Approximate token budget per AI call before we warn about context size
 MAX_TOKENS_PER_CALL = 8192

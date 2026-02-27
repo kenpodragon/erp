@@ -19,7 +19,7 @@ from rich.progress import (
 from rich.table import Table
 from rich.text import Text
 
-from config import BOOK_REGISTRY, PHASE_NAMES, LOG_DIR
+from config import BOOK_REGISTRY, PHASE_NAMES, LOG_DIR, RECOMMENDED_MODELS
 
 console = Console(highlight=False)
 
@@ -160,6 +160,82 @@ class ProgressTracker:
 
 
 # ── Prompts / Confirmations ────────────────────────────────────────────────
+
+def _select_model(provider: str, current_id: str) -> str:
+    """Helper to display a model selection menu."""
+    console.print(f"\n[bold magenta]Select {provider.title()} Model:[/bold magenta]")
+    models = RECOMMENDED_MODELS.get(provider, [])
+    
+    table = Table(show_header=True, header_style="bold blue", box=None)
+    table.add_column("#", justify="right")
+    table.add_column("Model ID", style="cyan")
+    table.add_column("Description")
+    
+    for i, m in enumerate(models, start=1):
+        name_line = f"[bold]{m['name']}[/bold]"
+        table.add_row(str(i), m['id'], f"{name_line}\n[dim]{m['desc']}[/dim]")
+    
+    console.print(table)
+    console.print(f"[dim]Enter a number (1-{len(models)}) or type a custom Model ID directly.[/dim]")
+    
+    choice = console.input(f"Choice (default '{current_id}'): ").strip()
+    if not choice:
+        return current_id
+    
+    if choice.isdigit():
+        idx = int(choice) - 1
+        if 0 <= idx < len(models):
+            return models[idx]['id']
+    
+    return choice
+
+
+def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], ai) -> bool:
+    """
+    Prompt the user before starting a phase.
+    Shows current token usage and allows model selection.
+    Returns True to continue, False to stop.
+    """
+    title = f"Phase {phase}: {phase_name}"
+    if book_info:
+        title += f" for Book {book_info['book_number']}: {book_info['title']}"
+
+    console.print(f"\n[bold cyan]─── {title} ───[/bold cyan]")
+    
+    # Show Usage
+    table = Table(title="Current Token Usage (Session)", show_header=True, header_style="bold magenta", box=None)
+    table.add_column("Provider", style="dim")
+    table.add_column("Tokens Used", justify="right")
+    table.add_row("Claude", f"{ai.usage.claude_tokens:,}")
+    table.add_row("Gemini", f"{ai.usage.gemini_tokens:,}")
+    console.print(table)
+
+    console.print(f"Current Models: [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
+    
+    while True:
+        action = console.input(
+            "\n[bold yellow]Actions:[/bold yellow] [bold](s)[/bold]tart, [bold](m)[/bold]odel select, [bold](c)[/bold]lear-db, [bold](q)[/bold]uit: "
+        ).strip().lower()
+
+        if action == "s":
+            return True
+        if action == "q":
+            return False
+        if action == "c":
+            return "clear"
+        if action == "m":
+            # Model selection
+            new_claude = _select_model("claude", ai.claude_model)
+            ai.update_model("claude", new_claude)
+            
+            new_gemini = _select_model("gemini", ai.gemini_model)
+            ai.update_model("gemini", new_gemini)
+            
+            console.print(f"\n[green]Models updated:[/green] [bold]Claude:[/bold] {ai.claude_model} | [bold]Gemini:[/bold] {ai.gemini_model}")
+            continue
+
+        console.print("[red]Invalid action. Please enter s, m, or q.[/red]")
+
 
 def prompt_confirm(message: str) -> bool:
     """Ask y/n. Returns True for yes."""

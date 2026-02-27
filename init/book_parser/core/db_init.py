@@ -53,29 +53,10 @@ def is_schema_initialised(conn) -> bool:
     return True
 
 
-def _split_statements(sql: str) -> list[str]:
-    """
-    Split a SQL file into individual executable statements.
-
-    Splits on semicolons that are NOT inside single-quoted strings.
-    Empty / whitespace-only statements are discarded.
-    """
-    # Strip line comments (-- ...) and block comments (/* ... */) before splitting
-    # so that a semicolon inside a comment doesn't confuse us.
-    sql = re.sub(r"--[^\n]*", "", sql)
-    sql = re.sub(r"/\*.*?\*/", "", sql, flags=re.DOTALL)
-
-    # Simple split on ";\n" boundaries, preserving multi-line statements
-    raw = sql.split(";")
-    statements = [s.strip() for s in raw if s.strip()]
-    return statements
-
-
 def init_schema(conn) -> None:
     """
     Run db/book_tables.sql against the connected database.
-    Executes each statement individually inside a single transaction so that
-    any failure rolls back cleanly.
+    Executes the entire script inside a single transaction.
 
     Raises FileNotFoundError if the SQL file is missing.
     Raises RuntimeError if any statement fails.
@@ -88,16 +69,12 @@ def init_schema(conn) -> None:
 
     logger.info("Initialising schema from %s", SQL_FILE.name)
     sql_text = SQL_FILE.read_text(encoding="utf-8")
-    statements = _split_statements(sql_text)
-    logger.debug("%d SQL statements to execute", len(statements))
 
     try:
         with conn.cursor() as cur:
-            for i, stmt in enumerate(statements, start=1):
-                logger.debug("  [%d/%d] %.80s...", i, len(statements), stmt.replace("\n", " "))
-                cur.execute(stmt)
+            cur.execute(sql_text)
         conn.commit()
-        logger.info("Schema initialised successfully (%d statements)", len(statements))
+        logger.info("Schema initialised successfully")
     except Exception as e:
         conn.rollback()
         raise RuntimeError(f"Schema initialisation failed: {e}") from e
