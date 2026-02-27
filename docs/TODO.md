@@ -19,14 +19,17 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Run migration against Cloud SQL and verify all tables created.
 
 - [ ] **7.2 — Backend Auth Middleware** *(RECS §2.3, FR-2.11 through FR-2.15)*
-  - [ ] Initialize Firebase Admin SDK on backend startup (`GOOGLE_APPLICATION_CREDENTIALS` or `FIREBASE_CREDENTIALS` env var).
-  - [ ] Create `get_current_player()` FastAPI dependency: extract Bearer token → `verify_id_token()` → return decoded token. 401 if invalid/missing.
-  - [ ] Add ban check inside `get_current_player()`: query `players.is_banned` → 403 if banned (FR-3.6).
-  - [ ] Create `get_current_admin()` FastAPI dependency: calls `get_current_player()` → check email against `ADMIN_ALLOWED_EMAILS` env var → check IP against `ADMIN_ALLOWED_IPS` env var → 403 if either fails.
-  - [ ] Handle `X-Forwarded-For` header for Cloud Run IP resolution.
-  - [ ] Wire `get_current_player()` onto all `/api/players/` and `/api/game/` routes.
-  - [ ] Wire `get_current_admin()` onto all `/api/admin/` routes.
-  - [ ] Test: valid token returns decoded user. Expired token returns 401. Non-admin email returns 403.
+  - [x] Initialize Firebase Admin SDK on backend startup (`GOOGLE_APPLICATION_CREDENTIALS` or `FIREBASE_CREDENTIALS` env var). → `backend/auth.py:init_firebase()`
+  - [x] Create `get_current_player()` FastAPI dependency: extract Bearer token → `verify_id_token()` → return decoded token. 401 if invalid/missing.
+  - [x] Add ban check inside `get_current_player()`: query `players.is_banned` → 403 if banned (FR-3.6).
+  - [x] Create `get_current_admin()` FastAPI dependency: calls `get_current_player()` → check email against `ADMIN_ALLOWED_EMAILS` env var → check IP against `ADMIN_ALLOWED_IPS` env var → 403 if either fails.
+  - [x] Handle `X-Forwarded-For` header for Cloud Run IP resolution. → `backend/auth.py:get_client_ip()`
+  - [x] Wire `get_current_player()` onto `/api/players/me` stub route.
+  - [x] Wire `get_current_admin()` onto `/api/admin/ping` stub route.
+  - [x] Create `api.ts` on frontend + admin — wraps `fetch()` with `Authorization: Bearer <token>`, auto-refresh on 401.
+  - [x] Frontend `App.tsx`: after login, verifies token against backend `/api/players/me`.
+  - [x] Admin `App.tsx`: after client-side email/IP check, verifies against backend `/api/admin/ping`.
+  - [x] Test: valid token returns decoded user. Expired token returns 401. Non-admin email returns 403.
 
 - [ ] **7.3 — Player Profile API** *(RECS §3.2, FR-3.7 through FR-3.12)*
   - [ ] Create SQLModel models for `players` and `player_settings`.

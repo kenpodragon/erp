@@ -2,10 +2,12 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
-from sqlmodel import SQLModel, Session, create_engine, select, text
-from typing import List, Optional
+from sqlmodel import Session, text
 
 load_dotenv()
+
+from db import get_session
+from auth import init_firebase, get_current_player, get_current_admin
 
 app = FastAPI(title="ERP API")
 
@@ -14,7 +16,7 @@ app = FastAPI(title="ERP API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173", 
+        "http://localhost:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
@@ -28,19 +30,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database Setup
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(DATABASE_URL)
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @app.on_event("startup")
 def on_startup():
-    # This would create tables if we had models defined
-    # SQLModel.metadata.create_all(engine)
-    pass
+    init_firebase()
+
+
+# ---------------------------------------------------------------------------
+# Public endpoints (no auth required)
+# ---------------------------------------------------------------------------
 
 @app.get("/")
 def read_default():
@@ -51,6 +49,7 @@ def read_default():
             "hello": "/hello"
         }
     }
+
 
 @app.get("/health")
 def health_check(session: Session = Depends(get_session)):
@@ -69,9 +68,43 @@ def health_check(session: Session = Depends(get_session)):
         "environment": os.getenv("ENVIRONMENT", "development")
     }
 
+
 @app.get("/hello")
 def read_root():
     return {"message": "Hello from the ERP Backend!"}
+
+
+# ---------------------------------------------------------------------------
+# Player-authenticated endpoints (Firebase token required)
+# Frontends already use Firebase Google SSO (signInWithPopup) — they send
+# the resulting ID token as Authorization: Bearer <token> to these routes.
+# ---------------------------------------------------------------------------
+
+@app.get("/api/players/me")
+async def get_my_profile(token: dict = Depends(get_current_player)):
+    """Stub — will be fully implemented in 7.3 (Player Profile API)."""
+    return {
+        "uid": token.get("uid"),
+        "email": token.get("email"),
+        "name": token.get("name"),
+        "player_id": token.get("player_id"),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Admin-authenticated endpoints (admin email + IP whitelist)
+# Admin frontend already has client-side email/IP check — this enforces
+# the same rules server-side so bypassing the client check is useless.
+# ---------------------------------------------------------------------------
+
+@app.get("/api/admin/ping")
+async def admin_ping(token: dict = Depends(get_current_admin)):
+    """Stub — verifies admin auth pipeline is working end-to-end."""
+    return {
+        "message": "Admin access confirmed",
+        "admin_email": token.get("email"),
+    }
+
 
 if __name__ == "__main__":
     import uvicorn

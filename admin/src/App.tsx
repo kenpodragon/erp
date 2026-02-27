@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import { api } from './api'
 import './App.css'
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authEnabled, setAuthEnabled] = useState(false)
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+  const [backendVerified, setBackendVerified] = useState<boolean | null>(null)
   const [clientIp, setClientIp] = useState<string>('')
   const [health, setHealth] = useState<any>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  // Client-side whitelist: UX-only fast rejection. Backend enforces the real check.
   const ALLOWED_EMAILS = (import.meta.env.VITE_ALLOWED_EMAILS || '').split(',').map((e: string) => e.trim()).filter(Boolean)
   const ALLOWED_IPS = (import.meta.env.VITE_ALLOWED_IPS || '').split(',').map((i: string) => i.trim()).filter(Boolean)
 
+  // Health checks (public endpoints — no auth needed)
   useEffect(() => {
-    // Health and Hello Check
     const fetchStatus = async () => {
       try {
         const helloRes = await fetch(`${API_URL}/hello`)
@@ -31,54 +34,76 @@ function App() {
         setApiMessage('Offline')
       }
     }
-
     fetchStatus()
 
-    // Fetch IP address
+    // Fetch client IP for UX display + client-side pre-check
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => setClientIp(data.ip))
       .catch(err => console.error("Failed to get IP:", err))
+  }, [])
 
-    if (auth) {
-      setAuthEnabled(true)
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        if (currentUser && clientIp) {
-          checkAuthorization(currentUser)
-        } else if (currentUser && !clientIp) {
-          console.log("Waiting for IP before authorizing...")
-        } else {
-          setUser(null)
-          setIsAuthorized(null)
-        }
-      })
-      return () => unsubscribe()
-    }
+  // Firebase auth listener
+  useEffect(() => {
+    if (!auth) return
+
+    setAuthEnabled(true)
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && clientIp) {
+        checkAuthorization(currentUser)
+      } else if (currentUser && !clientIp) {
+        // IP not loaded yet — will re-run when clientIp updates
+      } else {
+        setUser(null)
+        setIsAuthorized(null)
+        setBackendVerified(null)
+      }
+    })
+    return () => unsubscribe()
   }, [clientIp])
 
-  const checkAuthorization = (currentUser: User) => {
+  const checkAuthorization = async (currentUser: User) => {
     const userEmail = (currentUser.email || '').trim().toLowerCase()
     const currentIp = clientIp.trim()
-    
-    const emailOk = ALLOWED_EMAILS.some(e => e.toLowerCase() === userEmail)
-    const ipOk = ALLOWED_IPS.includes(currentIp)
 
-    console.log('Auth Debug:', {
-      checkingEmail: userEmail,
-      allowedEmails: ALLOWED_EMAILS,
-      emailMatch: emailOk,
-      checkingIp: currentIp,
-      allowedIps: ALLOWED_IPS,
-      ipMatch: ipOk
-    })
+    // Step 1: Client-side quick check (UX only — can be bypassed)
+    const emailOk = ALLOWED_EMAILS.length === 0 || ALLOWED_EMAILS.some(e => e.toLowerCase() === userEmail)
+    const ipOk = ALLOWED_IPS.length === 0 || ALLOWED_IPS.includes(currentIp)
 
-    if (emailOk && ipOk) {
-      setUser(currentUser)
-      setIsAuthorized(true)
-    } else {
+    if (!emailOk || !ipOk) {
       signOut(auth)
       setUser(null)
       setIsAuthorized(false)
+      setBackendVerified(null)
+      return
+    }
+
+    // Step 2: Backend verification — the real enforcement
+    setUser(currentUser)
+    setIsAuthorized(true)
+    setBackendVerified(null)
+
+    try {
+      // Get token directly from the currentUser param (not auth.currentUser)
+      // to avoid any timing issues with Firebase auth state
+      const idToken = await currentUser.getIdToken()
+      const res = await fetch(
+        `${API_URL}/api/admin/ping`,
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      )
+      if (res.ok) {
+        setBackendVerified(true)
+      } else {
+        console.error('Admin backend check failed:', res.status, await res.text())
+        // Backend rejected — token invalid, email/IP not whitelisted server-side
+        setBackendVerified(false)
+        signOut(auth)
+        setUser(null)
+        setIsAuthorized(false)
+      }
+    } catch (err) {
+      console.error('Admin backend check error:', err)
+      setBackendVerified(null) // Backend unreachable — don't block, just note it
     }
   }
 
@@ -97,6 +122,7 @@ function App() {
   const handleLogout = async () => {
     if (auth) {
       await signOut(auth)
+      setBackendVerified(null)
     }
   }
 
@@ -108,35 +134,44 @@ function App() {
         <h3>System Status:</h3>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
           <p>
-            <strong>API:</strong> {apiMessage === 'Connecting...' ? '...' : (apiMessage !== 'Offline' ? 
-              <span style={{ color: '#4caf50' }}>● Online</span> : 
+            <strong>API:</strong> {apiMessage === 'Connecting...' ? '...' : (apiMessage !== 'Offline' ?
+              <span style={{ color: '#4caf50' }}>● Online</span> :
               <span style={{ color: '#ff4444' }}>● Offline</span>
             )}
           </p>
           <p>
-            <strong>Database:</strong> {health ? (health.database === 'connected' ? 
-              <span style={{ color: '#4caf50' }}>● Online</span> : 
+            <strong>Database:</strong> {health ? (health.database === 'connected' ?
+              <span style={{ color: '#4caf50' }}>● Online</span> :
               <span style={{ color: '#ff4444' }}>● Offline</span>
             ) : '...'}
           </p>
         </div>
       </div>
-      
+
       <div className="card" style={{ border: '1px solid #646cff', padding: '20px', borderRadius: '10px' }}>
         <h2>Admin SSO Login Test</h2>
-        
+
         {!authEnabled ? (
           <p style={{ color: 'orange' }}>Firebase configuration missing. Check your .env file.</p>
         ) : isAuthorized === false ? (
           <div style={{ color: '#ff4444', fontWeight: 'bold', padding: '10px', border: '2px solid #ff4444' }}>
-            <p>ADDRESS BLOCKED</p>
-            <p style={{ fontSize: '0.8em', color: '#888' }}>Unauthorized Email or IP ({clientIp})</p>
-            <button onClick={() => setIsAuthorized(null)} style={{ marginTop: '10px' }}>Try Again</button>
+            <p>ACCESS DENIED</p>
+            <p style={{ fontSize: '0.8em', color: '#888' }}>Unauthorized access ({clientIp})</p>
+            <button onClick={() => { setIsAuthorized(null); setBackendVerified(null) }} style={{ marginTop: '10px' }}>Try Again</button>
           </div>
         ) : user ? (
           <div>
             <p style={{ color: '#4caf50' }}>Authorized Admin: <strong>{user.email}</strong></p>
             <p style={{ fontSize: '0.8em', color: '#888' }}>Login IP: {clientIp}</p>
+            {backendVerified === true && (
+              <p style={{ color: '#4caf50', fontSize: '0.8em' }}>Backend: Verified</p>
+            )}
+            {backendVerified === false && (
+              <p style={{ color: '#ff4444', fontSize: '0.8em' }}>Backend: Rejected</p>
+            )}
+            {backendVerified === null && isAuthorized && (
+              <p style={{ color: '#888', fontSize: '0.8em' }}>Backend: Checking...</p>
+            )}
             <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white' }}>
               Logout
             </button>

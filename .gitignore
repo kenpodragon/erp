@@ -472,3 +472,7 @@ FodyWeavers.xsd
 \
 # ERP DB Exports
 erp_export*
+
+# Firebase / GCP service account keys
+**/secrets/
+*.json.key
