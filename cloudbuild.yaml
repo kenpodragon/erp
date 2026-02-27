@@ -8,6 +8,8 @@ steps:
     id: 'test-backend'
     dir: 'backend'
     entrypoint: 'bash'
+    env:
+      - 'DATABASE_URL=sqlite:///./test.db'
     args:
       - '-c'
       - |
