@@ -6,23 +6,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.info("Main script starting...")
 
-def load_env_file(path):
-    if os.path.exists(path):
-        logger.info("Loading env from %s", path)
-        with open(path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    os.environ[key.strip()] = value.strip()
-        return True
-    return False
-
-# Load from /app/.env first (Secret Manager mount)
-if not load_env_file("/app/.env"):
-    # Fallback to local .env
-    load_env_file(".env")
-
 from datetime import datetime, timezone
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -33,7 +16,9 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select, text
 from fastapi.encoders import jsonable_encoder
 
-logger.info("DATABASE_URL is: %s", os.getenv("DATABASE_URL")[:20] if os.getenv("DATABASE_URL") else "None")
+# Load from environment (handled by Cloud Run or local shell)
+DATABASE_URL = os.getenv("DATABASE_URL")
+logger.info("DATABASE_URL is: %s", DATABASE_URL[:20] if DATABASE_URL else "None")
 
 logger.info("Importing local modules...")
 try:
