@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  # We will sanitize the project ID in the first step
   REGION: us-east1
   ARTIFACT_REPO: erp-images-lolkids
 
@@ -16,6 +16,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Sanitize Project ID
+        run: |
+          # Remove any potential whitespace/newlines from the secret
+          CLEAN_ID=$(echo "${{ secrets.GCP_PROJECT_ID }}" | xargs)
+          echo "PROJECT_ID=$CLEAN_ID" >> $GITHUB_ENV
 
       - name: Google Auth
         id: auth
