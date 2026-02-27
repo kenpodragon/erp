@@ -5,7 +5,8 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## Phase 6: Narrative Integration (The "ERP" Core) 📚
 - [ ] **Book Processing**
   - [x] Create requirements for the Book processor (BOOK_AGENT_READER.md)
-  - [ ] Create Book processor
+  - [x] Create Book processor
+  - [x] Add in DB_INIT bit to the BOOK processor to create tables from the .sql script if not already there.
   - [ ] Execute processing and load to DB
   
   
