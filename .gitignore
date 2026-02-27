@@ -470,9 +470,17 @@ FodyWeavers.xsd
 *.msm
 *.msp
 \
+# Playwright
+testing/node_modules/
+testing/test-results/
+testing/playwright-report/
+testing/blob-report/
+testing/playwright/.cache/
+
 # ERP DB Exports
 erp_export*
 backend/test.db
+backend/test_system.db
 backend/uploads/
 
 # Firebase / GCP service account keys

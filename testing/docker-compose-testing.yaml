@@ -65,7 +65,7 @@ services:
     command: sh -c "npm run lint && npm test && npm run build"
 
   e2e-test:
-    image: mcr.microsoft.com/playwright:v1.50.1-noble
+    image: mcr.microsoft.com/playwright:v1.58.2-noble
     volumes:
       - .:/app
     working_dir: /app
