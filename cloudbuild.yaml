@@ -20,15 +20,19 @@ steps:
     id: 'build-backend'
     args: 
       - 'build'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
       - './backend'
     waitFor: ['test-backend']
 
   # 3. Push Backend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-backend'
-    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend']
+    args:
+      - 'push'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend'
     waitFor: ['build-backend']
 
   # 4. Deploy Backend
@@ -39,12 +43,17 @@ steps:
       - 'run'
       - 'deploy'
       - 'erp-backend'
-      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
-      - '--region', 'us-east1'
-      - '--add-cloudsql-instances', '$PROJECT_ID:us-east1:erp-pg-db-j7q9dk'
-      - '--set-secrets', '/app/.env=erp-backend-env:latest'
+      - '--image'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
+      - '--region'
+      - 'us-east1'
+      - '--add-cloudsql-instances'
+      - '$PROJECT_ID:us-east1:erp-pg-db-j7q9dk'
+      - '--set-secrets'
+      - '/app/.env=erp-backend-env:latest'
       - '--allow-unauthenticated'
-      - '--port', '8000'
+      - '--port'
+      - '8000'
     waitFor: ['push-backend']
 
   # -------------------------------------------------------------------------
@@ -67,15 +76,19 @@ steps:
     id: 'build-frontend'
     args: 
       - 'build'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
       - './frontend'
     waitFor: ['lint-frontend']
 
   # 7. Push Frontend Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-frontend'
-    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend']
+    args:
+      - 'push'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend'
     waitFor: ['build-frontend']
 
   # 8. Deploy Frontend
@@ -86,11 +99,15 @@ steps:
       - 'run'
       - 'deploy'
       - 'erp-frontend'
-      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
-      - '--region', 'us-east1'
-      - '--set-secrets', '/app/.env=erp-frontend-env:latest'
+      - '--image'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
+      - '--region'
+      - 'us-east1'
+      - '--set-secrets'
+      - '/app/.env=erp-frontend-env:latest'
       - '--allow-unauthenticated'
-      - '--port', '5173'
+      - '--port'
+      - '5173'
     waitFor: ['push-frontend']
 
   # -------------------------------------------------------------------------
@@ -113,15 +130,19 @@ steps:
     id: 'build-admin'
     args: 
       - 'build'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
-      - '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
+      - '-t'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
       - './admin'
     waitFor: ['lint-admin']
 
   # 11. Push Admin Image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-admin'
-    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin']
+    args:
+      - 'push'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin'
     waitFor: ['build-admin']
 
   # 12. Deploy Admin
@@ -132,11 +153,15 @@ steps:
       - 'run'
       - 'deploy'
       - 'erp-admin'
-      - '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
-      - '--region', 'us-east1'
-      - '--set-secrets', '/app/.env=erp-admin-env:latest'
+      - '--image'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
+      - '--region'
+      - 'us-east1'
+      - '--set-secrets'
+      - '/app/.env=erp-admin-env:latest'
       - '--allow-unauthenticated'
-      - '--port', '5174'
+      - '--port'
+      - '5174'
     waitFor: ['push-admin']
 
 images:
