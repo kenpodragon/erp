@@ -62,6 +62,11 @@ Firebase handles our Authentication and tie-in with Google Play.
      - **Prerequisite:** You must have a [Google Play Developer Account](https://play.google.com/console/signup).
      - **Link Firebase:** Go to **Project Settings** > **Integrations** > **Google Play** > **Link**.
      - **Play Games Services (PGS):** In [Google Play Console](https://play.google.com/console/), go to **Grow** > **Play Games Services** > **Configuration** and follow the PGS setup.
+   5.  Add Authorized Domains
+     - Firebase only allows logins from domains it trusts.
+     - In the same Authentication section, click the Settings tab (top right).
+     - Select Authorized domains from the left sub-menu.
+     - Ensure localhost is listed.
 
 ## 4. GitHub Actions (CI/CD)
 To automate deployment to Cloud Run.
@@ -72,6 +77,9 @@ To automate deployment to Cloud Run.
    - `GCP_PROJECT_ID`: Your GCP Project ID.
    - `GCP_SA_KEY`: The contents of your Service Account JSON key.
    - `GCP_REGION`: The region (e.g., `us-east1`).
+   - `BACKEND_ENV`: (contents of your backend/.env)
+   - `FRONTEND_ENV`: (contents of your frontend/.env)
+   - `ADMIN_ENV`: (contents of your admin/.env)
 
 ## 5. Stripe Payments
 Stripe handles microtransactions, subscriptions, and donations.
@@ -99,6 +107,33 @@ Before running the application, ensure you have configured your environment vari
 - Create a `.env` file in the `frontend/` directory based on `frontend/.env.example`.
 - Create a `.env` file in the `admin/` directory based on `admin/.env.example`.
 
+#### 6.1.1. Local Launch (No Docker)
+To run the services directly on your host machine for rapid development. Open three separate terminals:
+
+1. **Backend:**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   python -m uvicorn main:app --reload
+   ```
+   *Accessible at: http://localhost:8000*
+
+2. **Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   *Accessible at: http://localhost:5173*
+
+3. **Admin Panel:**
+   ```bash
+   cd admin
+   npm install
+   npm run dev
+   ```
+   *Accessible at: http://localhost:5174 (Vite will increment the port if 5173 is in use)*
+
 ### 6.2. Local Orchestration (Docker Compose)
 To launch the entire development stack (PostgreSQL, FastAPI Backend, React Frontend, Admin Panel) locally:
 
@@ -107,8 +142,8 @@ To launch the entire development stack (PostgreSQL, FastAPI Backend, React Front
    docker-compose up --build
    ```
 2. **Accessing Services:**
-   - **Frontend:** [http://localhost:3000](http://localhost:3000)
-   - **Admin Panel:** [http://localhost:3001](http://localhost:3001)
+   - **Frontend:** [http://localhost:5173](http://localhost:5173)
+   - **Admin Panel:** [http://localhost:5174](http://localhost:5174)
    - **Backend API:** [http://localhost:8000](http://localhost:8000)
    - **API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 3. **Stop Services:**

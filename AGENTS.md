@@ -17,7 +17,7 @@ To build a high-fidelity, narrative-driven incremental game that serves as a gat
 - `/backend`: API, Game Logic, DB Models, Stripe Webhooks.
 - `/frontend`: Player-facing React app, Audio streaming, Clicker UI.
 - `/admin`: Internal management dashboard.
-- `/db`: SQL migrations, seeding scripts for lore/enemies.
+- `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL dhanges must be created as .SQL files in this folder. They will be manually run on the server.
 - `/docs`: All technical, architectural, and requirement specs.
 - `/infra`: Dockerfiles, CI/CD YAMLs, GCP Terraform (future).
 - `../Books`: **Read-only** source material (ER_Kindle.docx, etc.).

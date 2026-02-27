@@ -1,0 +1,441 @@
+# ERP: Game Loop & Interface Requirements
+
+This document defines the detailed game loop mechanics, UI layout, and interface requirements for the Elysium Rising mmorPg. It serves as the primary reference for building the gameplay portion of the application.
+
+---
+
+## 1. High-Level Game Loop Overview
+
+The game has **three interconnected loops** that feed into each other:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   OVERWORLD (Hub)                        │
+│   Your Chronicle-style node map + Magic Research 2 UI   │
+│                                                         │
+│   ┌─────────────┐         ┌──────────────────┐          │
+│   │  STORY MODE │◄───────►│  IDLE TRAINING   │          │
+│   │  (Clicker)  │ rewards │  (Melvor Idle)   │          │
+│   └─────────────┘         └──────────────────┘          │
+│         │                         │                      │
+│         │  gold + resources       │  base stats + skills │
+│         └────────┬────────────────┘                      │
+│                  ▼                                        │
+│         ┌──────────────┐                                 │
+│         │  PROGRESSION │                                 │
+│         │  & UNLOCKS   │                                 │
+│         └──────────────┘                                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Loop A: Overworld / Hub (Your Chronicle + Magic Research 2)
+- The main screen players see after login and character selection.
+- Node-based chapter/scene map showing progression through the Towers of Elysium story.
+- Entry point to Story Mode (clicking game) and Idle Training (skill progression).
+
+### Loop B: Story Mode / Clicker Combat (Clicker Heroes)
+- Active gameplay where players click to deal damage, defeat waves of enemies, and fight bosses.
+- Gated by audiobook narration - players cannot advance faster than 1x playback speed.
+- Rewards gold and resources used in Idle Training.
+
+### Loop C: Idle Training (Melvor Idle)
+- Passive/idle skill training that runs in the background or on a dedicated tab.
+- Skills trained here provide base stats and unlock abilities for Story Mode.
+- Only one skill can train at a time.
+
+---
+
+## 2. Overworld / Hub Interface
+
+### 2.1 Layout Specification
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  TOP BAR: Player Info | Currency | Settings | Audio Controls │
+├──────────┬───────────────────────────────────────────────────┤
+│          │                                                   │
+│  LEFT    │           MAIN CONTENT AREA                       │
+│  SIDEBAR │                                                   │
+│          │   Chapter/Scene Node Map                          │
+│  - Map   │   (Your Chronicle-style)                          │
+│  - Skills│                                                   │
+│  - Home  │   ┌───┐    ┌───┐    ┌───┐                        │
+│  - Shop  │   │1-1│───►│1-2│───►│1-3│──► ...                 │
+│  - Chat  │   └───┘    └───┘    └───┘                        │
+│  - Board │       ▼                                           │
+│          │   ┌───┐                                           │
+│          │   │1-A│ (branch)                                  │
+│          │   └───┘                                           │
+│          │                                                   │
+├──────────┴───────────────────────────────────────────────────┤
+│  BOTTOM BANNER: Animated Side-Scrolling Battle Scene         │
+│  (Dwarves: Glory, Death and Loot style pixel art)            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 2.2 Top Bar
+- [ ] **Player Info:** Avatar, character name, current level.
+- [ ] **Currency Display:** Gold (earned), Elysium Shards (premium), Elysium Essence (resource).
+- [ ] **Audio Controls:** Play/pause narration, volume slider, mute toggle for music/SFX.
+- [ ] **Settings Gear:** Opens settings modal (account, display, keybinds, accessibility).
+
+### 2.3 Left Sidebar Navigation
+- [ ] **Map (default):** Chapter/scene node map in main content area.
+- [ ] **Skills:** Opens the Melvor Idle-style skill training interface.
+- [ ] **Home Base:** Collection display, story journal, personal leaderboard stats.
+- [ ] **Shop:** Equipment, consumables, cosmetics (gold + premium currency).
+- [ ] **Chat:** Toggle chat overlay (global, chapter rooms).
+- [ ] **Leaderboard:** Global and chapter-specific rankings.
+
+### 2.4 Chapter/Scene Node Map (Main Content)
+Inspired by Your Chronicle's node-based progression with Magic Research 2's visual polish.
+
+- [ ] **Node Layout:** Vertical scrolling list of chapters, each containing horizontally-arranged scene nodes.
+- [ ] **Node States:**
+  - `locked` - Greyed out, not yet accessible.
+  - `available` - Highlighted border, ready to play.
+  - `in_progress` - Pulsing/glowing indicator, partially completed.
+  - `completed` - Checkmark, fully cleared.
+  - `mastered` - Gold border, 100% completion with all branches done.
+- [ ] **Current Progress Indicator:** The furthest unlocked node appears at the top of the list. All previously completed nodes are listed below and replayable.
+- [ ] **Branch Paths:** Some nodes split into sub-branches (side stories, optional content). Completing all branches in a chapter contributes to mastery percentage.
+- [ ] **Chapter Info Panel:** Clicking a node shows a panel with:
+  - Chapter/scene title and brief lore summary.
+  - Completion percentage and best score.
+  - Estimated audiobook duration for that segment.
+  - "Enter Story Mode" button.
+- [ ] **Replay Indicator:** Previously completed nodes show rewards available for replay (diminishing returns).
+
+### 2.5 Bottom Animated Banner
+Inspired by Dwarves: Glory, Death and Loot pixel art style.
+
+- [ ] **Infinite Side-Scroll:** Continuous pixel-art animation showing the player's character(s) battling enemies.
+- [ ] **Scene-Reactive:** Background, characters, and enemies reflect the player's furthest unlocked chapter.
+- [ ] **Growth Indicators:** As the player's stats improve, visual changes appear (better armor, larger weapons, spell effects).
+- [ ] **Non-Interactive:** Purely decorative/atmospheric. Clicking does nothing.
+- [ ] **Performance:** Lightweight sprite-based animation. Must not impact game performance. Option to disable in settings.
+
+---
+
+## 3. Story Mode / Clicker Combat Interface
+
+### 3.1 Layout Specification
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  STORY BAR: Chapter Title | Scene Progress | Back to Hub    │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│              NARRATIVE / AUDIOBOOK AREA                       │
+│   ┌──────────────────────────────────────────────────┐       │
+│   │  Story text displayed as images (copy-protected) │       │
+│   │  Synced with Eleven Reader audio playback        │       │
+│   └──────────────────────────────────────────────────┘       │
+│                                                              │
+│              COMBAT AREA (center)                            │
+│   ┌──────────────────────────────────────────────────┐       │
+│   │                                                  │       │
+│   │    [Enemy Sprite]     HP: ████████░░ 350/500     │       │
+│   │                                                  │       │
+│   │         CLICK TO ATTACK                          │       │
+│   │                                                  │       │
+│   │    Wave: 3/10    Zone Level: 14                   │       │
+│   │                                                  │       │
+│   └──────────────────────────────────────────────────┘       │
+│                                                              │
+├──────────────────────────────────────────────────────────────┤
+│  BOTTOM PANEL                                                │
+│  ┌─────────────┬──────────────────┬────────────────────┐     │
+│  │ HERO PANEL  │  SKILL HOTBAR    │  GOLD & UPGRADES   │     │
+│  │ Lvl / Stats │  [1][2][3][4][5] │  Gold: 1,234       │     │
+│  │ DPS: 45.2   │                  │  [Buy Upgrade ▼]   │     │
+│  └─────────────┴──────────────────┴────────────────────┘     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 Story/Narrative Area
+- [ ] **Audiobook Playback:** Eleven Reader streams the chapter's narration. Audio plays automatically on scene entry.
+- [ ] **Text Display:** Story text rendered as image overlays (not selectable text) for copy protection. Synced with audio playback position.
+- [ ] **Text Pacing:** Text appears paragraph by paragraph, timed with the narration. Players can scroll back to re-read completed portions.
+- [ ] **Progression Gate:** Players cannot advance to the next scene/node until the audio for the current segment has fully played at least once (1x speed minimum).
+- [ ] **Replay Behavior:** On replays of previously completed scenes, audio is optional - players can skip ahead freely.
+
+### 3.3 Combat Area
+Inspired by Clicker Heroes' enemy-centric combat display.
+
+- [ ] **Enemy Display:** Large, centered enemy sprite with idle/damage/death animations.
+- [ ] **Enemy HP Bar:** Prominent health bar with numerical HP display. Color shifts from green to yellow to red.
+- [ ] **Click-to-Attack:** Clicking anywhere in the combat area deals damage. Each click shows a floating damage number.
+- [ ] **Wave Counter:** Shows current wave out of total waves for this scene (e.g., "Wave 3/10").
+- [ ] **Zone Level:** Displays the current difficulty level within the scene.
+- [ ] **Enemy Info:** Enemy name, type, and lore-accurate description tooltip on hover.
+- [ ] **Critical Hits:** Visual flair (screen shake, larger numbers, color change) for critical damage.
+- [ ] **Enemy Defeat:** Death animation + gold drop animation. Next enemy spawns after brief delay.
+
+### 3.4 Wave & Boss System
+- [ ] **Standard Waves:** Each scene has a set number of enemy waves. Enemies get progressively harder within a scene.
+- [ ] **Wave Composition:** Later waves may contain multiple enemies displayed simultaneously (damage splits or AoE mechanics).
+- [ ] **Mini-Boss (Scene Boss):** Appears at the end of each scene's waves. Has unique mechanics:
+  - Higher HP pool with visible phase transitions.
+  - Timer-based enrage (if not killed fast enough, damage increases).
+  - Lore-accurate abilities from the book (e.g., specific magic attacks).
+- [ ] **Chapter Boss (Major Boss):** Appears at the final scene of each chapter. Unique mechanics beyond clicking:
+  - **Target Zones:** Click specific highlighted areas on the boss sprite to deal damage.
+  - **Skill Checks:** Require minimum Idle Training skill levels (e.g., "Magic Defense Lv5 required to survive this attack").
+  - **Phase Mechanics:** Multi-phase fights with changing attack patterns.
+  - **Cutscene Transitions:** Between phases, short narrative cutscenes play.
+- [ ] **Boss Defeat Cutscene:** On final boss defeat, a cinematic plays featuring text from the book's chapter ending with accompanying visuals.
+
+### 3.5 Hero Panel (Bottom Left)
+- [ ] **Character Portrait:** Small avatar with level indicator.
+- [ ] **Stats Display:** Current click damage, DPS (damage per second from auto-attacks + clicking), critical chance.
+- [ ] **Level Progress:** XP bar showing progress to next level within this story session.
+- [ ] **Status Effects:** Active buff/debuff icons with duration timers.
+
+### 3.6 Skill Hotbar (Bottom Center)
+- [ ] **Skill Slots:** 5 skill slots mapped to keyboard keys [1]-[5] or clickable buttons.
+- [ ] **Skill Source:** Skills are unlocked based on Idle Training progress. Higher Idle Training levels unlock more powerful skill tiers.
+- [ ] **Skill Purchase:** Skills must be purchased with in-session gold before they can be used (like Clicker Heroes hero abilities).
+- [ ] **Cooldowns:** Visual cooldown overlay on each skill button.
+- [ ] **Skill Types:**
+  - **Damage Skills:** Burst damage, AoE, damage-over-time.
+  - **Buff Skills:** Temporary click damage boost, critical chance increase, auto-click speed boost.
+  - **Utility Skills:** Gold multiplier, enemy slow, healing.
+
+### 3.7 Gold & Upgrade Panel (Bottom Right)
+- [ ] **Gold Counter:** Running total of gold earned this session. Animated increment on enemy kills.
+- [ ] **Upgrade Menu:** Expandable panel showing purchasable upgrades:
+  - Click Damage +X (scaling cost).
+  - Auto-Click Speed (clicks per second while idle).
+  - Critical Chance % increase.
+  - Skill-specific upgrades.
+- [ ] **Upgrade Scaling:** Each purchase increases cost exponentially (standard incremental scaling).
+
+### 3.8 Session Reset Mechanic
+- [ ] **Fresh Start Per Entry:** Every time a player enters Story Mode for a scene, they start at:
+  - Level 0 within the session.
+  - 0 gold, no skills purchased.
+  - Base click damage derived from Idle Training stats (higher Idle Training = higher floor).
+- [ ] **Internal Progression:** Within a session, players earn gold, buy upgrades, and level up - all temporary to that session.
+- [ ] **Death Mechanic:** If HP reaches 0 (from boss attacks or timed events):
+  - Player respawns at the last completed wave checkpoint.
+  - Gold and purchased upgrades are retained.
+  - Can continue attempting from the checkpoint.
+- [ ] **Exit Rewards:** When the player exits Story Mode (voluntarily or after boss defeat), rewards are calculated:
+  - Resources based on: highest wave reached, total gold earned, enemies defeated, boss kills.
+  - Resources are converted to Idle Training currency at a level-balanced rate.
+
+---
+
+## 4. Idle Training Interface (Skills Tab)
+
+### 4.1 Layout Specification
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  SKILLS HEADER: Active Skill Training | Time Remaining       │
+├──────────────┬───────────────────────────────────────────────┤
+│              │                                               │
+│  SKILL LIST  │         SKILL DETAIL PANEL                    │
+│              │                                               │
+│  ⚔ Attack    │  ┌─────────────────────────────────────┐      │
+│  🛡 Defense   │  │  ATTACK (Level 14 / 99)             │      │
+│  🔮 Magic    │  │  ████████████░░░░░░░░ 62%            │      │
+│  🏹 Ranged   │  │                                     │      │
+│  ❤ Vitality  │  │  Bonuses:                           │      │
+│  🔥 Fire     │  │  - Click Damage: +28                │      │
+│  💧 Water    │  │  - Crit Chance: +2.4%               │      │
+│  ⚡ Lightning │  │                                     │      │
+│  🌍 Earth    │  │  Resources Required:                │      │
+│  🌙 Dark     │  │  - Elysium Essence: 150/hr          │      │
+│  ✨ Light    │  │                                     │      │
+│  📖 Lore     │  │  [Start Training]  [Auto-Train]     │      │
+│  🔨 Crafting │  │                                     │      │
+│  💰 Trading  │  └─────────────────────────────────────┘      │
+│              │                                               │
+└──────────────┴───────────────────────────────────────────────┘
+```
+
+### 4.2 Skill List (Left Column)
+- [ ] **Skill Categories:** Combat skills, elemental magic, and utility skills - each derived from the Towers of Elysium power system.
+- [ ] **Visual Indicators:** Each skill shows:
+  - Current level (e.g., "Lv 14").
+  - Mini progress bar for current level completion.
+  - Active training indicator (pulsing icon) if currently being trained.
+- [ ] **One-at-a-Time:** Only one skill can actively train at any moment. Selecting a new skill stops the current one.
+- [ ] **Unlock Requirements:** Some skills require minimum chapter completion or other skill prerequisites.
+
+### 4.3 Skill Detail Panel (Right Side)
+- [ ] **Skill Name & Level:** Large display with level out of max (e.g., "Level 14 / 99").
+- [ ] **Progress Bar:** XP progress within the current level.
+- [ ] **Bonus Summary:** What this skill provides in Story Mode:
+  - Stat bonuses (click damage, defense, HP, etc.).
+  - Skill unlocks (at certain level thresholds, new Story Mode skills become available).
+  - Passive effects (gold multiplier, enemy debuffs, etc.).
+- [ ] **Resource Cost:** How much Elysium Essence (or other resources) is consumed per hour of training.
+- [ ] **Training Controls:**
+  - "Start Training" button to begin actively training this skill.
+  - "Auto-Train" toggle: if enabled, when the current skill reaches a target level, it automatically switches to the next queued skill.
+- [ ] **Mastery Info:** At max level, the skill enters "Mastery" mode providing diminishing but continuous minor improvements.
+
+### 4.4 Offline Training
+- [ ] **Background Progression:** Idle Training continues when the player is offline or in Story Mode.
+- [ ] **Offline Cap:** Training progresses for up to the duration since last login, but caps at completing the current scene/chapter segment (player must return to confirm and select next training).
+- [ ] **Return Summary:** On login, show a summary popup of offline gains: "While you were away, Attack reached Lv 16 (+2 levels). You earned 340 Elysium Essence."
+
+---
+
+## 5. Post-Chapter Endgame Loop
+
+After a player defeats the final boss of a chapter:
+
+### 5.1 Victory Cutscene
+- [ ] Final cinematic showing the chapter's conclusion from the book with on-screen text and narration.
+- [ ] Reward summary screen showing total rewards earned.
+
+### 5.2 Endgame Zone (Post-Boss)
+- [ ] **Continued Play:** Players can remain in the chapter's Story Mode after beating the boss.
+- [ ] **Background Music Only:** Audiobook narration stops (story is complete). Background music from SUNO continues.
+- [ ] **Infinite Scaling:** Enemies continue spawning in waves with progressively increasing difficulty:
+  - More enemies per wave.
+  - Higher HP and damage.
+  - Occasional mini-bosses every N waves.
+  - All enemies remain thematically appropriate to the chapter.
+- [ ] **Reward Scaling:** Continued play earns gold and resources, but at diminishing returns compared to first-time completion.
+- [ ] **Leaderboard Integration:** Highest wave reached in endgame mode is tracked on chapter-specific leaderboards.
+
+### 5.3 New Game+ (Future Loops)
+- [ ] **Reset Progression:** On subsequent playthroughs of completed chapters:
+  - Enemies are stronger (scaled multiplier).
+  - Palette/visual changes to indicate NG+ tier.
+  - More enemies per wave.
+  - New rare drops and rewards exclusive to NG+ tiers.
+- [ ] **Skip Narration:** Players who have completed a chapter at least once can skip the audiobook gate and progress freely.
+- [ ] **Prestige System:** Each NG+ completion grants permanent prestige bonuses (small % stat increases that persist across all sessions).
+
+---
+
+## 6. Economy Flow
+
+```
+Story Mode (Clicker)                    Idle Training (Skills)
+    │                                        │
+    │ earn Gold (in-session only)             │ consumes Elysium Essence
+    │ earn Resources (on exit)               │ provides base stats
+    │                                        │ unlocks Story Mode skills
+    ▼                                        ▼
+┌──────────────────────────────────────────────────┐
+│                   OVERWORLD                       │
+│                                                   │
+│  Resources ──► Buy Training Materials ──► Skills  │
+│  Gold (session) ──► In-session upgrades only      │
+│  Premium Shards ──► Cosmetics, QoL boosters       │
+│                                                   │
+└──────────────────────────────────────────────────┘
+```
+
+### 6.1 Currency Types
+- [ ] **Gold:** Earned in Story Mode. Spent only within that session on upgrades. Does not persist between sessions.
+- [ ] **Elysium Essence:** Earned as a reward when exiting Story Mode. Spent in Idle Training to fuel skill progression.
+- [ ] **Training Materials:** Purchased with Elysium Essence in the Shop. Required to begin training specific skills.
+- [ ] **Elysium Shards (Premium):** Purchased with real money via Stripe. Used for cosmetics, auto-train tokens, and quality-of-life items. Never pay-to-win.
+
+### 6.2 Reward Calculation (Story Mode Exit)
+- [ ] Base reward = f(chapter_level, highest_wave, enemies_defeated)
+- [ ] Bonus multipliers for: boss kills, no-death runs, speed completion.
+- [ ] Diminishing returns on repeated plays of the same scene (encourages forward progression).
+- [ ] First-time completion bonus (significant one-time reward).
+
+---
+
+## 7. Audio Integration Requirements
+
+### 7.1 Audiobook (Eleven Reader)
+- [ ] **Auto-Play:** Narration begins automatically when entering a new scene in Story Mode.
+- [ ] **Progress Sync:** Backend tracks playback position per user per scene. Resume from last position on re-entry.
+- [ ] **1x Gate:** Scene completion requires the full audio segment to have played. Timer tracked server-side to prevent manipulation.
+- [ ] **Controls:** Play, pause, rewind 15s, volume. No fast-forward on first play. Speed controls (1x-2x) available on replays.
+
+### 7.2 Background Music (SUNO)
+- [ ] **Chapter-Themed:** Each chapter has a pool of generated tracks matching its mood/atmosphere.
+- [ ] **Randomized Playlist:** On scene entry, a random track from the chapter's pool plays. Tracks rotate to avoid repetition.
+- [ ] **Crossfade:** Smooth transitions between tracks and between scenes.
+- [ ] **Separate Volume:** Independent volume control from narration and SFX.
+
+### 7.3 Sound Effects
+- [ ] **Click Attack:** Satisfying hit sound on each click (varied to avoid monotony).
+- [ ] **Critical Hit:** Distinct, impactful SFX.
+- [ ] **Enemy Death:** Defeat sound + gold drop jingle.
+- [ ] **Boss Entrance:** Dramatic entrance SFX + music shift.
+- [ ] **Skill Activation:** Unique SFX per skill type.
+- [ ] **UI Interactions:** Subtle sounds for button clicks, tab switches, purchases.
+- [ ] **Level Up:** Celebratory chime on level-up in both Story Mode and Idle Training.
+
+---
+
+## 8. Anti-Cheat & Validation
+
+- [ ] **Click Rate Limiting:** Server validates click rate. Human click patterns (variable timing, <~15 CPS) are accepted. Perfectly uniform or excessive rates are flagged.
+- [ ] **Server-Side Damage Calculation:** Client sends click events; server calculates actual damage based on verified stats. Client displays optimistically but server is authoritative.
+- [ ] **Audiobook Gate Enforcement:** Playback duration tracked server-side. Client cannot self-report completion.
+- [ ] **Session Integrity:** Session gold, upgrades, and progress are validated server-side on exit. Anomalous values are rejected.
+- [ ] **Offline Training Cap:** Server calculates offline gains on login based on last-seen timestamp. Cannot exceed realistic caps.
+
+---
+
+## 9. Responsive & Accessibility
+
+- [ ] **Desktop First:** Primary target is desktop browsers (1280px+ width).
+- [ ] **Tablet Support:** Responsive layout that stacks sidebar below content on narrower screens.
+- [ ] **Mobile Consideration:** Touch-friendly click targets in combat area. Simplified layout for <768px.
+- [ ] **Dark Theme:** Default dark background (similar to Magic Research 2's `#111` background with `#ddd` text) to reduce eye strain during long sessions.
+- [ ] **Keyboard Support:** All skill hotbar actions mapped to keyboard. Tab navigation for menus.
+- [ ] **Animation Toggle:** Option to disable the bottom battle banner and reduce animations for performance/accessibility.
+
+---
+
+## 10. State Diagram: Player Session Flow
+
+```
+[Login]
+   ▼
+[Character Select]
+   ▼
+[Overworld Hub] ◄──────────────────────────────┐
+   │                                            │
+   ├──► [Select Scene Node]                     │
+   │       ▼                                    │
+   │    [Story Mode Entry]                      │
+   │       ▼                                    │
+   │    [Audio Plays + Combat Active]           │
+   │       │                                    │
+   │       ├──► [Defeat Enemies / Waves]        │
+   │       │       ▼                            │
+   │       │    [Mini-Boss] ──► [Next Scene]     │
+   │       │                       │            │
+   │       │                       ▼            │
+   │       │                [Chapter Boss]      │
+   │       │                   │    │           │
+   │       │              [Win]  [Lose]         │
+   │       │                │      │            │
+   │       │           [Cutscene]  [Respawn     │
+   │       │                │      at wave]     │
+   │       │                ▼                   │
+   │       │         [Endgame Zone              │
+   │       │          or Exit]                  │
+   │       │                │                   │
+   │       └────────────────┤                   │
+   │                        ▼                   │
+   │              [Reward Calculation]           │
+   │                        │                   │
+   │                        ▼                   │
+   │              [Return to Overworld] ────────┘
+   │
+   ├──► [Skills Tab] ──► [Train Skill] ──► [Back to Hub]
+   │
+   ├──► [Shop] ──► [Purchase] ──► [Back to Hub]
+   │
+   ├──► [Home Base] ──► [View Collections] ──► [Back to Hub]
+   │
+   └──► [Leaderboard / Chat]
+```

@@ -1,0 +1,130 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-east1
+  ARTIFACT_REPO: erp-images-lolkids
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # DEPLOY BACKEND
+      - name: Build and Push Backend
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }} ./backend
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }}
+
+      - name: Deploy Backend to Cloud Run
+        run: |
+          # Helper to extract and format env vars from secret (handling _LIVE overrides)
+          echo "${{ secrets.BACKEND_ENV }}" > backend.env
+          # Use our existing python logic to parse and set env vars
+          python -c "
+          import os
+          raw_vars = {}
+          with open('backend.env', 'r') as f:
+              for line in f:
+                  line = line.strip()
+                  if line and not line.startswith('#') and '=' in line:
+                      k, v = line.split('=', 1)
+                      raw_vars[k.strip()] = v.strip()
+          final_vars = {}
+          for k, v in raw_vars.items():
+              if k.endswith('_LIVE'): final_vars[k[:-5]] = v
+              elif k not in final_vars and (k + '_LIVE') not in raw_vars: final_vars[k] = v
+          print(','.join([k + '=' + v for k, v in final_vars.items()]))
+          " > backend_env_list.txt
+          
+          gcloud run deploy erp-backend 
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }} 
+            --region ${{ env.REGION }} 
+            --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:erp-pg-db-j7q9dk 
+            --set-env-vars=$(cat backend_env_list.txt) 
+            --allow-unauthenticated 
+            --port 8000
+
+      # DEPLOY FRONTEND
+      - name: Build and Push Frontend
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/frontend:${{ github.sha }} ./frontend
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/frontend:${{ github.sha }}
+
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          echo "${{ secrets.FRONTEND_ENV }}" > frontend.env
+          python -c "
+          import os
+          raw_vars = {}
+          with open('frontend.env', 'r') as f:
+              for line in f:
+                  line = line.strip()
+                  if line and not line.startswith('#') and '=' in line:
+                      k, v = line.split('=', 1)
+                      raw_vars[k.strip()] = v.strip()
+          final_vars = {}
+          for k, v in raw_vars.items():
+              if k.endswith('_LIVE'): final_vars[k[:-5]] = v
+              elif k not in final_vars and (k + '_LIVE') not in raw_vars: final_vars[k] = v
+          print(','.join([k + '=' + v for k, v in final_vars.items()]))
+          " > frontend_env_list.txt
+
+          gcloud run deploy erp-frontend 
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/frontend:${{ github.sha }} 
+            --region ${{ env.REGION }} 
+            --set-env-vars=$(cat frontend_env_list.txt) 
+            --allow-unauthenticated 
+            --port 5173
+
+      # DEPLOY ADMIN
+      - name: Build and Push Admin
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/admin:${{ github.sha }} ./admin
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/admin:${{ github.sha }}
+
+      - name: Deploy Admin to Cloud Run
+        run: |
+          echo "${{ secrets.ADMIN_ENV }}" > admin.env
+          python -c "
+          import os
+          raw_vars = {}
+          with open('admin.env', 'r') as f:
+              for line in f:
+                  line = line.strip()
+                  if line and not line.startswith('#') and '=' in line:
+                      k, v = line.split('=', 1)
+                      raw_vars[k.strip()] = v.strip()
+          final_vars = {}
+          for k, v in raw_vars.items():
+              if k.endswith('_LIVE'): final_vars[k[:-5]] = v
+              elif k not in final_vars and (k + '_LIVE') not in raw_vars: final_vars[k] = v
+          print(','.join([k + '=' + v for k, v in final_vars.items()]))
+          " > admin_env_list.txt
+
+          gcloud run deploy erp-admin 
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/admin:${{ github.sha }} 
+            --region ${{ env.REGION }} 
+            --set-env-vars=$(cat admin_env_list.txt) 
+            --allow-unauthenticated 
+            --port 5174
