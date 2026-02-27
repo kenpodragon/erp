@@ -2,11 +2,19 @@
 
 This document serves as the single source of truth for the features and constraints of the Elysium Rising mmorPg (ERP).
 
-## 1. Onboarding & Authentication
-- [ ] **Google SSO Integration:** Primary authentication via Firebase for seamless web and mobile-adjacent access.
+## 1. Onboarding & Authentication & Initial Admin Panel Stuff
+- [x] **Google SSO Integration:** Primary authentication via Firebase for seamless web and mobile-adjacent access.
 - [ ] **Profile Creation:** Users must be able to create a profile linked to their Google Identity.
 - [ ] **Terms & Privacy:** Automated prompts for accepting terms based on the Elysium Rising IP.
 - [ ] **Onboarding Flow:** Splash page -> About/Instructions -> Auth -> Character Selection/Creation.
+- [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
+- [ ] **Support Dashboard** Submit a ticket. See results, discuss about tickets, etc...
+- [ ] **Initial Admin Panel Stuff:**
+    - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
+    - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics.
+    - [ ] **Server, User Activity Logs, Graphs and Tracking:** View logs, activity history, and metrics.
+    - [ ] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
+    - [ ] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
 ## 2. Core Gameplay Mechanics (Incremental MMORPG)
 - [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
@@ -50,6 +58,8 @@ This document serves as the single source of truth for the features and constrai
 - [ ] **Refunds:** Full administrative workflow for triggering Stripe refunds from the Admin UI.
 
 ## 4. Social & MMORPG Features
+- [ ] **Communication Integration:**
+    - [ ] Email alerts to users (email integration somewhere)
 - [ ] **Integrated Chat:**
     - [ ] **General:** Global communication.
     - [ ] **Chapter Rooms:** Content-specific discussion (instanced by book chapter).
@@ -64,12 +74,13 @@ This document serves as the single source of truth for the features and constrai
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
 - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics.
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
+- [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
 
 ## 6. Technical & Infrastructure
-- [ ] **Backend (Python/FastAPI):** High-performance, async API.
-- [ ] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
-- [ ] **Database (PostgreSQL):** Optimized for high-frequency leaderboard and state updates.
-- [ ] **Deployment:** Dockerized services on Google Cloud Run with automated GitHub Actions CI/CD.
+- [x] **Backend (Python/FastAPI):** High-performance, async API.
+- [x] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
+- [x] **Database (PostgreSQL):** Optimized for high-frequency leaderboard and state updates.
+- [x] **Deployment:** Dockerized services on Google Cloud Run with automated GitHub Actions CI/CD.
 - [ ] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
 
 ## 7. Non-Functional Requirements
