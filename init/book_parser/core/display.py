@@ -192,6 +192,8 @@ def _select_model(provider: str, current_id: str) -> str:
     return choice
 
 
+from rich.prompt import Prompt
+
 def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], ai, is_completion: bool = False) -> bool:
     """
     Prompt the user before starting or after completing a phase/book.
@@ -227,15 +229,18 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
     console.print(f"Active Models: {claude_label} {ai.claude_model} | {gemini_label} {ai.gemini_model}")
     
     while True:
-        prompt_text = "\n[bold yellow]Actions:[/bold yellow] [bold](c)[/bold]ontinue, [bold](m)[/bold]odel select, [bold](l)[/bold]ear-db, [bold](q)[/bold]uit: "
-        action = console.input(prompt_text).strip().lower()
+        console.print("\n[dim](c)ontinue, (m)odel select, (q)uit[/dim]")
+        action = Prompt.ask(
+            "[bold yellow]Actions[/bold yellow]",
+            choices=["c", "m", "q"],
+            default="c",
+            show_choices=True
+        ).lower()
 
-        if action in ("c", "s"): # 's' for backward compatibility with 'start'
+        if action == "c":
             return True
         if action == "q":
             return False
-        if action == "l":
-            return "clear"
         if action == "m":
             # Model selection menu
             new_claude = _select_model("claude", ai.claude_model)
@@ -248,7 +253,8 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
             console.print("\n[bold magenta]Select Primary Provider:[/bold magenta]")
             console.print(f"  1. [bold]Claude[/bold]  {'[green](Current Primary)[/green]' if ai.current_provider == 'claude' else ''}")
             console.print(f"  2. [bold]Gemini[/bold]  {'[green](Current Primary)[/green]' if ai.current_provider == 'gemini' else ''}")
-            p_choice = console.input(f"Choice (1 or 2, enter to keep current): ").strip()
+            p_choice = Prompt.ask("Choice", choices=["1", "2", ""], default="")
+            
             if p_choice == "1":
                 ai.set_primary_provider("claude")
             elif p_choice == "2":
@@ -258,7 +264,7 @@ def prompt_phase_start(phase: int, phase_name: str, book_info: Optional[dict], a
             # Re-render status screen
             return prompt_phase_start(phase, phase_name, book_info, ai, is_completion)
 
-        console.print("[red]Invalid action. Please enter c, m, l, or q.[/red]")
+        console.print("[red]Invalid action.[/red]")
 
 
 def prompt_confirm(message: str) -> bool:

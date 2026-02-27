@@ -4,7 +4,6 @@ Book Agent Reader — main CLI entrypoint.
 Usage:
   python book_processor.py               # auto-detect state, resume
   python book_processor.py --status      # show status table and exit
-  python book_processor.py --clear-db    # clear all book tables (requires CONFIRM)
   python book_processor.py --verbose     # enable DEBUG logging
 """
 from __future__ import annotations
@@ -21,11 +20,11 @@ from core.db import (
     get_processing_status, get_next_action, get_incomplete_run,
     start_processing_run, update_processing_run,
     get_chapters_for_book, get_book_id,
-    clear_all_book_tables,
 )
 from core.display import (
     setup_logging, print_status, ProgressTracker,
     prompt_confirm, prompt_typed_confirm, warn_incomplete_run,
+    prompt_phase_start,
 )
 from phases.phase1_extract import run_phase1
 from phases.phase2_ai import run_phase2
@@ -136,11 +135,9 @@ def _run_cross_book_phase(conn, phase: int,
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("--status", "show_status", is_flag=True,
               help="Print processing status table and exit.")
-@click.option("--clear-db", "clear_db", is_flag=True,
-              help="Clear all book processing tables (requires typing CONFIRM).")
 @click.option("--verbose", "-v", is_flag=True,
               help="Enable DEBUG-level logging.")
-def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
+def main(show_status: bool, verbose: bool) -> None:
     """
     Book Agent Reader — processes the Towers of Elysium trilogy.
 
@@ -169,27 +166,6 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
             print_status(status, next_action)
             return
 
-        # ── --clear-db ────────────────────────────────────────────────────
-        if clear_db:
-            status = get_processing_status(conn)
-            print_status(status, get_next_action(conn))
-
-            confirmed = prompt_typed_confirm(
-                "This will permanently delete ALL book processing data from the database.",
-                confirm_word="CONFIRM",
-            )
-            if not confirmed:
-                click.echo("Aborted — database unchanged.")
-                return
-
-            with transaction(conn):
-                counts = clear_all_book_tables(conn)
-
-            click.echo("\nDatabase cleared. Rows removed:")
-            for table, count in counts.items():
-                click.echo(f"  {table}: {count}")
-            return
-
         # ── Default: resume / start ───────────────────────────────────────
         status = get_processing_status(conn)
         next_action = get_next_action(conn)
@@ -199,7 +175,7 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
             click.echo("\n[bold green]✓ All processing is complete.[/bold green]")
             return
 
-        # Check for an interrupted prior run and show note, but don't prompt
+        # Check for an interrupted prior run and show note
         incomplete = get_incomplete_run(conn)
         if incomplete:
             from core.display import console
@@ -215,112 +191,79 @@ def main(show_status: bool, clear_db: bool, verbose: bool) -> None:
 
         ai = AIProvider()
 
-        # Initial prompt at start
-        from core.display import prompt_phase_start
-        start_action = prompt_phase_start(current_phase, PHASE_NAMES[current_phase], 
-                                  BOOK_BY_NUMBER[current_book] if current_phase in (1,2) else None, ai)
-        
-        if start_action == "clear":
-            # Reuse clear-db logic
-            confirmed = prompt_typed_confirm(
-                "This will permanently delete ALL book processing data from the database.",
-                confirm_word="CONFIRM",
-            )
-            if confirmed:
-                with transaction(conn):
-                    clear_all_book_tables(conn)
-                click.echo("Database cleared. Please restart the processor.")
-            return
-        elif not start_action:
-            click.echo("Exiting — no changes made.")
-            return
+        # Iterate through all phases sequentially
+        for phase in range(1, 5):
+            phase_name = PHASE_NAMES[phase]
 
-        with ProgressTracker() as tracker:
-            # Iterate through all phases sequentially
-            for phase in range(1, 5):
-                phase_name = PHASE_NAMES[phase]
+            # Phases 1 and 2: process book by book
+            if phase in (1, 2):
+                for book in BOOK_REGISTRY:
+                    bn = book["book_number"]
+                    
+                    # Fresh status check at every book iteration
+                    ph_status = get_processing_status(conn)
+                    info = ph_status[bn][phase]
 
-                # Phases 1 and 2: process book by book
-                if phase in (1, 2):
-                    for book in BOOK_REGISTRY:
-                        bn = book["book_number"]
-                        ph_status = get_processing_status(conn)
+                    # Skip if already done
+                    if info["total"] > 0 and info["done"] >= info["total"]:
+                        logger.debug("Phase %d for Book %d already complete. Skipping.", phase, bn)
+                        continue
 
-                        info = ph_status[bn][phase]
-                        if info["total"] > 0 and info["done"] >= info["total"]:
-                            logger.debug(
-                                "Phase %d Book %d already complete — skipping", phase, bn
-                            )
-                            continue
+                    # Prompt BEFORE each book run (outside of ProgressTracker)
+                    print_status(get_processing_status(conn), (phase, bn))
+                    if not prompt_phase_start(phase, phase_name, book, ai):
+                        click.echo("Stopping as requested.")
+                        return
 
-                        # Ask to proceed between books or phases
-                        if phase > current_phase or (phase == current_phase and bn > current_book):
-                            print_status(get_processing_status(conn), get_next_action(conn))
-                            loop_action = prompt_phase_start(phase, phase_name, book, ai)
-                            
-                            if loop_action == "clear":
-                                confirmed = prompt_typed_confirm(
-                                    "This will permanently delete ALL book processing data.",
-                                    confirm_word="CONFIRM",
-                                )
-                                if confirmed:
-                                    with transaction(conn):
-                                        clear_all_book_tables(conn)
-                                    click.echo("Database cleared. Exiting.")
-                                return
-                            elif not loop_action:
-                                click.echo("Stopping as requested.")
-                                return
-
+                    # Start progress tracking only for the duration of the actual work
+                    with ProgressTracker() as tracker:
                         this_resume = resume_after if (phase == current_phase and bn == current_book) else 0
                         try:
                             _run_phase_for_book(conn, phase, bn, ai, tracker, resume_after=this_resume)
                         except TokenLimitError:
-                            click.echo(
-                                "\n[red]Both AI providers exhausted. "
-                                "Re-run to resume from this point.[/red]"
-                            )
+                            click.echo("\n[red]Both AI providers exhausted.[/red]")
                             sys.exit(1)
                         except Exception as e:
                             click.echo(f"\n[red]Error: {e}[/red]")
                             sys.exit(1)
+                    
+                    # Completion prompt at end of book (outside of ProgressTracker)
+                    print_status(get_processing_status(conn), get_next_action(conn))
+                    if not prompt_phase_start(phase, phase_name, book, ai, is_completion=True):
+                        return
+                    
+                    # Reset resume_after once the resume point is passed
+                    resume_after = 0 
 
-                # Phases 3 and 4: cross-book
-                else:
-                    # Check if this phase is already done for all books
-                    ph_status = get_processing_status(conn)
-                    all_done = all(
-                        ph_status[b["book_number"]][phase]["done"] >= ph_status[b["book_number"]][phase]["total"] > 0
-                        for b in BOOK_REGISTRY
-                    )
-                    if all_done:
-                        logger.debug("Phase %d already complete — skipping", phase)
-                        continue
+            # Phases 3 and 4: cross-book
+            else:
+                # Check if this phase is already done for all books
+                ph_status = get_processing_status(conn)
+                all_done = all(
+                    ph_status[b["book_number"]][phase]["done"] >= ph_status[b["book_number"]][phase]["total"] > 0
+                    for b in BOOK_REGISTRY
+                )
+                if all_done:
+                    logger.debug("Phase %d already complete — skipping", phase)
+                    continue
 
-                    # Confirm before starting cross-book phase
-                    if phase > current_phase:
-                        print_status(get_processing_status(conn), get_next_action(conn))
-                        cross_action = prompt_phase_start(phase, phase_name, None, ai)
-                        
-                        if cross_action == "clear":
-                            confirmed = prompt_typed_confirm(
-                                "This will permanently delete ALL book processing data.",
-                                confirm_word="CONFIRM",
-                            )
-                            if confirmed:
-                                with transaction(conn):
-                                    clear_all_book_tables(conn)
-                                click.echo("Database cleared. Exiting.")
-                            return
-                        elif not cross_action:
-                            click.echo("Stopping as requested.")
-                            return
+                # Confirm before starting cross-book phase
+                print_status(get_processing_status(conn), get_next_action(conn))
+                if not prompt_phase_start(phase, phase_name, None, ai):
+                    click.echo("Stopping as requested.")
+                    return
 
+                with ProgressTracker() as tracker:
                     try:
                         _run_cross_book_phase(conn, phase, ai, tracker)
                     except Exception as e:
                         click.echo(f"\n[red]Error in Phase {phase}: {e}[/red]")
                         sys.exit(1)
+                
+                # Completion prompt after cross-book phase
+                print_status(get_processing_status(conn), get_next_action(conn))
+                if not prompt_phase_start(phase, phase_name, None, ai, is_completion=True):
+                    return
 
         # Final status display
         print_status(get_processing_status(conn), get_next_action(conn))
