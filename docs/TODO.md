@@ -31,19 +31,19 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Admin `App.tsx`: after client-side email/IP check, verifies against backend `/api/admin/ping`.
   - [x] Test: valid token returns decoded user. Expired token returns 401. Non-admin email returns 403.
 
-- [ ] **7.3 — Player Profile API** *(RECS §3.2, FR-3.7 through FR-3.12)*
-  - [ ] Create SQLModel models for `players` and `player_settings`.
-  - [ ] `POST /api/auth/login` — validate token, upsert player, return profile + characters + `is_new_player`.
-  - [ ] `GET /api/players/me` — return full player profile with settings.
-  - [ ] `PATCH /api/players/me` — update alias (validate uniqueness, format, profanity filter) and/or avatar preset.
-  - [ ] `POST /api/players/me/avatar` — multipart upload, validate type/size (JPEG/PNG, max 2MB), resize to 128x128 + 256x256 (Pillow), store to filesystem/GCS, update DB.
-  - [ ] `POST /api/players/me/accept-terms` — set `terms_accepted_at = NOW()`, idempotent.
-  - [ ] `PATCH /api/players/me/settings` — update audio_enabled, music_volume, sfx_volume, narration_speed with validation.
-  - [ ] Add `Pillow` to `requirements.txt`.
-  - [ ] Create profanity blocklist file (simple text list in backend).
+- [x] **7.3 — Player Profile API** *(RECS §3.2, FR-3.7 through FR-3.12)*
+  - [x] Create SQLModel models for `players` and `player_settings`.
+  - [x] `POST /api/auth/login` — validate token, upsert player, return profile + characters + `is_new_player`.
+  - [x] `GET /api/players/me` — return full player profile with settings.
+  - [x] `PATCH /api/players/me` — update alias (validate uniqueness, format, profanity filter) and/or avatar preset.
+  - [x] `POST /api/players/me/avatar` — multipart upload, validate type/size (JPEG/PNG, max 2MB), resize to 128x128 + 256x256 (Pillow), store to filesystem/GCS, update DB.
+  - [x] `POST /api/players/me/accept-terms` — set `terms_accepted_at = NOW()`, idempotent.
+  - [x] `PATCH /api/players/me/settings` — update audio_enabled, music_volume, sfx_volume, narration_speed with validation.
+  - [x] Add `Pillow` to `requirements.txt`.
+  - [x] Create profanity blocklist file (simple text list in backend).
 
 - [ ] **7.4 — Character System API** *(RECS §4.3, FR-4.8 through FR-4.11)*
-  - [ ] Create SQLModel models for `character_classes` and `player_characters`.
+  - [x] Create SQLModel models for `character_classes` and `player_characters`.
   - [ ] `GET /api/game/classes` — public endpoint, return available classes (where `is_available = true`).
   - [ ] `POST /api/players/me/characters` — validate name (uniqueness, format, profanity), check MVP 1-character limit (409 if exists), copy base stats from class, create character record. Also initialize `player_progress` (Book 1, Ch 1, Scene 1, Beat 1) and `player_essence` (balance=0, rate=0).
   - [ ] `GET /api/players/me/characters` — list player's characters with class info.

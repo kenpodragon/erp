@@ -1,15 +1,32 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 import os
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-from sqlmodel import Session, text
+from sqlmodel import Session, select, text
+from fastapi.encoders import jsonable_encoder
 
 load_dotenv()
 
 from db import get_session
 from auth import init_firebase, get_current_player, get_current_admin
+from models import Player, PlayerSettings, PlayerCharacter
+from utils import load_profanity_blocklist, is_profane, process_avatar
 
-app = FastAPI(title="ERP API")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    init_firebase()
+    load_profanity_blocklist()
+    yield
+    # Shutdown logic (if any)
+
+app = FastAPI(title="ERP API", lifespan=lifespan)
 
 # Configure CORS
 # Allow frontend/admin in development, cloud run, and custom domains
@@ -30,10 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.on_event("startup")
-def on_startup():
-    init_firebase()
+# Static file serving for uploads
+uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 
 # ---------------------------------------------------------------------------
@@ -76,25 +93,231 @@ def read_root():
 
 # ---------------------------------------------------------------------------
 # Player-authenticated endpoints (Firebase token required)
-# Frontends already use Firebase Google SSO (signInWithPopup) — they send
-# the resulting ID token as Authorization: Bearer <token> to these routes.
 # ---------------------------------------------------------------------------
 
-@app.get("/api/players/me")
-async def get_my_profile(token: dict = Depends(get_current_player)):
-    """Stub — will be fully implemented in 7.3 (Player Profile API)."""
+@app.post("/api/auth/login")
+async def login(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
+    """
+    Validate token, upsert player, return profile + characters + is_new_player.
+    FR-3.1, FR-3.2, FR-3.7
+    """
+    firebase_uid = token.get("uid")
+    email = token.get("email")
+    display_name = token.get("name")
+    avatar_url = token.get("picture")
+
+    player = session.exec(select(Player).where(Player.firebase_uid == firebase_uid)).first()
+    is_new_player = False
+    now = datetime.now(timezone.utc)
+
+    if not player:
+        is_new_player = True
+        player = Player(
+            firebase_uid=firebase_uid,
+            email=email,
+            google_display_name=display_name,
+            google_avatar_url=avatar_url,
+            created_at=now,
+            last_login_at=now,
+            updated_at=now
+        )
+        session.add(player)
+        session.commit()
+        session.refresh(player)
+
+        # Create default player settings
+        settings = PlayerSettings(player_id=player.id, updated_at=now)
+        session.add(settings)
+        session.commit()
+    else:
+        # Update existing player login time and sync Google info
+        player.last_login_at = now
+        player.google_display_name = display_name
+        player.google_avatar_url = avatar_url
+        session.add(player)
+        session.commit()
+        session.refresh(player)
+
+    # Fetch characters (if any)
+    characters = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()
+
+    # Get settings to include in response
+    settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
+
     return {
-        "uid": token.get("uid"),
-        "email": token.get("email"),
-        "name": token.get("name"),
-        "player_id": token.get("player_id"),
+        "player": {**player.model_dump(), "settings": settings.model_dump() if settings else None},
+        "characters": characters,
+        "is_new_player": is_new_player and player.terms_accepted_at is None
     }
+
+
+@app.get("/api/players/me")
+async def get_my_profile(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
+    """
+    Return full player profile with settings.
+    FR-3.8
+    """
+    player = token.get("player")
+    if not player:
+        firebase_uid = token.get("uid")
+        player = session.exec(select(Player).where(Player.firebase_uid == firebase_uid)).first()
+        if not player:
+            raise HTTPException(status_code=404, detail="Player profile not found")
+
+    settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
+    if not settings:
+        settings = PlayerSettings(player_id=player.id, updated_at=datetime.now(timezone.utc))
+        session.add(settings)
+        session.commit()
+        session.refresh(settings)
+
+    return {**player.model_dump(), "settings": settings.model_dump() if settings else None}
+
+
+@app.patch("/api/players/me")
+async def update_profile(
+    update_data: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Update alias (validate uniqueness, format, profanity filter) and/or avatar preset.
+    FR-3.3, FR-3.9
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    if "alias" in update_data:
+        alias = update_data["alias"]
+        # Validation
+        if not alias or len(alias) < 3 or len(alias) > 20:
+            raise HTTPException(status_code=422, detail="Alias must be between 3 and 20 characters")
+        if not alias.replace("_", "").replace("-", "").isalnum():
+            raise HTTPException(status_code=422, detail="Alias must be alphanumeric (underscores/hyphens allowed)")
+        if is_profane(alias):
+            raise HTTPException(status_code=422, detail="This alias is not allowed")
+
+        # Uniqueness check (case-insensitive)
+        existing = session.exec(select(Player).where(text("LOWER(alias) = :alias")).params(alias=alias.lower())).first()
+        if existing and existing.id != player.id:
+            raise HTTPException(status_code=409, detail="This alias is already taken")
+
+        player.alias = alias
+
+    if "avatar_preset_key" in update_data:
+        player.avatar_preset_key = update_data["avatar_preset_key"]
+
+    player.updated_at = datetime.now(timezone.utc)
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+
+    return player
+
+
+@app.post("/api/players/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Multipart upload, validate type/size, resize, store, update DB.
+    FR-3.4, FR-3.10
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    # Max size 2MB
+    MAX_SIZE = 2 * 1024 * 1024
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=422, detail="Image file is too large (max 2MB)")
+    await file.seek(0)  # Reset for process_avatar
+
+    try:
+        results = process_avatar(file, player.id)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    # We store the 256x256 version as the main custom_avatar_url
+    player.custom_avatar_url = results["url_256"]
+    player.updated_at = datetime.now(timezone.utc)
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+
+    return {"message": "Avatar uploaded successfully", "avatar_url": player.custom_avatar_url}
+
+
+@app.post("/api/players/me/accept-terms")
+async def accept_terms(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
+    """
+    Set terms_accepted_at = NOW(), idempotent.
+    FR-3.5, FR-3.11
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    if player.terms_accepted_at is None:
+        player.terms_accepted_at = datetime.now(timezone.utc)
+        player.updated_at = datetime.now(timezone.utc)
+        session.add(player)
+        session.commit()
+        session.refresh(player)
+
+    return {"message": "Terms accepted", "terms_accepted_at": player.terms_accepted_at}
+
+
+@app.patch("/api/players/me/settings")
+async def update_settings(
+    update_data: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Update audio_enabled, music_volume, sfx_volume, narration_speed with validation.
+    FR-3.12
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
+    if not settings:
+        settings = PlayerSettings(player_id=player.id, updated_at=datetime.now(timezone.utc))
+
+    if "audio_enabled" in update_data:
+        settings.audio_enabled = update_data["audio_enabled"]
+    if "music_volume" in update_data:
+        v = update_data["music_volume"]
+        if not (0 <= v <= 100):
+            raise HTTPException(status_code=422, detail="music_volume must be between 0 and 100")
+        settings.music_volume = v
+    if "sfx_volume" in update_data:
+        v = update_data["sfx_volume"]
+        if not (0 <= v <= 100):
+            raise HTTPException(status_code=422, detail="sfx_volume must be between 0 and 100")
+        settings.sfx_volume = v
+    if "narration_speed" in update_data:
+        s = update_data["narration_speed"]
+        if not (0.5 <= s <= 2.0):
+            raise HTTPException(status_code=422, detail="narration_speed must be between 0.5 and 2.0")
+        settings.narration_speed = s
+
+    settings.updated_at = datetime.now(timezone.utc)
+    session.add(settings)
+    session.commit()
+    session.refresh(settings)
+
+    return settings
 
 
 # ---------------------------------------------------------------------------
 # Admin-authenticated endpoints (admin email + IP whitelist)
-# Admin frontend already has client-side email/IP check — this enforces
-# the same rules server-side so bypassing the client check is useless.
 # ---------------------------------------------------------------------------
 
 @app.get("/api/admin/ping")

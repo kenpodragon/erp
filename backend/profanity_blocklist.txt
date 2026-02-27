@@ -1,0 +1,23 @@
+# Profanity Blocklist for ERP
+# Add one word/phrase per line.
+# Checks will be case-insensitive.
+admin
+system
+support
+moderator
+gm
+root
+god
+elysium
+towers
+elysian
+rising
+official
+staff
+owner
+help
+info
+news
+api
+dev
+developer

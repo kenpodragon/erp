@@ -7,8 +7,8 @@ more will be added as features are built (characters, tickets, config, etc.).
 """
 
 from datetime import datetime
-from typing import Optional
-from sqlmodel import SQLModel, Field
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class Player(SQLModel, table=True):
@@ -32,3 +32,66 @@ class Player(SQLModel, table=True):
     created_at: Optional[datetime] = Field(default=None)
     last_login_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    settings: Optional["PlayerSettings"] = Relationship(back_populates="player", sa_relationship_kwargs={"uselist": False})
+    characters: List["PlayerCharacter"] = Relationship(back_populates="player")
+
+
+class PlayerSettings(SQLModel, table=True):
+    """Maps to the `player_settings` table."""
+
+    __tablename__ = "player_settings"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    player_id: int = Field(foreign_key="players.id", unique=True, nullable=False)
+    audio_enabled: bool = Field(default=True)
+    music_volume: int = Field(default=80)
+    sfx_volume: int = Field(default=80)
+    narration_speed: float = Field(default=1.0)
+    updated_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    player: Player = Relationship(back_populates="settings")
+
+
+class CharacterClass(SQLModel, table=True):
+    """Maps to the `character_classes` table."""
+
+    __tablename__ = "character_classes"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(max_length=50, unique=True, nullable=False)
+    lore_blurb: Optional[str] = Field(default=None)
+    base_strength: int = Field(default=10)
+    base_agility: int = Field(default=10)
+    base_intelligence: int = Field(default=10)
+    sprite_key: Optional[str] = Field(default=None, max_length=100)
+    is_available: bool = Field(default=True)
+    created_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    characters: List["PlayerCharacter"] = Relationship(back_populates="character_class")
+
+
+class PlayerCharacter(SQLModel, table=True):
+    """Maps to the `player_characters` table."""
+
+    __tablename__ = "player_characters"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    player_id: int = Field(foreign_key="players.id", nullable=False)
+    class_id: int = Field(foreign_key="character_classes.id", nullable=False)
+    character_name: str = Field(max_length=20, nullable=False)
+    level: int = Field(default=1)
+    strength: Optional[int] = Field(default=None)
+    agility: Optional[int] = Field(default=None)
+    intelligence: Optional[int] = Field(default=None)
+    created_at: Optional[datetime] = Field(default=None)
+    last_played_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    player: Player = Relationship(back_populates="characters")
+    character_class: CharacterClass = Relationship(back_populates="characters")

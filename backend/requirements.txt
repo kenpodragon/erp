@@ -5,3 +5,7 @@ psycopg2-binary
 python-dotenv
 firebase-admin
 stripe
+python-multipart
+Pillow
+pytest
+httpx
