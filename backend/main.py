@@ -25,6 +25,7 @@ if not load_env_file("/app/.env"):
 
 from datetime import datetime, timezone
 from typing import Optional
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,8 +49,6 @@ except Exception as e:
     logger.error("Failed to import local modules: %s", e, exc_info=True)
     raise
 
-from contextlib import asynccontextmanager
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic
@@ -61,7 +60,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="ERP API", lifespan=lifespan)
 
 # Configure CORS
-# Allow frontend/admin in development, cloud run, and custom domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
