@@ -1,4 +1,11 @@
 import os
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.info("Main script starting...")
+
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -6,15 +13,27 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+
+logger.info("Loading .env...")
+load_dotenv()
+logger.info("DATABASE_URL is: %s", os.getenv("DATABASE_URL")[:20] if os.getenv("DATABASE_URL") else "None")
+
 from sqlmodel import Session, select, text
 from fastapi.encoders import jsonable_encoder
 
-load_dotenv()
-
-from db import get_session
-from auth import init_firebase, get_current_player, get_current_admin
-from models import Player, PlayerSettings, PlayerCharacter
-from utils import load_profanity_blocklist, is_profane, process_avatar
+logger.info("Importing local modules...")
+try:
+    from db import get_session
+    logger.info("Imported db")
+    from auth import init_firebase, get_current_player, get_current_admin
+    logger.info("Imported auth")
+    from models import Player, PlayerSettings, PlayerCharacter
+    logger.info("Imported models")
+    from utils import load_profanity_blocklist, is_profane, process_avatar
+    logger.info("Imported utils")
+except Exception as e:
+    logger.error("Failed to import local modules: %s", e, exc_info=True)
+    raise
 
 from contextlib import asynccontextmanager
 
