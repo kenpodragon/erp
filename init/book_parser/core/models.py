@@ -47,7 +47,7 @@ class EntityExtraction(BaseModel):
     canonical_name: str = Field(description="The definitive name for this entity")
     entity_type: Literal["character", "creature", "object", "environment", "manifestation", "group", "other"]
     is_new: bool = Field(description="True if this entity has not appeared in any prior scene this book")
-    role: Literal["ally", "enemy", "neutral", "unknown", "mini-boss", "big-boss"]
+    role: Literal["ally", "enemy", "neutral", "unknown", "mini-boss", "big-boss"] = Field(default="unknown")
     is_present: bool = Field(default=True, description="False if entity is only mentioned, not physically present")
     aliases: Optional[list[str]] = Field(default_factory=list, description="Other names used for this entity in this scene")
     is_generated: bool = Field(default=False, description="True if AI created this entity to meet minimum count requirements, not from text")

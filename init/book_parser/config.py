@@ -44,6 +44,14 @@ PHASE_DONE_STATUS: dict[int, str] = {
     4: STATUS_REVIEWED,
 }
 
+STATUS_ORDER = [
+    STATUS_NOT_STARTED,
+    STATUS_TEXT_EXTRACTED,
+    STATUS_AI_EXTRACTED,
+    STATUS_POST_PROCESSED,
+    STATUS_REVIEWED,
+]
+
 # ── Minimum Entity Requirements (FR-2.8 – FR-2.10) ────────────────────────
 MIN_ENTITIES_PER_BEAT    = 1
 MIN_ENTITIES_PER_SCENE   = 3

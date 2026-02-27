@@ -411,9 +411,9 @@ def get_incomplete_run(conn) -> Optional[dict]:
 def get_processing_status(conn) -> dict:
     """
     Returns a nested dict: {book_number: {phase: {"done": int, "total": int}}}
-    where done = chapters completed for that phase.
+    where done = chapters completed for that phase or beyond.
     """
-    from config import PHASE_DONE_STATUS, BOOK_REGISTRY
+    from config import PHASE_DONE_STATUS, BOOK_REGISTRY, STATUS_ORDER
 
     result: dict = {}
     for book in BOOK_REGISTRY:
@@ -431,11 +431,15 @@ def get_processing_status(conn) -> dict:
 
         for phase in range(1, 5):
             done_status = PHASE_DONE_STATUS[phase]
+            # Find all statuses that are >= done_status in order
+            threshold_idx = STATUS_ORDER.index(done_status)
+            valid_statuses = STATUS_ORDER[threshold_idx:]
+            
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT COUNT(*) FROM chapters
-                    WHERE book_id = %s AND processing_status = %s
-                """, (book_id, done_status))
+                    WHERE book_id = %s AND processing_status IN %s
+                """, (book_id, tuple(valid_statuses)))
                 done = cur.fetchone()[0]
             result[bn][phase] = {"done": done, "total": total}
 

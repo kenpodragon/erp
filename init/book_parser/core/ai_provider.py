@@ -57,7 +57,10 @@ class AIProvider:
     def __post_init__(self) -> None:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if api_key:
-            self._claude_client = anthropic.Anthropic(api_key=api_key)
+            self._claude_client = anthropic.Anthropic(
+                api_key=api_key,
+                timeout=600.0 # 10 minute timeout
+            )
         else:
             logger.warning("ANTHROPIC_API_KEY not set — Claude disabled")
             self._current_provider = "gemini"

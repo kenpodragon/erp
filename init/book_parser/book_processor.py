@@ -40,21 +40,23 @@ logger = logging.getLogger("book_parser")
 def _find_resume_chapter(conn, book_number: int, phase: int) -> int:
     """
     Return the last chapter_number that was successfully completed for the
-    given book + phase, so we can skip it and resume from the next one.
+    given book + phase (or beyond), so we can skip it and resume from the next one.
     Returns 0 if nothing was completed yet.
     """
     book_id = get_book_id(conn, book_number)
     if not book_id:
         return 0
 
-    from config import PHASE_DONE_STATUS
+    from config import PHASE_DONE_STATUS, STATUS_ORDER
     done_status = PHASE_DONE_STATUS[phase]
+    threshold_idx = STATUS_ORDER.index(done_status)
+    valid_statuses = STATUS_ORDER[threshold_idx:]
 
     with conn.cursor() as cur:
         cur.execute("""
             SELECT MAX(chapter_number) FROM chapters
-            WHERE book_id = %s AND processing_status = %s
-        """, (book_id, done_status))
+            WHERE book_id = %s AND processing_status IN %s
+        """, (book_id, tuple(valid_statuses)))
         row = cur.fetchone()
         return row[0] if row and row[0] is not None else 0
 

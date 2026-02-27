@@ -129,8 +129,8 @@ ENTITY RULES:
 - Every SCENE must have at least {min_per_scene} unique entities (cumulative across all beats).
 - Every CHAPTER must have at least {min_per_chapter} unique entities (cumulative across all scenes).
 - If the text does not provide enough entities to meet minimums, CREATIVELY GENERATE additional ones
-  that fit the narrative context (e.g., "The Weight of Silence", "Forgotten Darkness", "Ambient Dread").
-  Mark these with is_generated=true.
+  that fit the narrative context. Mark these with is_generated=true.
+- CONCISE DESCRIPTIONS: Keep descriptions, deltas, and notes to 1-3 sentences maximum. Focus on high-signal narrative data.
 - Every scene must include at least one CHARACTER entity (at minimum the protagonist, if present).
 - For entities already seen in previous scenes: set is_new=false and populate only *_delta fields
   for anything that changed. Leave delta fields null if nothing changed.
@@ -277,10 +277,11 @@ def _persist_entities(conn, scene_id: int, response: Phase2Response,
     return name_to_id
 
 
-def _persist_beat_entities(conn, beats: list[dict],
+def _persist_beat_entities(conn, scene_id: int, beats: list[dict],
                            response: Phase2Response,
-                           name_to_id: dict[str, int]) -> None:
-    """Write entity_beat_appearances for all beats."""
+                           name_to_id: dict[str, int],
+                           ai_provider: str, ai_model_id: str) -> None:
+    """Write entity_beat_appearances for all beats. Auto-creates missing entities."""
     beat_number_to_id = {b["beat_number"]: b["id"] for b in beats}
 
     for bg in response.beat_entities:
@@ -290,12 +291,23 @@ def _persist_beat_entities(conn, beats: list[dict],
             continue
         for assignment in bg.entity_assignments:
             entity_id = name_to_id.get(assignment.entity_name)
+            
             if not entity_id:
-                logger.warning(
-                    "Entity '%s' in beat_entities not found in entity list — skipping",
-                    assignment.entity_name,
+                # Fallback: AI referenced an entity in a beat but didn't define it.
+                # Auto-create it as a generated manifestation/environment entity.
+                logger.info("    Auto-creating missing entity referenced in beat: '%s'", assignment.entity_name)
+                entity_id = upsert_entity(
+                    conn,
+                    canonical_name=assignment.entity_name,
+                    entity_type="manifestation",
+                    is_generated=True,
+                    base_description=f"Generated manifestation: {assignment.entity_name}",
+                    first_scene_id=scene_id,
+                    ai_provider=ai_provider,
+                    ai_model_id=ai_model_id,
                 )
-                continue
+                name_to_id[assignment.entity_name] = entity_id
+
             upsert_entity_beat_appearance(
                 conn,
                 entity_id=entity_id,
@@ -404,6 +416,10 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
 
         tracker.set_items("Extracting entities/locations/tags", total=len(scenes))
 
+        ch_entities = 0
+        ch_locations = 0
+        ch_tags = 0
+
         for scene in scenes:
             scene_id = scene["id"]
             scene_num = scene["scene_number"]
@@ -459,18 +475,23 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
             # Persist in a single transaction per scene
             with transaction(conn):
                 name_to_id = _persist_entities(conn, scene_id, result, provider, model_id)
-                _persist_beat_entities(conn, beats, result, name_to_id)
+                _persist_beat_entities(conn, scene_id, beats, result, name_to_id, provider, model_id)
                 _persist_location(conn, scene_id, result.location, provider, model_id)
                 _persist_tags(conn, beats, result, provider, model_id)
 
                 # Persist mini-boss if designated
                 if result.mini_boss:
                     _persist_mini_boss(conn, scene_id, result.mini_boss, provider, model_id)
+                    ch_entities += 1
 
             # Update known entities for next scene context
             new_names = {e.canonical_name for e in result.entities}
             chapter_entity_names |= new_names
             known_entities = get_entities_summary(conn)  # refresh for next scene
+
+            ch_entities += len(result.entities)
+            if result.location: ch_locations += 1
+            ch_tags += len(result.semantic_tags)
 
             tracker.advance_item()
             logger.debug(
@@ -484,13 +505,15 @@ def run_phase2(conn, book_number: int, ai: AIProvider,
 
         # Designated BIG BOSS for the entire chapter
         _process_chapter_big_boss(conn, ch_id, list(chapter_entity_names), ai)
+        ch_entities += 1 # Chapter big boss
 
         # Mark chapter done
         with transaction(conn):
             update_chapter_status(conn, ch_id, "ai_extracted")
 
         tracker.log(
-            f"Chapter {ch_num} ({ch_title}): {len(scenes)} scenes processed [{provider}]",
+            f"Chapter {ch_num} ({ch_title}): {len(scenes)} scenes processed. "
+            f"Added: {ch_entities} entities, {ch_locations} locations, {ch_tags} tags [{provider}]",
             style="green",
         )
 
