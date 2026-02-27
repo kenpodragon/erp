@@ -471,11 +471,11 @@ FodyWeavers.xsd
 *.msp
 \
 # Playwright
-testing/node_modules/
-testing/test-results/
-testing/playwright-report/
-testing/blob-report/
-testing/playwright/.cache/
+**/node_modules/
+test-results/
+playwright-report/
+blob-report/
+**/playwright/.cache/
 
 # ERP DB Exports
 erp_export*
