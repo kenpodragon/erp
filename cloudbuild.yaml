@@ -13,6 +13,10 @@ steps:
     args:
       - '-c'
       - |
+        if [ "$_SKIP_TESTS" = "true" ]; then
+          echo "Skipping tests as requested."
+          exit 0
+        fi
         apt-get update && apt-get install -y build-essential libpq-dev
         pip install -r requirements.txt
         pytest
@@ -34,7 +38,7 @@ steps:
     id: 'push-backend'
     args:
       - 'push'
-      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:$COMMIT_SHA'
     waitFor: ['build-backend']
 
   # 4. Deploy Backend
@@ -70,6 +74,10 @@ steps:
     args:
       - '-c'
       - |
+        if [ "$_SKIP_TESTS" = "true" ]; then
+          echo "Skipping linting as requested."
+          exit 0
+        fi
         npm install
         npm run lint
 
@@ -90,7 +98,7 @@ steps:
     id: 'push-frontend'
     args:
       - 'push'
-      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:$COMMIT_SHA'
     waitFor: ['build-frontend']
 
   # 8. Deploy Frontend
@@ -124,6 +132,10 @@ steps:
     args:
       - '-c'
       - |
+        if [ "$_SKIP_TESTS" = "true" ]; then
+          echo "Skipping linting as requested."
+          exit 0
+        fi
         npm install
         npm run lint
 
@@ -144,7 +156,7 @@ steps:
     id: 'push-admin'
     args:
       - 'push'
-      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin'
+      - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:$COMMIT_SHA'
     waitFor: ['build-admin']
 
   # 12. Deploy Admin
@@ -173,6 +185,9 @@ images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/backend:latest'
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/frontend:latest'
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/erp-images-lolkids/admin:latest'
+
+substitutions:
+  _SKIP_TESTS: 'false'
 
 options:
   logging: CLOUD_LOGGING_ONLY
