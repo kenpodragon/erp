@@ -53,7 +53,7 @@ def test_debug_routes(client: TestClient):
 def test_admin_ping_unauthorized(client: TestClient):
     # No auth provided
     response = client.get("/api/admin/ping")
-    assert response.status_code == 403 # FastAPI default for missing security dependency
+    assert response.status_code == 401 # Backend returns 401 for missing/invalid token
 
 def test_admin_ping_authorized(client: TestClient):
     def override_get_current_admin():

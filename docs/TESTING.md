@@ -15,10 +15,10 @@ We employ a three-tier testing approach to ensure stability across the stack:
 
 | Layer | Framework | Location | Command |
 | :--- | :--- | :--- | :--- |
-| **Backend** | `pytest` | `/backend/tests/` | `docker-compose run --rm backend-test` |
-| **Frontend** | `Vitest` + `RTL` | `/frontend/src/**/*.test.tsx` | `docker-compose run --rm frontend-test` |
-| **Admin** | `Vitest` + `RTL` | `/admin/src/**/*.test.tsx` | `docker-compose run --rm admin-test` |
-| **E2E** | `Playwright` | `/testing/*.spec.ts` | `docker-compose run --rm e2e-test` |
+| **Backend** | `pytest` | `/backend/tests/` | `docker-compose -f testing/docker-compose-testing.yaml run --rm backend-test` |
+| **Frontend** | `Vitest` + `RTL` | `/frontend/src/**/*.test.tsx` | `docker-compose -f testing/docker-compose-testing.yaml run --rm frontend-test` |
+| **Admin** | `Vitest` + `RTL` | `/admin/src/**/*.test.tsx` | `docker-compose -f testing/docker-compose-testing.yaml run --rm admin-test` |
+| **E2E** | `Playwright` | `/testing/*.spec.ts` | `docker-compose -f testing/docker-compose-testing.yaml run --rm e2e-test` |
 
 ---
 
@@ -62,15 +62,16 @@ We employ a three-tier testing approach to ensure stability across the stack:
 
 ### Unified Runner (Recommended)
 This is the easiest way to verify the entire system before a push. It starts the services, runs all suites, and cleans up.
--   **Windows:** `testingun_tests.bat`
+-   **Windows:** `testing
+un_tests.bat`
 -   **Linux/Mac:** `testing/run_tests.sh`
 
 ### Individual Suites
-You can run specific tests using Docker Compose without starting the whole stack:
--   **Backend:** `docker-compose run --rm backend-test`
--   **Frontend:** `docker-compose run --rm frontend-test`
--   **Admin:** `docker-compose run --rm admin-test`
--   **E2E:** `docker-compose run --rm e2e-test`
+You can run specific tests using the dedicated testing compose file:
+-   **Backend:** `docker-compose -f testing/docker-compose-testing.yaml run --rm backend-test`
+-   **Frontend:** `docker-compose -f testing/docker-compose-testing.yaml run --rm frontend-test`
+-   **Admin:** `docker-compose -f testing/docker-compose-testing.yaml run --rm admin-test`
+-   **E2E:** `docker-compose -f testing/docker-compose-testing.yaml run --rm e2e-test`
 
 ---
 
