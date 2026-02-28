@@ -22,14 +22,25 @@ interface PlayerProfile {
   avatar_preset_key: string | null;
   custom_avatar_url: string | null;
   terms_accepted_at: string | null;
-  uid?: string; // Add this for compatibility with the verified log line
+  uid?: string;
+}
+
+interface Character {
+  id: number;
+  character_name: string;
+  level: number;
+  strength: number | null;
+  agility: number | null;
+  intelligence: number | null;
+  created_at: string;
+  class: { id: number; name: string; lore_blurb: string | null; base_strength: number; base_agility: number; base_intelligence: number; sprite_key: string | null; is_available: boolean } | null;
 }
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
-  // Use state initializer to avoid synchronous setState in useEffect
   const [authEnabled] = useState(() => !!auth)
   const [backendUser, setBackendUser] = useState<PlayerProfile | null>(null)
+  const [character, setCharacter] = useState<Character | null>(null)
   const [backendError, setBackendError] = useState<string | null>(null)
   const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
@@ -56,15 +67,19 @@ function App() {
   }, [API_URL])
 
   const verifyUserWithBackend = useCallback(async () => {
-    // First, ensure the user is registered/logged in with the backend
     try {
       const loginRes = await api.post('/api/auth/login')
       if (!loginRes.ok) {
         setBackendError(`Backend login failed: ${loginRes.status}`)
         return
       }
+      const loginData = await loginRes.json()
+      if (loginData.characters && loginData.characters.length > 0) {
+        setCharacter(loginData.characters[0])
+      } else {
+        setCharacter(null)
+      }
 
-      // Now fetch the full profile
       const res = await api.get('/api/players/me')
       if (res.ok) {
         const data = await res.json()
@@ -90,6 +105,7 @@ function App() {
       setUser(currentUser)
       setBackendUser(null)
       setBackendError(null)
+      setCharacter(null)
 
       if (currentUser) {
         verifyUserWithBackend()
@@ -120,6 +136,7 @@ function App() {
       await signOut(auth)
       setBackendUser(null)
       setBackendError(null)
+      setCharacter(null)
     }
   }
 
@@ -127,52 +144,47 @@ function App() {
     <div className="App">
       <h1>ERP Frontend: Hello World</h1>
 
-      <div className="card" style={{ border: '1px solid #444', padding: '20px', borderRadius: '10px', marginBottom: '10px' }}>
-        <h3>System Status:</h3>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-          <p>
-            <strong>API:</strong> {apiMessage === 'Connecting...' ? '...' : (apiMessage !== 'Offline' ?
-              <span style={{ color: '#4caf50' }}>● Online</span> :
-              <span style={{ color: '#ff4444' }}>● Offline</span>
-            )}
-          </p>
-          <p>
-            <strong>Database:</strong> {health ? (health.database === 'connected' ?
-              <span style={{ color: '#4caf50' }}>● Online</span> :
-              <span style={{ color: '#ff4444' }}>● Offline</span>
-            ) : '...'}
-          </p>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '4px 10px', marginBottom: '8px', border: '1px solid #333', borderRadius: '6px', fontSize: '0.75rem', color: '#888' }}>
+        <span style={{ fontWeight: 600, color: '#555' }}>Status</span>
+        <span>
+          API{' '}
+          {apiMessage === 'Connecting...' ? <span style={{ color: '#888' }}>…</span> : (apiMessage !== 'Offline'
+            ? <span style={{ color: '#4caf50' }}>●</span>
+            : <span style={{ color: '#ff4444' }}>●</span>
+          )}
+        </span>
+        <span>
+          DB{' '}
+          {health ? (health.database === 'connected'
+            ? <span style={{ color: '#4caf50' }}>●</span>
+            : <span style={{ color: '#ff4444' }}>●</span>
+          ) : <span style={{ color: '#888' }}>…</span>}
+        </span>
       </div>
 
       <div className="card" style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
-        <h2>SSO Login Test</h2>
-
         {!authEnabled ? (
           <p style={{ color: 'orange' }}>Firebase configuration missing. Check your .env file.</p>
         ) : user ? (
           <div>
-            <p>Welcome, <strong>{user.email}</strong></p>
-            {backendUser && (
-              <>
-                <p style={{ color: '#4caf50', fontSize: '0.85em' }}>
-                  Backend verified (uid: {backendUser.id || backendUser.firebase_uid})
-                </p>
-                <ProfileDashboard player={backendUser} onRefresh={verifyUserWithBackend} />
-              </>
+            {backendUser ? (
+              <ProfileDashboard
+                player={backendUser}
+                character={character}
+                onRefresh={verifyUserWithBackend}
+                onCharacterCreated={(c) => setCharacter(c)}
+                onCharacterDeleted={() => setCharacter(null)}
+                onLogout={handleLogout}
+              />
+            ) : backendError ? (
+              <p style={{ color: '#ff4444', fontSize: '0.85em' }}>Error: {backendError}</p>
+            ) : (
+              <p style={{ color: '#aaa' }}>Loading profile…</p>
             )}
-            {backendError && (
-              <p style={{ color: '#ff4444', fontSize: '0.85em' }}>
-                Backend: {backendError}
-              </p>
-            )}
-            <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white', marginTop: '1rem' }}>
-              Logout
-            </button>
           </div>
         ) : (
           <div>
-            <p>User is not logged in.</p>
+            <p>Sign in to begin your ascent.</p>
             <button onClick={handleLogin}>Login with Google</button>
           </div>
         )}

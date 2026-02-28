@@ -3,10 +3,16 @@ import { api } from '../api';
 
 interface AliasEditorProps {
   currentAlias: string | null;
+  displayName: string | null;
   onSave: (newAlias: string) => void;
 }
 
-export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, onSave }) => {
+/**
+ * Inline alias editor — renders as "{name} ✏️" when idle.
+ * Clicking the pencil icon opens an inline input with debounced validation.
+ */
+export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, displayName, onSave }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [alias, setAlias] = useState(currentAlias || '');
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +29,11 @@ export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, onSave }
       setError(null);
       return;
     }
-    
     if (value.length < 3) {
       setIsAvailable(false);
       setError('Too short (min 3 chars)');
       return;
     }
-
     setIsValidating(true);
     try {
       const res = await api.get(`/api/players/check-alias?alias=${encodeURIComponent(value)}`);
@@ -44,20 +48,34 @@ export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, onSave }
   }, [currentAlias]);
 
   useEffect(() => {
+    if (!isEditing) return;
     const timer = setTimeout(() => {
       if (alias) checkAvailability(alias);
     }, 500);
     return () => clearTimeout(timer);
-  }, [alias, checkAvailability]);
+  }, [alias, isEditing, checkAvailability]);
+
+  const handleEdit = () => {
+    setAlias(currentAlias || '');
+    setError(null);
+    setIsAvailable(currentAlias ? true : false);
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setAlias(currentAlias || '');
+    setError(null);
+    setIsEditing(false);
+  };
 
   const handleSave = async () => {
     if (!isAvailable || isSaving) return;
-    
     setIsSaving(true);
     try {
       const res = await api.patch('/api/players/me', { alias });
       if (res.ok) {
         onSave(alias);
+        setIsEditing(false);
       } else {
         const data = await res.json();
         setError(data.detail || 'Failed to save alias');
@@ -69,11 +87,27 @@ export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, onSave }
     }
   };
 
+  const shown = currentAlias || displayName || 'Ascendant';
+
+  if (!isEditing) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <h2 style={{ margin: 0, color: '#b8860b' }}>{shown}</h2>
+        <button
+          onClick={handleEdit}
+          title="Edit display name"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '2px 4px', lineHeight: 1, color: '#888' }}
+          aria-label="Edit alias"
+        >
+          ✏️
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="profile-section">
-      <h3>Identity</h3>
-      <div className="form-group">
-        <label>Display Name (Alias)</label>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
         <input
           type="text"
           className="form-control"
@@ -81,20 +115,29 @@ export const AliasEditor: React.FC<AliasEditorProps> = ({ currentAlias, onSave }
           onChange={(e) => setAlias(e.target.value)}
           placeholder="Enter your hero name..."
           maxLength={20}
+          autoFocus
+          style={{ maxWidth: '220px' }}
         />
-        {isValidating && <div className="validation-msg">Checking...</div>}
-        {error && <div className="validation-msg error">{error}</div>}
-        {isAvailable && alias !== currentAlias && !isValidating && (
-          <div className="validation-msg success">Alias available!</div>
-        )}
+        <button
+          className="btn-primary"
+          onClick={handleSave}
+          disabled={!isAvailable || alias === currentAlias || isSaving || isValidating}
+          style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
+        >
+          {isSaving ? 'Saving…' : 'Save'}
+        </button>
+        <button
+          onClick={handleCancel}
+          style={{ background: 'none', border: '1px solid #555', color: '#aaa', borderRadius: '4px', cursor: 'pointer', padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
+        >
+          Cancel
+        </button>
       </div>
-      <button 
-        className="btn-primary" 
-        onClick={handleSave}
-        disabled={!isAvailable || alias === currentAlias || isSaving || isValidating}
-      >
-        {isSaving ? 'Saving...' : 'Update Alias'}
-      </button>
+      {isValidating && <div className="validation-msg" style={{ marginTop: '4px' }}>Checking…</div>}
+      {error && <div className="validation-msg error" style={{ marginTop: '4px' }}>{error}</div>}
+      {isAvailable && alias !== currentAlias && !isValidating && !error && (
+        <div className="validation-msg success" style={{ marginTop: '4px' }}>Alias available!</div>
+      )}
     </div>
   );
 };

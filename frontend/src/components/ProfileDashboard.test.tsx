@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProfileDashboard } from './ProfileDashboard';
 
-// Mock child components to simplify integration test
 vi.mock('./AliasEditor', () => ({
   AliasEditor: () => <div data-testid="alias-editor">Alias Editor</div>
 }));
@@ -12,6 +11,17 @@ vi.mock('./AvatarManager', () => ({
 vi.mock('./AudioSettings', () => ({
   AudioSettings: () => <div data-testid="audio-settings">Audio Settings</div>
 }));
+vi.mock('./CharacterCreator', () => ({
+  CharacterCreator: () => <div data-testid="character-creator">Character Creator</div>
+}));
+
+const defaultProps = {
+  onRefresh: vi.fn(),
+  onCharacterCreated: vi.fn(),
+  onCharacterDeleted: vi.fn(),
+  onLogout: vi.fn(),
+  character: null,
+};
 
 describe('ProfileDashboard', () => {
   const mockPlayer = {
@@ -32,18 +42,23 @@ describe('ProfileDashboard', () => {
   };
 
   it('renders all profile sections', () => {
-    render(<ProfileDashboard player={mockPlayer} onRefresh={() => {}} />);
-    
+    render(<ProfileDashboard player={mockPlayer} {...defaultProps} />);
+
     expect(screen.getByText('test@example.com')).toBeTruthy();
     expect(screen.getByTestId('alias-editor')).toBeTruthy();
     expect(screen.getByTestId('avatar-manager')).toBeTruthy();
     expect(screen.getByTestId('audio-settings')).toBeTruthy();
+    expect(screen.getByTestId('character-creator')).toBeTruthy();
+  });
+
+  it('shows logout button at the top', () => {
+    render(<ProfileDashboard player={mockPlayer} {...defaultProps} />);
+    expect(screen.getByRole('button', { name: /Logout/i })).toBeTruthy();
   });
 
   it('shows terms of service button if not accepted', () => {
     const playerNoTerms = { ...mockPlayer, terms_accepted_at: null };
-    render(<ProfileDashboard player={playerNoTerms} onRefresh={() => {}} />);
-    
+    render(<ProfileDashboard player={playerNoTerms} {...defaultProps} />);
     expect(screen.getByText(/Accept Terms of Service/i)).toBeTruthy();
   });
 });

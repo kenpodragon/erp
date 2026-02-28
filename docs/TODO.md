@@ -55,25 +55,28 @@ This document tracks the initial setup and development phases for the Elysium Ri
     - [x] Add "Terms of Service" view/re-acceptance if needed.
     - [x] Ensure mobile responsiveness and dark fantasy aesthetic consistency.
     - [x] Add loading skeletons and "Saved" confirmation toasts for all profile updates.
-    - [ ] Create tests for UI/UX (add to current test suite).
+    - [x] Create tests for UI/UX (add to current test suite).
 
-- [ ] **7.4 — Character System API** *(RECS §4.3, FR-4.8 through FR-4.11)*
-  - [ ] Create SQLModel models for `character_classes` and `player_characters`.
-  - [ ] `GET /api/game/classes` — public endpoint, return available classes (where `is_available = true`).
-  - [ ] `POST /api/players/me/characters` — validate name (uniqueness, format, profanity), check MVP 1-character limit (409 if exists), copy base stats from class, create character record. Also initialize `player_progress` (Book 1, Ch 1, Scene 1, Beat 1) and `player_essence` (balance=0, rate=0).
-  - [ ] `GET /api/players/me/characters` — list player's characters with class info.
-  - [ ] `GET /api/players/me/characters/{character_id}` — full detail with stats, class, progress summary, essence balance. Verify ownership.
-  - [ ] Create the basic interfaces for these on the frontend.
-  - [ ] Create testing for UI/UX and API (add to current test suite).
+- [x] **7.4 — Character System API** *(RECS §4.3, FR-4.8 through FR-4.11)*
+  - [x] Create SQLModel models for `character_classes` and `player_characters` (pre-existing), plus new `PlayerProgress` and `PlayerEssence` models (`db/003_character_state.sql`).
+  - [x] `GET /api/game/classes` — public endpoint, return available classes (where `is_available = true`).
+  - [x] `POST /api/players/me/characters` — validate name (uniqueness, format, profanity), check MVP 1-character limit (409 if exists), copy base stats from class, create character record. Also initialize `player_progress` (Book 1, Ch 1, Scene 1, Beat 1) and `player_essence` (balance=0, rate=0).
+  - [x] `GET /api/players/me/characters` — list player's characters with class info.
+  - [x] `GET /api/players/me/characters/{character_id}` — full detail with stats, class, progress summary, essence balance. Verify ownership.
+  - [x] Create the basic interfaces for these on the frontend (`CharacterCreator.tsx` — class selection cards with stat bars, name input, integrated into App.tsx).
+  - [x] Create testing for UI/UX and API (backend: `tests/test_characters.py` — 14 tests; frontend: `CharacterCreator.test.tsx` — 7 tests).
+  - [ ] Wonky character delete. The name of the character isn't shown, the selected class and stats aren't there either.
 
 - [ ] **7.5 — Frontend: Splash Page** *(RECS §5.1, FR-5.1 through FR-5.7)*
   - [ ] Replace current Hello World dashboard at `/` with Splash page.
-  - [ ] Dark fantasy design: animated "Elysium Rising" title, atmospheric background, tagline from Book 1. (Use book styling from cover image from book).
+  - [ ] Dark fantasy design: animated "Elysium Rising" title, atmospheric background, tagline from Book 1. (Use book styling from cover image from book `NewCover04112025.jpg`).
   - [ ] "Begin Your Ascent" CTA → triggers Firebase Google SSO popup.
   - [ ] Below-fold content: "About the Game", "The Story" teaser, "How It Works" (3-4 bullet points).
   - [ ] Footer: Terms of Service, Privacy Policy, Contact Support links.
   - [ ] Auto-redirect to `/home` if already authenticated (FR-5.6).
+  - [ ] Navigation appears to all users (users can go to the home page, about page, all the other pages etc...). Login button at the top (to login, or if you're logged in to log out). When logged in should have a profile button so you can jump over to the profile page.
   - [ ] Mobile-responsive down to 360px.
+  - [ ] Create testing for UI/UX and API
 
 - [ ] **7.6 — Frontend: Onboarding Flow** *(RECS §5.2, FR-5.8 through FR-5.26)*
   - [ ] Post-auth routing logic: call `POST /api/auth/login` → check `is_new_player` + character existence → route accordingly (FR-5.8).

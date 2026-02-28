@@ -147,9 +147,12 @@ class AIProvider:
         except anthropic.RateLimitError as e:
             raise ProviderRateLimitError(f"Claude rate limit: {e}") from e
         except anthropic.APIStatusError as e:
-            if e.status_code in (429, 529):
-                raise ProviderRateLimitError(f"Claude quota error: {e}") from e
-            raise
+            # Handle 400 (e.g. low credit), 401 (auth), 429 (rate), 529 (overloaded) etc.
+            # We want to switch to fallback for any provider-side failure that isn't a 
+            # malformed request *on our end* that would also fail on Gemini.
+            # However, "low credit" is a 400 but it IS a provider-side failure.
+            logger.warning("Claude API status error (%d): %s", e.status_code, e.message)
+            raise ProviderRateLimitError(f"Claude API error {e.status_code}: {e.message}") from e
 
         text = response.content[0].text
         tokens = response.usage.input_tokens + response.usage.output_tokens
@@ -185,8 +188,9 @@ class AIProvider:
             )
         except Exception as e:
             err_str = str(e).lower()
-            if "quota" in err_str or "rate" in err_str or "429" in err_str:
-                raise ProviderRateLimitError(f"Gemini quota error: {e}") from e
+            # Catch common quota/rate/auth/overload errors for Gemini
+            if any(term in err_str for term in ["quota", "rate", "429", "503", "500", "limit", "credit", "balance"]):
+                raise ProviderRateLimitError(f"Gemini provider error: {e}") from e
             raise
 
         # The new SDK handles Pydantic validation if response_schema is passed
