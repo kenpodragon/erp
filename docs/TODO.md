@@ -8,27 +8,6 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 
-- [ ] **7.9 — Support Ticket System** *(RECS §6, FR-6.1 through FR-6.20)*
-  - [ ] Create SQLModel models for `support_tickets`, `support_replies`, `support_attachments`.
-  - [ ] **Player API:**
-    - [ ] `POST /api/support/tickets` — create ticket (category, subject, description).
-    - [ ] `GET /api/support/tickets` — list own tickets (paginated, filterable by status).
-    - [ ] `GET /api/support/tickets/{id}` — ticket detail + replies (verify ownership).
-    - [ ] `POST /api/support/tickets/{id}/replies` — add reply (text + optional attachments).
-    - [ ] `PATCH /api/support/tickets/{id}/reopen` — reopen resolved/closed ticket with reason.
-    - [ ] `POST /api/support/tickets/{id}/attachments` — upload (max 3 files, 5MB each, JPEG/PNG/GIF/PDF/TXT).
-    - [ ] `GET /api/support/attachments/{id}` — download (authorized access).
-  - [ ] **Admin API:**
-    - [ ] `GET /api/admin/support/tickets` — all tickets (paginated, filterable by status/category/priority/assigned/date).
-    - [ ] `PATCH /api/admin/support/tickets/{id}` — update priority, status, assignment.
-    - [ ] `POST /api/admin/support/tickets/{id}/notes` — internal note (admin-only, not visible to player).
-  - [ ] **Player Frontend:** "My Tickets" list, Submit Ticket form, Ticket Detail with reply chain.
-  - [ ] **Admin Frontend:** Ticket Queue (sortable/filterable), Ticket Detail with priority/status/assignment controls, internal notes, quick actions (Resolve+Reply, Close, Escalate).
-  - [ ] Auto-close logic: tickets `resolved` for 7+ days → close automatically (cron or on-access).
-  - [ ] Add UI/UX for the pieces. If not logged in see the email request support form. If logged in see the support center.
-  - [ ] Create testing for UI/UX and API.
-
-
 - [ ] **7.10 — Admin: User Management** *(RECS §7, FR-7.1 through FR-7.14)*
   - [ ] **Admin API:**
     - [ ] `GET /api/admin/players` — paginated player list (search by alias/email/UID, filter by status/has_character/date, sortable).

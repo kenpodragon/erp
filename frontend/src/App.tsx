@@ -10,6 +10,7 @@ import { TermsPage } from './components/TermsPage'
 import { PrivacyPage } from './components/PrivacyPage'
 import { ProfileDashboard } from './components/ProfileDashboard'
 import { OnboardingFlow } from './components/OnboardingFlow'
+import { SupportCenter } from './components/SupportCenter'
 import './App.css'
 
 interface HealthData {
@@ -83,40 +84,21 @@ Full license text available at: https://github.com/kenpodragon/erp/blob/main/LIC
   </div>
 )
 
-const SupportPage = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
+const GuestSupportPage = () => (
   <div className="page">
     <div className="page-hero page-hero-compact">
       <h1 className="page-title">Contact Support</h1>
     </div>
     <div className="page-content">
       <div className="profile-section" style={{ maxWidth: '600px', margin: '0 auto' }}>
-        {isLoggedIn ? (
-          <div>
-            <h3>Support Center</h3>
-            <p>Support ticket system is coming soon. For now, please email us.</p>
-            <p><strong>Email:</strong> <a href="mailto:support@does-god-exist.org">support@does-god-exist.org</a></p>
-          </div>
-        ) : (
-          <div>
-            <h3>Guest Support</h3>
-            <p>Please use the form below to contact us.</p>
-            <form onSubmit={(e) => { e.preventDefault(); alert("Sent!"); }}>
-              <div className="form-group">
-                <label>Email Address</label>
-                <input type="email" className="form-control" required />
-              </div>
-              <div className="form-group">
-                <label>Subject</label>
-                <input type="text" className="form-control" required />
-              </div>
-              <div className="form-group">
-                <label>Message</label>
-                <textarea className="form-control" style={{ height: '150px' }} required></textarea>
-              </div>
-              <button type="submit" className="btn-primary">Send Message</button>
-            </form>
-          </div>
-        )}
+        <h3>Need Help?</h3>
+        <p>Log in to access the full Support Center where you can submit and track tickets.</p>
+        <p>Or email us directly:</p>
+        <p>
+          <a href="mailto:support@does-god-exist.org" style={{ color: '#b8860b', fontWeight: 'bold' }}>
+            support@does-god-exist.org
+          </a>
+        </p>
       </div>
     </div>
   </div>
@@ -403,7 +385,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/license" element={<LicensePage />} />
-        <Route path="/support" element={<SupportPage isLoggedIn={isLoggedIn} />} />
+        <Route path="/support" element={isLoggedIn ? <SupportCenter /> : <GuestSupportPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </div>

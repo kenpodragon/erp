@@ -1,11 +1,15 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npx vitest run)",
-      "Bash(npx vitest run src/App.test.tsx)",
-      "Bash(npx vitest run src/components/AliasEditor.test.tsx)",
-      "Bash(python -m pytest tests/test_config.py -v)",
-      "Bash(python -m pytest tests/ -v)"
-    ]
+     "allow": [
+      "Read",
+      "Write",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(python *)",
+      "Bash(grep *)",
+      "Bash(pip *)",
+      "Bash(docker *)"
+    ],
+    "deny": []
   }
 }

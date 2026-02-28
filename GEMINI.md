@@ -1,5 +1,30 @@
-# Workspace Mandates
+# Gemini CLI Project Mandates & Permissions
 
-You MUST read and strictly adhere to the instructions, architecture, and testing mandates defined in `AGENTS.md`. This file is your primary operational manual for the ERP project.
+You MUST strictly adhere to these instructions. This file takes precedence over general defaults.
 
-@AGENTS.md
+## 🛡️ Core Permissions
+- **Read Access:** Full access to `/backend`, `/frontend`, `/admin`, `/db`, `/docs`, `/infra`, `/init`, and `/testing`.
+- **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
+- **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/init`, and `/testing`.
+- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/DB_MIGRATIONS.md`.
+- **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
+
+## 🤖 Agent Operating Procedures
+1. **Research First:** Always check `../Books/BOOKS.md` before designing a character or enemy to ensure lore accuracy.
+2. **Surgical Updates:** Maintain existing formatting and checkbox status in `TODO.md` and requirements.
+3. **Security:** NEVER print, log, or commit secrets (STRIPE_*, FIREBASE_*, DB_*).
+4. **Validation:** Every feature/bug fix MUST have a corresponding test.
+5. **Testing First:** Run `testing/run_tests.bat` (Win) or `testing/run_tests.sh` (Linux) before concluding a task.
+
+## 🧪 Testing Commands
+- **Backend:** `pytest` in `/backend`
+- **Frontend/Admin:** `npm test` in respective directories.
+- **System-wide:** `testing/run_tests.bat` (Windows)
+
+## 📚 Reference Documentation
+1. `AGENTS.md`: Project-wide mission control.
+2. `@docs/TESTING.md`: Detailed testing protocols.
+3. `@docs/ARCHITECTURE.md`: Technical stack details.
+
+---
+*For any ambiguity or high-risk operation, ask for confirmation first.*

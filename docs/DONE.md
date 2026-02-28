@@ -31,6 +31,26 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Add UI/UX for the pieces. 
   - [x] Create testing for UI/UX and API.
 
+- [x] **7.9 — Support Ticket System** *(RECS §6, FR-6.1 through FR-6.20)*
+  - [x] Create SQLModel models for `support_tickets`, `support_replies`, `support_attachments`.
+  - [x] **Player API:**
+    - [x] `POST /api/support/tickets` — create ticket (category, subject, description).
+    - [x] `GET /api/support/tickets` — list own tickets (paginated, filterable by status).
+    - [x] `GET /api/support/tickets/{id}` — ticket detail + replies (verify ownership).
+    - [x] `POST /api/support/tickets/{id}/replies` — add reply (text).
+    - [x] `PATCH /api/support/tickets/{id}/reopen` — reopen resolved/closed ticket with reason.
+  - [x] **Admin API:**
+    - [x] `GET /api/admin/support/tickets` — all tickets (paginated, filterable by status/category/priority/assigned/date).
+    - [x] `GET /api/admin/support/tickets/{id}` — ticket detail with all replies + internal notes.
+    - [x] `PATCH /api/admin/support/tickets/{id}` — update priority, status, assignment.
+    - [x] `POST /api/admin/support/tickets/{id}/replies` — admin reply (visible to player).
+    - [x] `POST /api/admin/support/tickets/{id}/notes` — internal note (admin-only, not visible to player).
+  - [x] **Player Frontend:** "My Tickets" list, Submit Ticket form, Ticket Detail with reply chain.
+  - [x] **Admin Frontend:** Ticket Queue (sortable/filterable), Ticket Detail with priority/status/assignment controls, internal notes, quick actions (Resolve+Reply, Close, Escalate).
+  - [x] Auto-close logic: tickets `resolved` for 7+ days → close automatically (on-access).
+  - [x] Add UI/UX for the pieces. If not logged in see the email request support form (mailto link). If logged in see the support center.
+  - [x] Create testing for UI/UX and API (23 backend + 6 frontend + 4 admin tests).
+
 ---
 *Updated: 2026-02-27*
 

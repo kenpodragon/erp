@@ -1,0 +1,358 @@
+/* Support Center Styles — dark fantasy aesthetic */
+
+.support-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #333;
+  color: #e0e0e0;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.support-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #444;
+  padding-bottom: 1rem;
+}
+
+.support-header h2 {
+  margin: 0;
+  color: #b8860b;
+  font-family: 'Garamond', serif;
+}
+
+.support-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.support-filter-select {
+  max-width: 200px;
+}
+
+.support-count {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.support-error {
+  color: #ff4444;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.support-loading {
+  color: #888;
+  text-align: center;
+  padding: 2rem;
+}
+
+.support-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+/* Ticket List */
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #242424;
+  border-radius: 6px;
+  border-left: 3px solid #444;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ticket-row:hover {
+  border-left-color: #b8860b;
+  background: #2a2a2a;
+}
+
+.ticket-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-subject {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticket-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.ticket-date {
+  color: #666;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* Status badges */
+.ticket-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-open { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+.status-in_progress { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+.status-resolved { background: rgba(100, 108, 255, 0.2); color: #646cff; }
+.status-closed { background: rgba(136, 136, 136, 0.2); color: #888; }
+
+.ticket-category-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  background: rgba(184, 134, 11, 0.15);
+  color: #b8860b;
+  white-space: nowrap;
+}
+
+/* New Ticket Form */
+.ticket-form {
+  max-width: 600px;
+}
+
+.ticket-textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.char-count {
+  color: #666;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+/* Ticket Detail */
+.ticket-detail-meta {
+  background: #242424;
+  border-radius: 6px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #b8860b;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+}
+
+.meta-label {
+  color: #888;
+  font-size: 0.85rem;
+  min-width: 80px;
+}
+
+/* Reply Chain */
+.reply-chain {
+  margin-bottom: 1.5rem;
+}
+
+.reply-chain h3 {
+  color: #b8860b;
+  font-family: 'Garamond', serif;
+  margin-bottom: 1rem;
+}
+
+.reply-bubble {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.reply-player {
+  background: #242424;
+  border-left: 3px solid #646cff;
+}
+
+.reply-admin {
+  background: #1e2a1e;
+  border-left: 3px solid #4caf50;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.reply-author {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.reply-player .reply-author { color: #646cff; }
+.reply-admin .reply-author { color: #4caf50; }
+
+.reply-time {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.reply-content {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* Reply Form */
+.reply-form {
+  margin-top: 1rem;
+}
+
+.reply-form .btn-primary {
+  margin-top: 0.75rem;
+}
+
+/* Reopen Section */
+/* New activity indicator */
+.ticket-row-new {
+  border-left: 3px solid #b8860b;
+}
+
+.new-activity-dot {
+  color: #b8860b;
+  font-size: 0.6rem;
+  margin-right: 0.4rem;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Close ticket */
+.close-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.close-form {
+  margin-top: 0.5rem;
+}
+
+.close-form .form-control {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.close-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.btn-close-ticket {
+  background: rgba(136, 136, 136, 0.15);
+  color: #aaa;
+  border: 1px solid rgba(136, 136, 136, 0.3);
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-close-ticket:hover {
+  background: rgba(136, 136, 136, 0.25);
+  color: #ccc;
+}
+
+.reopen-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.reopen-form {
+  margin-top: 0.5rem;
+}
+
+.reopen-form .form-control {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.reopen-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Buttons */
+.btn-secondary {
+  background: transparent;
+  color: #b8860b;
+  border: 1px solid #b8860b;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: rgba(184, 134, 11, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .support-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .ticket-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .ticket-row-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .support-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+}

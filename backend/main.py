@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from sqlmodel import Session, select, text
+from sqlalchemy import func
 from fastapi.encoders import jsonable_encoder
 
 # Load from environment (handled by Cloud Run or local shell)
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 from db import get_session
 from auth import init_firebase, get_current_player, get_current_admin, get_client_ip
-from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence, ServerConfig, AdminAuditLog
+from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence, ServerConfig, AdminAuditLog, SupportTicket, SupportReply
 from utils import load_profanity_blocklist, is_profane
 import config_cache
 from audit import write_audit_log
@@ -644,6 +645,332 @@ async def get_character(
 
 
 # ---------------------------------------------------------------------------
+# Support Ticket endpoints (player-facing)
+# ---------------------------------------------------------------------------
+
+VALID_TICKET_CATEGORIES = {"bug_report", "account_issue", "payment_issue", "feedback", "other"}
+
+
+def _auto_close_ticket(ticket: SupportTicket, session: Session) -> None:
+    """Auto-close a resolved ticket if 7+ days have passed since resolved_at."""
+    if ticket.status == "resolved" and ticket.resolved_at:
+        delta = datetime.now(timezone.utc) - ticket.resolved_at.replace(tzinfo=timezone.utc) if ticket.resolved_at.tzinfo is None else datetime.now(timezone.utc) - ticket.resolved_at
+        if delta.days >= 7:
+            ticket.status = "closed"
+            ticket.closed_at = datetime.now(timezone.utc)
+            ticket.updated_at = datetime.now(timezone.utc)
+            session.add(ticket)
+            session.commit()
+            session.refresh(ticket)
+
+
+@app.post("/api/support/tickets")
+async def create_ticket(
+    body: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    Player creates a support ticket.
+    FR-6.2, FR-6.11
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    category = body.get("category", "").strip()
+    subject = body.get("subject", "").strip()
+    description = body.get("description", "").strip()
+
+    # Validate category
+    if category not in VALID_TICKET_CATEGORIES:
+        raise HTTPException(status_code=422, detail=f"Category must be one of: {', '.join(sorted(VALID_TICKET_CATEGORIES))}")
+
+    # Validate subject
+    if len(subject) < 5 or len(subject) > 100:
+        raise HTTPException(status_code=422, detail="Subject must be between 5 and 100 characters")
+
+    # Validate description
+    if len(description) < 20 or len(description) > 5000:
+        raise HTTPException(status_code=422, detail="Description must be between 20 and 5000 characters")
+
+    now = datetime.now(timezone.utc)
+
+    ticket = SupportTicket(
+        player_id=player.id,
+        category=category,
+        priority="normal",
+        subject=subject,
+        status="open",
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    # Create initial reply with the description
+    reply = SupportReply(
+        ticket_id=ticket.id,
+        author_type="player",
+        author_id=player.id,
+        content=description,
+        is_internal_note=False,
+        created_at=now,
+    )
+    session.add(reply)
+    session.commit()
+    session.refresh(ticket)
+    session.refresh(reply)
+
+    return {
+        "ticket": ticket.model_dump(),
+        "reply": reply.model_dump(),
+    }
+
+
+@app.get("/api/support/tickets")
+async def list_my_tickets(
+    status: Optional[str] = None,
+    limit: int = 20,
+    offset: int = 0,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    List the authenticated player's support tickets (paginated).
+    FR-6.3, FR-6.12
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    query = select(SupportTicket).where(SupportTicket.player_id == player.id)
+    if status:
+        query = query.where(SupportTicket.status == status)
+    query = query.order_by(SupportTicket.updated_at.desc())
+
+    # Count total
+
+    count_query = select(func.count()).select_from(SupportTicket).where(SupportTicket.player_id == player.id)
+    if status:
+        count_query = count_query.where(SupportTicket.status == status)
+    total = session.exec(count_query).one()
+
+    tickets = session.exec(query.offset(offset).limit(limit)).all()
+
+    # Auto-close resolved tickets older than 7 days
+    for t in tickets:
+        _auto_close_ticket(t, session)
+
+    # Enrich with has_new_activity flag
+    results = []
+    for t in tickets:
+        td = t.model_dump()
+        # New activity = updated_at is newer than player_last_viewed_at (or never viewed)
+        td["has_new_activity"] = (
+            t.player_last_viewed_at is None or
+            (t.updated_at is not None and t.updated_at > t.player_last_viewed_at)
+        )
+        results.append(td)
+
+    return {
+        "tickets": results,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@app.get("/api/support/tickets/{ticket_id}")
+async def get_ticket_detail(
+    ticket_id: int,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    Ticket detail + replies (player view — no internal notes).
+    FR-6.4, FR-6.13
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket or ticket.player_id != player.id:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # Auto-close check
+    _auto_close_ticket(ticket, session)
+
+    # Mark as viewed by player
+    ticket.player_last_viewed_at = datetime.now(timezone.utc)
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    # Get replies (exclude internal notes)
+    replies = session.exec(
+        select(SupportReply)
+        .where(SupportReply.ticket_id == ticket_id)
+        .where(SupportReply.is_internal_note == False)
+        .order_by(SupportReply.created_at.asc())
+    ).all()
+
+    return {
+        "ticket": ticket.model_dump(),
+        "replies": [r.model_dump() for r in replies],
+    }
+
+
+@app.post("/api/support/tickets/{ticket_id}/replies")
+async def add_ticket_reply(
+    ticket_id: int,
+    body: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    Player adds a reply to their ticket.
+    FR-6.4, FR-6.14
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket or ticket.player_id != player.id:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status not in ("open", "in_progress"):
+        raise HTTPException(status_code=400, detail="Cannot reply to a ticket that is resolved or closed. Reopen it first.")
+
+    content = body.get("content", "").strip()
+    if len(content) < 20 or len(content) > 5000:
+        raise HTTPException(status_code=422, detail="Reply must be between 20 and 5000 characters")
+
+    now = datetime.now(timezone.utc)
+
+    reply = SupportReply(
+        ticket_id=ticket.id,
+        author_type="player",
+        author_id=player.id,
+        content=content,
+        is_internal_note=False,
+        created_at=now,
+    )
+    session.add(reply)
+
+    ticket.updated_at = now
+    session.add(ticket)
+    session.commit()
+    session.refresh(reply)
+
+    return reply.model_dump()
+
+
+@app.patch("/api/support/tickets/{ticket_id}/reopen")
+async def reopen_ticket(
+    ticket_id: int,
+    body: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    Player reopens a resolved or closed ticket.
+    FR-6.5, FR-6.15
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket or ticket.player_id != player.id:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status not in ("resolved", "closed"):
+        raise HTTPException(status_code=400, detail="Only resolved or closed tickets can be reopened")
+
+    reason = body.get("reason", "").strip()
+    if len(reason) < 10 or len(reason) > 500:
+        raise HTTPException(status_code=422, detail="Reopen reason must be between 10 and 500 characters")
+
+    now = datetime.now(timezone.utc)
+
+    ticket.status = "in_progress"
+    ticket.resolved_at = None
+    ticket.closed_at = None
+    ticket.updated_at = now
+    session.add(ticket)
+
+    # Add a reply with the reopen reason
+    reply = SupportReply(
+        ticket_id=ticket.id,
+        author_type="player",
+        author_id=player.id,
+        content=f"[Reopened] {reason}",
+        is_internal_note=False,
+        created_at=now,
+    )
+    session.add(reply)
+    session.commit()
+    session.refresh(ticket)
+    session.refresh(reply)
+
+    return {
+        "ticket": ticket.model_dump(),
+        "reply": reply.model_dump(),
+    }
+
+
+@app.patch("/api/support/tickets/{ticket_id}/close")
+async def close_ticket(
+    ticket_id: int,
+    body: dict,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """
+    Player closes their own ticket with an optional note.
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket or ticket.player_id != player.id:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status == "closed":
+        raise HTTPException(status_code=400, detail="Ticket is already closed")
+
+    now = datetime.now(timezone.utc)
+
+    note = body.get("note", "").strip()
+    if note:
+        if len(note) > 500:
+            raise HTTPException(status_code=422, detail="Closing note must be 500 characters or fewer")
+        reply = SupportReply(
+            ticket_id=ticket.id,
+            author_type="player",
+            author_id=player.id,
+            content=f"[Closed by player] {note}",
+            is_internal_note=False,
+            created_at=now,
+        )
+        session.add(reply)
+
+    ticket.status = "closed"
+    ticket.closed_at = now
+    ticket.updated_at = now
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    return {"ticket": ticket.model_dump()}
+
+
+# ---------------------------------------------------------------------------
 # Admin-authenticated endpoints (admin email + IP whitelist)
 # ---------------------------------------------------------------------------
 
@@ -807,6 +1134,284 @@ async def reset_config(
         "updated_at": config_row.updated_at.isoformat() if config_row.updated_at else None,
         "updated_by": config_row.updated_by,
     }
+
+
+# ---------------------------------------------------------------------------
+# Admin: Support Ticket endpoints
+# ---------------------------------------------------------------------------
+
+VALID_PRIORITIES = {"low", "normal", "high", "critical"}
+VALID_STATUSES = {"open", "in_progress", "resolved", "closed"}
+
+
+@app.get("/api/admin/support/tickets")
+async def admin_list_tickets(
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    priority: Optional[str] = None,
+    assigned_admin: Optional[str] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    limit: int = 20,
+    offset: int = 0,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: List all tickets with filters and pagination.
+    FR-6.7, FR-6.16
+    """
+    query = select(SupportTicket)
+
+    if status:
+        query = query.where(SupportTicket.status == status)
+    if category:
+        query = query.where(SupportTicket.category == category)
+    if priority:
+        query = query.where(SupportTicket.priority == priority)
+    if assigned_admin:
+        query = query.where(SupportTicket.assigned_admin == assigned_admin)
+
+    # Sorting
+    sort_col = getattr(SupportTicket, sort_by, SupportTicket.created_at)
+    if sort_order == "asc":
+        query = query.order_by(sort_col.asc())
+    else:
+        query = query.order_by(sort_col.desc())
+
+    # Count
+
+    count_q = select(func.count()).select_from(SupportTicket)
+    if status:
+        count_q = count_q.where(SupportTicket.status == status)
+    if category:
+        count_q = count_q.where(SupportTicket.category == category)
+    if priority:
+        count_q = count_q.where(SupportTicket.priority == priority)
+    if assigned_admin:
+        count_q = count_q.where(SupportTicket.assigned_admin == assigned_admin)
+    total = session.exec(count_q).one()
+
+    tickets = session.exec(query.offset(offset).limit(limit)).all()
+
+    # Enrich with player info + new activity flag
+    results = []
+    for t in tickets:
+        player = session.get(Player, t.player_id)
+        has_new = (
+            t.admin_last_viewed_at is None or
+            (t.updated_at is not None and t.updated_at > t.admin_last_viewed_at)
+        )
+        results.append({
+            **t.model_dump(),
+            "player_alias": player.alias if player else None,
+            "player_email": player.email if player else None,
+            "has_new_activity": has_new,
+        })
+
+    return {
+        "tickets": results,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@app.get("/api/admin/support/tickets/{ticket_id}")
+async def admin_get_ticket_detail(
+    ticket_id: int,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Full ticket detail with all replies (including internal notes).
+    FR-6.8
+    """
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # Mark as viewed by admin
+    ticket.admin_last_viewed_at = datetime.now(timezone.utc)
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    player = session.get(Player, ticket.player_id)
+
+    replies = session.exec(
+        select(SupportReply)
+        .where(SupportReply.ticket_id == ticket_id)
+        .order_by(SupportReply.created_at.asc())
+    ).all()
+
+    return {
+        "ticket": {
+            **ticket.model_dump(),
+            "player_alias": player.alias if player else None,
+            "player_email": player.email if player else None,
+            "player_id": ticket.player_id,
+        },
+        "replies": [r.model_dump() for r in replies],
+    }
+
+
+@app.patch("/api/admin/support/tickets/{ticket_id}")
+async def admin_update_ticket(
+    ticket_id: int,
+    body: dict,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Update ticket priority, status, assignment.
+    FR-6.8, FR-6.17
+    """
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+    changes = {}
+
+    if "priority" in body:
+        new_priority = body["priority"]
+        if new_priority not in VALID_PRIORITIES:
+            raise HTTPException(status_code=422, detail=f"Priority must be one of: {', '.join(sorted(VALID_PRIORITIES))}")
+        changes["priority"] = {"old": ticket.priority, "new": new_priority}
+        ticket.priority = new_priority
+
+    if "status" in body:
+        new_status = body["status"]
+        if new_status not in VALID_STATUSES:
+            raise HTTPException(status_code=422, detail=f"Status must be one of: {', '.join(sorted(VALID_STATUSES))}")
+        changes["status"] = {"old": ticket.status, "new": new_status}
+        ticket.status = new_status
+        if new_status == "resolved":
+            ticket.resolved_at = now
+        elif new_status == "closed":
+            ticket.closed_at = now
+
+    if "assigned_admin" in body:
+        changes["assigned_admin"] = {"old": ticket.assigned_admin, "new": body["assigned_admin"]}
+        ticket.assigned_admin = body["assigned_admin"]
+
+    ticket.updated_at = now
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    # Audit log for each type of change
+    for change_type, detail in changes.items():
+        write_audit_log(
+            session=session,
+            admin_email=admin_email,
+            action=f"ticket_{change_type}_changed",
+            target_type="ticket",
+            target_id=str(ticket_id),
+            details=detail,
+            ip_address=get_client_ip(request),
+        )
+
+    # Refresh after audit log commits
+    session.refresh(ticket)
+    return ticket.model_dump()
+
+
+@app.post("/api/admin/support/tickets/{ticket_id}/replies")
+async def admin_reply_to_ticket(
+    ticket_id: int,
+    body: dict,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin posts a reply visible to the player.
+    FR-6.8, FR-6.14
+    """
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    content = body.get("content", "").strip()
+    if not content:
+        raise HTTPException(status_code=422, detail="Reply content is required")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+
+    reply = SupportReply(
+        ticket_id=ticket.id,
+        author_type="admin",
+        author_email=admin_email,
+        content=content,
+        is_internal_note=False,
+        created_at=now,
+    )
+    session.add(reply)
+
+    ticket.updated_at = now
+    session.add(ticket)
+    session.commit()
+    session.refresh(reply)
+
+    return reply.model_dump()
+
+
+@app.post("/api/admin/support/tickets/{ticket_id}/notes")
+async def admin_add_internal_note(
+    ticket_id: int,
+    body: dict,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin adds an internal note (not visible to player).
+    FR-6.8, FR-6.18
+    """
+    ticket = session.get(SupportTicket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    content = body.get("content", "").strip()
+    if not content:
+        raise HTTPException(status_code=422, detail="Note content is required")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+
+    note = SupportReply(
+        ticket_id=ticket.id,
+        author_type="admin",
+        author_email=admin_email,
+        content=content,
+        is_internal_note=True,
+        created_at=now,
+    )
+    session.add(note)
+
+    ticket.updated_at = now
+    session.add(ticket)
+    session.commit()
+    session.refresh(note)
+
+    # Audit log
+    write_audit_log(
+        session=session,
+        admin_email=admin_email,
+        action="ticket_note_added",
+        target_type="ticket",
+        target_id=str(ticket_id),
+        details={"note_id": note.id},
+        ip_address=get_client_ip(request),
+    )
+
+    # Refresh after audit log commit
+    session.refresh(note)
+    return note.model_dump()
 
 
 if __name__ == "__main__":

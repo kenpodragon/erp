@@ -3,6 +3,7 @@ import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import './App.css'
 import ServerConfig from './pages/ServerConfig'
+import SupportTickets from './pages/SupportTickets'
 
 interface HealthData {
   status: string;
@@ -19,7 +20,7 @@ function App() {
   const [clientIp, setClientIp] = useState<string>('')
   const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
-  const [activePage, setActivePage] = useState<'dashboard' | 'config'>('dashboard')
+  const [activePage, setActivePage] = useState<'dashboard' | 'config' | 'support'>('dashboard')
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
   // Memoized to prevent re-creating arrays on every render (which would cause useCallback/useEffect loops).
@@ -136,6 +137,12 @@ function App() {
 
   const renderPage = () => {
     switch (activePage) {
+      case 'support':
+        return (
+          <div className="admin-content">
+            <SupportTickets />
+          </div>
+        )
       case 'config':
         return (
           <div className="admin-content">
@@ -216,6 +223,12 @@ function App() {
             onClick={() => setActivePage('dashboard')}
           >
             Dashboard
+          </button>
+          <button
+            className={`admin-nav-link ${activePage === 'support' ? 'active' : ''}`}
+            onClick={() => setActivePage('support')}
+          >
+            Support
           </button>
           <button
             className={`admin-nav-link ${activePage === 'config' ? 'active' : ''}`}

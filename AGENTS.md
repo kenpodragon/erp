@@ -28,6 +28,7 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 - `/docs`: All technical, architectural, and requirement specs.
 - `/infra`: Dockerfiles, Cloud Build YAMLs, Deployment scripts.
 - `/testing`: Unified test runners and system-wide E2E tests.
+- `/init`: Tooling and other things to help the project
 - `../Books`: **Read-only** source material (ER_Kindle.docx, etc.).
 
 ## 📜 Documentation Hierarchy
@@ -41,6 +42,7 @@ When in doubt, consult these files in order:
 7. `@docs/TODO.md`: What is being built *now*.
 8. `@docs/INIT_INFRA.md`: Environment setup.
 9. `@../Books/BOOKS.md`: Narrative source mapping.
+10. `@docs/DONE.md`: Everything that's been done so far.
 
 ## 🤖 Agent Operating Procedures
 1. **Research First:** Always check `../Books/BOOKS.md` before designing a character or enemy to ensure lore accuracy.
