@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import './Pages.css';
 
 export const TermsPage: React.FC = () => {
@@ -127,14 +126,9 @@ export const TermsPage: React.FC = () => {
         <section className="page-section">
           <h2>11. Contact</h2>
           <p>
-            If you have any questions about these Terms, please contact us at{' '}
-            <a href="mailto:support@elysiumrising.com">support@elysiumrising.com</a>.
+            If you have any questions about these Terms, please contact us at <a href="mailto:support@does-god-exist.org">support@does-god-exist.org</a>.
           </p>
         </section>
-
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-          <Link to="/" className="page-cta-link">Return to Home</Link>
-        </div>
       </div>
     </div>
   );

@@ -21,6 +21,10 @@ export const NavBar: React.FC<NavBarProps> = ({ isLoggedIn, onLogin, onLogout })
       <div className="navbar-links">
         <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
         <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>About</Link>
+        <Link to="/support" className={`nav-link ${location.pathname === '/support' ? 'active' : ''}`}>Support</Link>
+        <Link to="/terms" className={`nav-link ${location.pathname === '/terms' ? 'active' : ''}`}>TOS</Link>
+        <Link to="/privacy" className={`nav-link ${location.pathname === '/privacy' ? 'active' : ''}`}>Privacy</Link>
+        <Link to="/license" className={`nav-link ${location.pathname === '/license' ? 'active' : ''}`}>License</Link>
         {isLoggedIn && (
           <Link to="/profile" className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}>Profile</Link>
         )}

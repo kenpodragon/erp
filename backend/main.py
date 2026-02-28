@@ -1,16 +1,12 @@
 import os
 import sys
 import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-logger.info("Main script starting...")
-
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select, text
@@ -18,21 +14,12 @@ from fastapi.encoders import jsonable_encoder
 
 # Load from environment (handled by Cloud Run or local shell)
 DATABASE_URL = os.getenv("DATABASE_URL")
-logger.info("DATABASE_URL is: %s", DATABASE_URL[:20] if DATABASE_URL else "None")
+logger = logging.getLogger(__name__)
 
-logger.info("Importing local modules...")
-try:
-    from db import get_session
-    logger.info("Imported db")
-    from auth import init_firebase, get_current_player, get_current_admin
-    logger.info("Imported auth")
-    from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence
-    logger.info("Imported models")
-    from utils import load_profanity_blocklist, is_profane
-    logger.info("Imported utils")
-except Exception as e:
-    logger.error("Failed to import local modules: %s", e, exc_info=True)
-    raise
+from db import get_session
+from auth import init_firebase, get_current_player, get_current_admin
+from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence
+from utils import load_profanity_blocklist, is_profane
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -168,7 +155,7 @@ async def login(token: dict = Depends(get_current_player), session: Session = De
     return {
         "player": {**player.model_dump(), "settings": settings.model_dump() if settings else None},
         "characters": characters,
-        "is_new_player": is_new_player and player.terms_accepted_at is None
+        "is_new_player": is_new_player or player.terms_accepted_at is None
     }
 
 
@@ -285,6 +272,7 @@ async def update_profile(
 
     if "avatar_preset_key" in update_data:
         player.avatar_preset_key = update_data["avatar_preset_key"]
+        player.custom_avatar_url = None # Clear custom if preset selected
 
     player.updated_at = datetime.now(timezone.utc)
     session.add(player)
@@ -292,6 +280,51 @@ async def update_profile(
     session.refresh(player)
 
     return player
+
+
+@app.post("/api/players/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Upload and store a custom avatar image.
+    FR-3.10
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=422, detail="File must be an image")
+
+    # Generate unique filename
+    ext = os.path.splitext(file.filename)[1]
+    filename = f"{uuid.uuid4()}{ext}"
+    file_path = os.path.join(uploads_dir, "avatars", filename)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    # Save file
+    try:
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
+    except Exception as e:
+        logger.error("Failed to save avatar: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to save avatar")
+
+    # Update player profile
+    avatar_url = f"/uploads/avatars/{filename}"
+    player.custom_avatar_url = avatar_url
+    player.avatar_preset_key = None # Clear preset if custom uploaded
+    player.updated_at = datetime.now(timezone.utc)
+    
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+
+    return {"avatar_url": avatar_url}
 
 
 @app.post("/api/players/me/accept-terms")

@@ -9,6 +9,7 @@ import { AboutPage } from './components/AboutPage'
 import { TermsPage } from './components/TermsPage'
 import { PrivacyPage } from './components/PrivacyPage'
 import { ProfileDashboard } from './components/ProfileDashboard'
+import { OnboardingFlow } from './components/OnboardingFlow'
 import './App.css'
 
 interface HealthData {
@@ -42,6 +43,85 @@ interface Character {
   class: { id: number; name: string; lore_blurb: string | null; base_strength: number; base_agility: number; base_intelligence: number; sprite_key: string | null; is_available: boolean } | null;
 }
 
+// Placeholder components for new pages
+const LicensePage = () => (
+  <div className="page">
+    <div className="page-hero page-hero-compact">
+      <h1 className="page-title">License</h1>
+    </div>
+    <div className="page-content legal-content">
+      <div style={{ background: '#111', padding: '1.5rem', borderRadius: '8px', border: '1px solid #222' }}>
+        <h3>Creative Commons Attribution-NonCommercial 4.0 International</h3>
+        <p style={{ fontSize: '0.85rem', color: '#888', fontStyle: 'italic' }}>
+          By exercising the Licensed Rights, You accept and agree to be bound by the terms and conditions of this 
+          Creative Commons Attribution-NonCommercial 4.0 International Public License.
+        </p>
+        <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '1.5rem', color: '#bbb' }}>
+{`Section 1 – Definitions.
+Adapted Material means material subject to Copyright and Similar Rights that is derived from or based upon the Licensed Material and in which the Licensed Material is translated, altered, arranged, transformed, or otherwise modified in a manner requiring permission under the Copyright and Similar Rights held by the Licensor. 
+
+Section 2 – Scope.
+a. License grant.
+1. Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:
+A. reproduce and Share the Licensed Material, in whole or in part, for NonCommercial purposes only; and
+B. produce, reproduce, and Share Adapted Material for NonCommercial purposes only.
+
+Section 3 – License Conditions.
+Your exercise of the Licensed Rights is expressly made subject to the following conditions.
+a. Attribution.
+1. If You Share the Licensed Material (including in modified form), You must:
+A. retain the following if it is supplied by the Licensor with the Licensed Material:
+i. identification of the creator(s) of the Licensed Material and any others designated to receive attribution...
+
+Section 5 – Disclaimer of Warranties and Limitation of Liability.
+a. Unless otherwise separately undertaken by the Licensor, to the extent possible, the Licensor offers the Licensed Material as-is and as-available, and makes no representations or warranties of any kind concerning the Licensed Material...
+
+Full license text available at: https://github.com/kenpodragon/erp/blob/main/LICENSE`}
+        </pre>
+      </div>
+    </div>
+  </div>
+)
+
+const SupportPage = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
+  <div className="page">
+    <div className="page-hero page-hero-compact">
+      <h1 className="page-title">Contact Support</h1>
+    </div>
+    <div className="page-content">
+      <div className="profile-section" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        {isLoggedIn ? (
+          <div>
+            <h3>Support Center</h3>
+            <p>Support ticket system is coming soon. For now, please email us.</p>
+            <p><strong>Email:</strong> <a href="mailto:support@does-god-exist.org">support@does-god-exist.org</a></p>
+          </div>
+        ) : (
+          <div>
+            <h3>Guest Support</h3>
+            <p>Please use the form below to contact us.</p>
+            <form onSubmit={(e) => { e.preventDefault(); alert("Sent!"); }}>
+              <div className="form-group">
+                <label>Email Address</label>
+                <input type="email" className="form-control" required />
+              </div>
+              <div className="form-group">
+                <label>Subject</label>
+                <input type="text" className="form-control" required />
+              </div>
+              <div className="form-group">
+                <label>Message</label>
+                <textarea className="form-control" style={{ height: '150px' }} required></textarea>
+              </div>
+              <button type="submit" className="btn-primary">Send Message</button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)
+
 function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -51,6 +131,7 @@ function App() {
   const [backendError, setBackendError] = useState<string | null>(null)
   const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -84,6 +165,7 @@ function App() {
         return
       }
       const loginData = await loginRes.json()
+      
       if (loginData.characters && loginData.characters.length > 0) {
         setCharacter(loginData.characters[0])
       } else {
@@ -94,6 +176,11 @@ function App() {
       if (res.ok) {
         const data = await res.json()
         setBackendUser(data)
+
+        // Show onboarding if new player or no terms accepted or no character
+        if (loginData.is_new_player || !data.terms_accepted_at || !loginData.characters.length) {
+          setShowOnboarding(true)
+        }
       } else if (res.status === 401) {
         setBackendError('Session expired or invalid token')
       } else if (res.status === 403) {
@@ -119,6 +206,7 @@ function App() {
       setBackendUser(null)
       setBackendError(null)
       setCharacter(null)
+      setShowOnboarding(false)
       setAuthLoading(false)
 
       if (currentUser) {
@@ -130,10 +218,10 @@ function App() {
 
   // Auto-redirect: authenticated user on splash → /profile
   useEffect(() => {
-    if (!authLoading && user && location.pathname === '/') {
+    if (!authLoading && user && location.pathname === '/' && !showOnboarding) {
       navigate('/profile', { replace: true })
     }
-  }, [authLoading, user, location.pathname, navigate])
+  }, [authLoading, user, location.pathname, navigate, showOnboarding])
 
   const handleLogin = async () => {
     if (!auth || !googleProvider) {
@@ -142,7 +230,7 @@ function App() {
     }
     try {
       await signInWithPopup(auth, googleProvider)
-      navigate('/profile')
+      // verifyUserWithBackend will handle showOnboarding and navigation
     } catch (err: unknown) {
       console.error("Login error:", err)
       if (err instanceof Error) {
@@ -159,6 +247,7 @@ function App() {
       setBackendUser(null)
       setBackendError(null)
       setCharacter(null)
+      setShowOnboarding(false)
       navigate('/')
     }
   }
@@ -218,11 +307,25 @@ function App() {
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
+      
+      {showOnboarding && backendUser && (
+        <OnboardingFlow 
+          player={backendUser} 
+          onComplete={() => {
+            setShowOnboarding(false);
+            verifyUserWithBackend();
+            navigate('/profile');
+          }} 
+        />
+      )}
+
       <Routes>
         <Route path="/" element={<SplashPage onLogin={handleLogin} />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/license" element={<LicensePage />} />
+        <Route path="/support" element={<SupportPage isLoggedIn={isLoggedIn} />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </div>

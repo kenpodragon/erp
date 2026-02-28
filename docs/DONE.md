@@ -2,6 +2,12 @@
 
 This document tracks the initial setup and development phases for the Elysium Rising mmorPg (ERP). These are all the completed tasks so TODO can stay relatively small.
 
+
+---
+*Updated: 2026-02-28*
+
+
+
 ---
 *Updated: 2026-02-27*
 
@@ -63,16 +69,30 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [x] Create testing for UI/UX and API (backend: `tests/test_characters.py` — 14 tests; frontend: `CharacterCreator.test.tsx` — 7 tests).
   - [x] Wonky character delete. The name of the character isn't shown, the selected class and stats aren't there either.
 
-  - [x] **7.5 — Frontend: Splash Page** *(RECS §5.1, FR-5.1 through FR-5.7)*
-    - [x] Replace current Hello World dashboard at `/` with Splash page (move the Hello World dashboard to a `/profile` page to keep the changes).
-    - [x] Dark fantasy design: animated "Elysium Rising" title, atmospheric background, tagline from Book 1. (Use book styling from cover image from book `NewCover04112025.jpg`).
-    - [x] "Begin Your Ascent" CTA → triggers Firebase Google SSO popup.
-    - [x] Below-fold content: "About the Game", "The Story" teaser, "How It Works" (3-4 bullet points).
-    - [x] Footer: Terms of Service, Privacy Policy, Contact Support links.
-    - [x] Auto-redirect to `/profile` if already authenticated (FR-5.6).
-    - [x] Navigation appears to all users (users can go to the home page, about page, all the other pages etc...). Login button at the top (to login, or if you're logged in to log out). When logged in should have a profile button so you can jump over to the profile page.
-    - [x] Mobile-responsive down to 360px.
-    - [x] Create testing for UI/UX and API
+- [x] **7.5 — Frontend: Splash Page** *(RECS §5.1, FR-5.1 through FR-5.7)*
+  - [x] Replace current Hello World dashboard at `/` with Splash page (move the Hello World dashboard to a `/profile` page to keep the changes).
+  - [x] Dark fantasy design: animated "Elysium Rising" title, atmospheric background, tagline from Book 1. (Use book styling from cover image from book `NewCover04112025.jpg`).
+  - [x] "Begin Your Ascent" CTA → triggers Firebase Google SSO popup.
+  - [x] Below-fold content: "About the Game", "The Story" teaser, "How It Works" (3-4 bullet points).
+  - [x] Footer: Terms of Service, Privacy Policy, Contact Support links.
+  - [x] Auto-redirect to `/profile` if already authenticated (FR-5.6).
+  - [x] Navigation appears to all users (users can go to the home page, about page, all the other pages etc...). Login button at the top (to login, or if you're logged in to log out). When logged in should have a profile button so you can jump over to the profile page.
+  - [x] Mobile-responsive down to 360px.
+  - [x] Create testing for UI/UX and API
+
+
+- [x] **7.6 — Frontend: Onboarding Flow** *(RECS §5.2, FR-5.8 through FR-5.26)*
+  - [x] Post-auth routing logic: call `POST /api/auth/login` → check `is_new_player` + character existence → route accordingly (FR-5.8).
+  - [x] Whenever you click on login from any other page, it should take you right to the profile page once you log in (regardless of page you logged in from). The exception - if you are new, it takes you the onboarding flow.
+  - [x] Step 1 — Terms of Service: modal/overlay, require scroll/checkbox + "I Accept", call `POST /api/players/me/accept-terms` (FR-5.10–5.13).
+  - [x] Step 2 — Profile Setup: show Google name/avatar as defaults, alias input with real-time validation (debounced uniqueness check), avatar upload/preset selection, "Skip" option (FR-5.14–5.18).
+  - [x] Step 3 — Character Creation: fetch classes from `GET /api/game/classes`, display as cards (name, lore, stat bars, sprite), character name input with validation, "Create Character" calls API (FR-5.19–5.23).
+  - [x] Step 4 — Welcome screen: character name + class + lore welcome message, "Begin Adventure" and "Explore Home Base" CTAs, shown once (FR-5.24–5.26).
+  - [x] Set up frontend auth token management: `getIdToken()` on every request, `onIdTokenChanged()` for auto-refresh, 401 → silent refresh → redirect if fails (FR-2.2–2.4).
+  - [x] Need a TOS page, Privacy Policy Page, Contact Us Support form - non logged in users get the support email address form to send, logged in users will go to the support center {developed later requirement}). Also need to create a page for the LICENSE (use the text from the LICENSE file - it's going to be long)
+  - [x] Add UI/UX for the pieces. 
+  - [x] Add a button ont he profile/character page (for testing) - called MAKE ME NEW. Which will set the flag to new player and let you go through the flows as a new player.
+  - [x] Create testing for UI/UX and API.
 
 ---
 *2026-02-27*

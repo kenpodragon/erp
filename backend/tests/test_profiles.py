@@ -6,7 +6,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from datetime import datetime, timezone
 
 from main import app, get_session, get_current_player
-from models import Player, PlayerSettings
+from models import Player, PlayerSettings, CharacterClass, PlayerCharacter
 
 # --- Test DB Setup ---
 
@@ -240,3 +240,49 @@ def test_upload_avatar(client: TestClient, session: Session):
     session.refresh(player)
     assert player.custom_avatar_url is not None
     assert "/uploads/avatars/" in player.custom_avatar_url
+
+def test_reset_player(client: TestClient, session: Session):
+    """Test POST /api/players/me/reset."""
+    # Pre-create a player with state
+    player = Player(
+        firebase_uid="reset_uid",
+        email="reset@example.com",
+        alias="OldAlias",
+        terms_accepted_at=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc)
+    )
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+    
+    # Pre-create a character
+    # Need a class first
+    cls = CharacterClass(name="TestClass", is_available=True)
+    session.add(cls)
+    session.commit()
+    
+    char = PlayerCharacter(player_id=player.id, class_id=cls.id, character_name="TestChar")
+    session.add(char)
+    session.commit()
+    
+    def override_get_current_player_reset():
+        token = DUMMY_TOKEN.copy()
+        token["uid"] = "reset_uid"
+        token["player"] = player
+        return token
+    
+    app.dependency_overrides[get_current_player] = override_get_current_player_reset
+    
+    # Verify state before reset
+    assert player.alias == "OldAlias"
+    assert player.terms_accepted_at is not None
+    assert len(session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()) == 1
+    
+    response = client.post("/api/players/me/reset")
+    assert response.status_code == 200
+    
+    # Verify state after reset
+    session.refresh(player)
+    assert player.alias is None
+    assert player.terms_accepted_at is None
+    assert len(session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()) == 0

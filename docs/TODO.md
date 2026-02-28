@@ -3,25 +3,12 @@
 This document tracks the initial setup and development phases for the Elysium Rising mmorPg (ERP).
 
 ---
-*Updated: 2026-02-27*
+*Updated: 2026-02-28*
 
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 
-- [ ] **7.6 — Frontend: Onboarding Flow** *(RECS §5.2, FR-5.8 through FR-5.26)*
-  - [ ] Post-auth routing logic: call `POST /api/auth/login` → check `is_new_player` + character existence → route accordingly (FR-5.8).
-  - [ ] Whenever you click on login from any other page, it should take you right to the profile page once you log in (regardless of page you logged in from). The exception - if you are new, it takes you the onboarding flow.
-  - [ ] Step 1 — Terms of Service: modal/overlay, require scroll/checkbox + "I Accept", call `POST /api/players/me/accept-terms` (FR-5.10–5.13).
-  - [ ] Step 2 — Profile Setup: show Google name/avatar as defaults, alias input with real-time validation (debounced uniqueness check), avatar upload/preset selection, "Skip" option (FR-5.14–5.18).
-  - [ ] Step 3 — Character Creation: fetch classes from `GET /api/game/classes`, display as cards (name, lore, stat bars, sprite), character name input with validation, "Create Character" calls API (FR-5.19–5.23).
-  - [ ] Step 4 — Welcome screen: character name + class + lore welcome message, "Begin Adventure" and "Explore Home Base" CTAs, shown once (FR-5.24–5.26).
-  - [ ] Set up frontend auth token management: `getIdToken()` on every request, `onIdTokenChanged()` for auto-refresh, 401 → silent refresh → redirect if fails (FR-2.2–2.4).
-  - [ ] Need a TOS page, Privacy Policy Page, Contact Us Support form - non logged in users get the support email address form to send, logged in users will go to the support center {developed later requirement}). Also need to create a page for the LICENSE (use the text from the LICENSE file - it's going to be long)
-  - [ ] Add UI/UX for the pieces. 
-  - [ ] Add a button ont he profile/character page (for testing) - called MAKE ME NEW. Which will set the flag to new player and let you go through the flows as a new player.
-  - [ ] Create testing for UI/UX and API.
-
-- [ ] **7.7 — Frontend: Home Base** *(RECS §5.3, FR-5.27 through FR-5.31)*
+- [ ] **7.7 — Frontend: Home Base** *(RECS §5.3, FR-5.27 through FR-5.31)* Refinement, improvement, and getting ready for the normal game loop (content placeholders)
   - [ ] Home Base at `/home` — default landing for returning authenticated players.
   - [ ] Character card: name, class, level, avatar, last played.
   - [ ] "Continue Adventure" button (routes to game — stub/placeholder for now).

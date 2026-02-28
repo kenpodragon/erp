@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import './Pages.css';
 
 export const AboutPage: React.FC = () => {
@@ -15,7 +14,7 @@ export const AboutPage: React.FC = () => {
           <h2>What Is Elysium Rising?</h2>
           <p>
             Elysium Rising is an incremental MMORPG set in the dark fantasy universe of the
-            <em> Towers of Elysium</em> book trilogy by Stephen Salaka. Unlike traditional
+            <em> <a href='https://does-god-exist.org/towers-of-elysium/'>Towers of Elysium</a></em> book trilogy by Stephen Salaka. Unlike traditional
             browser games, Elysium Rising merges interactive gameplay with immersive audiobook
             narration — your progression through the story literally unlocks new game content,
             enemies, abilities, and lore.
@@ -81,7 +80,6 @@ export const AboutPage: React.FC = () => {
           <p style={{ marginBottom: '1.5rem' }}>
             The Towers are waiting. Choose your class. Name your hero. Begin the ascent.
           </p>
-          <Link to="/" className="page-cta-link">Return to Home</Link>
         </section>
       </div>
     </div>
