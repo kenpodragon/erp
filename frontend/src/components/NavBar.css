@@ -1,0 +1,115 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.5rem;
+  background: rgba(10, 10, 18, 0.92);
+  border-bottom: 1px solid rgba(184, 134, 11, 0.3);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  text-decoration: none;
+  font-family: 'Garamond', 'Times New Roman', serif;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.brand-elysium {
+  color: #b8860b;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.brand-rising {
+  color: #4fc3f7;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: #999;
+  text-decoration: none;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.25s, border-color 0.25s;
+}
+
+.nav-link:hover {
+  color: #e0e0e0;
+}
+
+.nav-link.active {
+  color: #b8860b;
+  border-bottom-color: #b8860b;
+}
+
+.nav-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.nav-btn-login {
+  background: #b8860b;
+  color: #000;
+  border: 1px solid #b8860b;
+}
+
+.nav-btn-login:hover {
+  background: #daa520;
+  border-color: #daa520;
+}
+
+.nav-btn-logout {
+  background: transparent;
+  color: #ff8888;
+  border: 1px solid #7a0000;
+}
+
+.nav-btn-logout:hover {
+  background: #3a0000;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navbar {
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .navbar-brand {
+    font-size: 1rem;
+  }
+
+  .navbar-links {
+    gap: 1rem;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-link {
+    font-size: 0.75rem;
+  }
+}

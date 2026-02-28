@@ -39,9 +39,9 @@ describe('AvatarManager', () => {
       />
     );
     
-    // Test selecting Google Profile (null)
-    const googleProfile = screen.getByText(/Google Profile/i);
-    fireEvent.click(googleProfile);
+    // Test selecting Google avatar (null preset) — click the Google avatar img
+    const googleImg = screen.getByAltText('Google Profile');
+    fireEvent.click(googleImg.closest('.avatar-preset')!);
 
     await waitFor(() => {
       expect(api.patch).toHaveBeenCalledWith('/api/players/me', { avatar_preset_key: null });

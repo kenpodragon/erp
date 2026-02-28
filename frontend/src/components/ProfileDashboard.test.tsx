@@ -41,14 +41,13 @@ describe('ProfileDashboard', () => {
     }
   };
 
-  it('renders all profile sections', () => {
+  it('renders core profile sections', () => {
     render(<ProfileDashboard player={mockPlayer} {...defaultProps} />);
 
     expect(screen.getByText('test@example.com')).toBeTruthy();
     expect(screen.getByTestId('alias-editor')).toBeTruthy();
-    expect(screen.getByTestId('avatar-manager')).toBeTruthy();
-    expect(screen.getByTestId('audio-settings')).toBeTruthy();
     expect(screen.getByTestId('character-creator')).toBeTruthy();
+    // AvatarManager and AudioSettings are behind modals (not rendered until opened)
   });
 
   it('shows logout button at the top', () => {

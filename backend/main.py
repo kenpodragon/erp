@@ -200,6 +200,35 @@ async def get_my_profile(token: dict = Depends(get_current_player), session: Ses
     return {**player.model_dump(), "settings": settings.model_dump() if settings else None}
 
 
+@app.post("/api/players/me/reset")
+async def reset_player(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
+    """
+    DEBUG ONLY: Reset player state to 'new'.
+    Clears character, terms_accepted_at, alias, and avatar.
+    """
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+
+    # Delete characters (cascades to progress/essence)
+    characters = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()
+    for char in characters:
+        session.delete(char)
+
+    # Reset player fields
+    player.terms_accepted_at = None
+    player.alias = None
+    player.avatar_preset_key = None
+    player.custom_avatar_url = None
+    player.updated_at = datetime.now(timezone.utc)
+    
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+
+    return {"message": "Player state reset successfully", "player": player}
+
+
 @app.get("/api/players/check-alias")
 async def check_alias(alias: str, session: Session = Depends(get_session)):
     """
