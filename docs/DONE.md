@@ -5,8 +5,31 @@ This document tracks the initial setup and development phases for the Elysium Ri
 
 ---
 *Updated: 2026-02-28*
+- [x] **7.7 — Frontend: Home Base** *(RECS §5.3, FR-5.27 through FR-5.31)* Refinement, improvement, and getting ready for the normal game loop (content placeholders)
+  - [x] Remove the MAKE NEW button and the debug tools section on the PROFILE Page. Since, once you are logged in profile = home. Get rid of the second proifile navigation button.
+  - [x] Home Base at `/home` — default landing for returning authenticated players.
+  - [x] Character card: name, class, level, avatar, last played.
+  - [x] "Continue Adventure" button (routes to game — stub/placeholder for now).
+  - [x] Quick stats: total Essence, current chapter, playtime.
+  - [x] Nav stubs: Leaderboard ("Coming Soon"), Achievements ("Coming Soon"), Shop ("Coming Soon").
+  - [x] Support link → `/support`.
+  - [x] Settings page: edit alias/avatar, audio preferences, logout, "Contact support to delete account".
+  - [x] Route guards: Auth guard → Terms guard → Character guard, in order (FR-11.1–11.4).
+  - [x] Mobile-responsive.
+  - [x] Add UI/UX for the pieces. 
+  - [x] Create testing for UI/UX and API.
 
-
+- [x] **7.8 — Server Config System** *(RECS §8, FR-8.1 through FR-8.12)*
+  - [x] Create SQLModel model for `server_config`.
+  - [x] Backend: in-memory config cache loaded on startup, refreshed every 60s or on admin write.
+  - [x] `GET /api/admin/config` — return all config grouped by category.
+  - [x] `PATCH /api/admin/config/{key}` — validate value against `value_type`, update DB, invalidate cache, log to audit.
+  - [x] `POST /api/admin/config/{key}/reset` — reset to `default_value`, log to audit.
+  - [x] `GET /api/config/public` — unauthenticated, return only: maintenance_mode, maintenance_message, announcement_banner, announcement_banner_type, registration_open.
+  - [x] Backend: maintenance mode middleware — if `ops.maintenance_mode = true`, return 503 on all player endpoints.
+  - [x] Admin UI: two-tab layout (Game / Operational), appropriate form controls per value_type, save per-setting, "Reset to Default" with confirmation.
+  - [x] Add UI/UX for the pieces. 
+  - [x] Create testing for UI/UX and API.
 
 ---
 *Updated: 2026-02-27*

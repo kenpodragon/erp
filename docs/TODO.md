@@ -8,33 +8,6 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 
-- [ ] **7.7 — Frontend: Home Base** *(RECS §5.3, FR-5.27 through FR-5.31)* Refinement, improvement, and getting ready for the normal game loop (content placeholders)
-  - [ ] Remove the MAKE NEW button and the debug tools section on the PROFILE Page. Since, once you are logged in profile = home. Get rid of the second proifile navigation button.
-  - [ ] Home Base at `/home` — default landing for returning authenticated players.
-  - [ ] Character card: name, class, level, avatar, last played.
-  - [ ] "Continue Adventure" button (routes to game — stub/placeholder for now).
-  - [ ] Quick stats: total Essence, current chapter, playtime.
-  - [ ] Nav stubs: Leaderboard ("Coming Soon"), Achievements ("Coming Soon"), Shop ("Coming Soon").
-  - [ ] Support link → `/support`.
-  - [ ] Settings page: edit alias/avatar, audio preferences, logout, "Contact support to delete account".
-  - [ ] Route guards: Auth guard → Terms guard → Character guard, in order (FR-11.1–11.4).
-  - [ ] Mobile-responsive.
-  - [ ] Add UI/UX for the pieces. 
-  - [ ] Create testing for UI/UX and API.
-
-- [ ] **7.8 — Server Config System** *(RECS §8, FR-8.1 through FR-8.12)*
-  - [ ] Create SQLModel model for `server_config`.
-  - [ ] Backend: in-memory config cache loaded on startup, refreshed every 60s or on admin write.
-  - [ ] `GET /api/admin/config` — return all config grouped by category.
-  - [ ] `PATCH /api/admin/config/{key}` — validate value against `value_type`, update DB, invalidate cache, log to audit.
-  - [ ] `POST /api/admin/config/{key}/reset` — reset to `default_value`, log to audit.
-  - [ ] `GET /api/config/public` — unauthenticated, return only: maintenance_mode, maintenance_message, announcement_banner, announcement_banner_type, registration_open.
-  - [ ] Backend: maintenance mode middleware — if `ops.maintenance_mode = true`, return 503 on all player endpoints.
-  - [ ] Admin UI: two-tab layout (Game / Operational), appropriate form controls per value_type, save per-setting, "Reset to Default" with confirmation.
-  - [ ] Add UI/UX for the pieces. 
-  - [ ] Create testing for UI/UX and API.
-
-
 - [ ] **7.9 — Support Ticket System** *(RECS §6, FR-6.1 through FR-6.20)*
   - [ ] Create SQLModel models for `support_tickets`, `support_replies`, `support_attachments`.
   - [ ] **Player API:**
@@ -109,9 +82,12 @@ This document tracks the initial setup and development phases for the Elysium Ri
     - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)   
   - [ ] **MISC**
     - [ ] Clean up text, lots of the ******** from when I left page breaks in there. There's also the introductory bits (copyright pages - chapter 1 for each book). Might want to keep it, maybe just skip it or use as an easter egg (what the hell is this crap - as part of the tutorial or something - also need to see where the TOC went in all of this).
-  - [ ] **Sound effects**
-    - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
+  - [ ] **Security and anti-cheat**
+    - [ ] Some level of keyed encryption between server and front end to prevent people on the front from just sending random bonuses to the back end.
+    - [ ] Actions and progress must be held server side, all activities have to be passed to the back (clicks, sent tot he back, validated, and then recorded on the back end server).
+    - [ ] Purchases, upgrades, etc... are all validated by the back end server (purchase clicked on front end - sent to back). Server detects if the user has enough for the purchase and then debits it, stats updates back to the front end.    
   - [ ] **Audio Integration**
-    - [ ] Research Eleven Reader API for streaming background audio.
+    - [ ] Research Eleven Reader API for streaming background audio. (Would like them to advance, need to have access to that part of the book before they can proceed - e.g. on free eleven readers account, so they'd have to buy the book - get stuck in early tutorial lands or something).
     - [ ] Research Eleven SUNO API for streaming background audio.
+    - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
 

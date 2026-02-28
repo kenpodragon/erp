@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import './App.css'
+import ServerConfig from './pages/ServerConfig'
 
 interface HealthData {
   status: string;
@@ -12,24 +13,23 @@ interface HealthData {
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
-  // Derive authEnabled from the imported auth object directly during initialization
   const [authEnabled] = useState(() => !!auth)
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
   const [backendVerified, setBackendVerified] = useState<boolean | null>(null)
   const [clientIp, setClientIp] = useState<string>('')
   const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
+  const [activePage, setActivePage] = useState<'dashboard' | 'config'>('dashboard')
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-  // Client-side whitelist: UX-only fast rejection. Backend enforces the real check.
-  const ALLOWED_EMAILS = (import.meta.env.VITE_ALLOWED_EMAILS || '').split(',').map((e: string) => e.trim()).filter(Boolean)
-  const ALLOWED_IPS = (import.meta.env.VITE_ALLOWED_IPS || '').split(',').map((i: string) => i.trim()).filter(Boolean)
+  // Memoized to prevent re-creating arrays on every render (which would cause useCallback/useEffect loops).
+  const ALLOWED_EMAILS = useMemo(() => (import.meta.env.VITE_ALLOWED_EMAILS || '').split(',').map((e: string) => e.trim()).filter(Boolean), [])
+  const ALLOWED_IPS = useMemo(() => (import.meta.env.VITE_ALLOWED_IPS || '').split(',').map((i: string) => i.trim()).filter(Boolean), [])
 
   const checkAuthorization = useCallback(async (currentUser: User) => {
     const userEmail = (currentUser.email || '').trim().toLowerCase()
     const currentIp = clientIp.trim()
 
-    // Step 1: Client-side quick check (UX only — can be bypassed)
     const emailOk = ALLOWED_EMAILS.length === 0 || ALLOWED_EMAILS.some((e: string) => e.toLowerCase() === userEmail)
     const ipOk = ALLOWED_IPS.length === 0 || ALLOWED_IPS.includes(currentIp)
 
@@ -41,14 +41,11 @@ function App() {
       return
     }
 
-    // Step 2: Backend verification — the real enforcement
     setUser(currentUser)
     setIsAuthorized(true)
     setBackendVerified(null)
 
     try {
-      // Get token directly from the currentUser param (not auth.currentUser)
-      // to avoid any timing issues with Firebase auth state
       const idToken = await currentUser.getIdToken()
       const res = await fetch(
         `${API_URL}/api/admin/ping`,
@@ -58,7 +55,6 @@ function App() {
         setBackendVerified(true)
       } else {
         console.error('Admin backend check failed:', res.status, await res.text())
-        // Backend rejected — token invalid, email/IP not whitelisted server-side
         setBackendVerified(false)
         if (auth) await signOut(auth)
         setUser(null)
@@ -66,11 +62,10 @@ function App() {
       }
     } catch (err) {
       console.error('Admin backend check error:', err)
-      setBackendVerified(null) // Backend unreachable — don't block, just note it
+      setBackendVerified(null)
     }
   }, [ALLOWED_EMAILS, ALLOWED_IPS, API_URL, clientIp])
 
-  // Health checks (public endpoints — no auth needed)
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -88,7 +83,6 @@ function App() {
     }
     fetchStatus()
 
-    // Fetch client IP for UX display + client-side pre-check
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => setClientIp(data.ip))
@@ -132,67 +126,116 @@ function App() {
     if (auth) {
       await signOut(auth)
       setBackendVerified(null)
+      setActivePage('dashboard')
     }
   }
 
-  return (
-    <div className="App">
-      <h1>ERP Admin: Hello World</h1>
+  // Status dot helpers
+  const apiOnline = apiMessage !== 'Connecting...' && apiMessage !== 'Offline'
+  const dbOnline = health?.database === 'connected'
 
-      <div className="card" style={{ border: '1px solid #444', padding: '20px', borderRadius: '10px', marginBottom: '10px' }}>
-        <h3>System Status:</h3>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-          <p>
-            <strong>API:</strong> {apiMessage === 'Connecting...' ? '...' : (apiMessage !== 'Offline' ?
-              <span style={{ color: '#4caf50' }}>● Online</span> :
-              <span style={{ color: '#ff4444' }}>● Offline</span>
+  const renderPage = () => {
+    switch (activePage) {
+      case 'config':
+        return (
+          <div className="admin-content">
+            <ServerConfig />
+          </div>
+        )
+      default:
+        return (
+          <div className="admin-content">
+            <div className="dashboard-header">
+              <h2>Dashboard</h2>
+            </div>
+            <div className="dashboard-status-bar">
+              <span className="status-label">System</span>
+              <span className="status-item">
+                API <span className={`status-dot ${apiOnline ? 'online' : apiMessage === 'Connecting...' ? 'loading' : 'offline'}`}>●</span>
+              </span>
+              <span className="status-item">
+                DB <span className={`status-dot ${health ? (dbOnline ? 'online' : 'offline') : 'loading'}`}>●</span>
+              </span>
+              <span className="status-item" style={{ color: '#555' }}>
+                ENV: {health?.environment || '...'}
+              </span>
+            </div>
+          </div>
+        )
+    }
+  }
+
+  // ── Unauthenticated: centered login card ──
+  if (!user || !backendVerified) {
+    return (
+      <div className="App">
+        <div className="login-container">
+          <div className="login-card">
+            <h2>ERP Admin</h2>
+
+            {!authEnabled ? (
+              <p style={{ color: 'orange' }}>Firebase configuration missing. Check your .env file.</p>
+            ) : isAuthorized === false ? (
+              <div className="access-denied">
+                <p>ACCESS DENIED</p>
+                <p>Unauthorized access ({clientIp})</p>
+                <button className="btn-retry" onClick={() => { setIsAuthorized(null); setBackendVerified(null) }}>Try Again</button>
+              </div>
+            ) : user && backendVerified === null && isAuthorized ? (
+              <p>Verifying admin access...</p>
+            ) : user && backendVerified === false ? (
+              <div className="access-denied">
+                <p>Backend rejected admin access.</p>
+                <button className="btn-logout" onClick={handleLogout} style={{ marginTop: '0.75rem' }}>Logout</button>
+              </div>
+            ) : (
+              <>
+                <p>Sign in with your admin account.</p>
+                <p style={{ fontSize: '0.75rem' }}>IP: {clientIp || 'detecting...'}</p>
+                <button className="btn-login" onClick={handleLogin}>Login with Google</button>
+              </>
             )}
-          </p>
-          <p>
-            <strong>Database:</strong> {health ? (health.database === 'connected' ?
-              <span style={{ color: '#4caf50' }}>● Online</span> :
-              <span style={{ color: '#ff4444' }}>● Offline</span>
-            ) : '...'}
-          </p>
+          </div>
         </div>
       </div>
+    )
+  }
 
-      <div className="card" style={{ border: '1px solid #646cff', padding: '20px', borderRadius: '10px' }}>
-        <h2>Admin SSO Login Test</h2>
+  // ── Authenticated: compact nav bar + page content ──
+  return (
+    <div className="App">
+      <nav className="admin-navbar">
+        <div className="admin-brand">
+          <span className="brand-erp">ERP</span>
+          <span className="brand-admin">Admin</span>
+        </div>
 
-        {!authEnabled ? (
-          <p style={{ color: 'orange' }}>Firebase configuration missing. Check your .env file.</p>
-        ) : isAuthorized === false ? (
-          <div style={{ color: '#ff4444', fontWeight: 'bold', padding: '10px', border: '2px solid #ff4444' }}>
-            <p>ACCESS DENIED</p>
-            <p style={{ fontSize: '0.8em', color: '#888' }}>Unauthorized access ({clientIp})</p>
-            <button onClick={() => { setIsAuthorized(null); setBackendVerified(null) }} style={{ marginTop: '10px' }}>Try Again</button>
+        <div className="admin-nav-links">
+          <button
+            className={`admin-nav-link ${activePage === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActivePage('dashboard')}
+          >
+            Dashboard
+          </button>
+          <button
+            className={`admin-nav-link ${activePage === 'config' ? 'active' : ''}`}
+            onClick={() => setActivePage('config')}
+          >
+            Config
+          </button>
+        </div>
+
+        <div className="admin-nav-right">
+          <div className="nav-status">
+            <span>API <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}>●</span></span>
+            <span>DB <span className={`status-dot ${health ? (dbOnline ? 'online' : 'offline') : 'loading'}`}>●</span></span>
           </div>
-        ) : user ? (
-          <div>
-            <p style={{ color: '#4caf50' }}>Authorized Admin: <strong>{user.email}</strong></p>
-            <p style={{ fontSize: '0.8em', color: '#888' }}>Login IP: {clientIp}</p>
-            {backendVerified === true && (
-              <p style={{ color: '#4caf50', fontSize: '0.8em' }}>Backend: Verified</p>
-            )}
-            {backendVerified === false && (
-              <p style={{ color: '#ff4444', fontSize: '0.8em' }}>Backend: Rejected</p>
-            )}
-            {backendVerified === null && isAuthorized && (
-              <p style={{ color: '#888', fontSize: '0.8em' }}>Backend: Checking...</p>
-            )}
-            <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white' }}>
-              Logout
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p>Admin not logged in.</p>
-            <p style={{ fontSize: '0.8em', color: '#888' }}>Detecting IP: {clientIp || 'loading...'}</p>
-            <button onClick={handleLogin}>Login with Google (Admin)</button>
-          </div>
-        )}
-      </div>
+          <span className="admin-email">{user.email}</span>
+          <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </nav>
+
+      {renderPage()}
     </div>
   )
 }

@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import time
+import random
 from dataclasses import dataclass, field
 from typing import Optional, Type
 
@@ -57,6 +58,7 @@ class AIProvider:
     _current_provider: str = field(default="claude", init=False)
     _claude_client: Optional[anthropic.Anthropic] = field(default=None, init=False)
     _gemini_client: Optional[genai.Client] = field(default=None, init=False)
+    _last_call_time: float = field(default=0.0, init=False)
 
     def __post_init__(self) -> None:
         api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -100,9 +102,21 @@ class AIProvider:
         logger.warning("Permanent switch: Gemini is now the primary provider for this session")
         self._current_provider = "gemini"
 
+    def _wait_for_rate_limit(self) -> None:
+        """Ensure a minimum gap between calls to any AI provider."""
+        # Minimum 1.0 second gap for Claude, 2.0 for Gemini (tighter limits)
+        min_gap = 2.0 if self._current_provider == "gemini" else 1.0
+        now = time.time()
+        elapsed = now - self._last_call_time
+        if elapsed < min_gap:
+            wait = min_gap - elapsed
+            logger.debug("Rate limit protection: waiting %.2fs", wait)
+            time.sleep(wait)
+        self._last_call_time = time.time()
+
     def call(self, system_prompt: str, user_prompt: str,
              response_model: Optional[Type[BaseModel]] = None,
-             max_retries: int = 1) -> tuple[str, str, str]:
+             max_retries_per_provider: int = 3) -> tuple[str, str, str]:
         """
         Make an AI call. Returns (json_text, provider_name, model_id).
         If response_model is provided, validates and returns parsed JSON text.
@@ -111,22 +125,44 @@ class AIProvider:
         last_error: Optional[Exception] = None
 
         for attempt in range(2):  # try current provider, then fallback
-            try:
-                if self._current_provider == "claude" and self._claude_client:
-                    return self._call_claude(system_prompt, user_prompt, response_model)
-                elif self._gemini_client:
-                    return self._call_gemini(system_prompt, user_prompt, response_model)
-                else:
-                    raise TokenLimitError("No AI providers are configured or available")
-            except (ProviderRateLimitError, TruncatedResponseError) as e:
-                last_error = e
-                if self._current_provider == "claude":
-                    self._switch_to_gemini()
-                    continue
-                else:
-                    if isinstance(e, TruncatedResponseError):
-                        raise # Phase logic will handle second-tier retry with ultra-concise
-                    raise TokenLimitError("Both Claude and Gemini have hit their rate/token limits") from e
+            for retry in range(max_retries_per_provider):
+                self._wait_for_rate_limit()
+                
+                try:
+                    if self._current_provider == "claude" and self._claude_client:
+                        return self._call_claude(system_prompt, user_prompt, response_model)
+                    elif self._gemini_client:
+                        return self._call_gemini(system_prompt, user_prompt, response_model)
+                    else:
+                        raise TokenLimitError("No AI providers are configured or available")
+                
+                except ProviderRateLimitError as e:
+                    last_error = e
+                    if retry < max_retries_per_provider - 1:
+                        # Exponential backoff: 3s, 7s, 15s... with jitter
+                        wait_time = (2 ** (retry + 1)) + random.uniform(1.0, 3.0)
+                        logger.warning("Provider %s rate limit: %s. Retrying in %.2fs (attempt %d/%d)...",
+                                       self._current_provider, e, wait_time, retry+1, max_retries_per_provider)
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        logger.warning("Max retries for provider %s reached.", self._current_provider)
+                        break # Switch to next provider if possible
+                
+                except TruncatedResponseError:
+                    # Truncation might be fixed by prompt shortening in phase2, 
+                    # but if it happens to Claude, we might want to try Gemini too.
+                    if self._current_provider == "claude":
+                        break 
+                    else:
+                        raise # handled by phase2 logic (ultra-concise retry)
+
+            if self._current_provider == "claude":
+                self._switch_to_gemini()
+                continue
+            else:
+                # Gemini failed all retries
+                raise TokenLimitError(f"Both Claude and Gemini have hit their rate/token limits. Last error: {last_error}") from last_error
 
         raise TokenLimitError(f"All providers exhausted: {last_error}") from last_error
 

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npx vitest run)",
       "Bash(npx vitest run src/App.test.tsx)",
-      "Bash(npx vitest run src/components/AliasEditor.test.tsx)"
+      "Bash(npx vitest run src/components/AliasEditor.test.tsx)",
+      "Bash(python -m pytest tests/test_config.py -v)",
+      "Bash(python -m pytest tests/ -v)"
     ]
   }
 }

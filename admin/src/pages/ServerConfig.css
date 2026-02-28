@@ -1,0 +1,264 @@
+.server-config {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.server-config h2 {
+  margin-bottom: 20px;
+  color: #e0e0e0;
+}
+
+/* Alerts */
+.config-alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+}
+
+.config-alert.error {
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid #ff4444;
+  color: #ff6666;
+}
+
+.config-alert.success {
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid #4caf50;
+  color: #66bb6a;
+}
+
+/* Tabs */
+.config-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #333;
+}
+
+.config-tab {
+  padding: 10px 24px;
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.95em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.config-tab:hover {
+  color: #ccc;
+}
+
+.config-tab.active {
+  color: #646cff;
+  border-bottom-color: #646cff;
+}
+
+/* Entries */
+.config-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-entry {
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.config-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.config-key {
+  font-family: monospace;
+  font-size: 0.95em;
+  color: #646cff;
+  font-weight: 600;
+}
+
+.config-description {
+  font-size: 0.85em;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.config-meta {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* Controls */
+.config-control {
+  margin-top: 4px;
+}
+
+.config-input,
+.config-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: #0d0d1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.9em;
+  font-family: monospace;
+  box-sizing: border-box;
+}
+
+.config-input:focus,
+.config-textarea:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.config-input.modified,
+.config-textarea.modified {
+  border-color: #ff9800;
+}
+
+.config-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Toggle switch */
+.config-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.config-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 44px;
+  height: 24px;
+  background: #444;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #ccc;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.config-toggle input:checked + .toggle-slider {
+  background: #646cff;
+}
+
+.config-toggle input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+  background: #fff;
+}
+
+.toggle-label {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.toggle-label.modified {
+  color: #ff9800;
+}
+
+/* Buttons */
+.btn-reset {
+  padding: 4px 12px;
+  font-size: 0.8em;
+  background: transparent;
+  border: 1px solid #666;
+  color: #888;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-reset:hover {
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.reset-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  color: #ff9800;
+}
+
+.btn-confirm-yes,
+.btn-confirm-no {
+  padding: 2px 10px;
+  font-size: 0.85em;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid;
+}
+
+.btn-confirm-yes {
+  background: rgba(255, 68, 68, 0.2);
+  border-color: #ff4444;
+  color: #ff6666;
+}
+
+.btn-confirm-no {
+  background: transparent;
+  border-color: #666;
+  color: #888;
+}
+
+.config-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save-all {
+  padding: 10px 28px;
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-save-all:hover:not(:disabled) {
+  background: #535bf2;
+}
+
+.btn-save-all:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.config-loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}

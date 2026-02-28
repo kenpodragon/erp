@@ -7,8 +7,11 @@ more will be added as features are built (characters, tickets, config, etc.).
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.types import JSON
 
 
 class Player(SQLModel, table=True):
@@ -133,3 +136,33 @@ class PlayerEssence(SQLModel, table=True):
 
     # Relationships
     character: PlayerCharacter = Relationship(back_populates="essence")
+
+
+class ServerConfig(SQLModel, table=True):
+    """Maps to the `server_config` table. Dynamic key-value settings."""
+
+    __tablename__ = "server_config"
+
+    key: str = Field(primary_key=True, max_length=100)
+    value: Optional[str] = Field(default=None)
+    value_type: str = Field(max_length=20)  # string, integer, numeric, boolean, text
+    category: str = Field(max_length=50)  # game, ops
+    description: Optional[str] = Field(default=None)
+    default_value: Optional[str] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
+    updated_by: Optional[str] = Field(default=None, max_length=255)
+
+
+class AdminAuditLog(SQLModel, table=True):
+    """Maps to the `admin_audit_log` table. Immutable admin action audit trail."""
+
+    __tablename__ = "admin_audit_log"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    admin_email: str = Field(max_length=255, nullable=False)
+    action: str = Field(max_length=50, nullable=False)
+    target_type: str = Field(max_length=50, nullable=False)
+    target_id: str = Field(max_length=100, nullable=False)
+    details: Optional[Any] = Field(default=None, sa_column=Column(JSON))
+    ip_address: Optional[str] = Field(default=None, max_length=45)
+    created_at: Optional[datetime] = Field(default=None)

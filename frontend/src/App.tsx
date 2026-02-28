@@ -122,6 +122,14 @@ const SupportPage = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
   </div>
 )
 
+interface PublicConfig {
+  'ops.maintenance_mode': boolean
+  'ops.maintenance_message': string
+  'ops.announcement_banner': string
+  'ops.announcement_banner_type': string
+  'ops.registration_open': boolean
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -132,11 +140,29 @@ function App() {
   const [health, setHealth] = useState<HealthData | null>(null)
   const [apiMessage, setApiMessage] = useState<string>('Connecting...')
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [publicConfig, setPublicConfig] = useState<PublicConfig | null>(null)
+  const [bannerDismissed, setBannerDismissed] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
+  // Fetch public config (maintenance mode, announcements)
+  useEffect(() => {
+    const fetchPublicConfig = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/config/public`)
+        if (res.ok) {
+          const data: PublicConfig = await res.json()
+          setPublicConfig(data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch public config:", err)
+      }
+    }
+    fetchPublicConfig()
+  }, [API_URL])
 
   // Health checks (public endpoints — no auth needed)
   useEffect(() => {
@@ -300,14 +326,66 @@ function App() {
     </div>
   )
 
+  // Maintenance mode — full-screen overlay, blocks everything
+  if (publicConfig?.['ops.maintenance_mode']) {
+    return (
+      <div className="maintenance-overlay" style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%)',
+        color: '#e0e0e0', textAlign: 'center', padding: '2rem',
+      }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#646cff' }}>Maintenance</h1>
+        <p style={{ fontSize: '1.1rem', maxWidth: '500px', lineHeight: 1.6, color: '#aaa' }}>
+          {publicConfig['ops.maintenance_message'] || 'Elysium is undergoing maintenance. Please return shortly.'}
+        </p>
+      </div>
+    )
+  }
+
+  // Announcement banner colors
+  const bannerColors: Record<string, { bg: string; border: string; text: string }> = {
+    info: { bg: 'rgba(100, 108, 255, 0.15)', border: '#646cff', text: '#8888ff' },
+    warning: { bg: 'rgba(255, 152, 0, 0.15)', border: '#ff9800', text: '#ffb74d' },
+    error: { bg: 'rgba(255, 68, 68, 0.15)', border: '#ff4444', text: '#ff6666' },
+  }
+
+  const bannerText = publicConfig?.['ops.announcement_banner'] || ''
+  const bannerType = publicConfig?.['ops.announcement_banner_type'] || 'info'
+  const bannerStyle = bannerColors[bannerType] || bannerColors.info
+
   return (
     <div className="App">
+      {/* Announcement banner */}
+      {bannerText && !bannerDismissed && (
+        <div style={{
+          background: bannerStyle.bg,
+          borderBottom: `1px solid ${bannerStyle.border}`,
+          color: bannerStyle.text,
+          padding: '10px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px',
+          fontSize: '0.9rem', position: 'relative',
+        }}>
+          <span>{bannerText}</span>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            style={{
+              background: 'none', border: 'none', color: bannerStyle.text,
+              cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', lineHeight: 1,
+            }}
+            aria-label="Dismiss announcement"
+          >
+            x
+          </button>
+        </div>
+      )}
+
       <NavBar
         isLoggedIn={isLoggedIn}
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
-      
+
       {showOnboarding && backendUser && (
         <OnboardingFlow 
           player={backendUser} 
