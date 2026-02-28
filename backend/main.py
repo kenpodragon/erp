@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select, text
@@ -28,7 +28,7 @@ try:
     logger.info("Imported auth")
     from models import Player, PlayerSettings, PlayerCharacter
     logger.info("Imported models")
-    from utils import load_profanity_blocklist, is_profane, process_avatar
+    from utils import load_profanity_blocklist, is_profane
     logger.info("Imported utils")
 except Exception as e:
     logger.error("Failed to import local modules: %s", e, exc_info=True)
@@ -120,6 +120,8 @@ async def login(token: dict = Depends(get_current_player), session: Session = De
     email = token.get("email")
     display_name = token.get("name")
     avatar_url = token.get("picture")
+    
+    logger.info("Login attempt for %s", email)
 
     player = session.exec(select(Player).where(Player.firebase_uid == firebase_uid)).first()
     is_new_player = False
@@ -194,6 +196,29 @@ async def get_my_profile(token: dict = Depends(get_current_player), session: Ses
     return {**player.model_dump(), "settings": settings.model_dump() if settings else None}
 
 
+@app.get("/api/players/check-alias")
+async def check_alias(alias: str, session: Session = Depends(get_session)):
+    """
+    Check if an alias is available (uniqueness + format + profanity).
+    Used for real-time validation on frontend.
+    """
+    if not alias or len(alias) < 3 or len(alias) > 20:
+        return {"available": False, "reason": "Length must be 3-20 characters"}
+    
+    if not alias.replace("_", "").replace("-", "").isalnum():
+        return {"available": False, "reason": "Only alphanumeric, underscores, and hyphens allowed"}
+
+    if is_profane(alias):
+        return {"available": False, "reason": "This alias is not allowed"}
+
+    # Uniqueness check (case-insensitive)
+    existing = session.exec(select(Player).where(text("LOWER(alias) = :alias")).params(alias=alias.lower())).first()
+    if existing:
+        return {"available": False, "reason": "This alias is already taken"}
+
+    return {"available": True}
+
+
 @app.patch("/api/players/me")
 async def update_profile(
     update_data: dict,
@@ -234,42 +259,6 @@ async def update_profile(
     session.refresh(player)
 
     return player
-
-
-@app.post("/api/players/me/avatar")
-async def upload_avatar(
-    file: UploadFile = File(...),
-    token: dict = Depends(get_current_player),
-    session: Session = Depends(get_session)
-):
-    """
-    Multipart upload, validate type/size, resize, store, update DB.
-    FR-3.4, FR-3.10
-    """
-    player = token.get("player")
-    if not player:
-        raise HTTPException(status_code=404, detail="Player profile not found")
-
-    # Max size 2MB
-    MAX_SIZE = 2 * 1024 * 1024
-    content = await file.read()
-    if len(content) > MAX_SIZE:
-        raise HTTPException(status_code=422, detail="Image file is too large (max 2MB)")
-    await file.seek(0)  # Reset for process_avatar
-
-    try:
-        results = process_avatar(file, player.id)
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-
-    # We store the 256x256 version as the main custom_avatar_url
-    player.custom_avatar_url = results["url_256"]
-    player.updated_at = datetime.now(timezone.utc)
-    session.add(player)
-    session.commit()
-    session.refresh(player)
-
-    return {"message": "Avatar uploaded successfully", "avatar_url": player.custom_avatar_url}
 
 
 @app.post("/api/players/me/accept-terms")

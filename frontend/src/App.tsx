@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import { api } from './api'
+import { ProfileDashboard } from './components/ProfileDashboard'
 import './App.css'
 
 interface HealthData {
@@ -153,16 +154,19 @@ function App() {
           <div>
             <p>Welcome, <strong>{user.email}</strong></p>
             {backendUser && (
-              <p style={{ color: '#4caf50', fontSize: '0.85em' }}>
-                Backend verified (uid: {backendUser.id || backendUser.firebase_uid})
-              </p>
+              <>
+                <p style={{ color: '#4caf50', fontSize: '0.85em' }}>
+                  Backend verified (uid: {backendUser.id || backendUser.firebase_uid})
+                </p>
+                <ProfileDashboard player={backendUser} onRefresh={verifyUserWithBackend} />
+              </>
             )}
             {backendError && (
               <p style={{ color: '#ff4444', fontSize: '0.85em' }}>
                 Backend: {backendError}
               </p>
             )}
-            <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white' }}>
+            <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white', marginTop: '1rem' }}>
               Logout
             </button>
           </div>

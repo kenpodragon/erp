@@ -85,11 +85,9 @@ Build the complete player-facing onboarding pipeline (Splash → Auth → Profil
   - Alias must be 3-20 characters, alphanumeric + underscores + hyphens only.
   - Alias must be unique across all players (case-insensitive).
   - Profanity filter on alias (use a blocklist — can be simple for MVP, expanded later).
-- [ ] **FR-3.4:** Players must be able to upload a **custom avatar** image OR choose from a set of **preset avatars**.
-  - Upload: Accept JPEG/PNG, max 2MB. Server resizes to 128x128 and 256x256 variants.
-  - Storage: Avatars stored in a configurable location (local filesystem for dev, Google Cloud Storage for production). Path stored in DB, not the image itself.
-  - Preset avatars: 8-12 themed options stored as static assets (dark fantasy aesthetic). No upload required.
-  - If no custom avatar is set, fall back to the Google profile picture. If that's unavailable, use a default silhouette.
+- [ ] **FR-3.4:** Players must be able to choose from a set of **preset avatars**.
+  - Preset avatars: 8-12 themed options stored as static assets (dark fantasy aesthetic).
+  - If no preset is chosen, fall back to the Google profile picture. If that's unavailable, use a default silhouette.
 - [ ] **FR-3.5:** Profile data must include a `terms_accepted_at` timestamp. This field is `NULL` until the player accepts terms during onboarding.
 - [ ] **FR-3.6:** Players with `is_banned = true` must be blocked from all API access. The `get_current_player()` middleware must check this flag after token validation and return `403 Forbidden` with message "Account suspended. Contact support."
 
@@ -536,8 +534,7 @@ Full observability covering three domains: **player behavior analytics** (what p
 ## 13. Non-Functional Requirements
 
 - [ ] **NFR-1:** All API endpoints must return responses in **<200ms** under normal load (single-digit concurrent users for MVP).
-- [ ] **NFR-2:** Avatar uploads must be validated server-side: file type (magic bytes, not just extension), file size, and image dimensions.
-- [ ] **NFR-3:** All user-submitted text (alias, character name, ticket content, replies) must be **sanitized** to prevent XSS. Store as plain text, escape on render.
+- [ ] **NFR-2:** User-submitted text (alias, character name, ticket content, replies) must be **sanitized** to prevent XSS. Store as plain text, escape on render.
 - [ ] **NFR-4:** Alias and character name uniqueness checks must be **case-insensitive** (`LOWER()` index + comparison).
 - [ ] **NFR-5:** The profanity filter for aliases and character names should use a configurable blocklist stored in the backend (text file or DB table). No external API calls for profanity checking.
 - [ ] **NFR-6:** Activity events (§9.2) must be written **asynchronously** and must not block API responses.

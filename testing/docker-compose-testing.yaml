@@ -41,7 +41,7 @@ services:
     volumes:
       - ../frontend:/app
       - /app/node_modules
-    command: sh -c "npm run lint && npm test && npm run build"
+    command: sh -c "npm install && npm run lint && npm test && npm run build"
 
   admin:
     build:
@@ -62,7 +62,7 @@ services:
     volumes:
       - ../admin:/app
       - /app/node_modules
-    command: sh -c "npm run lint && npm test && npm run build"
+    command: sh -c "npm install && npm run lint && npm test && npm run build"
 
   e2e-test:
     image: mcr.microsoft.com/playwright:v1.58.2-noble

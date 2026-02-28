@@ -1,0 +1,49 @@
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { ProfileDashboard } from './ProfileDashboard';
+
+// Mock child components to simplify integration test
+vi.mock('./AliasEditor', () => ({
+  AliasEditor: () => <div data-testid="alias-editor">Alias Editor</div>
+}));
+vi.mock('./AvatarManager', () => ({
+  AvatarManager: () => <div data-testid="avatar-manager">Avatar Manager</div>
+}));
+vi.mock('./AudioSettings', () => ({
+  AudioSettings: () => <div data-testid="audio-settings">Audio Settings</div>
+}));
+
+describe('ProfileDashboard', () => {
+  const mockPlayer = {
+    id: 1,
+    alias: 'TestHero',
+    email: 'test@example.com',
+    google_display_name: 'Test Google Name',
+    google_avatar_url: null,
+    avatar_preset_key: 'warrior',
+    created_at: new Date().toISOString(),
+    terms_accepted_at: new Date().toISOString(),
+    settings: {
+      audio_enabled: true,
+      music_volume: 50,
+      sfx_volume: 50,
+      narration_speed: 1.0
+    }
+  };
+
+  it('renders all profile sections', () => {
+    render(<ProfileDashboard player={mockPlayer} onRefresh={() => {}} />);
+    
+    expect(screen.getByText('test@example.com')).toBeTruthy();
+    expect(screen.getByTestId('alias-editor')).toBeTruthy();
+    expect(screen.getByTestId('avatar-manager')).toBeTruthy();
+    expect(screen.getByTestId('audio-settings')).toBeTruthy();
+  });
+
+  it('shows terms of service button if not accepted', () => {
+    const playerNoTerms = { ...mockPlayer, terms_accepted_at: null };
+    render(<ProfileDashboard player={playerNoTerms} onRefresh={() => {}} />);
+    
+    expect(screen.getByText(/Accept Terms of Service/i)).toBeTruthy();
+  });
+});
