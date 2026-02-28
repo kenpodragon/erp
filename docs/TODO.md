@@ -9,6 +9,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
 > **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 
 - [ ] **7.7 — Frontend: Home Base** *(RECS §5.3, FR-5.27 through FR-5.31)* Refinement, improvement, and getting ready for the normal game loop (content placeholders)
+  - [ ] Remove the MAKE NEW button and the debug tools section on the PROFILE Page. Since, once you are logged in profile = home. Get rid of the second proifile navigation button.
   - [ ] Home Base at `/home` — default landing for returning authenticated players.
   - [ ] Character card: name, class, level, avatar, last played.
   - [ ] "Continue Adventure" button (routes to game — stub/placeholder for now).
