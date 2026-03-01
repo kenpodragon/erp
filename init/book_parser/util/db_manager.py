@@ -133,6 +133,10 @@ def import_db(input_file: str):
             
             # 2. Insert in Parent-First order
             with conn.cursor() as cur:
+                # Disable constraints/triggers for the duration of the import
+                # Requires SUPERUSER privileges, which erp_app_user has in this local setup.
+                cur.execute("SET session_replication_role = 'replica';")
+                
                 for table in reversed(TABLE_ORDER):
                     rows = data.get(table, [])
                     if not rows:
@@ -149,6 +153,9 @@ def import_db(input_file: str):
                         values.append(tuple(r.values()))
                     
                     psycopg2.extras.execute_batch(cur, query, values)
+                
+                # Restore constraints/triggers
+                cur.execute("SET session_replication_role = 'origin';")
                     
         console.print("[bold green]✓ Import successful![/bold green]")
         
