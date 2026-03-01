@@ -6,18 +6,20 @@ interface SplashPageProps {
   onLogin: () => void;
 }
 
+const INITIAL_PARTICLES = Array.from({ length: 20 }).map(() => ({
+  left: `${Math.random() * 100}%`,
+  animationDelay: `${Math.random() * 8}s`,
+  animationDuration: `${6 + Math.random() * 6}s`,
+}));
+
 export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
   return (
     <div className="splash">
       {/* ── Hero Section ─────────────────────────────────────────────── */}
       <section className="splash-hero">
         <div className="hero-particles" aria-hidden="true">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <span key={i} className="particle" style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${6 + Math.random() * 6}s`,
-            }} />
+          {INITIAL_PARTICLES.map((p, i) => (
+            <span key={i} className="particle" style={p} />
           ))}
         </div>
 

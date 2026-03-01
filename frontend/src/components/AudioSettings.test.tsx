@@ -33,7 +33,7 @@ describe('AudioSettings', () => {
 
   it('toggles master audio', async () => {
     const onUpdateSpy = vi.fn();
-    (api.patch as any).mockResolvedValue({ ok: true });
+    vi.mocked(api.patch).mockResolvedValue({ ok: true } as Response);
 
     render(<AudioSettings settings={initialSettings} onUpdate={onUpdateSpy} />);
     
@@ -48,7 +48,7 @@ describe('AudioSettings', () => {
 
   it('updates music volume on mouse up', async () => {
     const onUpdateSpy = vi.fn();
-    (api.patch as any).mockResolvedValue({ ok: true });
+    vi.mocked(api.patch).mockResolvedValue({ ok: true } as Response);
 
     render(<AudioSettings settings={initialSettings} onUpdate={onUpdateSpy} />);
     

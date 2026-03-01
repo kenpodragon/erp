@@ -12,6 +12,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from datetime import datetime, timezone
 
 from main import app, get_session, get_current_player
+import models
 from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence
 
 # ---------------------------------------------------------------------------
@@ -134,6 +135,7 @@ def test_create_character_success(client: TestClient, session: Session):
     })
     assert response.status_code == 200
     data = response.json()
+    print(f"\nDEBUG character data: {data['character']}")
 
     assert data["character"]["character_name"] == "Aldric"
     assert data["character"]["strength"] == cls.base_strength
@@ -319,7 +321,7 @@ def test_get_character_enforces_ownership(client: TestClient, session: Session):
 
     # Player1 creates character
     app.dependency_overrides[get_current_player] = _auth_override(player1)
-    create_res = client.post("/api/players/me/characters", json={"character_name": "Owner", "class_id": cls.id})
+    create_res = client.post("/api/players/me/characters", json={"character_name": "HeroOne", "class_id": cls.id})
     char_id = create_res.json()["character"]["id"]
 
     # Player2 tries to access it

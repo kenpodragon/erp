@@ -26,5 +26,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 2. `@docs/inst/TESTING.md`: Detailed testing protocols.
 3. `@docs/ARCHITECTURE.md`: Technical stack details.
 
+## NOTES
+1. As permissions are requested, keep track of them and help provide a list of updates to gemini.md so that permission settings can be maintained and updated.
 ---
 *For any ambiguity or high-risk operation, ask for confirmation first.*

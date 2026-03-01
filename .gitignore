@@ -469,7 +469,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-\
+
 # Playwright
 **/node_modules/
 /testing/test-results/
@@ -488,3 +488,7 @@ backend/uploads/
 # Firebase / GCP service account keys
 **/secrets/
 *.json.key
+backend/test_characters.db
+backend/test_config.db
+backend/test_erp.db
+backend/test_support.db

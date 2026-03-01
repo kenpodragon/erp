@@ -8,17 +8,17 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://frontend:5173',
     trace: 'on-first-retry',
   },
   projects: [
     {
       name: 'frontend',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5173' },
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://frontend:5173' },
     },
     {
       name: 'admin',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:5174' },
+      use: { ...devices['Desktop Chrome'], baseURL: 'http://admin:5174' },
     },
   ],
 });

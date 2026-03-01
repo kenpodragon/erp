@@ -139,6 +139,9 @@ export const PrivacyPage: React.FC = () => {
             <a href="mailto:support@does-god-exist.org">support@does-god-exist.org</a>.
           </p>
         </section>
+        <section className="page-section" style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <a href="/" className="btn-secondary">Return to Home</a>
+        </section>
       </div>
     </div>
   );

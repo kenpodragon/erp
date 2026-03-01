@@ -29,7 +29,7 @@ describe('AvatarManager', () => {
 
   it('updates preset on click', async () => {
     const onUpdateSpy = vi.fn();
-    (api.patch as any).mockResolvedValue({ ok: true });
+    vi.mocked(api.patch).mockResolvedValue({ ok: true } as Response);
 
     render(
       <AvatarManager 

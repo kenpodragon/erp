@@ -14,11 +14,9 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
 - [x] **Profile Creation:** Users must be able to create a profile linked to their Google Identity.
 - [x] **Terms & Privacy:** Automated prompts for accepting terms based on the Elysium Rising IP.
 - [x] **Onboarding Flow:** Splash page -> About/Instructions -> Auth -> Character Selection/Creation.
-- [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
 - [x] **Support Dashboard** Submit a ticket. See results, discuss about tickets, etc...
 - [ ] **Initial Admin Panel Stuff:**
-    - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
-    - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics.
+    - [x] **User Management:** View, search, block/unblock, and edit user profiles.    
     - [ ] **Server, User Activity Logs, Graphs and Tracking:** View logs, activity history, and metrics.
     - [x] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
     - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
@@ -65,6 +63,11 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
 - [ ] **Microtransactions:** Purchase of shards, cosmetics, and quality-of-life boosters.
 - [ ] **Donations:** One-time support options.
 - [ ] **Refunds:** Full administrative workflow for triggering Stripe refunds from the Admin UI.
+- [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
+    - [ ] Subscriptions (monthly or annuyal re-curring subscriptions with discount) Plus ability to cancel subscription.
+    - [ ] Donations (to support the dev process - fixed amounts and allow for bigger currency bumps). 
+    - [ ] Purchase packages of things from the store (right now it's not doing anything in game, but need to track that they purchased something, and then redeemed it). Ability to get refunds for things not used.
+    - [ ] Transaction log - see all your payments, and whatnot as an end user.
 
 ## 4. Social & MMORPG Features
 - [ ] **Communication Integration:**
@@ -81,7 +84,7 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
 ## 5. Administrative Systems
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
-- [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics.
+- [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
 

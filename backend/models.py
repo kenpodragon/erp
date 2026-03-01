@@ -6,7 +6,7 @@ Only models needed by the current implementation phase are defined here;
 more will be added as features are built (characters, tickets, config, etc.).
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Any
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column
@@ -32,6 +32,13 @@ class Player(SQLModel, table=True):
     banned_at: Optional[datetime] = Field(default=None)
     banned_by: Optional[str] = Field(default=None, max_length=255)
     ban_reason: Optional[str] = Field(default=None)
+    sessions_invalid_before: Optional[datetime] = Field(default=None)
+    
+    # Granular Roles
+    is_owner: bool = Field(default=False)
+    is_system_admin: bool = Field(default=False)
+    is_game_admin: bool = Field(default=False)
+    
     created_at: Optional[datetime] = Field(default=None)
     last_login_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
@@ -223,9 +230,33 @@ class AdminAuditLog(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     admin_email: str = Field(max_length=255, nullable=False)
-    action: str = Field(max_length=50, nullable=False)
+    action: str = Field(max_length=100, nullable=False)
     target_type: str = Field(max_length=50, nullable=False)
     target_id: str = Field(max_length=100, nullable=False)
     details: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     ip_address: Optional[str] = Field(default=None, max_length=45)
     created_at: Optional[datetime] = Field(default=None)
+
+
+# ---------------------------------------------------------------------------
+# Admin Access Control (Whitelist)
+# ---------------------------------------------------------------------------
+
+class AdminWhitelistEmail(SQLModel, table=True):
+    """Maps to `admin_whitelist_emails`. Dynamic email whitelist for admin access."""
+    __tablename__ = "admin_whitelist_emails"
+
+    email: str = Field(primary_key=True, max_length=255)
+    added_by: Optional[str] = Field(default=None, max_length=255)
+    created_at: Optional[datetime] = Field(default=datetime.now(timezone.utc))
+
+
+class AdminWhitelistIP(SQLModel, table=True):
+    """Maps to `admin_whitelist_ips`. Dynamic IP whitelist for admin access."""
+    __tablename__ = "admin_whitelist_ips"
+
+    ip_address: str = Field(primary_key=True, max_length=45)
+    note: Optional[str] = Field(default=None, max_length=255)
+    added_by: Optional[str] = Field(default=None, max_length=255)
+    created_at: Optional[datetime] = Field(default=datetime.now(timezone.utc))
+

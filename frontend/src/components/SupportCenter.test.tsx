@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { SupportCenter } from './SupportCenter'
 import { api } from '../api'
 
-const mockApi = api as {
+const mockApi = api as unknown as {
   get: ReturnType<typeof vi.fn>
   post: ReturnType<typeof vi.fn>
   patch: ReturnType<typeof vi.fn>

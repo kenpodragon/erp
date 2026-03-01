@@ -30,6 +30,13 @@ interface PlayerProfile {
   avatar_preset_key: string | null;
   custom_avatar_url: string | null;
   terms_accepted_at: string | null;
+  created_at: string;
+  settings?: {
+    audio_enabled: boolean;
+    music_volume: number;
+    sfx_volume: number;
+    narration_speed: number;
+  };
   uid?: string;
 }
 
@@ -112,9 +119,70 @@ interface PublicConfig {
   'ops.registration_open': boolean
 }
 
+// Status bar component (compact, reusable)
+const StatusBar = ({ apiMessage, health }: { apiMessage: string, health: HealthData | null }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '4px 10px', margin: '0.5rem auto', maxWidth: '800px', border: '1px solid #333', borderRadius: '6px', fontSize: '0.7rem', color: '#888' }}>
+    <span style={{ fontWeight: 600, color: '#555' }}>Status</span>
+    <span>
+      API{' '}
+      {apiMessage === 'Connecting...' ? <span style={{ color: '#888' }}>…</span> : (apiMessage !== 'Offline'
+        ? <span style={{ color: '#4caf50' }}>●</span>
+        : <span style={{ color: '#ff4444' }}>●</span>
+      )}
+    </span>
+    <span>
+      DB{' '}
+      {health ? (health.database === 'connected'
+        ? <span style={{ color: '#4caf50' }}>●</span>
+        : <span style={{ color: '#ff4444' }}>●</span>
+      ) : <span style={{ color: '#888' }}>…</span>}
+    </span>
+  </div>
+)
+
+interface ProfilePageProps {
+  apiMessage: string;
+  health: HealthData | null;
+  authEnabled: boolean;
+  user: User | null;
+  backendUser: PlayerProfile | null;
+  character: Character | null;
+  verifyUserWithBackend: () => void;
+  setCharacter: (c: Character | null) => void;
+  handleLogout: () => void;
+  backendError: string | null;
+}
+
+// Profile page content
+const ProfilePage = ({
+  apiMessage, health, authEnabled, user, backendUser, character, verifyUserWithBackend, setCharacter, handleLogout, backendError
+}: ProfilePageProps) => (
+  <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem 2rem' }}>
+    <StatusBar apiMessage={apiMessage} health={health} />
+    {!authEnabled ? (
+      <p style={{ color: 'orange', textAlign: 'center' }}>Firebase configuration missing. Check your .env file.</p>
+    ) : !user ? (
+      <Navigate to="/" replace />
+    ) : backendUser ? (
+      <ProfileDashboard
+        player={backendUser}
+        character={character}
+        onRefresh={verifyUserWithBackend}
+        onCharacterCreated={(c) => setCharacter(c)}
+        onCharacterDeleted={() => setCharacter(null)}
+        onLogout={handleLogout}
+      />
+    ) : backendError ? (
+      <p style={{ color: '#ff4444', fontSize: '0.85em', textAlign: 'center' }}>Error: {backendError}</p>
+    ) : (
+      <p style={{ color: '#aaa', textAlign: 'center' }}>Loading profile…</p>
+    )}
+  </div>
+)
+
 function App() {
   const [user, setUser] = useState<User | null>(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(!!auth)
   const [authEnabled] = useState(() => !!auth)
   const [backendUser, setBackendUser] = useState<PlayerProfile | null>(null)
   const [character, setCharacter] = useState<Character | null>(null)
@@ -204,10 +272,7 @@ function App() {
 
   // Firebase auth listener + backend verification
   useEffect(() => {
-    if (!auth) {
-      setAuthLoading(false)
-      return
-    }
+    if (!auth) return
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
@@ -261,52 +326,6 @@ function App() {
   }
 
   const isLoggedIn = !!user
-
-  // Status bar component (compact, reusable)
-  const StatusBar = () => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '4px 10px', margin: '0.5rem auto', maxWidth: '800px', border: '1px solid #333', borderRadius: '6px', fontSize: '0.7rem', color: '#888' }}>
-      <span style={{ fontWeight: 600, color: '#555' }}>Status</span>
-      <span>
-        API{' '}
-        {apiMessage === 'Connecting...' ? <span style={{ color: '#888' }}>…</span> : (apiMessage !== 'Offline'
-          ? <span style={{ color: '#4caf50' }}>●</span>
-          : <span style={{ color: '#ff4444' }}>●</span>
-        )}
-      </span>
-      <span>
-        DB{' '}
-        {health ? (health.database === 'connected'
-          ? <span style={{ color: '#4caf50' }}>●</span>
-          : <span style={{ color: '#ff4444' }}>●</span>
-        ) : <span style={{ color: '#888' }}>…</span>}
-      </span>
-    </div>
-  )
-
-  // Profile page content
-  const ProfilePage = () => (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem 2rem' }}>
-      <StatusBar />
-      {!authEnabled ? (
-        <p style={{ color: 'orange', textAlign: 'center' }}>Firebase configuration missing. Check your .env file.</p>
-      ) : !user ? (
-        <Navigate to="/" replace />
-      ) : backendUser ? (
-        <ProfileDashboard
-          player={backendUser}
-          character={character}
-          onRefresh={verifyUserWithBackend}
-          onCharacterCreated={(c) => setCharacter(c)}
-          onCharacterDeleted={() => setCharacter(null)}
-          onLogout={handleLogout}
-        />
-      ) : backendError ? (
-        <p style={{ color: '#ff4444', fontSize: '0.85em', textAlign: 'center' }}>Error: {backendError}</p>
-      ) : (
-        <p style={{ color: '#aaa', textAlign: 'center' }}>Loading profile…</p>
-      )}
-    </div>
-  )
 
   // Maintenance mode — full-screen overlay, blocks everything
   if (publicConfig?.['ops.maintenance_mode']) {
@@ -386,7 +405,20 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/license" element={<LicensePage />} />
         <Route path="/support" element={isLoggedIn ? <SupportCenter /> : <GuestSupportPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={
+          <ProfilePage
+            apiMessage={apiMessage}
+            health={health}
+            authEnabled={authEnabled}
+            user={user}
+            backendUser={backendUser}
+            character={character}
+            verifyUserWithBackend={verifyUserWithBackend}
+            setCharacter={setCharacter}
+            handleLogout={handleLogout}
+            backendError={backendError}
+          />
+        } />
       </Routes>
     </div>
   )

@@ -47,10 +47,10 @@ describe('AliasEditor', () => {
   });
 
   it('shows availability after debounce', async () => {
-    (api.get as any).mockResolvedValueOnce({
+    vi.mocked(api.get).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ available: true })
-    });
+    } as Response);
 
     render(<AliasEditor currentAlias="HeroOne" displayName="Google Name" onSave={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /Edit alias/i }));
@@ -65,11 +65,11 @@ describe('AliasEditor', () => {
 
   it('calls onSave and returns to idle on successful save', async () => {
     const onSaveSpy = vi.fn();
-    (api.get as any).mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ available: true })
-    });
-    (api.patch as any).mockResolvedValue({ ok: true });
+    } as Response);
+    vi.mocked(api.patch).mockResolvedValue({ ok: true } as Response);
 
     render(<AliasEditor currentAlias="HeroOne" displayName="Google Name" onSave={onSaveSpy} />);
     fireEvent.click(screen.getByRole('button', { name: /Edit alias/i }));
@@ -93,10 +93,10 @@ describe('AliasEditor', () => {
   // in checkAvailability doesn't consistently fire within waitFor's polling window.
   it.skip('disables Save when alias is taken', async () => {
     // Mock the check-alias endpoint to return unavailable
-    (api.get as any).mockImplementation(() => Promise.resolve({
+    vi.mocked(api.get).mockImplementation(() => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({ available: false, reason: 'Already taken' })
-    }));
+    } as Response));
 
     render(<AliasEditor currentAlias="HeroOne" displayName="Google Name" onSave={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /Edit alias/i }));

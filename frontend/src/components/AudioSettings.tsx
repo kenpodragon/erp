@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { api } from '../api';
 
+interface AudioSettingsData {
+  audio_enabled: boolean;
+  music_volume: number;
+  sfx_volume: number;
+  narration_speed: number;
+}
+
 interface AudioSettingsProps {
-  settings: {
-    audio_enabled: boolean;
-    music_volume: number;
-    sfx_volume: number;
-    narration_speed: number;
-  };
-  onUpdate: (newSettings: any) => void;
+  settings: AudioSettingsData;
+  onUpdate: (newSettings: AudioSettingsData) => void;
 }
 
 export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate }) => {
@@ -24,14 +26,14 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
     updateSetting('audio_enabled', newVal);
   };
 
-  const updateSetting = async (key: string, value: any) => {
+  const updateSetting = async (key: keyof AudioSettingsData, value: string | number | boolean) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
     
     setIsSaving(true);
     try {
       const res = await api.patch('/api/players/me/settings', { [key]: value });
       if (res.ok) {
-        onUpdate({ ...localSettings, [key]: value });
+        onUpdate({ ...localSettings, [key]: value } as AudioSettingsData);
       }
     } catch (err) {
       console.error("Failed to save audio setting:", err);
@@ -63,7 +65,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
             max="100" 
             value={localSettings.music_volume} 
             onChange={(e) => setLocalSettings(p => ({...p, music_volume: parseInt(e.target.value)}))}
-            onMouseUp={(e: any) => updateSetting('music_volume', parseInt(e.target.value))}
+            onMouseUp={(e: React.MouseEvent<HTMLInputElement>) => updateSetting('music_volume', parseInt((e.target as HTMLInputElement).value))}
           />
         </div>
       </div>
@@ -77,7 +79,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
             max="100" 
             value={localSettings.sfx_volume} 
             onChange={(e) => setLocalSettings(p => ({...p, sfx_volume: parseInt(e.target.value)}))}
-            onMouseUp={(e: any) => updateSetting('sfx_volume', parseInt(e.target.value))}
+            onMouseUp={(e: React.MouseEvent<HTMLInputElement>) => updateSetting('sfx_volume', parseInt((e.target as HTMLInputElement).value))}
           />
         </div>
       </div>
@@ -92,7 +94,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
             step="0.1"
             value={localSettings.narration_speed} 
             onChange={(e) => setLocalSettings(p => ({...p, narration_speed: parseFloat(e.target.value)}))}
-            onMouseUp={(e: any) => updateSetting('narration_speed', parseFloat(e.target.value))}
+            onMouseUp={(e: React.MouseEvent<HTMLInputElement>) => updateSetting('narration_speed', parseFloat((e.target as HTMLInputElement).value))}
           />
         </div>
       </div>

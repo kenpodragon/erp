@@ -26,10 +26,12 @@ const defaultProps = {
 describe('ProfileDashboard', () => {
   const mockPlayer = {
     id: 1,
+    firebase_uid: 'test_firebase_uid',
     alias: 'TestHero',
     email: 'test@example.com',
     google_display_name: 'Test Google Name',
     google_avatar_url: null,
+    custom_avatar_url: null,
     avatar_preset_key: 'warrior',
     created_at: new Date().toISOString(),
     terms_accepted_at: new Date().toISOString(),

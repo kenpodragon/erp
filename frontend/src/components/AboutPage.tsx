@@ -80,6 +80,7 @@ export const AboutPage: React.FC = () => {
           <p style={{ marginBottom: '1.5rem' }}>
             The Towers are waiting. Choose your class. Name your hero. Begin the ascent.
           </p>
+          <a href="/" className="btn-secondary">Return to Home</a>
         </section>
       </div>
     </div>

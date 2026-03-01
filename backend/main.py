@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from contextlib import asynccontextmanager
 
@@ -20,8 +20,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 logger = logging.getLogger(__name__)
 
 from db import get_session
-from auth import init_firebase, get_current_player, get_current_admin, get_client_ip
-from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence, ServerConfig, AdminAuditLog, SupportTicket, SupportReply
+from auth import init_firebase, get_current_player, get_current_admin, get_current_owner, get_client_ip
+from models import (
+    Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, 
+    PlayerEssence, ServerConfig, AdminAuditLog, SupportTicket, SupportReply,
+    AdminWhitelistEmail, AdminWhitelistIP
+)
 from utils import load_profanity_blocklist, is_profane
 import config_cache
 from audit import write_audit_log
@@ -33,11 +37,14 @@ async def lifespan(app: FastAPI):
     load_profanity_blocklist()
     # Load server config into memory cache
     try:
-        session = next(get_session())
+        session_gen = get_session()
+        session = next(session_gen)
         config_cache.load_config(session)
         session.close()
     except Exception as e:
-        logger.warning("Failed to load config cache on startup: %s", e)
+        # In testing or first-run environments, server_config might not exist yet.
+        # We log a warning but allow the app to start.
+        logger.warning("Could not load config cache on startup (this is normal in some test environments): %s", e)
     yield
     # Shutdown logic (if any)
 
@@ -72,6 +79,9 @@ class MaintenanceModeMiddleware(BaseHTTPMiddleware):
             and not path.startswith("/api/config/public")
             and not path.startswith("/api/admin/")
         ):
+            # We don't have access to DB session here easily without extra overhead,
+            # so we rely on the in-memory cache which is refreshed by admin actions
+            # or periodically by other endpoints.
             if config_cache.get_config_bool("ops.maintenance_mode"):
                 message = config_cache.get_config(
                     "ops.maintenance_message",
@@ -561,11 +571,13 @@ async def create_character(
     session.commit()
     session.refresh(progress)
     session.refresh(essence)
+    session.refresh(character)
+    session.refresh(char_class)
 
     return {
-        "character": {**character.model_dump(), "class": char_class.model_dump()},
-        "progress": progress.model_dump(),
-        "essence": essence.model_dump(),
+        "character": {**jsonable_encoder(character), "class": jsonable_encoder(char_class)},
+        "progress": jsonable_encoder(progress),
+        "essence": jsonable_encoder(essence),
     }
 
 
@@ -586,7 +598,7 @@ async def list_characters(
     result = []
     for char in characters:
         char_class = session.get(CharacterClass, char.class_id)
-        result.append({**char.model_dump(), "class": char_class.model_dump() if char_class else None})
+        result.append({**jsonable_encoder(char), "class": jsonable_encoder(char_class) if char_class else None})
     return result
 
 
@@ -732,8 +744,7 @@ async def create_ticket(
 @app.get("/api/support/tickets")
 async def list_my_tickets(
     status: Optional[str] = None,
-    limit: int = 20,
-    offset: int = 0,
+    limit: int = 20, offset: int = 0,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -751,7 +762,6 @@ async def list_my_tickets(
     query = query.order_by(SupportTicket.updated_at.desc())
 
     # Count total
-
     count_query = select(func.count()).select_from(SupportTicket).where(SupportTicket.player_id == player.id)
     if status:
         count_query = count_query.where(SupportTicket.status == status)
@@ -983,6 +993,234 @@ async def admin_ping(token: dict = Depends(get_current_admin)):
     }
 
 
+@app.get("/api/admin/me")
+async def admin_get_me(token: dict = Depends(get_current_admin)):
+    """Return current admin profile and role info."""
+    return {
+        "email": token.get("email"),
+        "is_owner": token.get("is_owner", False),
+        "player": token.get("player")
+    }
+
+
+# ---------------------------------------------------------------------------
+# Admin: Permission Management (Owner Only)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/admin/permissions/admins")
+async def admin_list_system_admins(
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """List all players with system admin or owner flags."""
+    admins = session.exec(select(Player).where((Player.is_system_admin == True) | (Player.is_owner == True))).all()
+    return admins
+
+
+@app.patch("/api/admin/players/{player_id}/permissions")
+async def admin_update_permissions(
+    player_id: int,
+    body: dict,
+    request: Request,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """
+    Owner: Update system_admin or game_admin flags.
+    Prevents updating is_owner via API.
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+    changes = {}
+
+    if "is_system_admin" in body:
+        new_val = bool(body["is_system_admin"])
+        if player.is_system_admin != new_val:
+            changes["is_system_admin"] = {"old": player.is_system_admin, "new": new_val}
+            player.is_system_admin = new_val
+
+    if "is_game_admin" in body:
+        new_val = bool(body["is_game_admin"])
+        if player.is_game_admin != new_val:
+            changes["is_game_admin"] = {"old": player.is_game_admin, "new": new_val}
+            player.is_game_admin = new_val
+
+    if changes:
+        player.updated_at = now
+        session.add(player)
+        session.commit()
+
+        # Audit log
+        write_audit_log(
+            session=session,
+            admin_email=admin_email,
+            action="permissions_updated",
+            target_type="player",
+            target_id=str(player_id),
+            details=changes,
+            ip_address=get_client_ip(request),
+        )
+
+    session.refresh(player)
+    return player.model_dump()
+
+
+# ---------------------------------------------------------------------------
+# Admin: Access Control Management (Owner Only)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/admin/access-control")
+async def admin_get_access_control(
+    request: Request,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """Owner: List whitelisted emails and IPs + current requester info."""
+    emails = session.exec(select(AdminWhitelistEmail)).all()
+    ips = session.exec(select(AdminWhitelistIP)).all()
+    
+    return {
+        "emails": emails,
+        "ips": ips,
+        "current_ip": get_client_ip(request),
+        "current_email": token.get("email")
+    }
+
+
+@app.post("/api/admin/access-control/emails")
+async def admin_add_whitelist_email(
+    body: dict,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """Owner: Add email to admin whitelist."""
+    email = body.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=422, detail="Valid email is required")
+
+    existing = session.get(AdminWhitelistEmail, email)
+    if existing:
+        return existing
+
+    new_entry = AdminWhitelistEmail(
+        email=email,
+        added_by=token.get("email"),
+        created_at=datetime.now(timezone.utc)
+    )
+    session.add(new_entry)
+    session.commit()
+    
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email"),
+        action="whitelist_email_added",
+        target_type="access_control",
+        target_id=email,
+        details={},
+        ip_address=None
+    )
+    
+    return new_entry
+
+
+@app.delete("/api/admin/access-control/emails/{email}")
+async def admin_remove_whitelist_email(
+    email: str,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """Owner: Remove email from whitelist (cannot remove self)."""
+    email = email.lower()
+    if email == token.get("email", "").lower():
+        raise HTTPException(status_code=400, detail="You cannot remove your own email from the whitelist")
+
+    entry = session.get(AdminWhitelistEmail, email)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Email not found in whitelist")
+
+    session.delete(entry)
+    session.commit()
+    
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email"),
+        action="whitelist_email_removed",
+        target_type="access_control",
+        target_id=email,
+        details={}
+    )
+    return {"message": "Email removed"}
+
+
+@app.post("/api/admin/access-control/ips")
+async def admin_add_whitelist_ip(
+    body: dict,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """Owner: Add IP to admin whitelist."""
+    ip = body.get("ip", "").strip()
+    note = body.get("note", "").strip()
+    if not ip:
+        raise HTTPException(status_code=422, detail="IP address is required")
+
+    existing = session.get(AdminWhitelistIP, ip)
+    if existing:
+        return existing
+
+    new_entry = AdminWhitelistIP(
+        ip_address=ip,
+        note=note,
+        added_by=token.get("email"),
+        created_at=datetime.now(timezone.utc)
+    )
+    session.add(new_entry)
+    session.commit()
+    
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email"),
+        action="whitelist_ip_added",
+        target_type="access_control",
+        target_id=ip,
+        details={"note": note}
+    )
+    return new_entry
+
+
+@app.delete("/api/admin/access-control/ips/{ip}")
+async def admin_remove_whitelist_ip(
+    ip: str,
+    request: Request,
+    token: dict = Depends(get_current_owner),
+    session: Session = Depends(get_session)
+):
+    """Owner: Remove IP from whitelist (cannot remove current IP)."""
+    if ip == get_client_ip(request):
+        raise HTTPException(status_code=400, detail="You cannot remove your current IP from the whitelist")
+
+    entry = session.get(AdminWhitelistIP, ip)
+    if not entry:
+        raise HTTPException(status_code=404, detail="IP not found in whitelist")
+
+    session.delete(entry)
+    session.commit()
+    
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email"),
+        action="whitelist_ip_removed",
+        target_type="access_control",
+        target_id=ip,
+        details={}
+    )
+    return {"message": "IP removed"}
+
+
 # ---------------------------------------------------------------------------
 # Admin: Server Config endpoints
 # ---------------------------------------------------------------------------
@@ -1180,7 +1418,6 @@ async def admin_list_tickets(
         query = query.order_by(sort_col.desc())
 
     # Count
-
     count_q = select(func.count()).select_from(SupportTicket)
     if status:
         count_q = count_q.where(SupportTicket.status == status)
@@ -1412,6 +1649,309 @@ async def admin_add_internal_note(
     # Refresh after audit log commit
     session.refresh(note)
     return note.model_dump()
+
+
+# ---------------------------------------------------------------------------
+# Admin: Player Management endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/admin/players")
+async def admin_list_players(
+    search: Optional[str] = None,
+    status: Optional[str] = None, # 'active', 'banned'
+    has_character: Optional[bool] = None,
+    sort_by: str = "last_login_at",
+    sort_order: str = "desc",
+    limit: int = 20,
+    offset: int = 0,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: List all players with search, filters, and summary stats.
+    FR-7.1, FR-7.2, FR-7.9
+    """
+    query = select(Player)
+
+    # Search
+    if search:
+        search_term = f"%{search}%"
+        query = query.where(
+            (Player.alias.ilike(search_term)) |
+            (Player.email.ilike(search_term)) |
+            (Player.firebase_uid.ilike(search_term))
+        )
+
+    # Filters
+    if status == "banned":
+        query = query.where(Player.is_banned == True)
+    elif status == "active":
+        query = query.where(Player.is_banned == False)
+
+    if has_character is not None:
+        if has_character:
+            query = query.where(Player.characters.any())
+        else:
+            query = query.where(~Player.characters.any())
+
+    # Sorting
+    sort_col = getattr(Player, sort_by, Player.last_login_at)
+    if sort_order == "asc":
+        query = query.order_by(sort_col.asc())
+    else:
+        query = query.order_by(sort_col.desc())
+
+    # Count total for summary stats
+    total_players = session.exec(select(func.count()).select_from(Player)).one()
+    banned_players = session.exec(select(func.count()).select_from(Player).where(Player.is_banned == True)).one()
+    
+    # Active 30d (logged in within last 30 days)
+    thirty_days_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30)
+    active_30d = session.exec(select(func.count()).select_from(Player).where(Player.last_login_at >= thirty_days_ago)).one()
+
+    # Total for paginated query
+    count_query = select(func.count()).select_from(query.subquery())
+    total_filtered = session.exec(count_query).one()
+
+    players = session.exec(query.offset(offset).limit(limit)).all()
+
+    # Enrich with character count
+    results = []
+    for p in players:
+        char_count = session.exec(select(func.count()).select_from(PlayerCharacter).where(PlayerCharacter.player_id == p.id)).one()
+        pd = p.model_dump()
+        pd["character_count"] = char_count
+        results.append(pd)
+
+    return {
+        "players": results,
+        "total": total_filtered,
+        "summary": {
+            "total": total_players,
+            "banned": banned_players,
+            "active_30d": active_30d,
+        },
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@app.get("/api/admin/players/{player_id}")
+async def admin_get_player_detail(
+    player_id: int,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Full player detail with characters and recent tickets.
+    FR-7.3, FR-7.10
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    characters = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player_id)).all()
+    char_results = []
+    for char in characters:
+        char_class = session.get(CharacterClass, char.class_id)
+        char_results.append({**char.model_dump(), "class": char_class.model_dump() if char_class else None})
+
+    # Recent tickets
+    recent_tickets = session.exec(
+        select(SupportTicket)
+        .where(SupportTicket.player_id == player_id)
+        .order_by(SupportTicket.created_at.desc())
+        .limit(5)
+    ).all()
+
+    return {
+        "player": player.model_dump(),
+        "characters": char_results,
+        "recent_tickets": [t.model_dump() for t in recent_tickets],
+    }
+
+
+@app.post("/api/admin/players/{player_id}/ban")
+async def admin_ban_player(
+    player_id: int,
+    body: dict,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Ban a player.
+    FR-7.4, FR-7.11
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    reason = body.get("reason", "").strip()
+    if len(reason) < 10 or len(reason) > 500:
+        raise HTTPException(status_code=422, detail="Ban reason must be between 10 and 500 characters")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+
+    player.is_banned = True
+    player.banned_at = now
+    player.banned_by = admin_email
+    player.ban_reason = reason
+    player.sessions_invalid_before = now # Also invalidate current sessions
+    player.updated_at = now
+    
+    session.add(player)
+    session.commit()
+
+    # Audit log
+    write_audit_log(
+        session=session,
+        admin_email=admin_email,
+        action="player_banned",
+        target_type="player",
+        target_id=str(player_id),
+        details={"reason": reason},
+        ip_address=get_client_ip(request),
+    )
+
+    session.refresh(player)
+    return player.model_dump()
+
+
+@app.post("/api/admin/players/{player_id}/unban")
+async def admin_unban_player(
+    player_id: int,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Unban a player.
+    FR-7.6, FR-7.12
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+
+    player.is_banned = False
+    player.banned_at = None
+    player.banned_by = None
+    player.ban_reason = None
+    player.updated_at = now
+    
+    session.add(player)
+    session.commit()
+
+    # Audit log
+    write_audit_log(
+        session=session,
+        admin_email=admin_email,
+        action="player_unbanned",
+        target_type="player",
+        target_id=str(player_id),
+        details={},
+        ip_address=get_client_ip(request),
+    )
+
+    session.refresh(player)
+    return player.model_dump()
+
+
+@app.post("/api/admin/players/{player_id}/logout")
+async def admin_logout_player(
+    player_id: int,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Force logout a player (invalidate all current tokens).
+    FR-7.13 (custom implementation)
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+
+    player.sessions_invalid_before = now
+    player.updated_at = now
+    
+    session.add(player)
+    session.commit()
+
+    # Audit log
+    write_audit_log(
+        session=session,
+        admin_email=admin_email,
+        action="player_force_logout",
+        target_type="player",
+        target_id=str(player_id),
+        details={},
+        ip_address=get_client_ip(request),
+    )
+
+    session.refresh(player)
+    return {"message": "Player sessions invalidated", "sessions_invalid_before": player.sessions_invalid_before}
+
+
+@app.patch("/api/admin/players/{player_id}")
+async def admin_update_player(
+    player_id: int,
+    body: dict,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin: Edit player fields (alias, custom_avatar_url).
+    FR-7.13
+    """
+    player = session.get(Player, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    admin_email = token.get("email", "unknown")
+    now = datetime.now(timezone.utc)
+    changes = {}
+
+    if "alias" in body:
+        new_alias = body["alias"]
+        if new_alias:
+            # Uniqueness check
+            existing = session.exec(select(Player).where(text("LOWER(alias) = :a")).params(a=new_alias.lower())).first()
+            if existing and existing.id != player_id:
+                raise HTTPException(status_code=409, detail="Alias already taken")
+        changes["alias"] = {"old": player.alias, "new": new_alias}
+        player.alias = new_alias
+
+    if "custom_avatar_url" in body:
+        changes["custom_avatar_url"] = {"old": player.custom_avatar_url, "new": body["custom_avatar_url"]}
+        player.custom_avatar_url = body["custom_avatar_url"]
+
+    if changes:
+        player.updated_at = now
+        session.add(player)
+        session.commit()
+
+        # Audit log
+        write_audit_log(
+            session=session,
+            admin_email=admin_email,
+            action="player_edited",
+            target_type="player",
+            target_id=str(player_id),
+            details=changes,
+            ip_address=get_client_ip(request),
+        )
+
+    session.refresh(player)
+    return player.model_dump()
 
 
 if __name__ == "__main__":

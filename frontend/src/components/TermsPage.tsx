@@ -129,6 +129,9 @@ export const TermsPage: React.FC = () => {
             If you have any questions about these Terms, please contact us at <a href="mailto:support@does-god-exist.org">support@does-god-exist.org</a>.
           </p>
         </section>
+        <section className="page-section" style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <a href="/" className="btn-secondary">Return to Home</a>
+        </section>
       </div>
     </div>
   );

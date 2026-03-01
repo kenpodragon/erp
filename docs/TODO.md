@@ -9,21 +9,6 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [recs/1_ONBOARDING_INIT_RECS.md](recs/1_ONBOARDING_INIT_RECS.md) | **Schema:** [recs/1_ONBOARDING_INIT_SCHEMA.md](recs/1_ONBOARDING_INIT_SCHEMA.md)
 
-- [ ] **7.10 — Admin: User Management** *(RECS §7, FR-7.1 through FR-7.14)*
-  - [ ] **Admin API:**
-    - [ ] `GET /api/admin/players` — paginated player list (search by alias/email/UID, filter by status/has_character/date, sortable).
-    - [ ] `GET /api/admin/players/{id}` — full player detail (profile, characters, activity summary, recent tickets).
-    - [ ] `POST /api/admin/players/{id}/ban` — set `is_banned=true`, record reason/timestamp/admin email. Log to audit.
-    - [ ] `POST /api/admin/players/{id}/unban` — set `is_banned=false`, record timestamp/admin email. Log to audit.
-    - [ ] `PATCH /api/admin/players/{id}` — edit alias, avatar override.
-    - [ ] `GET /api/admin/players/{id}/activity` — player activity summary.
-  - [ ] **Admin Frontend:**
-    - [ ] Players list page: search bar, filters, sortable columns, player count summary (Total, Active 30d, Banned).
-    - [ ] Player detail page: profile info, character(s), activity summary, recent tickets, Ban/Unban with confirmation modal.
-    - [ ] Add UI/UX for the pieces. 
-  - [ ] Create testing for UI/UX and API.
-
-
 - [ ] **7.11 — Activity Events & Audit Log** *(RECS §9, FR-9.1 through FR-9.17)*
   - [ ] Create SQLModel models for `activity_events` and `admin_audit_log`.
   - [ ] Backend: async event logging helper — fire-and-forget writes to `activity_events` (don't block API responses).
@@ -67,6 +52,13 @@ This document tracks the initial setup and development phases for the Elysium Ri
     - [ ] Character Creator: Improve visual feedback for stats.
     - [ ] Admin: Add "Average Resolution Time" and other missing metrics from §9.4.
 
+- [ ] **7.14 — Onboarding & Admin: Polishing & Refinements**
+  - [ ] Fetch current marketing materials (Amazon book pages, eleven reader pages, and does-god-exist pages). Use to create summary docs and information for use) - SUMMARY_MARKETING.md 
+  - [ ] Read and process the books, along with the summary marketing materials to create a theming and BOOKS summary.md files to ensure that development (themes, content, descriptions) are consistent with everything in the books.
+  - [ ] Create a styling and theming guide (fonts, colors, imagry) consistent with the look and feel of the books (refer to the book covers here)  
+  - [ ] Create an announcement page for does-god-exist.
+  - [ ] Update the splash pages and initial classes (to be more in tune with book characters).
+  - [ ] Update documentation and instructions to refer to the BOOK synopsis
 
 ## Book Processing 📚
 - [ ] **Book Processing**
@@ -74,7 +66,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
 
  ## OTHER MAJOR TASKS
  - [ ] **Book Processing Phase 3**
-    - [ ] Add in some hidden/secret enemies Variants of ********** (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 
+    - [ ] Add in some hidden/secret enemies Variants of ********** (this is the name of the character since that's appearing in my text frequently a series of 10x*) (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 
     - [ ] Check for missing data in the locations tables, entitiy tables (e.g. base description, emotional state, sounds, smells, equipment, abiliites). If missing generate.
     - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)   
   - [ ] **MISC**

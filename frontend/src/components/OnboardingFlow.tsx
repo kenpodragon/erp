@@ -4,8 +4,36 @@ import { CharacterCreator } from './CharacterCreator';
 import { TermsPage } from './TermsPage';
 import './OnboardingFlow.css';
 
+interface Player {
+  id: number;
+  firebase_uid: string;
+  email: string;
+  alias: string | null;
+  google_display_name: string | null;
+  google_avatar_url: string | null;
+  custom_avatar_url: string | null;
+  avatar_preset_key: string | null;
+  terms_accepted_at: string | null;
+  created_at: string;
+}
+
+interface Character {
+  id: number;
+  character_name: string;
+  level: number;
+  strength: number | null;
+  agility: number | null;
+  intelligence: number | null;
+  created_at: string;
+  class: {
+    id: number; name: string; lore_blurb: string | null;
+    base_strength: number; base_agility: number; base_intelligence: number;
+    sprite_key: string | null; is_available: boolean;
+  } | null;
+}
+
 interface OnboardingFlowProps {
-  player: any;
+  player: Player;
   onComplete: () => void;
 }
 
@@ -23,7 +51,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ player, onComple
   const [selectedPreset, setSelectedPreset] = useState<string | null>(player.avatar_preset_key);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
-  const [createdCharacter, setCreatedCharacter] = useState<any>(null);
+  const [createdCharacter, setCreatedCharacter] = useState<Character | null>(null);
 
   // Step 1: Terms Scroll Check
   const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {

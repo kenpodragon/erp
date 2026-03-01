@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 import './SupportTickets.css'
 
@@ -83,7 +83,7 @@ export default function SupportTickets() {
   const [resolveReplyText, setResolveReplyText] = useState('')
   const [showResolveReply, setShowResolveReply] = useState(false)
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -107,11 +107,11 @@ export default function SupportTickets() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, categoryFilter, priorityFilter])
 
   useEffect(() => {
     if (view === 'queue') fetchTickets()
-  }, [view, statusFilter, categoryFilter, priorityFilter])
+  }, [view, fetchTickets])
 
   const openDetail = async (ticketId: number) => {
     setLoading(true)

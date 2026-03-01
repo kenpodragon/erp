@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 import './SupportCenter.css'
 
@@ -80,7 +80,7 @@ export function SupportCenter() {
   const [closeNote, setCloseNote] = useState('')
   const [showClose, setShowClose] = useState(false)
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -100,11 +100,11 @@ export function SupportCenter() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     if (view === 'list') fetchTickets()
-  }, [view, statusFilter])
+  }, [view, fetchTickets])
 
   const openTicketDetail = async (ticketId: number) => {
     setLoading(true)

@@ -20,7 +20,9 @@ const mockPlayer = {
   google_avatar_url: 'http://example.com/avatar.jpg',
   alias: null,
   avatar_preset_key: null,
+  custom_avatar_url: null,
   terms_accepted_at: null,
+  created_at: '2026-02-28T00:00:00Z',
 };
 
 describe('OnboardingFlow', () => {

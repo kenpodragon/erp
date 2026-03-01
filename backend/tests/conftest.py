@@ -1,18 +1,39 @@
 import pytest
+import os
+import uuid
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
-from main import app, get_session
-
-# --- Test DB Setup ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_shared.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+from main import app
+from db import get_session
+from auth import get_current_player, get_current_admin
+# Explicitly import ALL models to ensure they are registered with SQLModel.metadata
+from models import (
+    Player, PlayerSettings, CharacterClass, PlayerCharacter, 
+    PlayerProgress, PlayerEssence, SupportTicket, SupportReply, 
+    ServerConfig, AdminAuditLog
+)
+from datetime import datetime, timezone
 
 @pytest.fixture(name="session")
 def session_fixture():
+    # Create a unique database file for each test to avoid file locking and state bleed
+    db_name = f"test_{uuid.uuid4().hex}.db"
+    db_url = f"sqlite:///{db_name}"
+    engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    
     SQLModel.metadata.create_all(engine)
+    
     with Session(engine) as session:
         yield session
+    
+    # Cleanup: drop tables and delete file
     SQLModel.metadata.drop_all(engine)
+    engine.dispose()
+    if os.path.exists(db_name):
+        try:
+            os.remove(db_name)
+        except PermissionError:
+            pass # Windows occasionally locks files briefly
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
@@ -21,4 +42,68 @@ def client_fixture(session: Session):
     app.dependency_overrides[get_session] = get_session_override
     with TestClient(app) as client:
         yield client
+    app.dependency_overrides.clear()
+
+@pytest.fixture
+def test_player(session: Session):
+    player = Player(
+        firebase_uid="test_uid_123",
+        email="test@example.com",
+        alias="TestPlayer",
+        created_at=datetime.now(timezone.utc),
+        last_login_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    session.add(player)
+    session.commit()
+    session.refresh(player)
+    return player
+
+@pytest.fixture
+def test_character_class(session: Session):
+    char_class = CharacterClass(
+        name="TestClass",
+        base_strength=10,
+        base_agility=10,
+        base_intelligence=10,
+        is_available=True
+    )
+    session.add(char_class)
+    session.commit()
+    session.refresh(char_class)
+    return char_class
+
+@pytest.fixture
+def test_character(session: Session, test_player: Player, test_character_class: CharacterClass):
+    char = PlayerCharacter(
+        player_id=test_player.id,
+        class_id=test_character_class.id,
+        character_name="TestChar",
+        level=1,
+        strength=10,
+        agility=10,
+        intelligence=10,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    session.add(char)
+    session.commit()
+    session.refresh(char)
+    return char
+
+@pytest.fixture
+def admin_client(session: Session):
+    """Client with admin auth mocked."""
+    def get_session_override():
+        return session
+    
+    def get_current_admin_override():
+        return {"uid": "admin_uid", "email": "admin@example.com", "name": "Admin User"}
+
+    app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_current_admin] = get_current_admin_override
+    
+    with TestClient(app) as client:
+        yield client
+    
     app.dependency_overrides.clear()

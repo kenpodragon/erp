@@ -20,8 +20,27 @@ interface Character {
   } | null;
 }
 
+interface Player {
+  id: number;
+  firebase_uid: string;
+  email: string;
+  alias: string | null;
+  google_display_name: string | null;
+  google_avatar_url: string | null;
+  custom_avatar_url: string | null;
+  avatar_preset_key: string | null;
+  terms_accepted_at: string | null;
+  created_at: string;
+  settings?: {
+    audio_enabled: boolean;
+    music_volume: number;
+    sfx_volume: number;
+    narration_speed: number;
+  };
+}
+
 interface ProfileDashboardProps {
-  player: any;
+  player: Player;
   character: Character | null;
   onRefresh: () => void;
   onCharacterCreated: (character: Character) => void;
@@ -69,8 +88,9 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
   const avatarUrl = useMemo(() => {
     if (imgError) return 'https://via.placeholder.com/128/000000/b8860b?text=ERP';
     if (player.avatar_preset_key) return `/assets/avatars/preset_${player.avatar_preset_key}.png`;
+    // Note: implementation of custom_avatar_url would go here if used
     return player.google_avatar_url || 'https://via.placeholder.com/128/000000/b8860b?text=ERP';
-  }, [player.avatar_preset_key, player.google_avatar_url, player.custom_avatar_url, imgError]);
+  }, [player.avatar_preset_key, player.google_avatar_url, imgError]);
 
   return (
     <div className="profile-container">
