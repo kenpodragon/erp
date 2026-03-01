@@ -1,8 +1,8 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app
-from backend.auth import get_current_admin
+from main import app
+from auth import get_current_admin
 from fastapi import HTTPException
 
 def test_admin_access_denied_generic_message():
@@ -19,7 +19,7 @@ def test_admin_access_denied_generic_message():
 
 @pytest.mark.anyio
 async def test_auth_generic_error():
-    from backend.auth import get_current_admin
+    from auth import get_current_admin
     from unittest.mock import MagicMock, AsyncMock
     
     # Mock dependencies
