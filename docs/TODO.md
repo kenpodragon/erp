@@ -13,11 +13,13 @@
 *Updated: 2026-03-01*
 
 ## Book Processing Post Processing Stuff
-- [ ] **Book Processing Phase 3**
-  - [ ] Add in some hidden/secret enemies Variants of ********** (this is the name of the character since that's appearing in my text frequently a series of 10x*) (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 
-  - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)   
-  - [ ] Check for missing data in the locations tables, entitiy tables (e.g. base description, emotional state, sounds, smells, equipment, abiliites). If missing generate.  
-- [ ] **MISC**
+> **All tasks below are performed directly in the production PostgreSQL database.**
+> Follow the connection and migration instructions in [`docs/inst/DB_MIGRATIONS.md`](inst/DB_MIGRATIONS.md).
+> Any reusable SQL scripts should be saved in `/db`.
+- [ ] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
+  - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)
+  - [ ] Check for missing data in the locations tables, entity tables (e.g. base description, emotional state, sounds, smells, equipment, abilities). If missing, generate and INSERT/UPDATE via SQL.
+- [ ] **MISC** (text cleanup via SQL queries against the DB)
   - [ ] Clean up text, lots of the ******** from when I left page breaks in there. There's also the introductory bits (copyright pages - chapter 1 for each book). Might want to keep it, maybe just skip it or use as an easter egg (what the hell is this crap - as part of the tutorial or something - also need to see where the TOC went in all of this).
 
 

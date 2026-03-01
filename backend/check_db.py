@@ -1,9 +1,15 @@
 
 import os
+from dotenv import load_dotenv
 from sqlmodel import Session, create_engine, select
 from models import AdminWhitelistEmail, AdminWhitelistIP, Player, ServerConfig
 
-DATABASE_URL = "postgresql://erp_app_user:NF30tO8IDhoZ4mwfTeieLZEAUw6Yz0t9@35.196.226.159:5432/erp_production"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
 engine = create_engine(DATABASE_URL)
 
 def check_access_control():
