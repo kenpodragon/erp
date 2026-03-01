@@ -9,6 +9,7 @@ Tests for the Character System API (TODO 7.4):
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
+from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone
 
 from main import app, get_session, get_current_player
@@ -19,8 +20,12 @@ from models import Player, PlayerSettings, CharacterClass, PlayerCharacter, Play
 # Test DB setup (SQLite, in-memory enough for unit tests)
 # ---------------------------------------------------------------------------
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_characters.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 
 
 @pytest.fixture(name="session")

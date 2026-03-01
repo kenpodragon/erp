@@ -1,11 +1,16 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, text
+from sqlalchemy.pool import StaticPool
 from main import app, get_session, get_current_admin
 
 # --- Test DB Setup ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_system.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 
 @pytest.fixture(name="session")
 def session_fixture():

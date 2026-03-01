@@ -10,6 +10,8 @@ services:
       - ../backend:/app
     environment:
       - ENVIRONMENT=development
+      - "DATABASE_URL=sqlite:///:memory:"
+      - "UPLOADS_DIR=/tmp/erp_uploads"
 
   backend-test:
     build:
@@ -20,6 +22,7 @@ services:
       - ../backend:/app
     environment:
       - "DATABASE_URL=sqlite:///:memory:"
+      - "UPLOADS_DIR=/tmp/erp_uploads"
     command: pytest -v
 
   frontend:
@@ -29,13 +32,17 @@ services:
       - "5173:5173"
     env_file:
       - ../frontend/.env
+    environment:
+      - "VITE_FIREBASE_API_KEY=dummy-key"
+      - "VITE_API_BASE_URL=http://backend:8000"
     volumes:
       - ../frontend:/app
       - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5173/"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5173', (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }).on('error', () => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -56,13 +63,17 @@ services:
       - "5174:5174"
     env_file:
       - ../admin/.env
+    environment:
+      - "VITE_FIREBASE_API_KEY=dummy-key"
+      - "VITE_API_BASE_URL=http://backend:8000"
     volumes:
       - ../admin:/app
       - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5174"
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5174/"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5174', (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }).on('error', () => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 10

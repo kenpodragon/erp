@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 import './AuditLog.css'
 
@@ -145,9 +145,8 @@ export default function AuditLog() {
             </thead>
             <tbody>
               {entries.map(entry => (
-                <>
+                <React.Fragment key={entry.id}>
                   <tr
-                    key={entry.id}
                     className="audit-row"
                     onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                   >
@@ -168,7 +167,7 @@ export default function AuditLog() {
                     </td>
                   </tr>
                   {expandedId === entry.id && entry.details && (
-                    <tr key={`${entry.id}-detail`} className="audit-detail-row">
+                    <tr className="audit-detail-row">
                       <td colSpan={7}>
                         <pre className="audit-detail-json">
                           {JSON.stringify(entry.details, null, 2)}
@@ -176,7 +175,7 @@ export default function AuditLog() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>

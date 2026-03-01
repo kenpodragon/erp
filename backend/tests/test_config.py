@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
+from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone
 
 from main import app, get_session, get_current_player, get_current_admin
@@ -8,8 +9,12 @@ from models import ServerConfig, AdminAuditLog
 import config_cache
 
 # --- Test DB Setup ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_config.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 
 
 def seed_config(session: Session):

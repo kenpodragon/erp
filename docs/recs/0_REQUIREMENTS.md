@@ -31,7 +31,7 @@ Narrative data has also been programmatically extracted into the PostgreSQL data
 
 ## 2. Core Gameplay Mechanics (Three-Loop Architecture)
 The primary goal of ERP is to provide an immersive environment where players **read the book series while playing the game**. The architecture is built on three interconnected loops that balance active play, passive progression, and overworld strategy. The initial design and implementation will be to put these frameworks into place. Population and expansion of these into the full story and components related to the story should be described (e.g. start with 4 basic classes, but allow ability to add more as time progresses. Start with 4 skills. 4 enemy types, etc.. - however a process to expand those as they become defined and tooling to extract and create them (from the extracted book contents)).
-### 2.1 Loop A: Overworld / Hub (Strategy & Navigation)
+### 2.0 Loop A: Overworld / Hub (Strategy & Navigation)
 - [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
 - [ ] **UI/UX Design Requirements:** Need to define what these look like (use the 2.0 GAME LOOP bits as a starting point)
 

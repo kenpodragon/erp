@@ -148,7 +148,7 @@ class MaintenanceModeMiddleware(BaseHTTPMiddleware):
 app.add_middleware(MaintenanceModeMiddleware)
 
 # Static file serving for uploads
-uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+uploads_dir = os.getenv("UPLOADS_DIR", os.path.join(os.path.dirname(__file__), "uploads"))
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 

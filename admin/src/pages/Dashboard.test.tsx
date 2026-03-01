@@ -4,7 +4,11 @@ import { MemoryRouter } from 'react-router-dom'
 import Dashboard from './Dashboard'
 import { api } from '../api'
 
-const mockApi = api as unknown as { get: ReturnType<typeof vi.fn> }
+vi.mock('../api', () => ({
+  api: {
+    get: vi.fn(),
+  },
+}))
 
 function mockResponse(data: unknown, ok = true) {
   return { ok, status: ok ? 200 : 500, json: () => Promise.resolve(data) }
@@ -28,14 +32,16 @@ const EVENTS_DATA = {
 }
 
 function setupMocks() {
-  // The Dashboard fires multiple concurrent fetches — mock in order of resolution.
-  // Overview, then DAU, Registrations, Chapter, Events.
-  mockApi.get
-    .mockResolvedValueOnce(mockResponse(OVERVIEW))      // overview
-    .mockResolvedValueOnce(mockResponse(DAU_DATA))       // dau
-    .mockResolvedValueOnce(mockResponse(REG_DATA))       // registrations
-    .mockResolvedValueOnce(mockResponse(CHAPTER_DATA))   // chapter-distribution
-    .mockResolvedValueOnce(mockResponse(EVENTS_DATA))    // events
+  vi.mocked(api.get).mockReset()
+  vi.mocked(api.get)
+    .mockImplementation((path: string) => {
+      if (path.includes('/overview')) return Promise.resolve(mockResponse(OVERVIEW) as Response)
+      if (path.includes('/dau')) return Promise.resolve(mockResponse(DAU_DATA) as Response)
+      if (path.includes('/registrations')) return Promise.resolve(mockResponse(REG_DATA) as Response)
+      if (path.includes('/chapter-distribution')) return Promise.resolve(mockResponse(CHAPTER_DATA) as Response)
+      if (path.includes('/events')) return Promise.resolve(mockResponse(EVENTS_DATA) as Response)
+      return Promise.resolve(mockResponse({}) as Response)
+    })
 }
 
 function renderDashboard() {
@@ -48,8 +54,7 @@ function renderDashboard() {
 
 describe('Dashboard', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    // Reset to a fresh mock for each test
+    vi.restoreAllMocks()
     setupMocks()
   })
 
@@ -61,10 +66,13 @@ describe('Dashboard', () => {
   it('displays overview card stats after load', async () => {
     renderDashboard()
     await waitFor(() => {
-      expect(screen.getByText('42')).toBeInTheDocument()   // total players
-      expect(screen.getByText('7')).toBeInTheDocument()    // open tickets
-      expect(screen.getByText('Total Players')).toBeInTheDocument()
+      // Find the "Total Players" card value specifically
+      const totalPlayersLabel = screen.getByText('Total Players')
+      const totalPlayersCard = totalPlayersLabel.closest('.ov-card')
+      expect(totalPlayersCard).toHaveTextContent('42')
+      
       expect(screen.getByText('Open Tickets')).toBeInTheDocument()
+      expect(screen.getByText('7')).toBeInTheDocument()
     })
   })
 
@@ -73,7 +81,10 @@ describe('Dashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('5')).toBeInTheDocument()   // active 24h
       expect(screen.getByText('12')).toBeInTheDocument()  // active 7d
-      expect(screen.getByText('30')).toBeInTheDocument()  // active 30d
+      // Use specific query for the active 30d value to avoid ambiguity with chapter distribution
+      const activeLabel = screen.getByText('Active')
+      const activeCard = activeLabel.closest('.ov-card')
+      expect(activeCard).toHaveTextContent('30')
     })
   })
 
@@ -115,17 +126,15 @@ describe('Dashboard', () => {
   })
 
   it('shows error message when overview fetch fails', async () => {
-    vi.clearAllMocks()
-    mockApi.get
-      .mockRejectedValueOnce(new Error('Network error'))  // overview
-      .mockResolvedValueOnce(mockResponse(DAU_DATA))
-      .mockResolvedValueOnce(mockResponse(REG_DATA))
-      .mockResolvedValueOnce(mockResponse(CHAPTER_DATA))
-      .mockResolvedValueOnce(mockResponse(EVENTS_DATA))
+    vi.mocked(api.get)
+      .mockImplementation((path: string) => {
+        if (path.includes('/overview')) return Promise.reject(new Error('Network error'))
+        return Promise.resolve(mockResponse({}) as Response)
+      })
 
     renderDashboard()
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load overview stats/)).toBeInTheDocument()
+      expect(screen.getByText('Failed to load overview stats')).toBeInTheDocument()
     })
   })
 

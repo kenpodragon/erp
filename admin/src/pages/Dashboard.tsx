@@ -76,6 +76,8 @@ const EVENT_LABELS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 function OverviewCards({ stats }: { stats: OverviewStats }) {
+  if (!stats || !stats.players) return <div className="overview-cards-loading">Loading stats...</div>
+
   return (
     <div className="overview-cards">
       <div className="ov-card">
@@ -297,12 +299,17 @@ function ActivityFeed() {
 export default function Dashboard() {
   const [overview, setOverview] = useState<OverviewStats | null>(null)
   const [overviewError, setOverviewError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     api.get('/api/admin/analytics/overview')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Fetch failed')
+        return r.json()
+      })
       .then(d => setOverview(d))
       .catch(() => setOverviewError('Failed to load overview stats'))
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -314,7 +321,11 @@ export default function Dashboard() {
 
       {overviewError && <div className="dash-error">{overviewError}</div>}
 
-      {overview && <OverviewCards stats={overview} />}
+      {loading ? (
+        <div className="overview-cards-loading">Loading stats...</div>
+      ) : (
+        overview && <OverviewCards stats={overview} />
+      )}
 
       <div className="dash-charts-row">
         <DauChart />

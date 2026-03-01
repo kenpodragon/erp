@@ -18,6 +18,7 @@ Tests for the Support Ticket System (TODO 7.9):
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
+from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone, timedelta
 
 from main import app, get_session, get_current_player, get_current_admin
@@ -28,8 +29,12 @@ import config_cache
 # Test DB setup
 # ---------------------------------------------------------------------------
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_support.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 
 
 def seed_config(session: Session):

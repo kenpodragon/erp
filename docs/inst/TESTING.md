@@ -26,13 +26,12 @@ We employ a three-tier testing approach to ensure stability across the stack:
 
 ### 1. Backend (Python)
 -   Files must start with `test_` (e.g., `test_auth.py`).
--   Use the `client` and `session` fixtures provided in `conftest.py` or existing test files to interact with a temporary SQLite database.
--   **Example:**
+-   **Mandatory:** Use in-memory SQLite for all backend tests to avoid creating `.db` files on the filesystem.
     ```python
-    def test_hello(client):
-        response = client.get("/hello")
-        assert response.status_code == 200
+    SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
     ```
+-   Use the `client` and `session` fixtures provided in `conftest.py` or existing test files to interact with the in-memory database.
 
 ### 2. Frontend/Admin (React)
 -   Files should be named `[ComponentName].test.tsx` and live in the same folder as the component.

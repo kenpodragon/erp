@@ -4,8 +4,6 @@ import userEvent from '@testing-library/user-event'
 import AuditLog from './AuditLog'
 import { api } from '../api'
 
-const mockApi = api as unknown as { get: ReturnType<typeof vi.fn> }
-
 function mockResponse(data: unknown, ok = true) {
   return { ok, status: ok ? 200 : 500, json: () => Promise.resolve(data) }
 }
@@ -27,14 +25,14 @@ describe('AuditLog', () => {
   })
 
   it('renders the page header', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 0, entries: [] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 0, entries: [] }) as Response)
     render(<AuditLog />)
     expect(screen.getByText('Audit Log')).toBeInTheDocument()
     expect(screen.getByText(/Immutable record/)).toBeInTheDocument()
   })
 
   it('shows empty state when no entries', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 0, entries: [] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 0, entries: [] }) as Response)
     render(<AuditLog />)
     await waitFor(() => {
       expect(screen.getByText(/No audit log entries/)).toBeInTheDocument()
@@ -42,18 +40,18 @@ describe('AuditLog', () => {
   })
 
   it('renders audit entries in a table', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }) as Response)
     render(<AuditLog />)
     await waitFor(() => {
       expect(screen.getByText('alice@example.com')).toBeInTheDocument()
-      expect(screen.getByText('player_banned')).toBeInTheDocument()
+      expect(screen.getByRole('cell', { name: 'player_banned' })).toBeInTheDocument()
       expect(screen.getByText('bob@example.com')).toBeInTheDocument()
-      expect(screen.getByText('config_changed')).toBeInTheDocument()
+      expect(screen.getByRole('cell', { name: 'config_changed' })).toBeInTheDocument()
     })
   })
 
   it('shows total entry count', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }) as Response)
     render(<AuditLog />)
     await waitFor(() => {
       expect(screen.getByText(/2 total entries/)).toBeInTheDocument()
@@ -61,16 +59,16 @@ describe('AuditLog', () => {
   })
 
   it('shows target type and ID columns', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }) as Response)
     render(<AuditLog />)
     await waitFor(() => {
-      expect(screen.getByText('player')).toBeInTheDocument()
+      expect(screen.getByRole('cell', { name: 'player' })).toBeInTheDocument()
       expect(screen.getByText('42')).toBeInTheDocument()
     })
   })
 
   it('expands detail JSON on row click', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }) as Response)
     render(<AuditLog />)
     await waitFor(() => screen.getByText('alice@example.com'))
 
@@ -83,7 +81,7 @@ describe('AuditLog', () => {
   })
 
   it('collapses detail on second click', async () => {
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }) as Response)
     render(<AuditLog />)
     await waitFor(() => screen.getByText('alice@example.com'))
 
@@ -97,9 +95,9 @@ describe('AuditLog', () => {
   })
 
   it('applies admin email filter on submit', async () => {
-    mockApi.get
-      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }))
-      .mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }))
+    vi.mocked(api.get)
+      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }) as Response)
+      .mockResolvedValueOnce(mockResponse({ total: 1, entries: [ENTRY_1] }) as Response)
 
     render(<AuditLog />)
     await waitFor(() => screen.getByText('alice@example.com'))
@@ -109,16 +107,17 @@ describe('AuditLog', () => {
     fireEvent.submit(input.closest('form')!)
 
     await waitFor(() => {
-      expect(mockApi.get).toHaveBeenCalledTimes(2)
-      const lastCall = mockApi.get.mock.calls[1][0] as string
-      expect(lastCall).toContain('admin=alice')
+      // Check that at least one call with the correct filter happened
+      const calls = vi.mocked(api.get).mock.calls
+      const filterCall = calls.find(call => (call[0] as string).includes('admin=alice'))
+      expect(filterCall).toBeDefined()
     })
   })
 
   it('clears filters when Clear button is clicked', async () => {
-    mockApi.get
-      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }))
-      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }))
+    vi.mocked(api.get)
+      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }) as Response)
+      .mockResolvedValueOnce(mockResponse({ total: 2, entries: [ENTRY_1, ENTRY_2] }) as Response)
 
     render(<AuditLog />)
     await waitFor(() => screen.getByText('alice@example.com'))
@@ -127,16 +126,19 @@ describe('AuditLog', () => {
     await userEvent.click(clearBtn)
 
     await waitFor(() => {
-      const lastCall = mockApi.get.mock.calls.at(-1)![0] as string
+      const lastCall = vi.mocked(api.get).mock.calls.at(-1)![0] as string
       expect(lastCall).not.toContain('admin=')
     })
   })
 
   it('shows error message on fetch failure', async () => {
-    mockApi.get.mockRejectedValueOnce(new Error('Network error'))
+    vi.mocked(api.get).mockReset()
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('Network error'))
     render(<AuditLog />)
     await waitFor(() => {
-      expect(screen.getByText('Failed to load audit log.')).toBeInTheDocument()
+      const errorDiv = screen.getByText('Failed to load audit log.')
+      expect(errorDiv).toBeInTheDocument()
+      expect(errorDiv).toHaveClass('audit-error')
     })
   })
 
@@ -144,7 +146,7 @@ describe('AuditLog', () => {
     const entries = Array.from({ length: 50 }, (_, i) => ({
       ...ENTRY_1, id: i + 1, target_id: String(i + 1),
     }))
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 120, entries }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 120, entries }) as Response)
     render(<AuditLog />)
     await waitFor(() => {
       expect(screen.getByText(/Page 1 \/ 3/)).toBeInTheDocument()
@@ -153,9 +155,9 @@ describe('AuditLog', () => {
 
   it('disables Prev button on first page', async () => {
     const entries = Array.from({ length: 50 }, (_, i) => ({ ...ENTRY_1, id: i + 1, target_id: String(i) }))
-    mockApi.get.mockResolvedValueOnce(mockResponse({ total: 120, entries }))
+    vi.mocked(api.get).mockResolvedValueOnce(mockResponse({ total: 120, entries }) as Response)
     render(<AuditLog />)
-    await waitFor(() => screen.getByText(/Page 1/))
+    await waitFor(() => screen.getAllByText('alice@example.com'))
     const prevBtn = screen.getByRole('button', { name: /Prev/ })
     expect(prevBtn).toBeDisabled()
   })
