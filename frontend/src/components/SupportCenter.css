@@ -1,37 +1,37 @@
-/* Support Center Styles — dark fantasy aesthetic */
+/* Support Center Styles — cyberpunk cosmic horror aesthetic */
 
 .support-container {
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #1a1a1a;
-  border-radius: 8px;
-  border: 1px solid #333;
-  color: #e0e0e0;
+  margin: var(--space-xl) auto;
+  padding: var(--space-xl);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-medium);
+  color: var(--color-text-primary);
   text-align: left;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 .support-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #444;
-  padding-bottom: 1rem;
+  margin-bottom: var(--space-lg);
+  border-bottom: 2px solid var(--color-border-strong);
+  padding-bottom: var(--space-md);
 }
 
 .support-header h2 {
   margin: 0;
-  color: #b8860b;
-  font-family: 'Garamond', serif;
+  color: var(--color-primary);
+  font-family: var(--font-display);
 }
 
 .support-filters {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 .support-filter-select {
@@ -39,50 +39,50 @@
 }
 
 .support-count {
-  color: #888;
-  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
 }
 
 .support-error {
-  color: #ff4444;
-  font-size: 0.85rem;
-  margin: 0.5rem 0;
+  color: var(--color-error);
+  font-size: var(--font-size-small);
+  margin: var(--space-sm) 0;
 }
 
 .support-loading {
-  color: #888;
+  color: var(--color-text-muted);
   text-align: center;
-  padding: 2rem;
+  padding: var(--space-xl);
 }
 
 .support-empty {
   text-align: center;
-  padding: 3rem 1rem;
-  color: #666;
+  padding: var(--space-2xl) var(--space-md);
+  color: var(--color-text-muted);
 }
 
 /* Ticket List */
 .ticket-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 
 .ticket-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: #242424;
-  border-radius: 6px;
-  border-left: 3px solid #444;
+  padding: var(--space-md);
+  background: rgba(20, 20, 30, 0.6);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-border-strong);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color var(--transition-normal), background var(--transition-normal);
 }
 
 .ticket-row:hover {
-  border-left-color: #b8860b;
-  background: #2a2a2a;
+  border-left-color: var(--color-primary);
+  background: rgba(25, 25, 40, 0.8);
 }
 
 .ticket-row-main {
@@ -107,7 +107,7 @@
 }
 
 .ticket-date {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   white-space: nowrap;
 }
@@ -117,25 +117,25 @@
   display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-tiny);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
-.status-open { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
-.status-in_progress { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
-.status-resolved { background: rgba(100, 108, 255, 0.2); color: #646cff; }
+.status-open { background: var(--color-success-bg); color: var(--color-success); }
+.status-in_progress { background: var(--color-warning-bg); color: var(--color-warning); }
+.status-resolved { background: var(--color-info-bg); color: var(--color-info); }
 .status-closed { background: rgba(136, 136, 136, 0.2); color: #888; }
 
 .ticket-category-badge {
   display: inline-block;
   padding: 0.15rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.7rem;
-  background: rgba(184, 134, 11, 0.15);
-  color: #b8860b;
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
   white-space: nowrap;
 }
 
@@ -150,18 +150,18 @@
 }
 
 .char-count {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   font-weight: normal;
 }
 
 /* Ticket Detail */
 .ticket-detail-meta {
-  background: #242424;
-  border-radius: 6px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  border-left: 4px solid #b8860b;
+  background: rgba(20, 20, 30, 0.6);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+  border-left: 4px solid var(--color-primary);
 }
 
 .meta-row {
@@ -172,56 +172,56 @@
 }
 
 .meta-label {
-  color: #888;
-  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
   min-width: 80px;
 }
 
 /* Reply Chain */
 .reply-chain {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-lg);
 }
 
 .reply-chain h3 {
-  color: #b8860b;
-  font-family: 'Garamond', serif;
-  margin-bottom: 1rem;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  margin-bottom: var(--space-md);
 }
 
 .reply-bubble {
-  padding: 1rem;
+  padding: var(--space-md);
   margin-bottom: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #333;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-medium);
 }
 
 .reply-player {
-  background: #242424;
-  border-left: 3px solid #646cff;
+  background: rgba(20, 20, 30, 0.6);
+  border-left: 3px solid var(--color-info);
 }
 
 .reply-admin {
-  background: #1e2a1e;
-  border-left: 3px solid #4caf50;
+  background: rgba(20, 40, 20, 0.4);
+  border-left: 3px solid var(--color-success);
 }
 
 .reply-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
 }
 
 .reply-author {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--font-size-small);
 }
 
-.reply-player .reply-author { color: #646cff; }
-.reply-admin .reply-author { color: #4caf50; }
+.reply-player .reply-author { color: var(--color-info); }
+.reply-admin .reply-author { color: var(--color-success); }
 
 .reply-time {
-  color: #666;
-  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-tiny);
 }
 
 .reply-content {
@@ -232,21 +232,20 @@
 
 /* Reply Form */
 .reply-form {
-  margin-top: 1rem;
+  margin-top: var(--space-md);
 }
 
 .reply-form .btn-primary {
   margin-top: 0.75rem;
 }
 
-/* Reopen Section */
 /* New activity indicator */
 .ticket-row-new {
-  border-left: 3px solid #b8860b;
+  border-left: 3px solid var(--color-primary);
 }
 
 .new-activity-dot {
-  color: #b8860b;
+  color: var(--color-primary);
   font-size: 0.6rem;
   margin-right: 0.4rem;
   animation: pulse-dot 2s ease-in-out infinite;
@@ -259,13 +258,13 @@
 
 /* Close ticket */
 .close-section {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #333;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-medium);
 }
 
 .close-form {
-  margin-top: 0.5rem;
+  margin-top: var(--space-sm);
 }
 
 .close-form .form-control {
@@ -281,13 +280,13 @@
 
 .btn-close-ticket {
   background: rgba(136, 136, 136, 0.15);
-  color: #aaa;
+  color: var(--color-text-secondary);
   border: 1px solid rgba(136, 136, 136, 0.3);
   padding: 0.6rem 1.2rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: background var(--transition-normal);
 }
 
 .btn-close-ticket:hover {
@@ -296,13 +295,13 @@
 }
 
 .reopen-section {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #333;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-medium);
 }
 
 .reopen-form {
-  margin-top: 0.5rem;
+  margin-top: var(--space-sm);
 }
 
 .reopen-form .form-control {
@@ -319,30 +318,30 @@
 /* Buttons */
 .btn-secondary {
   background: transparent;
-  color: #b8860b;
-  border: 1px solid #b8860b;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
   padding: 0.6rem 1.2rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: background var(--transition-normal);
 }
 
 .btn-secondary:hover {
-  background: rgba(184, 134, 11, 0.1);
+  background: var(--color-primary-muted);
 }
 
 /* Responsive */
 @media (max-width: 600px) {
   .support-container {
-    margin: 1rem;
-    padding: 1rem;
+    margin: var(--space-md);
+    padding: var(--space-md);
   }
 
   .ticket-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: var(--space-sm);
   }
 
   .ticket-row-meta {

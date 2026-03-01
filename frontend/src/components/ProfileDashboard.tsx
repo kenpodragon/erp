@@ -201,24 +201,6 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
         onCharacterDeleted={onCharacterDeleted}
       />
 
-      {/* ── Debug Tools (testing only) ────────────────────────────────── */}
-      <div className="profile-section" style={{ border: '1px solid #330000', background: '#110000' }}>
-        <h3 style={{ color: '#ff4444', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>🛠️ Debug Tools</h3>
-        <p style={{ fontSize: '0.75rem', color: '#888', marginBottom: '1rem' }}>Use these buttons to test the onboarding and character creation flows.</p>
-        <button 
-          onClick={async () => {
-            if (window.confirm("This will reset your entire account state (character, terms, alias). Are you sure?")) {
-              const { api } = await import('../api');
-              await api.post('/api/players/me/reset');
-              window.location.reload();
-            }
-          }}
-          style={{ background: '#5a0000', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
-        >
-          MAKE ME NEW
-        </button>
-      </div>
-
       {/* ── Account status ────────────────────────────────────────────── */}
       <div className="profile-section">
         <h3>Account Status</h3>

@@ -30,33 +30,33 @@ interface CharacterCreatorProps {
 }
 
 const CLASS_AVATAR_MAP: Record<string, string> = {
-  class_sentinel: 'warrior',
-  class_arcanist: 'mage',
-  class_wanderer: 'rogue',
-  class_invoker:  'cleric',
+  class_engineer: 'engineer',
+  class_conduit:  'conduit',
+  class_drifter:  'drifter',
+  class_vessel:   'vessel',
 };
 
 interface ClassVisual { filter: string; transform: string; accentColor: string; }
 const CLASS_VISUAL: Record<string, ClassVisual> = {
-  class_sentinel: {
-    filter:      'sepia(0.5) hue-rotate(10deg) brightness(0.85) saturate(1.3)',
+  class_engineer: {
+    filter:      'sepia(0.5) hue-rotate(330deg) brightness(0.85) saturate(1.5)',
     transform:   'scale(1.18) skewX(-4deg) translateX(4px)',
-    accentColor: '#c8920a',  // amber-gold
+    accentColor: '#c41e3a',  // crimson — Eternal Engine
   },
-  class_arcanist: {
+  class_conduit: {
     filter:      'sepia(0.4) hue-rotate(220deg) brightness(0.8) saturate(1.8)',
     transform:   'scale(1.22) skewY(3deg) translateY(-6px)',
-    accentColor: '#7b5ea7',  // arcane purple
+    accentColor: '#7b5ea7',  // cosmic purple
   },
-  class_wanderer: {
-    filter:      'sepia(0.45) hue-rotate(100deg) brightness(0.75) saturate(1.5)',
+  class_drifter: {
+    filter:      'sepia(0.3) hue-rotate(160deg) brightness(0.8) saturate(1.6)',
     transform:   'scale(1.2) rotate(-3deg) translateX(-4px)',
-    accentColor: '#3a8a4a',  // forest green
+    accentColor: '#00d4ff',  // cyan — reality fractures
   },
-  class_invoker: {
-    filter:      'sepia(0.55) hue-rotate(320deg) brightness(0.82) saturate(1.7)',
+  class_vessel: {
+    filter:      'sepia(0.55) hue-rotate(30deg) brightness(0.82) saturate(1.7)',
     transform:   'scale(1.15) skewX(5deg) skewY(-2deg)',
-    accentColor: '#b03030',  // crimson
+    accentColor: '#d4af37',  // gold — divine echoes
   },
 };
 
@@ -64,10 +64,10 @@ function StatBar({ label, value, max = 20 }: { label: string; value: number; max
   const pct = Math.min(100, Math.round((value / max) * 100));
   
   // Color coding based on stat type
-  let barColor = '#b8860b'; // Default gold
-  if (label === 'STR') barColor = '#cc3333'; // Red for Strength
-  if (label === 'AGI') barColor = '#33cc33'; // Green for Agility
-  if (label === 'INT') barColor = '#3366ff'; // Blue for Intelligence
+  let barColor = '#c41e3a'; // Default crimson
+  if (label === 'STR') barColor = '#cc3333';
+  if (label === 'AGI') barColor = '#33cc33';
+  if (label === 'INT') barColor = '#3366ff';
   
   return (
     <div style={{ marginBottom: '0.6rem' }}>
@@ -209,12 +209,12 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
     const presetKey = spriteKey ? (CLASS_AVATAR_MAP[spriteKey] ?? null) : null;
     const charAvatarUrl = presetKey
       ? `/assets/avatars/preset_${presetKey}.png`
-      : `https://via.placeholder.com/96/111111/b8860b?text=${encodeURIComponent(existingCharacter.character_name[0].toUpperCase())}`;
+      : `https://via.placeholder.com/96/111111/c41e3a?text=${encodeURIComponent(existingCharacter.character_name[0].toUpperCase())}`;
 
     return (
       <div className="profile-section" data-testid="character-display">
         {/* Title: character name */}
-        <h3 style={{ margin: '0 0 1rem', color: '#b8860b' }}>{existingCharacter.character_name}</h3>
+        <h3 style={{ margin: '0 0 1rem', color: '#c41e3a' }}>{existingCharacter.character_name}</h3>
 
         {/* Three-column body */}
         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -417,7 +417,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
                 const presetKey = CLASS_AVATAR_MAP[spriteKey];
                 const visual = CLASS_VISUAL[spriteKey];
                 const isSelected = selectedClass?.id === cls.id;
-                const accentColor = visual?.accentColor ?? '#b8860b';
+                const accentColor = visual?.accentColor ?? '#c41e3a';
                 return (
                   <div
                     key={cls.id}

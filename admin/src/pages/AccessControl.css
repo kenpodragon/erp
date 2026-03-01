@@ -24,8 +24,8 @@
   margin-bottom: 2.5rem;
   background: #1a1a1a;
   padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #333;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-medium);
 }
 
 .info-box {
@@ -36,7 +36,7 @@
 
 .info-box label {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -44,8 +44,8 @@
 .info-box code {
   background: #000;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
-  color: #4caf50;
+  border-radius: var(--radius-sm);
+  color: var(--color-success);
   font-family: monospace;
   font-size: 1.1rem;
 }
@@ -57,24 +57,24 @@
 }
 
 .btn-add-current {
-  background: #333;
+  background: var(--color-border-medium);
   color: #fff;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border-strong);
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.8rem;
 }
 
 .btn-add-current:hover:not(:disabled) {
-  background: #444;
+  background: var(--color-border-strong);
 }
 
 .btn-add-current:disabled {
   opacity: 0.5;
   cursor: default;
-  border-color: #222;
-  color: #666;
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-muted);
 }
 
 .ac-grid {
@@ -85,8 +85,8 @@
 
 .ac-card {
   background: #1a1a1a;
-  border-radius: 12px;
-  border: 1px solid #333;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-medium);
   padding: 1.5rem;
 }
 
@@ -106,18 +106,18 @@
 
 .ac-form input {
   background: #000;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border-strong);
   color: #fff;
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .ac-form button {
-  background: #646cff;
+  background: var(--color-info);
   color: #fff;
   border: none;
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: bold;
 }
@@ -133,9 +133,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #222;
-  border-radius: 6px;
-  border: 1px solid #333;
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-medium);
 }
 
 .ac-item-info {
@@ -150,7 +150,7 @@
 }
 
 .ac-main small {
-  color: #666;
+  color: var(--color-text-muted);
   margin-left: 0.5rem;
   font-weight: normal;
 }
@@ -165,7 +165,7 @@
   color: #f44336;
   border: 1px solid #f44336;
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.8rem;
 }

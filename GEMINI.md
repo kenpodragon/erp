@@ -10,7 +10,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 - **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
 
 ## 🤖 Agent Operating Procedures
-1. **Research First:** Always check `../Books/BOOKS.md` before designing a character or enemy to ensure lore accuracy.
+1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` (e.g., `BOOKS_SUMMARY.md`, `CHARACTER_GUIDE.md`) first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.
 2. **Surgical Updates:** Maintain existing formatting and checkbox status in `TODO.md` and requirements.
 3. **Security:** NEVER print, log, or commit secrets (STRIPE_*, FIREBASE_*, DB_*).
 4. **Validation:** Every feature/bug fix MUST have a corresponding test.

@@ -4,7 +4,7 @@
   justify-content: space-between;
   padding: 0.6rem 1.5rem;
   background: rgba(10, 10, 18, 0.92);
-  border-bottom: 1px solid rgba(184, 134, 11, 0.3);
+  border-bottom: 1px solid var(--color-border-primary);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -13,7 +13,7 @@
 
 .navbar-brand {
   text-decoration: none;
-  font-family: 'Garamond', 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: 1.3rem;
   letter-spacing: 2px;
   display: flex;
@@ -21,13 +21,13 @@
 }
 
 .brand-elysium {
-  color: #b8860b;
+  color: var(--color-primary);
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .brand-rising {
-  color: #4fc3f7;
+  color: var(--color-secondary);
   font-weight: 400;
   text-transform: uppercase;
 }
@@ -39,45 +39,45 @@
 }
 
 .nav-link {
-  color: #999;
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: var(--font-size-small);
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0.3rem 0;
   border-bottom: 2px solid transparent;
-  transition: color 0.25s, border-color 0.25s;
+  transition: color var(--transition-normal), border-color var(--transition-normal);
 }
 
 .nav-link:hover {
-  color: #e0e0e0;
+  color: var(--color-text-primary);
 }
 
 .nav-link.active {
-  color: #b8860b;
-  border-bottom-color: #b8860b;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
 .nav-btn {
   padding: 0.4rem 1rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
-  transition: background 0.25s, border-color 0.25s;
+  transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
 .nav-btn-login {
-  background: #b8860b;
-  color: #000;
-  border: 1px solid #b8860b;
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary);
 }
 
 .nav-btn-login:hover {
-  background: #daa520;
-  border-color: #daa520;
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .nav-btn-logout {
@@ -110,6 +110,6 @@
   }
 
   .nav-link {
-    font-size: 0.75rem;
+    font-size: var(--font-size-tiny);
   }
 }

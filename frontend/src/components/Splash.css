@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Splash Page — Dark Fantasy / Towers of Elysium
-   Color palette from book cover: deep navy, crimson, cyan, gold
+   Splash Page — Cyberpunk / Cosmic Horror / Towers of Elysium
+   Color palette from book cover: crimson, cyan, deep cosmic dark
    ═══════════════════════════════════════════════════════════════════ */
 
 .splash {
@@ -18,10 +18,10 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(ellipse at 50% 20%, rgba(80, 20, 30, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 70%, rgba(20, 60, 100, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 20%, rgba(196, 30, 58, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
     radial-gradient(ellipse at 20% 80%, rgba(100, 40, 80, 0.2) 0%, transparent 50%),
-    linear-gradient(180deg, #080812 0%, #0a0a18 40%, #0d0818 100%);
+    linear-gradient(180deg, #080812 0%, var(--color-bg-deep) 40%, #0d0818 100%);
   overflow: hidden;
 }
 
@@ -37,9 +37,9 @@
   bottom: -10px;
   width: 3px;
   height: 3px;
-  background: rgba(184, 134, 11, 0.6);
+  background: rgba(196, 30, 58, 0.6);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(184, 134, 11, 0.4);
+  box-shadow: 0 0 6px rgba(196, 30, 58, 0.4);
   animation: particle-rise linear infinite;
 }
 
@@ -63,59 +63,59 @@
 .hero-content {
   position: relative;
   z-index: 2;
-  padding: 2rem;
+  padding: var(--space-xl);
   max-width: 700px;
 }
 
 .hero-title {
-  font-family: 'Garamond', 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: 4.5rem;
   line-height: 1;
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
 }
 
 .title-elysium {
-  color: #b8860b;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 8px;
   text-shadow:
-    0 0 30px rgba(184, 134, 11, 0.5),
-    0 0 60px rgba(184, 134, 11, 0.2);
+    0 0 30px rgba(196, 30, 58, 0.5),
+    0 0 60px rgba(196, 30, 58, 0.2);
   animation: title-glow 4s ease-in-out infinite alternate;
 }
 
 .title-rising {
-  color: #4fc3f7;
+  color: var(--color-secondary);
   text-transform: uppercase;
   letter-spacing: 12px;
   font-size: 0.65em;
   text-shadow:
-    0 0 20px rgba(79, 195, 247, 0.4),
-    0 0 50px rgba(79, 195, 247, 0.15);
+    0 0 20px rgba(0, 212, 255, 0.4),
+    0 0 50px rgba(0, 212, 255, 0.15);
 }
 
 @keyframes title-glow {
   0% {
     text-shadow:
-      0 0 30px rgba(184, 134, 11, 0.5),
-      0 0 60px rgba(184, 134, 11, 0.2);
+      0 0 30px rgba(196, 30, 58, 0.5),
+      0 0 60px rgba(196, 30, 58, 0.2);
   }
   100% {
     text-shadow:
-      0 0 40px rgba(184, 134, 11, 0.7),
-      0 0 80px rgba(184, 134, 11, 0.35),
-      0 0 120px rgba(184, 134, 11, 0.1);
+      0 0 40px rgba(196, 30, 58, 0.7),
+      0 0 80px rgba(196, 30, 58, 0.35),
+      0 0 120px rgba(196, 30, 58, 0.1);
   }
 }
 
 .hero-tagline {
   font-size: 1.15rem;
   line-height: 1.7;
-  color: #c0c0c0;
-  margin: 0 0 2rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xl);
   font-style: italic;
   max-width: 560px;
   margin-left: auto;
@@ -124,7 +124,7 @@
 
 .hero-sub {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-muted);
   margin-top: 0.75rem;
 }
 
@@ -134,7 +134,7 @@
   left: 0;
   right: 0;
   height: 120px;
-  background: linear-gradient(transparent, #0a0a18);
+  background: linear-gradient(transparent, var(--color-bg-deep));
   pointer-events: none;
 }
 
@@ -142,19 +142,19 @@
 
 .cta-button {
   display: inline-block;
-  padding: 1rem 2.5rem;
+  padding: var(--space-md) 2.5rem;
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #000;
-  background: linear-gradient(135deg, #b8860b, #daa520, #b8860b);
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover), var(--color-primary));
   background-size: 200% 200%;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow:
-    0 0 20px rgba(184, 134, 11, 0.3),
+    0 0 20px rgba(196, 30, 58, 0.3),
     0 4px 15px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s, box-shadow 0.2s;
   animation: cta-shimmer 3s ease-in-out infinite;
@@ -163,7 +163,7 @@
 .cta-button:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 0 30px rgba(184, 134, 11, 0.5),
+    0 0 30px rgba(196, 30, 58, 0.5),
     0 6px 25px rgba(0, 0, 0, 0.5);
 }
 
@@ -175,7 +175,7 @@
 /* ── Sections ───────────────────────────────────────────────────── */
 
 .splash-section {
-  padding: 5rem 2rem;
+  padding: 5rem var(--space-xl);
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -183,24 +183,24 @@
 .splash-section-dark {
   max-width: none;
   background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(184, 134, 11, 0.15);
-  border-bottom: 1px solid rgba(184, 134, 11, 0.15);
+  border-top: 1px solid var(--color-border-primary);
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .section-title {
-  font-family: 'Garamond', 'Times New Roman', serif;
-  font-size: 2rem;
-  color: #b8860b;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h1);
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 3px;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-sm);
 }
 
 .section-divider {
   width: 60px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #b8860b, transparent);
-  margin: 0 auto 3rem;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  margin: 0 auto var(--space-2xl);
 }
 
 /* ── About Cards ────────────────────────────────────────────────── */
@@ -208,33 +208,33 @@
 .about-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: var(--space-xl);
   text-align: left;
 }
 
 .about-card {
   background: rgba(20, 20, 30, 0.8);
-  border: 1px solid rgba(184, 134, 11, 0.2);
-  border-radius: 8px;
-  padding: 2rem 1.5rem;
-  transition: border-color 0.3s, transform 0.3s;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  transition: border-color var(--transition-normal), transform var(--transition-normal);
 }
 
 .about-card:hover {
-  border-color: rgba(184, 134, 11, 0.5);
+  border-color: rgba(196, 30, 58, 0.5);
   transform: translateY(-4px);
 }
 
 .about-icon {
   font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #4fc3f7;
+  margin-bottom: var(--space-md);
+  color: var(--color-secondary);
 }
 
 .about-card h3 {
-  font-family: 'Garamond', 'Times New Roman', serif;
-  font-size: 1.2rem;
-  color: #e0d0b0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  color: var(--color-text-highlight);
   margin: 0 0 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -243,7 +243,7 @@
 .about-card p {
   font-size: 0.9rem;
   line-height: 1.6;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -256,19 +256,19 @@
 }
 
 .story-block p {
-  font-size: 1rem;
+  font-size: var(--font-size-body);
   line-height: 1.8;
   color: #bbb;
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--space-lg);
 }
 
 .story-block em {
-  color: #e0d0b0;
+  color: var(--color-text-highlight);
 }
 
 .story-cta-text {
   text-align: center;
-  color: #b8860b !important;
+  color: var(--color-primary) !important;
   font-weight: 600;
   font-size: 1.1rem !important;
   font-style: italic;
@@ -279,15 +279,15 @@
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  gap: var(--space-lg);
   text-align: left;
 }
 
 .step-card {
   background: rgba(20, 20, 30, 0.6);
-  border: 1px solid rgba(79, 195, 247, 0.15);
-  border-radius: 8px;
-  padding: 1.5rem;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
   position: relative;
 }
 
@@ -295,27 +295,27 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #b8860b, #daa520);
-  color: #000;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: #fff;
   font-weight: 800;
   font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-md);
 }
 
 .step-card h3 {
-  font-family: 'Garamond', 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: 1.05rem;
-  color: #4fc3f7;
-  margin: 0 0 0.5rem;
+  color: var(--color-secondary);
+  margin: 0 0 var(--space-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .step-card p {
-  font-size: 0.85rem;
+  font-size: var(--font-size-small);
   line-height: 1.6;
   color: #999;
   margin: 0;
@@ -324,13 +324,13 @@
 /* ── Final CTA Section ──────────────────────────────────────────── */
 
 .splash-cta-section {
-  padding: 6rem 2rem;
+  padding: 6rem var(--space-xl);
 }
 
 .cta-headline {
-  font-family: 'Garamond', 'Times New Roman', serif;
+  font-family: var(--font-display);
   font-size: 2.5rem;
-  color: #e0d0b0;
+  color: var(--color-text-highlight);
   margin: 0 0 0.75rem;
   text-transform: uppercase;
   letter-spacing: 4px;
@@ -338,27 +338,27 @@
 
 .cta-sub {
   color: #888;
-  font-size: 1rem;
-  margin: 0 0 2rem;
+  font-size: var(--font-size-body);
+  margin: 0 0 var(--space-xl);
 }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
 
 .splash-footer {
-  padding: 2rem;
-  border-top: 1px solid #222;
+  padding: var(--space-xl);
+  border-top: 1px solid var(--color-border-subtle);
   background: rgba(5, 5, 10, 0.9);
 }
 
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin-bottom: 1rem;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-md);
 }
 
 .footer-links a {
-  color: #666;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -367,12 +367,12 @@
 }
 
 .footer-links a:hover {
-  color: #b8860b;
+  color: var(--color-primary);
 }
 
 .footer-copy {
   color: #444;
-  font-size: 0.75rem;
+  font-size: var(--font-size-tiny);
   margin: 0;
 }
 

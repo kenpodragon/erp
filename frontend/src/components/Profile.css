@@ -1,86 +1,86 @@
 .profile-container {
-  background: #1a1a1a;
-  color: #e0e0e0;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #333;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-medium);
   max-width: 800px;
-  margin: 2rem auto;
+  margin: var(--space-xl) auto;
   text-align: left;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 .profile-header {
-  border-bottom: 2px solid #444;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-border-strong);
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-md);
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: var(--space-xl);
 }
 
 .profile-avatar-large {
   width: 128px;
   height: 128px;
   border-radius: 50%;
-  border: 3px solid #b8860b; /* Dark Goldenrod */
+  border: 3px solid var(--color-primary);
   object-fit: cover;
-  background: #000;
+  background: var(--color-bg-black);
 }
 
 .profile-section {
   margin-bottom: 2.5rem;
-  padding: 1.5rem;
-  background: #242424;
-  border-radius: 6px;
-  border-left: 4px solid #b8860b;
+  padding: var(--space-lg);
+  background: rgba(20, 20, 30, 0.6);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-primary);
 }
 
 .profile-section h3 {
   margin-top: 0;
-  color: #b8860b;
-  font-family: 'Garamond', serif;
+  color: var(--color-primary);
+  font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-md);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
   font-weight: bold;
 }
 
 .form-control {
   width: 100%;
   padding: 0.75rem;
-  background: #121212;
-  border: 1px solid #444;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border-strong);
   color: #fff;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #b8860b;
+  border-color: var(--color-primary);
 }
 
 .btn-primary {
-  background: #b8860b;
-  color: #000;
+  background: var(--color-primary);
+  color: #fff;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.2s;
+  transition: background var(--transition-normal);
 }
 
 .btn-primary:hover {
-  background: #daa520;
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
@@ -91,17 +91,17 @@
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
 }
 
 .avatar-preset {
   width: 80px;
   height: 80px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: 2px solid transparent;
-  transition: transform 0.2s;
+  transition: transform var(--transition-normal);
 }
 
 .avatar-preset:hover {
@@ -109,13 +109,13 @@
 }
 
 .avatar-preset.selected {
-  border-color: #b8860b;
+  border-color: var(--color-primary);
 }
 
 .slider-group {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .slider-group input {
@@ -123,27 +123,27 @@
 }
 
 .validation-msg {
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+  font-size: var(--font-size-small);
+  margin-top: var(--space-xs);
 }
 
 .validation-msg.error {
-  color: #ff4444;
+  color: var(--color-error);
 }
 
 .validation-msg.success {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .toast {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: #333;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  background: var(--color-border-medium);
   color: #fff;
-  padding: 1rem 2rem;
-  border-radius: 4px;
-  border-left: 4px solid #4caf50;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--color-success);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }

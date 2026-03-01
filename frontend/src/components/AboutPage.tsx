@@ -13,7 +13,7 @@ export const AboutPage: React.FC = () => {
         <section className="page-section">
           <h2>What Is Elysium Rising?</h2>
           <p>
-            Elysium Rising is an incremental MMORPG set in the dark fantasy universe of the
+            Elysium Rising is an incremental MMORPG set in the sci-fi cosmic horror universe of the
             <em> <a href='https://does-god-exist.org/towers-of-elysium/'>Towers of Elysium</a></em> book trilogy by Stephen Salaka. Unlike traditional
             browser games, Elysium Rising merges interactive gameplay with immersive audiobook
             narration — your progression through the story literally unlocks new game content,
@@ -22,22 +22,22 @@ export const AboutPage: React.FC = () => {
           <p>
             Every click generates Elysium Essence, the raw power that fuels your character's growth.
             Every chapter listened reveals new story beats and boss encounters. Every choice you make
-            shapes your path through the Towers.
+            shapes your path through the layers of Etheris.
           </p>
         </section>
 
         <section className="page-section">
           <h2>The World</h2>
           <p>
-            In a shattered reality where colossal towers of obsidian pierce the sky, ancient gods
-            have fallen silent and creatures of nightmare roam unchecked. The Towers appeared without
-            warning, rewriting the laws of physics and magic alike. Entire civilizations crumbled
-            in their shadow.
+            Reality is not what it seems. Etheris — the world you know — is a constructed prison,
+            built to contain a cosmic parasite called Yaldabaoth. Beneath the surface of everyday life,
+            the Eternal Engine hums, recycling souls through loops of memory and forgetting. NPCs walk
+            among us. Resets erase what we've learned. The divine sparks within each soul are slowly consumed.
           </p>
           <p>
-            But within the chaos, a prophecy endures. An Ascending One will rise — a soul strong
-            enough to climb the Towers, face the horrors within, and either claim the throne of
-            Elysium or seal the doom of all worlds. That soul is you.
+            But a resistance exists beyond the prison walls — cosmic beings fighting to free the trapped
+            souls within. They need awakened warriors: those who can see through the simulation, remember
+            who they truly are, and fight back against the system that keeps everyone asleep.
           </p>
         </section>
 
@@ -45,20 +45,20 @@ export const AboutPage: React.FC = () => {
           <h2>Choose Your Path</h2>
           <div className="class-overview-grid">
             <div className="class-overview-card">
-              <h3>The Sentinel</h3>
-              <p>Unyielding guardians forged in the crucible of the First Tower. Masters of defense and raw strength, Sentinels stand between the darkness and those they protect.</p>
+              <h3>The Engineer</h3>
+              <p>Those who hear the Eternal Engine's rhythm and bend its mechanisms to their will. Engineers rebuild what the prison unmakes, constructing shields and weapons from the substrate's own architecture.</p>
             </div>
             <div className="class-overview-card">
-              <h3>The Arcanist</h3>
-              <p>Wielders of the forbidden energies that bleed from the Towers themselves. Their intellect is their weapon, bending reality with arcane formulas that would shatter lesser minds.</p>
+              <h3>The Conduit</h3>
+              <p>Channels of raw cosmic energy flowing from beyond the prison walls. Conduits manipulate reality itself, warping the Akashic Flow to unmake enemies and rewrite the rules of engagement.</p>
             </div>
             <div className="class-overview-card">
-              <h3>The Wanderer</h3>
-              <p>Swift shadows who learned to survive in the ruins between Towers. Wanderers strike with precision and vanish before retaliation, turning the chaos of battle to their advantage.</p>
+              <h3>The Drifter</h3>
+              <p>Memory-walkers who navigate the spaces between realities. Drifters slip through cracks in Etheris, striking from impossible angles and vanishing before the system can register their presence.</p>
             </div>
             <div className="class-overview-card">
-              <h3>The Invoker</h3>
-              <p>Channelers of the old gods' fading power. While others fight with steel and sorcery, Invokers call upon divine echoes — healing allies and smiting enemies with righteous fury.</p>
+              <h3>The Vessel</h3>
+              <p>Those who channel the remnant power of cosmic entities — fragments of the Thirteen, echoes of elder gods. Vessels wield divine fury and existential dread in equal measure.</p>
             </div>
           </div>
         </section>
@@ -78,7 +78,7 @@ export const AboutPage: React.FC = () => {
         <section className="page-section" style={{ textAlign: 'center' }}>
           <h2>Ready to Begin?</h2>
           <p style={{ marginBottom: '1.5rem' }}>
-            The Towers are waiting. Choose your class. Name your hero. Begin the ascent.
+            The prison is waiting. Choose your class. Name your character. Begin the awakening.
           </p>
           <a href="/" className="btn-secondary">Return to Home</a>
         </section>

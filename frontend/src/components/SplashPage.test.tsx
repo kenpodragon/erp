@@ -15,7 +15,7 @@ describe('SplashPage', () => {
 
   it('renders the tagline', () => {
     renderWithRouter(<SplashPage onLogin={vi.fn()} />);
-    expect(screen.getByText(/forgotten gods stir/)).toBeTruthy();
+    expect(screen.getByText(/Reality is a prison/)).toBeTruthy();
   });
 
   it('renders CTA buttons that call onLogin', () => {
@@ -38,7 +38,7 @@ describe('SplashPage', () => {
   it('renders The Story section', () => {
     renderWithRouter(<SplashPage onLogin={vi.fn()} />);
     expect(screen.getByText('The Story')).toBeTruthy();
-    expect(screen.getByText(/Towers appeared without warning/)).toBeTruthy();
+    expect(screen.getByText(/Etheris is a prison/)).toBeTruthy();
   });
 
   it('renders How It Works section with 4 steps', () => {

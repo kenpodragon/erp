@@ -12,20 +12,20 @@
 /* Alerts */
 .config-alert {
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 16px;
   font-size: 0.9em;
 }
 
 .config-alert.error {
   background: rgba(255, 68, 68, 0.15);
-  border: 1px solid #ff4444;
+  border: 1px solid var(--color-error);
   color: #ff6666;
 }
 
 .config-alert.success {
   background: rgba(76, 175, 80, 0.15);
-  border: 1px solid #4caf50;
+  border: 1px solid var(--color-success);
   color: #66bb6a;
 }
 
@@ -34,7 +34,7 @@
   display: flex;
   gap: 4px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid var(--color-border-medium);
 }
 
 .config-tab {
@@ -54,8 +54,8 @@
 }
 
 .config-tab.active {
-  color: #646cff;
-  border-bottom-color: #646cff;
+  color: var(--color-info);
+  border-bottom-color: var(--color-info);
 }
 
 /* Entries */
@@ -66,9 +66,9 @@
 }
 
 .config-entry {
-  background: #1a1a2e;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-lg);
   padding: 16px;
 }
 
@@ -82,7 +82,7 @@
 .config-key {
   font-family: monospace;
   font-size: 0.95em;
-  color: #646cff;
+  color: var(--color-info);
   font-weight: 600;
 }
 
@@ -94,7 +94,7 @@
 
 .config-meta {
   font-size: 0.8em;
-  color: #666;
+  color: var(--color-text-muted);
   margin-top: 8px;
 }
 
@@ -107,9 +107,9 @@
 .config-textarea {
   width: 100%;
   padding: 8px 12px;
-  background: #0d0d1a;
-  border: 1px solid #444;
-  border-radius: 4px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   color: #e0e0e0;
   font-size: 0.9em;
   font-family: monospace;
@@ -119,12 +119,12 @@
 .config-input:focus,
 .config-textarea:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: var(--color-info);
 }
 
 .config-input.modified,
 .config-textarea.modified {
-  border-color: #ff9800;
+  border-color: var(--color-warning);
 }
 
 .config-textarea {
@@ -147,7 +147,7 @@
 .toggle-slider {
   width: 44px;
   height: 24px;
-  background: #444;
+  background: var(--color-border-strong);
   border-radius: 12px;
   position: relative;
   transition: background 0.2s;
@@ -167,7 +167,7 @@
 }
 
 .config-toggle input:checked + .toggle-slider {
-  background: #646cff;
+  background: var(--color-info);
 }
 
 .config-toggle input:checked + .toggle-slider::after {
@@ -177,11 +177,11 @@
 
 .toggle-label {
   font-size: 0.9em;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .toggle-label.modified {
-  color: #ff9800;
+  color: var(--color-warning);
 }
 
 /* Buttons */
@@ -189,16 +189,16 @@
   padding: 4px 12px;
   font-size: 0.8em;
   background: transparent;
-  border: 1px solid #666;
+  border: 1px solid var(--color-text-muted);
   color: #888;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
 }
 
 .btn-reset:hover {
-  border-color: #ff9800;
-  color: #ff9800;
+  border-color: var(--color-warning);
+  color: var(--color-warning);
 }
 
 .reset-confirm {
@@ -206,27 +206,27 @@
   align-items: center;
   gap: 8px;
   font-size: 0.85em;
-  color: #ff9800;
+  color: var(--color-warning);
 }
 
 .btn-confirm-yes,
 .btn-confirm-no {
   padding: 2px 10px;
   font-size: 0.85em;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: 1px solid;
 }
 
 .btn-confirm-yes {
   background: rgba(255, 68, 68, 0.2);
-  border-color: #ff4444;
+  border-color: var(--color-error);
   color: #ff6666;
 }
 
 .btn-confirm-no {
   background: transparent;
-  border-color: #666;
+  border-color: var(--color-text-muted);
   color: #888;
 }
 
@@ -238,10 +238,10 @@
 
 .btn-save-all {
   padding: 10px 28px;
-  background: #646cff;
+  background: var(--color-info);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.95em;
   cursor: pointer;
   transition: background 0.2s;
@@ -252,8 +252,8 @@
 }
 
 .btn-save-all:disabled {
-  background: #333;
-  color: #666;
+  background: var(--color-border-medium);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 

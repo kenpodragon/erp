@@ -29,8 +29,8 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
             <span className="title-rising">Rising</span>
           </h1>
           <p className="hero-tagline">
-            In a world where forgotten gods stir and ancient towers pierce the heavens,
-            one soul must ascend — or all will fall to darkness.
+            Reality is a prison. The Eternal Engine hums beneath the surface of everything you know.
+            One soul must awaken — or all will be consumed by the void.
           </p>
           <button className="cta-button" onClick={onLogin}>
             Begin Your Ascent
@@ -51,8 +51,8 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
             <h3>Incremental MMORPG</h3>
             <p>
               Build power through every click and strategic choice. Your character grows stronger
-              even when you're away, accumulating Elysium Essence that fuels your ascent through
-              the Towers.
+              even when you're away, accumulating Elysium Essence that fuels your journey through
+              the layers of Etheris.
             </p>
           </div>
           <div className="about-card">
@@ -69,8 +69,8 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
             <h3>Competitive & Social</h3>
             <p>
               Climb global leaderboards, compete in chapter speedruns, and earn achievements.
-              Chat with fellow ascenders, form rivalries, and prove you are the strongest
-              soul in Elysium.
+              Chat with fellow awakened souls, form rivalries, and prove you are the strongest
+              consciousness in Etheris.
             </p>
           </div>
         </div>
@@ -82,19 +82,18 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
         <div className="section-divider" />
         <div className="story-block">
           <p>
-            The Towers appeared without warning — colossal spires of obsidian and light that
-            shattered the sky and rewrote the laws of reality. From their depths, creatures of
-            nightmare poured into a world unprepared for war. Civilizations crumbled. Heroes fell.
-            The old gods went silent.
+            Etheris is a prison — a constructed reality built to contain something ancient and hungry.
+            Beneath the mundane surface of everyday life, the Eternal Engine hums, recycling souls
+            through endless loops of memory and forgetting. Most never notice. Most never wake up.
           </p>
           <p>
-            But in the ruins, a prophecy endures: <em>"When the last Tower opens its gates,
-            the Ascending One shall either claim the throne of Elysium or seal the doom of all
-            worlds."</em> You are that soul. Your choices, your strength, and your courage will
-            determine the fate of everything.
+            But cracks are forming. The entity known as <em>Yaldabaoth</em> stirs within the Substrate,
+            feeding on divine sparks, growing stronger with each cycle. A resistance of cosmic beings
+            fights from outside the prison walls, and they need soldiers from within — souls brave enough
+            to remember who they really are.
           </p>
           <p className="story-cta-text">
-            Three books. Hundreds of chapters. One destiny. Will you rise?
+            Three books. Hundreds of chapters. One awakening. Will you rise?
           </p>
         </div>
       </section>
@@ -122,15 +121,15 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onLogin }) => {
           <div className="step-card">
             <div className="step-number">4</div>
             <h3>Compete &amp; Dominate</h3>
-            <p>Race through chapters on the leaderboards. Earn achievements. Prove you're the strongest soul to ever challenge the Towers.</p>
+            <p>Race through chapters on the leaderboards. Earn achievements. Prove you're the strongest soul to ever challenge the prison.</p>
           </div>
         </div>
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────── */}
       <section className="splash-section splash-cta-section">
-        <h2 className="cta-headline">The Towers Await</h2>
-        <p className="cta-sub">Create your character. Choose your class. Begin the ascent.</p>
+        <h2 className="cta-headline">The Prison Awaits</h2>
+        <p className="cta-sub">Create your character. Choose your class. Begin the awakening.</p>
         <button className="cta-button" onClick={onLogin}>
           Begin Your Ascent
         </button>

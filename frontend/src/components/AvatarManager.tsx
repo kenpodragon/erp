@@ -8,6 +8,10 @@ interface AvatarManagerProps {
 }
 
 const PRESETS = [
+  { key: 'engineer', name: 'The Engineer', url: '/assets/avatars/preset_engineer.png' },
+  { key: 'conduit', name: 'The Conduit', url: '/assets/avatars/preset_conduit.png' },
+  { key: 'drifter', name: 'The Drifter', url: '/assets/avatars/preset_drifter.png' },
+  { key: 'vessel', name: 'The Vessel', url: '/assets/avatars/preset_vessel.png' },
   { key: 'warrior', name: 'The Sentinel', url: '/assets/avatars/preset_warrior.png' },
   { key: 'mage', name: 'The Arcanist', url: '/assets/avatars/preset_mage.png' },
   { key: 'rogue', name: 'The Shadow', url: '/assets/avatars/preset_rogue.png' },

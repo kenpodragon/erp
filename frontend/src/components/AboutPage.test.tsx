@@ -22,10 +22,10 @@ describe('AboutPage', () => {
 
   it('renders all four class overviews', () => {
     renderWithRouter(<AboutPage />);
-    expect(screen.getByText('The Sentinel')).toBeTruthy();
-    expect(screen.getByText('The Arcanist')).toBeTruthy();
-    expect(screen.getByText('The Wanderer')).toBeTruthy();
-    expect(screen.getByText('The Invoker')).toBeTruthy();
+    expect(screen.getByText('The Engineer')).toBeTruthy();
+    expect(screen.getByText('The Conduit')).toBeTruthy();
+    expect(screen.getByText('The Drifter')).toBeTruthy();
+    expect(screen.getByText('The Vessel')).toBeTruthy();
   });
 
   it('renders feature list items', () => {

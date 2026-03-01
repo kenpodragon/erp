@@ -47,13 +47,14 @@ When in doubt, consult these files in order:
 4. `@docs/ROADMAP.md`: High-level project phases.
 5. `@docs/recs/0_REQUIREMENTS.md`: What needs to be built.
 6. `@docs/ARCHITECTURE.md`: How it is built.
-7. `@docs/inst/DB_MIGRATIONS.md`: How to apply database updates.
-8. `@docs/inst/TESTING.md`: How to test the system.
-9. `@docs/inst/INIT_INFRA.md`: Environment setup.
-10. `@../Books/BOOKS.md`: Narrative source mapping.
+7. `@docs/lore/`: High-signal, compressed lore references (e.g., `BOOKS_SUMMARY.md`).
+8. `@../Books/BOOKS.md`: Narrative source mapping (full text).
+9. `@docs/inst/DB_MIGRATIONS.md`: How to apply database updates.
+10. `@docs/inst/TESTING.md`: How to test the system.
+11. `@docs/inst/INIT_INFRA.md`: Environment setup.
 
 ## 🤖 Agent Operating Procedures
-1. **Research First:** Always check `../Books/BOOKS.md` before designing a character or enemy to ensure lore accuracy.
+1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.
 2. **Surgical Updates:** When modifying requirements or TODOs, maintain the existing formatting and checkbox status.
 3. **Security:** Never expose secrets. Assume any variable starting with `STRIPE_`, `FIREBASE_`, or `DB_` is sensitive.
 4. **Validation:** Every feature implementation must be accompanied by an update to the `TODO.md`, verification of the technical requirements in `docs/recs/`, and checking off completed items.

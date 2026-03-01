@@ -1,11 +1,113 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Design Tokens — ERP Admin Panel
+   Mirrors frontend tokens; admin accent uses --color-info (#646cff)
+   ═══════════════════════════════════════════════════════════════════ */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* ── Primary Colors ── */
+  --color-primary: #c41e3a;
+  --color-primary-hover: #d92547;
+  --color-primary-muted: rgba(196, 30, 58, 0.15);
+  --color-secondary: #00d4ff;
+  --color-secondary-hover: #33ddff;
+  --color-secondary-muted: rgba(0, 212, 255, 0.15);
+  --color-accent: #d4af37;
+  --color-accent-hover: #e0c050;
+  --color-accent-muted: rgba(212, 175, 55, 0.15);
+
+  /* ── Backgrounds ── */
+  --color-bg-deep: #0a0a14;
+  --color-bg-surface: #111122;
+  --color-bg-elevated: #1a1a2e;
+  --color-bg-input: #0d0d1a;
+  --color-bg-overlay: rgba(0, 0, 0, 0.85);
+  --color-bg-black: #000000;
+
+  /* ── Text ── */
+  --color-text-primary: rgba(255, 255, 255, 0.87);
+  --color-text-secondary: #aaaaaa;
+  --color-text-muted: #666666;
+  --color-text-inverse: #000000;
+  --color-text-highlight: #e0d0b0;
+
+  /* ── Borders ── */
+  --color-border-subtle: #222233;
+  --color-border-medium: #333344;
+  --color-border-strong: #444455;
+  --color-border-primary: rgba(196, 30, 58, 0.3);
+  --color-border-secondary: rgba(0, 212, 255, 0.3);
+
+  /* ── Semantic / Status ── */
+  --color-success: #4caf50;
+  --color-success-bg: rgba(76, 175, 80, 0.1);
+  --color-warning: #ff9800;
+  --color-warning-bg: rgba(255, 152, 0, 0.1);
+  --color-error: #ff4444;
+  --color-error-bg: rgba(255, 68, 68, 0.1);
+  --color-info: #646cff;
+  --color-info-bg: rgba(100, 108, 255, 0.1);
+
+  /* ── Character Class Colors ── */
+  --color-class-engineer: #c41e3a;
+  --color-class-conduit: #7b5ea7;
+  --color-class-drifter: #00d4ff;
+  --color-class-vessel: #d4af37;
+
+  /* ── Stat Colors ── */
+  --color-stat-str: #cc3333;
+  --color-stat-agi: #33cc33;
+  --color-stat-int: #3366ff;
+
+  /* ── Typography ── */
+  --font-display: 'Garamond', 'Times New Roman', serif;
+  --font-body: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  /* ── Type Scale ── */
+  --font-size-hero: 3.2rem;
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.6rem;
+  --font-size-h3: 1.2rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.85rem;
+  --font-size-tiny: 0.75rem;
+
+  /* ── Spacing ── */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* ── Border Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.8);
+  --shadow-glow-primary: 0 0 20px rgba(196, 30, 58, 0.3);
+  --shadow-glow-secondary: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-glow-accent: 0 0 20px rgba(212, 175, 55, 0.3);
+  --shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+
+  /* ── Transitions ── */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease-out;
+
+  /* ── Base Styles ── */
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0a0a14;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-deep);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,7 +117,7 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-info);
   text-decoration: inherit;
 }
 a:hover {
@@ -29,26 +131,26 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: var(--font-size-hero);
   line-height: 1.1;
 }
 
 button {
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   padding: 0.4em 1em;
   font-size: 0.9em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a2e;
+  background-color: var(--color-bg-elevated);
   cursor: pointer;
   transition: border-color 0.25s, background 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--color-info);
 }
 button:focus,
 button:focus-visible {
-  outline: 2px solid #646cff;
+  outline: 2px solid var(--color-info);
   outline-offset: 2px;
 }

@@ -121,7 +121,7 @@ Build the complete player-facing onboarding pipeline (Splash → Auth → Profil
 
 ### 4.1 Character Classes
 
-- [x] **FR-4.1:** The game supports **4-6 character classes** derived from the *Towers of Elysium* lore. Exact class names, descriptions, and stat distributions must be determined during implementation by consulting `../Books/BOOKS.md` and the extracted entity/narrative data in the DB.
+- [x] **FR-4.1:** The game supports **4-6 character classes** derived from the *Towers of Elysium* lore. Exact class names, descriptions, and stat distributions must be determined during implementation by consulting the lore guides in `docs/lore/` (e.g., `CHARACTER_GUIDE.md`), falling back to `../Books/BOOKS.md` if necessary, and the extracted entity/narrative data in the DB.
 - [x] **FR-4.2:** Each class is defined by:
   - `name` (VARCHAR 50): Class name (e.g., "Sentinel", "Arcanist").
   - `lore_blurb` (TEXT): 2-3 sentence flavor text from the books explaining the archetype.

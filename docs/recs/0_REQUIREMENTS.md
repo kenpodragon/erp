@@ -3,10 +3,18 @@
 This document serves as the single source of truth for the features and constraints of the Elysium Rising mmorPg (ERP).
 
 ## 0. Narrative Source & Database Extraction
-The primary source of narrative truth for this project is the **[BOOKS.md](../../Books/BOOKS.md)** file (located in the peer `Books` directory). 
-- All story beats, entity descriptions, location details, and sensory data originate from the *Towers of Elysium* trilogy.
-- This narrative data has been programmatically extracted and structured into the PostgreSQL database via the **Book Agent Reader** tool.
-- For the technical mapping of how this narrative data is stored, refer to the **[A_BOOK_AGENT_SCHEMA.md](A_BOOK_AGENT_SCHEMA.md)**.
+The primary source of narrative truth for this project is the **[BOOKS.md](../../Books/BOOKS.md)** file. However, for efficient development, agents should first consult the high-signal, compressed guides in the **[docs/lore/](../lore/)** directory:
+- **[BOOKS_SUMMARY.md](../lore/BOOKS_SUMMARY.md)**: High-level narrative arcs and chapter summaries.
+- **[CHARACTER_GUIDE.md](../lore/CHARACTER_GUIDE.md)**: Detailed profiles of key characters.
+- **[ENVIRONMENT_GUIDE.md](../lore/ENVIRONMENT_GUIDE.md)**: Descriptions of locations and atmosphere.
+- **[ANNOUNCEMENT.md](../lore/ANNOUNCEMENT.md)**: Project-specific narrative framing.
+
+**Workflow:**
+1. Consult `docs/lore/` guides first.
+2. Fall back to `BOOKS.md` for missing details.
+3. Update `docs/lore/` guides if new or conflicting information is found in the source text.
+
+Narrative data has also been programmatically extracted into the PostgreSQL database. For technical mapping, see **[A_BOOK_AGENT_SCHEMA.md](A_BOOK_AGENT_SCHEMA.md)**.
 
 ## 1. Onboarding & Authentication & Initial Admin Panel Stuff 
 **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
@@ -15,9 +23,9 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
 - [x] **Terms & Privacy:** Automated prompts for accepting terms based on the Elysium Rising IP.
 - [x] **Onboarding Flow:** Splash page -> About/Instructions -> Auth -> Character Selection/Creation.
 - [x] **Support Dashboard** Submit a ticket. See results, discuss about tickets, etc...
-- [ ] **Initial Admin Panel Stuff:**
+- [x] **Initial Admin Panel Stuff:**
     - [x] **User Management:** View, search, block/unblock, and edit user profiles.    
-    - [ ] **Server, User Activity Logs, Graphs and Tracking:** View logs, activity history, and metrics.
+    - [x] **Server, User Activity Logs, Graphs and Tracking:** View logs, activity history, and metrics.
     - [x] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
     - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
@@ -37,7 +45,7 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
     - [ ] Progression is synced with Eleven Reader playback duration.
 - [ ] **Character System:**
     - [ ] **Visuals (AI-Driven):** 
-        - [ ] Use AI (e.g., Stable Diffusion/DALL-E) to generate initial character and enemy designs based on descriptions in `../Books/BOOKS.md`. (Extracted out to the DB)
+        - [ ] Use AI (e.g., Stable Diffusion/DALL-E) to generate initial character and enemy designs based on descriptions in `docs/lore/` (falling back to `../Books/BOOKS.md` if necessary). (Extracted out to the DB)
         - [ ] **Asset Caching & Sharing:** Once an asset is generated, it is cached and shared globally to ensure visual consistency and minimize API costs.
         - [ ] Text overlay to allow users to read the story as it progresses. The end of the chapter (final/final boss beat), show a cinematic detailing the actions from the book with text on screen of the book itself.
         - [ ] Offline progress - if a user comes back, calculate the progress. At most it will end the current chatper/storybeat (current segment), and require the user to listen to the story/read the text at least once before progressing.
