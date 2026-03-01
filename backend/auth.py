@@ -206,10 +206,10 @@ async def get_current_admin(
     is_owner = player.is_owner if player else False
     
     if not (is_whitelisted or is_sys_admin or is_owner):
-        logger.warning("Admin access denied for email: %s", email)
+        logger.error("DEBUG: Admin access denied for email: %s. Whitelisted: %s, SysAdmin: %s, Owner: %s", email, is_whitelisted, is_sys_admin, is_owner)
         raise HTTPException(
             status_code=403, 
-            detail={"error": f"Access denied: email '{email}' is not authorized."}
+            detail={"error": "Access denied"}
         )
 
     # 2. IP Whitelist (Toggleable)
@@ -221,10 +221,10 @@ async def get_current_admin(
         if allowed_ips:
             client_ip = get_client_ip(request)
             if client_ip not in allowed_ips:
-                logger.warning("Admin access denied for IP: %s (Email: %s)", client_ip, email)
+                logger.error("DEBUG: Admin access denied for IP: %s (Email: %s). Allowed: %s", client_ip, email, allowed_ips)
                 raise HTTPException(
                     status_code=403, 
-                    detail={"error": f"Access denied: IP '{client_ip}' is not whitelisted."}
+                    detail={"error": "Access denied"}
                 )
 
     # 3. Session Invalidation

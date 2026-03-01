@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import uuid
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -26,10 +27,55 @@ from models import (
     PlayerEssence, ServerConfig, AdminAuditLog, ActivityEvent, SupportTicket, SupportReply,
     AdminWhitelistEmail, AdminWhitelistIP
 )
-from utils import load_profanity_blocklist, is_profane
+from utils import load_profanity_blocklist, is_profane, sanitize_text
 import config_cache
 from audit import write_audit_log
 from events import log_activity_event
+
+# --- Background Tasks ---
+
+async def auto_close_tickets_task():
+    """Periodically check for resolved tickets to auto-close."""
+    while True:
+        try:
+            from db import engine
+            with Session(engine) as session:
+                now = datetime.now(timezone.utc)
+                cutoff = now - timedelta(days=7)
+                tickets = session.exec(
+                    select(SupportTicket)
+                    .where(SupportTicket.status == "resolved")
+                    .where(SupportTicket.resolved_at <= cutoff)
+                ).all()
+                for t in tickets:
+                    t.status = "closed"
+                    t.closed_at = now
+                    t.updated_at = now
+                    session.add(t)
+                session.commit()
+                if tickets:
+                    logger.info("Auto-closed %d resolved tickets", len(tickets))
+        except Exception as e:
+            logger.error("Error in auto_close_tickets_task: %s", e)
+        await asyncio.sleep(3600) # Every hour
+
+async def retention_policy_task():
+    """Periodically delete activity events older than 90 days (NFR-7)."""
+    while True:
+        try:
+            from db import engine
+            with Session(engine) as session:
+                cutoff = datetime.now(timezone.utc) - timedelta(days=90)
+                result = session.execute(
+                    text("DELETE FROM activity_events WHERE created_at < :cutoff"),
+                    {"cutoff": cutoff}
+                )
+                session.commit()
+                if result.rowcount > 0:
+                    logger.info("Deleted %d activity events older than 90 days", result.rowcount)
+        except Exception as e:
+            logger.error("Error in retention_policy_task: %s", e)
+        await asyncio.sleep(86400) # Every day
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,6 +92,11 @@ async def lifespan(app: FastAPI):
         # In testing or first-run environments, server_config might not exist yet.
         # We log a warning but allow the app to start.
         logger.warning("Could not load config cache on startup (this is normal in some test environments): %s", e)
+    
+    # Start background tasks
+    asyncio.create_task(auto_close_tickets_task())
+    asyncio.create_task(retention_policy_task())
+    
     yield
     # Shutdown logic (if any)
 
@@ -341,9 +392,9 @@ async def update_profile(
         raise HTTPException(status_code=404, detail="Player profile not found")
 
     if "alias" in update_data:
-        alias = update_data["alias"]
+        alias = sanitize_text(update_data["alias"], max_length=20)
         # Validation
-        if not alias or len(alias) < 3 or len(alias) > 20:
+        if not alias or len(alias) < 3:
             raise HTTPException(status_code=422, detail="Alias must be between 3 and 20 characters")
         if not alias.replace("_", "").replace("-", "").isalnum():
             raise HTTPException(status_code=422, detail="Alias must be alphanumeric (underscores/hyphens allowed)")
@@ -720,19 +771,19 @@ async def create_ticket(
         raise HTTPException(status_code=404, detail="Player profile not found")
 
     category = body.get("category", "").strip()
-    subject = body.get("subject", "").strip()
-    description = body.get("description", "").strip()
+    subject = sanitize_text(body.get("subject", ""), max_length=100)
+    description = sanitize_text(body.get("description", ""), max_length=5000)
 
     # Validate category
     if category not in VALID_TICKET_CATEGORIES:
         raise HTTPException(status_code=422, detail=f"Category must be one of: {', '.join(sorted(VALID_TICKET_CATEGORIES))}")
 
     # Validate subject
-    if len(subject) < 5 or len(subject) > 100:
+    if not subject or len(subject) < 5:
         raise HTTPException(status_code=422, detail="Subject must be between 5 and 100 characters")
 
     # Validate description
-    if len(description) < 20 or len(description) > 5000:
+    if not description or len(description) < 20:
         raise HTTPException(status_code=422, detail="Description must be between 20 and 5000 characters")
 
     now = datetime.now(timezone.utc)
@@ -889,8 +940,8 @@ async def add_ticket_reply(
     if ticket.status not in ("open", "in_progress"):
         raise HTTPException(status_code=400, detail="Cannot reply to a ticket that is resolved or closed. Reopen it first.")
 
-    content = body.get("content", "").strip()
-    if len(content) < 20 or len(content) > 5000:
+    content = sanitize_text(body.get("content", ""), max_length=5000)
+    if not content or len(content) < 20:
         raise HTTPException(status_code=422, detail="Reply must be between 20 and 5000 characters")
 
     now = datetime.now(timezone.utc)
@@ -935,8 +986,8 @@ async def reopen_ticket(
     if ticket.status not in ("resolved", "closed"):
         raise HTTPException(status_code=400, detail="Only resolved or closed tickets can be reopened")
 
-    reason = body.get("reason", "").strip()
-    if len(reason) < 10 or len(reason) > 500:
+    reason = sanitize_text(body.get("reason", ""), max_length=500)
+    if not reason or len(reason) < 10:
         raise HTTPException(status_code=422, detail="Reopen reason must be between 10 and 500 characters")
 
     now = datetime.now(timezone.utc)
@@ -990,10 +1041,8 @@ async def close_ticket(
 
     now = datetime.now(timezone.utc)
 
-    note = body.get("note", "").strip()
+    note = sanitize_text(body.get("note", ""), max_length=500)
     if note:
-        if len(note) > 500:
-            raise HTTPException(status_code=422, detail="Closing note must be 500 characters or fewer")
         reply = SupportReply(
             ticket_id=ticket.id,
             author_type="player",
@@ -1955,7 +2004,7 @@ async def admin_update_player(
     changes = {}
 
     if "alias" in body:
-        new_alias = body["alias"]
+        new_alias = sanitize_text(body["alias"], max_length=20)
         if new_alias:
             # Uniqueness check
             existing = session.exec(select(Player).where(text("LOWER(alias) = :a")).params(a=new_alias.lower())).first()
@@ -1965,8 +2014,9 @@ async def admin_update_player(
         player.alias = new_alias
 
     if "custom_avatar_url" in body:
-        changes["custom_avatar_url"] = {"old": player.custom_avatar_url, "new": body["custom_avatar_url"]}
-        player.custom_avatar_url = body["custom_avatar_url"]
+        new_url = sanitize_text(body["custom_avatar_url"], max_length=500)
+        changes["custom_avatar_url"] = {"old": player.custom_avatar_url, "new": new_url}
+        player.custom_avatar_url = new_url
 
     if changes:
         player.updated_at = now
@@ -2036,6 +2086,22 @@ async def admin_analytics_overview(
         select(func.count(SupportTicket.id)).where(SupportTicket.status == "open")
     ).one()
 
+    # Avg Resolution Time (for tickets resolved in last 30 days)
+    resolved_last_30d = session.exec(
+        select(SupportTicket)
+        .where(SupportTicket.status.in_(["resolved", "closed"]))
+        .where(SupportTicket.resolved_at >= now - timedelta(days=30))
+    ).all()
+    
+    avg_res_time_seconds = 0
+    if resolved_last_30d:
+        total_time = sum(
+            ((t.resolved_at.replace(tzinfo=timezone.utc) if t.resolved_at.tzinfo is None else t.resolved_at) - 
+             (t.created_at.replace(tzinfo=timezone.utc) if t.created_at.tzinfo is None else t.created_at)).total_seconds()
+            for t in resolved_last_30d
+        )
+        avg_res_time_seconds = total_time / len(resolved_last_30d)
+
     return {
         "players": {
             "total": total_players,
@@ -2050,6 +2116,7 @@ async def admin_analytics_overview(
         },
         "tickets": {
             "open": open_tickets,
+            "avg_resolution_time_seconds": avg_res_time_seconds,
         },
     }
 

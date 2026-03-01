@@ -568,7 +568,7 @@ Full observability covering three domains: **player behavior analytics** (what p
 | Support ticket system | ✅ Complete | 2026-02-28 |
 | Admin: User management | ✅ Complete | 2026-02-28 |
 | Activity events & audit log | ✅ Complete | 2026-02-28 |
-| Admin: Hardened auth | 🛠️ In Progress | |
+| Admin: Hardened auth | ✅ Complete | 2026-02-28 |
 
 ---
 

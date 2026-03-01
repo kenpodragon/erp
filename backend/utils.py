@@ -1,7 +1,31 @@
 import os
 import logging
+import html
+from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+# --- Sanitization ---
+
+def sanitize_text(text: Optional[str], max_length: int = 5000) -> Optional[str]:
+    """
+    Sanitize user-provided text:
+    1. Trim whitespace.
+    2. Escape HTML characters (XSS prevention).
+    3. Truncate to max_length.
+    """
+    if text is None:
+        return None
+    
+    # 1. Trim
+    text = text.strip()
+    
+    # 2. Truncate
+    if len(text) > max_length:
+        text = text[:max_length]
+        
+    # 3. Escape HTML
+    return html.escape(text)
 
 # --- Profanity Filter ---
 

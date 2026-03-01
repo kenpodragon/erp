@@ -62,15 +62,29 @@ const CLASS_VISUAL: Record<string, ClassVisual> = {
 
 function StatBar({ label, value, max = 20 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
+  
+  // Color coding based on stat type
+  let barColor = '#b8860b'; // Default gold
+  if (label === 'STR') barColor = '#cc3333'; // Red for Strength
+  if (label === 'AGI') barColor = '#33cc33'; // Green for Agility
+  if (label === 'INT') barColor = '#3366ff'; // Blue for Intelligence
+  
   return (
-    <div style={{ marginBottom: '0.4rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '2px' }}>
-        <span>{label}</span>
+    <div style={{ marginBottom: '0.6rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px', fontWeight: 'bold' }}>
+        <span style={{ color: '#aaa' }}>{label}</span>
         <span>{value}</span>
       </div>
-      <div style={{ background: '#333', borderRadius: '3px', height: '6px' }}>
+      <div style={{ background: '#222', borderRadius: '4px', height: '10px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)' }}>
         <div
-          style={{ background: '#b8860b', borderRadius: '3px', height: '6px', width: `${pct}%`, transition: 'width 0.3s' }}
+          style={{ 
+            background: barColor, 
+            borderRadius: '4px', 
+            height: '100%', 
+            width: `${pct}%`, 
+            transition: 'width 0.5s ease-out',
+            boxShadow: '0 0 10px ' + barColor + '44'
+          }}
         />
       </div>
     </div>

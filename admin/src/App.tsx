@@ -36,6 +36,20 @@ function App() {
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
   const checkAuthorization = useCallback(async (currentUser: User) => {
+    // 1. Fast Rejection (UX-only)
+    // Check against VITE_ALLOWED_EMAILS if set, to show "Access Denied" immediately
+    const allowedEmailsStr = import.meta.env.VITE_ALLOWED_EMAILS || ""
+    if (allowedEmailsStr && currentUser.email) {
+      const allowed = allowedEmailsStr.split(",").map((e: string) => e.trim().toLowerCase())
+      if (!allowed.includes(currentUser.email.toLowerCase())) {
+        console.warn(`Fast rejection: email '${currentUser.email}' is NOT in VITE_ALLOWED_EMAILS. Proceeding to backend check anyway...`)
+        // Comment out the fast rejection return
+        // setIsAuthorized(false)
+        // setBackendVerified(false)
+        // return
+      }
+    }
+
     setUser(currentUser)
     setIsAuthorized(true)
     setBackendVerified(null)

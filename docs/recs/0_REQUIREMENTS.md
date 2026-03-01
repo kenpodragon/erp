@@ -22,6 +22,7 @@ The primary source of narrative truth for this project is the **[BOOKS.md](../..
     - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
 ## 2. Core Gameplay Mechanics (Incremental MMORPG)
+- [ ] UI/UX for the game loop screen (need where this will go - some battlefield or something (need to come up with name)). 
 - [ ] **High Level Game Loop:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
     - [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
 - [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.

@@ -10,7 +10,6 @@ import './Dashboard.css'
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
 interface OverviewStats {
   players: {
     total: number
@@ -25,7 +24,16 @@ interface OverviewStats {
   }
   tickets: {
     open: number
+    avg_resolution_time_seconds: number
   }
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds === 0) return 'N/A'
+  const hours = Math.round(seconds / 3600)
+  if (hours < 24) return `${hours}h`
+  const days = Math.round(hours / 24)
+  return `${days}d`
 }
 
 interface TimeSeriesPoint {
@@ -93,6 +101,9 @@ function OverviewCards({ stats }: { stats: OverviewStats }) {
       <div className="ov-card warning">
         <span className="ov-label">Open Tickets</span>
         <span className="ov-value">{stats.tickets.open}</span>
+        <div className="ov-sub-row">
+          <span><strong>{formatDuration(stats.tickets.avg_resolution_time_seconds)}</strong><em>Avg Res Time</em></span>
+        </div>
         <Link to="/support" className="ov-link">View Queue →</Link>
       </div>
     </div>

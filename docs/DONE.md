@@ -16,7 +16,9 @@ This document tracks the completed development phases for the Elysium Rising mmo
 - [x] **7.8 — Server Config System** *(RECS §8, FR-8.1 through FR-8.12)*
 - [x] **7.9 — Support Ticket System** *(RECS §6, FR-6.1 through FR-6.20)*
 - [x] **7.10 — Admin: User Management** *(RECS §7, FR-7.1 through FR-7.14)*
-- [x] **7.11 — Activity Events & Audit Log** *(RECS §9, FR-9.1 through FR-9.17)*  
+- [x] **7.11 — Activity Events & Audit Log** *(RECS §9, FR-9.1 through FR-9.17)* 
+- [x] **7.12 — Harden Admin Auth** *(RECS §2.2, FR-2.7 through FR-2.10)*
+- [x] **7.13 — Onboarding & Admin: Polishing & Refinements**
 
 ## Phase 6: Book Processing 📚
 - [x] Create requirements for the Book processor (recs/BOOK_AGENT_READER.md)
