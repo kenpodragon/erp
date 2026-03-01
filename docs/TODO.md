@@ -1,24 +1,63 @@
 # ERP Project Kickstart TODO
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
-## REC_2: Core Gameplay Mechanics
-  - [ ] Create the breakdown requirements and detailed information needed to build out the first implementation of the game.
-  - [ ] Need to ensure it captures the story mapping portion (clicker part), and then bake into the skills leveling (progression outside of the clicking game - things like progresing in the game will unlock auto-progress skills outside the game - skill design and other bits should be related to concepts and things from within the Elysium Rising books)
-  - [ ] Break components up into meaningful requiement sections (game loop, etc...) and continue iterating through the requirements.
-  - [ ] Formulate a development/design plan to get these bits done
-  - [ ] Migrate the detailed plan into TODO to track and capture.
-  - [ ] Begin work on the UI/UX layouts for the game loop screens (no animation or characters yet, just screens and placeholder items)
+## REC_2: Game Loop 2.0 (The Towers of Elysium)
+**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
+
+- [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
+    - [x] **Core Game Skeleton & Framework**
+        - [x] Implement `MainGameLayout` (Top Bar, Left Sidebar, Main Content, Bottom Banner).
+        - [x] Setup `GameNavigationController` (Map, Skills, Home, Shop, Chat).
+        - [x] Implement `BottomAnimatedBanner` (Basic skeleton and side-scrolling pixel art framework/animation).
+        - [x] Build the `OverworldMap` structure (Vertical chapter list with horizontal scene nodes).
+    - [x] **State & Testing**
+        - [x] Define global `GameContext` (Session stats, active training, current scene).
+        - [ ] Create 2.0 Interface and UX validation tests (Vitest/Playwright).
+
+- [ ] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
+    - [x] **Backend: DB-Driven Map Content**
+        - [x] Create `db/010_game_entities.sql` (Chapters, Scenes, Story Beats, Enemies, Skills).
+        - [x] Add `Chapter`, `Scene`, and `StoryBeat` models to `backend/models.py`.
+        - [x] Implement `GET /api/game/map` (Return all chapters and scenes with titles/meta).
+        - [x] Implement `GET /api/game/scenes/{id}` (Detailed story beat + narrative data).
+    - [x] **Frontend: Hook Up Real Data**
+        - [x] Update `OverworldMap.tsx` to fetch real data from the backend.
+        - [x] Implement `ChapterInfoPanel` modal (Scene details, "Enter Story" action).
+        - [x] Build transition framework to `StoryMode.tsx` (Loop B).
+    - [ ] Implement node state logic (locked, available, completed) based on real `PlayerProgress`.
+    - [ ] Develop detailed UI for `OverworldMap` (Pulsing nodes, chapter list).
+
+- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
+    - [ ] Formulate detailed development/design plan for 2.2.
+    - [ ] Implement narrative image-overlay system for copy protection.
+    - [ ] Integrate Eleven Reader basic playback gate (1x speed requirement).
+    - [ ] Build the Clicker Combat engine (Enemy HP, click damage, floating numbers).
+
+- [ ] **2.3 — Loop C: Idle Training (Passive Progression)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
+    - [ ] Formulate detailed development/design plan for 2.3.
+    - [ ] Implement "One-at-a-time" skill training logic and XP accumulation.
+    - [ ] Build the Offline Progression handler (Login delta calculation).
+
+- [ ] **2.4 — Character & Progression Systems, Classes, and Skills** *(Ref: `docs/recs/2.4_CHARACTER_PROGRESSION.md`)*
+    - [ ] Design and implement core stats (Str/Agi/Int) logic.
+    - [ ] Implement inventory system framework (Weapon/Armor slots).
+    - [ ] Setup Class-specific abilities and skill trees.
+
+- [ ] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`)*
+    - [ ] Implement SUNO music rotation logic based on active chapter.
+    - [ ] Add spatial/contextual SFX (Click, Death, Level Up).
+    - [ ] Finalize Eleven Reader narration streaming and sync.
+
+- [ ] **2.6 — Economy & Anti-Cheat** *(Ref: `docs/recs/2.6_ECONOMY_ANTICHEAT.md`)*
+    - [ ] Implement currency conversion (Session Gold -> Essence/Resources).
+    - [ ] Implement server-side click rate limiting and damage verification.
+    - [ ] Build session integrity checks for Story Mode exit.
+    - [ ] Apply "Magic Research 2" aesthetic polish across all loops.
 
 ---
 *Updated: 2026-03-01*
 
-## Book Processing Post Processing Stuff
-> **All tasks below are performed directly in the production PostgreSQL database.**
-> Follow the connection and migration instructions in [`docs/inst/DB_MIGRATIONS.md`](inst/DB_MIGRATIONS.md).
-> Any reusable SQL scripts should be saved in `/db`.
-- [ ] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
-  - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)
-  - [ ] Check for missing data in the locations tables, entity tables (e.g. base description, emotional state, sounds, smells, equipment, abilities). If missing, generate and INSERT/UPDATE via SQL.
+
 
 ## OTHER MAJOR TASKS  
 - [ ] **Security and anti-cheat**

@@ -11,6 +11,7 @@ import { PrivacyPage } from './components/PrivacyPage'
 import { ProfileDashboard } from './components/ProfileDashboard'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { SupportCenter } from './components/SupportCenter'
+import MainGameLayout from './game/MainGameLayout'
 import './App.css'
 
 interface HealthData {
@@ -289,12 +290,17 @@ function App() {
     return () => unsubscribe()
   }, [verifyUserWithBackend])
 
-  // Auto-redirect: authenticated user on splash → /profile
+  // Auto-redirect: authenticated user on splash → /game (if character) or /profile
   useEffect(() => {
-    if (!authLoading && user && location.pathname === '/' && !showOnboarding) {
-      navigate('/profile', { replace: true })
+    // Wait until both Firebase auth AND Backend verification are done
+    if (!authLoading && user && backendUser && location.pathname === '/' && !showOnboarding) {
+      if (character) {
+        navigate('/game', { replace: true })
+      } else {
+        navigate('/profile', { replace: true })
+      }
     }
-  }, [authLoading, user, location.pathname, navigate, showOnboarding])
+  }, [authLoading, user, backendUser, character, location.pathname, navigate, showOnboarding])
 
   const handleLogin = async () => {
     if (!auth || !googleProvider) {
@@ -399,13 +405,24 @@ function App() {
           onComplete={() => {
             setShowOnboarding(false);
             verifyUserWithBackend();
-            navigate('/profile');
+            // Redirect to game if character exists after onboarding, else profile
+            if (character) {
+              navigate('/game');
+            } else {
+              navigate('/profile');
+            }
           }} 
         />
       )}
 
       <Routes>
-        <Route path="/" element={<SplashPage onLogin={handleLogin} />} />
+        <Route path="/" element={
+          isLoggedIn ? (
+            character ? <Navigate to="/game" replace /> : <Navigate to="/profile" replace />
+          ) : (
+            <SplashPage onLogin={handleLogin} />
+          )
+        } />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
@@ -424,6 +441,19 @@ function App() {
             handleLogout={handleLogout}
             backendError={backendError}
           />
+        } />
+        <Route path="/game/*" element={
+          isLoggedIn ? (
+            <MainGameLayout 
+              character={character} 
+              onCharacterCreated={(c) => {
+                setCharacter(c);
+                verifyUserWithBackend();
+              }} 
+            />
+          ) : (
+            <Navigate to="/" replace />
+          )
         } />
       </Routes>
     </div>

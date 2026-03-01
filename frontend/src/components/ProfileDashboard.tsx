@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AliasEditor } from './AliasEditor';
 import { AvatarManager } from './AvatarManager';
 import { AudioSettings } from './AudioSettings';
@@ -31,6 +32,8 @@ interface Player {
   avatar_preset_key: string | null;
   terms_accepted_at: string | null;
   created_at: string;
+  is_banned?: boolean;
+  is_game_admin?: boolean;
   settings?: {
     audio_enabled: boolean;
     music_volume: number;
@@ -201,25 +204,72 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
         onCharacterDeleted={onCharacterDeleted}
       />
 
+      {/* ── Start Game Button ────────────────────────────────────────── */}
+      {character && (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
+          <Link 
+            to="/game" 
+            className="btn-primary" 
+            style={{ 
+              fontSize: '1.25rem', 
+              padding: '0.8rem 2.5rem', 
+              textDecoration: 'none',
+              background: 'linear-gradient(to bottom, #b8860b, #8b6508)',
+              border: '2px solid #daa520',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              display: 'inline-block'
+            }}
+          >
+            Enter the Tower
+          </Link>
+        </div>
+      )}
+
       {/* ── Account status ────────────────────────────────────────────── */}
       <div className="profile-section">
         <h3>Account Status</h3>
-        <p style={{ margin: '0 0 0.5rem' }}>
-          Terms:{' '}
-          {player.terms_accepted_at
-            ? <span style={{ color: '#4caf50' }}>Accepted {new Date(player.terms_accepted_at).toLocaleString()}</span>
-            : <span style={{ color: '#ff8888' }}>Not yet accepted</span>}
-        </p>
-        {!player.terms_accepted_at && (
-          <button className="btn-primary" onClick={async () => {
-            const { api } = await import('../api');
-            await api.post('/api/players/me/accept-terms');
-            onRefresh();
-          }}>
-            Accept Terms of Service
-          </button>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <p style={{ margin: 0 }}>
+            Status: {' '}
+            {player.is_banned ? (
+              <span style={{ color: '#ff4444', fontWeight: 'bold' }}>BANNED</span>
+            ) : (
+              <span style={{ color: '#4caf50', fontWeight: 'bold' }}>ACTIVE</span>
+            )}
+            {player.is_game_admin && (
+              <span style={{ marginLeft: '0.5rem', color: '#60a5fa', fontSize: '0.8rem', border: '1px solid #60a5fa', padding: '1px 4px', borderRadius: '3px' }}>ADMIN</span>
+            )}
+          </p>
+          <p style={{ margin: 0 }}>
+            Terms:{' '}
+            {player.terms_accepted_at
+              ? <span style={{ color: '#4caf50' }}>Accepted {new Date(player.terms_accepted_at).toLocaleDateString()}</span>
+              : <span style={{ color: '#ff8888' }}>Not yet accepted</span>}
+          </p>
+          {!player.terms_accepted_at && (
+            <button className="btn-primary" style={{ marginTop: '0.5rem', width: 'fit-content' }} onClick={async () => {
+              const { api } = await import('../api');
+              await api.post('/api/players/me/accept-terms');
+              onRefresh();
+            }}>
+              Accept Terms of Service
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ── Footer / Legal Links ──────────────────────────────────────── */}
+      <footer style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #333', textAlign: 'center', fontSize: '0.8rem', color: '#666' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
+          <Link to="/terms" style={{ color: '#888', textDecoration: 'none' }}>Terms of Service</Link>
+          <Link to="/privacy" style={{ color: '#888', textDecoration: 'none' }}>Privacy Policy</Link>
+          <Link to="/license" style={{ color: '#888', textDecoration: 'none' }}>License</Link>
+        </div>
+        <p>&copy; {new Date().getFullYear()} Stephen Salaka. All rights reserved.</p>
+      </footer>
 
       {toast && <div className="toast">{toast}</div>}
     </div>

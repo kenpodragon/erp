@@ -1,0 +1,81 @@
+.game-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  height: 50px;
+  background-color: #111;
+  border-bottom: 1px solid #333;
+  z-index: 100;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.player-avatar-mini {
+  width: 32px;
+  height: 32px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.player-stats-mini {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.player-level {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.top-bar-center {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.currency-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  background-color: #1a1a1a;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.currency-item.gold { border-color: #fbbf24; color: #fbbf24; }
+.currency-item.essence { border-color: #a78bfa; color: #a78bfa; }
+.currency-item.shards { border-color: #60a5fa; color: #60a5fa; }
+
+.top-bar-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.settings-btn, .exit-btn {
+  background: none;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 0.4rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover, .exit-btn:hover {
+  background-color: #222;
+  border-color: #444;
+  transform: scale(1.05);
+}

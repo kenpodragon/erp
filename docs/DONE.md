@@ -5,6 +5,11 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-01*
 
+## Book Processing Post Processing Stuff
+- [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
+  - [x] Check for some consolidation and cleanup (realize entities from other books might be different.)
+  - [x] Check for missing data in the locations tables, entity tables (e.g. base description, emotional state, sounds, smells, equipment, abilities). If missing, generate and INSERT/UPDATE via SQL.
+
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 - [x] **7.1 — Database Migration** *(RECS §10, SCHEMA §1-10)*
 - [x] **7.2 — Backend Auth Middleware** *(RECS §2.3, FR-2.11 through FR-2.15)*

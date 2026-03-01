@@ -25,7 +25,8 @@ from auth import init_firebase, get_current_player, get_current_admin, get_curre
 from models import (
     Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress,
     PlayerEssence, ServerConfig, AdminAuditLog, ActivityEvent, SupportTicket, SupportReply,
-    AdminWhitelistEmail, AdminWhitelistIP
+    AdminWhitelistEmail, AdminWhitelistIP, Chapter, Scene, StoryBeat, Entity, Skill,
+    StatDefinition, EntityGameplayData, SceneGameplayData, BenefitEffectData
 )
 from utils import load_profanity_blocklist, is_profane, sanitize_text
 import config_cache
@@ -732,6 +733,61 @@ async def get_character(
         "class": char_class.model_dump() if char_class else None,
         "progress": progress.model_dump() if progress else None,
         "essence": essence.model_dump() if essence else None,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Game Map & Content endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/game/map")
+async def get_game_map(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return the full chapter and scene hierarchy from book data.
+    Uses sort_order for sequencing.
+    """
+    chapters = session.exec(select(Chapter).order_by(Chapter.sort_order.asc())).all()
+    result = []
+    for chapter in chapters:
+        scenes = session.exec(
+            select(Scene)
+            .where(Scene.chapter_id == chapter.id)
+            .order_by(Scene.sort_order.asc())
+        ).all()
+        result.append({
+            **chapter.model_dump(),
+            "scenes": [s.model_dump() for s in scenes]
+        })
+    return result
+
+
+@app.get("/api/game/scenes/{scene_id}")
+async def get_scene_details(
+    scene_id: int,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return detailed scene info including story beats and enemies.
+    """
+    scene = session.get(Scene, scene_id)
+    if not scene:
+        raise HTTPException(status_code=404, detail="Scene not found")
+    
+    beats = session.exec(
+        select(StoryBeat)
+        .where(StoryBeat.scene_id == scene_id)
+        .order_by(StoryBeat.sort_order.asc())
+    ).all()
+
+    # Potential for entity bridge here (finding enemies in this scene)
+    
+    return {
+        **scene.model_dump(),
+        "story_beats": [b.model_dump() for b in beats]
     }
 
 

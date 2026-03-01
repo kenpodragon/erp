@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Pages.css';
 
 export const AboutPage: React.FC = () => {
@@ -75,12 +76,22 @@ export const AboutPage: React.FC = () => {
           </ul>
         </section>
 
+        <section className="page-section">
+          <h2>Legal & Policy</h2>
+          <p>Review our official documentation and agreements:</p>
+          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', justifyContent: 'center' }}>
+            <Link to="/terms" className="nav-link" style={{ border: '1px solid #333', padding: '0.5rem 1rem', borderRadius: '4px' }}>Terms of Service</Link>
+            <Link to="/privacy" className="nav-link" style={{ border: '1px solid #333', padding: '0.5rem 1rem', borderRadius: '4px' }}>Privacy Policy</Link>
+            <Link to="/license" className="nav-link" style={{ border: '1px solid #333', padding: '0.5rem 1rem', borderRadius: '4px' }}>License</Link>
+          </div>
+        </section>
+
         <section className="page-section" style={{ textAlign: 'center' }}>
           <h2>Ready to Begin?</h2>
           <p style={{ marginBottom: '1.5rem' }}>
             The prison is waiting. Choose your class. Name your character. Begin the awakening.
           </p>
-          <a href="/" className="btn-secondary">Return to Home</a>
+          <Link to="/" className="btn-secondary">Enter the Tower</Link>
         </section>
       </div>
     </div>

@@ -1,0 +1,329 @@
+.overworld-map-wrapper {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.book-nav-sidebar {
+  width: 180px;
+  background-color: #111;
+  border-right: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0.75rem;
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.book-nav-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #555;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.book-nav-item {
+  background: none;
+  border: 1px solid transparent;
+  color: #888;
+  padding: 0.75rem;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.book-nav-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.book-nav-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.book-nav-progress .progress-bar-mini {
+  flex: 1;
+  height: 3px;
+}
+
+.progress-text {
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #666;
+  min-width: 25px;
+}
+
+.book-nav-item.available .progress-text {
+  color: #b8860b;
+}
+
+.book-nav-item .book-num {
+  font-size: 0.65rem;
+  font-weight: bold;
+  opacity: 0.6;
+}
+
+.book-nav-item .book-title-mini {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-nav-item:hover:not(.locked) {
+  background-color: #1a1a1a;
+  color: #ddd;
+}
+
+.book-nav-item.available {
+  border-left: 2px solid #b8860b;
+  background-color: #1a1a1a;
+  color: #eee;
+}
+
+.book-nav-item.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.overworld-map-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  scroll-behavior: smooth;
+  background-color: #1a1a1a;
+}
+
+.book-section {
+  margin-bottom: 8rem;
+  position: relative;
+}
+
+.book-section.locked {
+  filter: blur(2px) grayscale(0.8);
+  pointer-events: none;
+  user-select: none;
+}
+
+.book-section-title {
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #333;
+  padding-bottom: 1rem;
+}
+
+.locked-book-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #888;
+  z-index: 10;
+  text-align: center;
+  pointer-events: auto;
+  font-weight: bold;
+}
+
+.map-title {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #fff;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.chapters-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 4rem;
+}
+
+.chapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #222;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chapter-name {
+  font-size: 1.1rem;
+  color: #888;
+  border-bottom: none; /* Remove old style */
+  padding-bottom: 0;
+}
+
+.chapter-progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #111;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid #333;
+}
+
+.progress-value {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #aaa;
+  min-width: 30px;
+}
+
+.progress-bar-mini {
+  width: 60px;
+  height: 4px;
+  background-color: #222;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #b8860b, #daa520);
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
+}
+
+.scenes-horizontal {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.scene-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.scene-node:hover:not(.locked) {
+  transform: scale(1.05);
+}
+
+.node-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #222;
+  border: 2px solid #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.scene-node.available .node-circle {
+  border-color: #60a5fa;
+  box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.scene-node.completed .node-circle {
+  background-color: #064e3b;
+  border-color: #10b981;
+}
+
+.scene-node.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.node-connector {
+  flex: 1;
+  height: 2px;
+  background-color: #333;
+  min-width: 40px;
+  margin: 0 10px;
+}
+
+.node-connector.active {
+  background-color: #444;
+}
+
+.scene-label-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  max-width: 140px;
+  text-align: center;
+}
+
+.chapter-prefix {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: #555;
+  letter-spacing: 0.5px;
+}
+
+.scene-number {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #888;
+}
+
+.scene-name {
+  font-size: 0.75rem;
+  color: #bbb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.scene-node.available .scene-number {
+  color: #60a5fa;
+}
+
+.scene-node.completed .scene-number {
+  color: #10b981;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0px rgba(96, 165, 250, 0); }
+  50% { transform: scale(1.08); box-shadow: 0 0 15px rgba(96, 165, 250, 0.4); }
+  100% { transform: scale(1); box-shadow: 0 0 0px rgba(96, 165, 250, 0); }
+}
+
+/* Hide scrollbar for scenes horizontal but allow scrolling */
+.scenes-horizontal::-webkit-scrollbar {
+  display: none;
+}
+.scenes-horizontal {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -29,13 +29,30 @@ Narrative data has also been programmatically extracted into the PostgreSQL data
     - [x] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
     - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
-## 2. Core Gameplay Mechanics (Three-Loop Architecture)
+## 2. Inspirations & Design Baseline
+The design and mechanics of ERP are grounded in several successful titles. These serve as the **primary baseline** for initial functionality, UI layout, and gameplay feel.
+
+| System | Primary Inspiration | Key Features to Emulate |
+| :--- | :--- | :--- |
+| **Overworld/Map** | *Your Chronicle* | Node-based chapter/scene progression, branching paths, 100% completion mastery. |
+| **UI/UX Aesthetic** | *Magic Research 2* | Clean, high-contrast dark theme, minimalist but polished interface, efficient data display. |
+| **Idle Training** | *Melvor Idle* | Deep skill systems, "one-at-a-time" training, long-term progression floor, offline gains. |
+| **Combat Loop** | *Clicker Heroes* | Enemy-centric waves, HP scaling, session-based gold/upgrades, boss timers, farmable checkpoints. |
+| **Visual Flair** | *Dwarves: GDL* | Side-scrolling pixel art battle banner, visual growth indicators (armor/effects). |
+
+**Guidance for Implementation:**
+- **Clarification:** If a specific mechanic or UI detail is underspecified in these requirements, refer to the corresponding inspiration game's behavior as the default.
+- **Precedence:** While inspirations provide the base, the **functional requirements in these docs (2.0-2.6) supercede the inspiration games.** ERP's narrative integration and dual-loop economy are unique and take priority over "stock" incremental mechanics.
+- **Evolution:** As development progresses, ERP will diverge further from these baselines to accommodate the *Towers of Elysium* IP.
+
+## 3. Core Gameplay Mechanics (Three-Loop Architecture)
 The primary goal of ERP is to provide an immersive environment where players **read the book series while playing the game**. The architecture is built on three interconnected loops that balance active play, passive progression, and overworld strategy. The initial design and implementation will be to put these frameworks into place. Population and expansion of these into the full story and components related to the story should be described (e.g. start with 4 basic classes, but allow ability to add more as time progresses. Start with 4 skills. 4 enemy types, etc.. - however a process to expand those as they become defined and tooling to extract and create them (from the extracted book contents)).
 ### 2.0 Loop A: Overworld / Hub (Strategy & Navigation)
 - [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
-- [ ] **UI/UX Design Requirements:** Need to define what these look like (use the 2.0 GAME LOOP bits as a starting point)
+- [ ] **UI/UX Design Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
 
 ### 2.1 Loop A: Overworld / Hub (Strategy & Navigation)
+- [ ] **Detailed Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
 - [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
 - [ ] **Node-Based Map:** A "Chronicle-style" interactive map showing chapter and scene progression.
 - [ ] **Centralized Interface:** Access point for story mode, idle training, shops, and social features.
@@ -43,6 +60,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth.
 
 ### 2.2 Loop B: Story Mode / Clicker Combat (Active Play)
+- [ ] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
 - [ ] **The Reading & Listening Experience:** 
     - [ ] **Eleven Reader Integration:** The core of Story Mode is the audiobook narration. Users listen to the book series while playing the game.
     - [ ] **Synced Text Overlay:** Story text scrolls and appears paragraph-by-paragraph in real-time, synced with Eleven Reader audio, allowing users to read along.
@@ -62,12 +80,14 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Narrative Gating:** Progression synced with audio duration; players cannot advance nodes faster than 1x playback speed.
 
 ### 2.3 Loop C: Idle Training (Passive Progression)
+- [ ] **Detailed Requirements:** [2.3_IDLE_TRAINING.md](2.3_IDLE_TRAINING.md)
 - [ ] **Skill-Based Growth:** "Melvor Idle-style" passive training system for combat, magic, and utility skills.
 - [ ] **Background Execution:** Training continues offline and while playing Story Mode.
 - [ ] **Session Floor:** Idle Training levels determine the "base stats" and power floor for Story Mode sessions.
 - [ ] **Manual Advancement:** Users can select only one skill at a time to train. The training rate is like Melvor Idle. However, users can also click into the skill itself and play clicker versions of the skill game to advance the training further. Gold earned during these sessions (enemies they encoutner come from the pool of any enemies they've unlocked up to that point in the books), gives a percentage boost (after exiting). So for example the idle level up time is 5 hours. If a user actively plays and earns gold/defeats levels - if they make it to level 500 in the manual mode, then 100% of the remaining time to level up would be gained (or something to that effect).
 
 ### 2.4 Character & Progression Systems, Classes, and Skills
+- [ ] **Detailed Requirements:** [2.4_CHARACTER_PROGRESSION.md](2.4_CHARACTER_PROGRESSION.md)
 - [ ] **Core Stats:** Strength, Agility, and Intelligence derived from the book's power system. Should be related to things found in the book.
 - [ ] **Inventory System:** Equipment slots (Weapon, Armor, Trinkets) with color-coded rarity tiers. Should be related to things found in the book.
 - [ ] **Dual Leveling:** 
@@ -78,6 +98,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Skill System:** Skills need to be based off of skills found in the books. Skill names, effects, need to be designed to encompass the full story.
 
 ### 2.5 Audio & Music Integration
+- [ ] **Detailed Requirements:** [2.5_AUDIO_MUSIC.md](2.5_AUDIO_MUSIC.md)
 - [ ] **Audiobook Narration (Eleven Reader):** 
     - [ ] Real-time streaming of audio books corresponding to the active chapter/scene.
     - [ ] **Playback Tracking:** Server-side tracking of audio progress to enforce the narrative gate.
@@ -86,6 +107,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Tactile SFX:** Distinct sounds for clicks, crits, enemy defeats, and UI interactions.
 
 ### 2.6 Economy & Anti-Cheat
+- [ ] **Detailed Requirements:** [2.6_ECONOMY_ANTICHEAT.md](2.6_ECONOMY_ANTICHEAT.md)
 - [ ] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades.
 - [ ] **Advanced Anti-Cheat:** 
     - [ ] **Behavioral Detection:** System must distinguish between human mouse movements/click patterns and automated macros/bots.
@@ -121,6 +143,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 ## 5. Administrative Systems
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
+- [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.
 - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
@@ -128,6 +151,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
 - [x] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
+- [ ] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
 - [x] **Database (PostgreSQL):** Optimized for high-frequency leaderboard and state updates.
 - [x] **Deployment:** Dockerized services on Google Cloud Run with automated Google Cloud Build CI/CD.
 - [x] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
