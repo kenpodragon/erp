@@ -309,7 +309,7 @@ A standalone utility for managing the book narrative database, supporting portab
 
 ## 9. Non-Functional Requirements
 
-- [x] **NFR-0:** Files for the parser (scripts, .env), should be stored in `/init/book_parser`
+- [x] **NFR-0:** Files for the parser (scripts, .env), should be stored in `/tools/book_parser`
 - [x] **NFR-1:** The processor must run on the developer's local machine (not in cloud).
 - [x] **NFR-2:** All DB credentials and AI API keys are read from environment variables (`.env` file).
 - [x] **NFR-3:** The processor must handle books of any length without running out of memory (stream/chunk processing for large chapters).

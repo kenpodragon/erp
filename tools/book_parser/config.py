@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-PARSER_DIR   = Path(__file__).parent                    # erp/init/book_parser/
+PARSER_DIR   = Path(__file__).parent                    # erp/tools/book_parser/
 PROJECT_ROOT = PARSER_DIR.parent.parent                 # erp/
 BOOKS_DIR    = Path(os.getenv("BOOKS_DIR", str(PROJECT_ROOT.parent / "Books")))
 LOG_DIR      = PARSER_DIR / "logs"

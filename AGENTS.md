@@ -35,7 +35,7 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 - `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL changes must be created as .SQL files in this folder. **Refer to `@docs/inst/DB_MIGRATIONS.md` for applying changes.**
 - `/docs`: All technical, architectural, and requirement specs.
 - `/infra`: Dockerfiles, Cloud Build YAMLs, Deployment scripts.
-- `/init`: Book processor and initial data ingestion tools.
+- `/tools`: Book processor, duplicate analysis, and initial data ingestion tools.
 - `/testing`: Unified test runners and system-wide E2E tests.
 - `../Books`: **Read-only** source material (ER_Kindle.docx, etc.).
 

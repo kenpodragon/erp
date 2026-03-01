@@ -146,3 +146,8 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Scene Splitting:** Break chapters into manageable scenes for gameplay gating.
 - [x] **Boss Identification:** Automatically identify mini-bosses and chapter-bosses from the text.
 - [x] **Data Export:** Generate SQL migrations or CSV dumps for database seeding.
+
+## B. DB Cleanup & Consolidation
+**Requirements:** [B_DB_CLEANUP_CONSOLIDATION.md](B_DB_CLEANUP_CONSOLIDATION.md)
+- [x] **Duplicate Analysis:** Identify potential duplicates using `check_duplicates.py`.
+- [ ] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.

@@ -1,0 +1,63 @@
+
+{
+  "entities": [
+    {
+      "master_id": 19,
+      "duplicate_ids": [4135]
+    },
+    {
+      "master_id": 1359,
+      "duplicate_ids": [1418]
+    },
+    {
+      "master_id": 2046,
+      "duplicate_ids": [3272]
+    },
+    {
+      "master_id": 1080,
+      "duplicate_ids": [2340]
+    },
+    {
+      "master_id": 1863,
+      "duplicate_ids": [1879, 2283]
+    },
+    {
+      "master_id": 326,
+      "duplicate_ids": [534, 1941, 5492, 5627]
+    }
+  ],
+  "locations": [
+    {
+      "master_id": 92,
+      "duplicate_ids": [243]
+    },
+    {
+      "master_id": 58,
+      "duplicate_ids": [139, 362]
+    },
+    {
+      "master_id": 175,
+      "duplicate_ids": [239, 380, 381]
+    },
+    {
+      "master_id": 70,
+      "duplicate_ids": [75, 466]
+    },
+    {
+      "master_id": 31,
+      "duplicate_ids": [92, 243]
+    },
+    {
+      "master_id": 157,
+      "duplicate_ids": [179, 205]
+    },
+    {
+      "master_id": 389,
+      "duplicate_ids": [410]
+    },
+    {
+      "master_id": 390,
+      "duplicate_ids": [491]
+    }
+  ]
+}
