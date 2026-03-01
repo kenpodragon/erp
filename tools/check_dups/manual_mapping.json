@@ -1,63 +1,40 @@
-
 {
   "entities": [
-    {
-      "master_id": 19,
-      "duplicate_ids": [4135]
-    },
-    {
-      "master_id": 1359,
-      "duplicate_ids": [1418]
-    },
-    {
-      "master_id": 2046,
-      "duplicate_ids": [3272]
-    },
-    {
-      "master_id": 1080,
-      "duplicate_ids": [2340]
-    },
-    {
-      "master_id": 1863,
-      "duplicate_ids": [1879, 2283]
-    },
-    {
-      "master_id": 326,
-      "duplicate_ids": [534, 1941, 5492, 5627]
-    }
+    { "master_id": 19, "duplicate_ids": [4135] },
+    { "master_id": 1359, "duplicate_ids": [1418] },
+    { "master_id": 2046, "duplicate_ids": [3272] },
+    { "master_id": 1080, "duplicate_ids": [2340] },
+    { "master_id": 1863, "duplicate_ids": [1879, 2283] },
+    { "master_id": 326, "duplicate_ids": [534, 1941, 5492, 5627] },
+    { "master_id": 1701, "duplicate_ids": [6641] },
+    { "master_id": 3522, "duplicate_ids": [3865] },
+    { "master_id": 3598, "duplicate_ids": [3645] },
+    { "master_id": 1543, "duplicate_ids": [1878] },
+    { "master_id": 6090, "duplicate_ids": [6492] },
+    { "master_id": 4338, "duplicate_ids": [4376] },
+    { "master_id": 1525, "duplicate_ids": [2811] },
+    { "master_id": 85, "duplicate_ids": [3155] },
+    { "master_id": 201, "duplicate_ids": [610] },
+    { "master_id": 1589, "duplicate_ids": [2399] },
+    { "master_id": 2232, "duplicate_ids": [2528] },
+    { "master_id": 545, "duplicate_ids": [1223] },
+    { "master_id": 2107, "duplicate_ids": [2383] },
+    { "master_id": 2147, "duplicate_ids": [2415] }
   ],
   "locations": [
-    {
-      "master_id": 92,
-      "duplicate_ids": [243]
-    },
-    {
-      "master_id": 58,
-      "duplicate_ids": [139, 362]
-    },
-    {
-      "master_id": 175,
-      "duplicate_ids": [239, 380, 381]
-    },
-    {
-      "master_id": 70,
-      "duplicate_ids": [75, 466]
-    },
-    {
-      "master_id": 31,
-      "duplicate_ids": [92, 243]
-    },
-    {
-      "master_id": 157,
-      "duplicate_ids": [179, 205]
-    },
-    {
-      "master_id": 389,
-      "duplicate_ids": [410]
-    },
-    {
-      "master_id": 390,
-      "duplicate_ids": [491]
-    }
+    { "master_id": 92, "duplicate_ids": [243] },
+    { "master_id": 58, "duplicate_ids": [139, 362] },
+    { "master_id": 175, "duplicate_ids": [239, 380, 381] },
+    { "master_id": 70, "duplicate_ids": [75, 466] },
+    { "master_id": 31, "duplicate_ids": [92, 243] },
+    { "master_id": 157, "duplicate_ids": [179, 205] },
+    { "master_id": 389, "duplicate_ids": [410] },
+    { "master_id": 390, "duplicate_ids": [491] },
+    { "master_id": 417, "duplicate_ids": [440] },
+    { "master_id": 465, "duplicate_ids": [581] },
+    { "master_id": 63, "duplicate_ids": [464] },
+    { "master_id": 197, "duplicate_ids": [200] },
+    { "master_id": 207, "duplicate_ids": [208] },
+    { "master_id": 163, "duplicate_ids": [572] }
   ]
 }

@@ -51,4 +51,4 @@ python tools/check_dups/consolidate_entities.py [--execute]
 ## 4. Implementation Phases
 1. **[x] Phase 1: Case-Insensitive Merge.** Merge `The Engine` and `the engine`.
 2. **[x] Phase 2: Manual Mapping.** Use a JSON configuration file to merge known duplicates (e.g., `Protagonist's Home` -> `The Narrator's House`).
-3. **[ ] Phase 3: Fuzzy Merge (Human Reviewed).** Review fuzzy matches from `check_duplicates.py` and approve merges.
+3. **[x] Phase 3: Fuzzy Merge (Human Reviewed).** Review fuzzy matches from `check_duplicates.py` and approve merges.

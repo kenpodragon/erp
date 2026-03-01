@@ -85,8 +85,8 @@ def merge_records(session, table, master_id, duplicate_id, fk_maps, alias_table,
         if dry_run:
             logger.info(f"  [Dry Run] Would add '{dup_name}' as alias for master id:{master_id}")
         else:
-            # Check if alias already exists
-            exists = session.execute(text(f"SELECT 1 FROM {alias_table} WHERE {alias_fk} = :master_id AND alias = :alias"),
+            # Check if alias already exists (case-insensitive)
+            exists = session.execute(text(f"SELECT 1 FROM {alias_table} WHERE {alias_fk} = :master_id AND LOWER(alias) = LOWER(:alias)"),
                                      {"master_id": master_id, "alias": dup_name}).scalar()
             if not exists:
                 session.execute(text(f"INSERT INTO {alias_table} ({alias_fk}, alias) VALUES (:master_id, :alias)"),
