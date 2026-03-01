@@ -316,6 +316,12 @@ function App() {
 
   const handleLogout = async () => {
     if (auth) {
+      // Fire logout event to backend before signing out (best-effort, don't block)
+      try {
+        await api.post('/api/auth/logout')
+      } catch {
+        // ignore — event logging is non-critical
+      }
       await signOut(auth)
       setBackendUser(null)
       setBackendError(null)

@@ -9,29 +9,6 @@ This document tracks the initial setup and development phases for the Elysium Ri
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
 > **Requirements:** [recs/1_ONBOARDING_INIT_RECS.md](recs/1_ONBOARDING_INIT_RECS.md) | **Schema:** [recs/1_ONBOARDING_INIT_SCHEMA.md](recs/1_ONBOARDING_INIT_SCHEMA.md)
 
-- [ ] **7.11 — Activity Events & Audit Log** *(RECS §9, FR-9.1 through FR-9.17)*
-  - [ ] Create SQLModel models for `activity_events` and `admin_audit_log`.
-  - [ ] Backend: async event logging helper — fire-and-forget writes to `activity_events` (don't block API responses).
-  - [ ] Instrument all player endpoints: log `player_login`, `player_logout`, `character_created`, `profile_updated`, `support_ticket_created` events.
-  - [ ] Backend: synchronous audit log helper — writes to `admin_audit_log` before response for all admin actions (ban, unban, config change, ticket updates).
-  - [ ] **Admin API:**
-    - [ ] `GET /api/admin/analytics/overview` — Total Players, Active (24h/7d/30d), New Registrations (today/week/month), Open Tickets.
-    - [ ] `GET /api/admin/analytics/dau?range=30d` — DAU time series.
-    - [ ] `GET /api/admin/analytics/registrations?range=30d` — registrations per day.
-    - [ ] `GET /api/admin/analytics/chapter-distribution` — player count per chapter.
-    - [ ] `GET /api/admin/analytics/events` — recent activity events (paginated, filterable by event_type).
-    - [ ] `GET /api/admin/audit-log` — audit log entries (paginated, filterable by admin/action/target_type/date).
-  - [ ] **Admin Frontend:**
-    - [ ] Dashboard overview cards (Total Players, Active, New Registrations, Open Tickets).
-    - [ ] DAU line chart (7d/30d/90d toggle).
-    - [ ] Registration bar chart.
-    - [ ] Chapter distribution bar chart / table.
-    - [ ] Recent Activity feed (last 50 events, filterable).
-    - [ ] Audit Log viewer page (paginated, filterable, immutable).
-    - [ ] Add UI/UX for the pieces. 
-  - [ ] Create testing for UI/UX and API.
-
-
 - [ ] **7.12 — Harden Admin Auth** *(RECS §2.2, FR-2.7 through FR-2.10)*
   - [ ] Move IP/email whitelist enforcement from client-side to backend (`get_current_admin()` — should already be done in 7.2).
   - [ ] Retain client-side check in `admin/src/App.tsx` as UX-only fast rejection.
@@ -53,7 +30,7 @@ This document tracks the initial setup and development phases for the Elysium Ri
     - [ ] Admin: Add "Average Resolution Time" and other missing metrics from §9.4.
 
 - [ ] **7.14 — Onboarding & Admin: Polishing & Refinements**
-  - [ ] Fetch current marketing materials (Amazon book pages, eleven reader pages, and does-god-exist pages). Use to create summary docs and information for use) - SUMMARY_MARKETING.md 
+  - [ ] Fetch current marketing materials (Amazon book pages, eleven reader pages, and does-god-exist pages). Use to create summary docs and information for use - SUMMARY_MARKETING.md 
   - [ ] Read and process the books, along with the summary marketing materials to create a theming and BOOKS summary.md files to ensure that development (themes, content, descriptions) are consistent with everything in the books.
   - [ ] Create a styling and theming guide (fonts, colors, imagry) consistent with the look and feel of the books (refer to the book covers here)  
   - [ ] Create an announcement page for does-god-exist.

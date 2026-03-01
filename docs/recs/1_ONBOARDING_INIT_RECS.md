@@ -318,17 +318,17 @@ Player submits ticket → [open]
 
 ### 7.1 Player List
 
-- [ ] **FR-7.1:** Admin dashboard displays a **paginated, searchable player list**.
+- [x] **FR-7.1:** Admin dashboard displays a **paginated, searchable player list**.
   - Columns: ID, Alias, Email, Character(s), Created At, Last Login, Status (active/banned).
   - Search by: alias (partial match), email (partial match), Firebase UID (exact match).
   - Filter by: status (active, banned, all), has character (yes/no), registration date range.
   - Sortable by: created_at, last_login_at, alias.
   - Default: sorted by last_login_at descending (most recently active first).
-- [ ] **FR-7.2:** Player count summary at the top: Total Players, Active (logged in within 30 days), Banned.
+- [x] **FR-7.2:** Player count summary at the top: Total Players, Active (logged in within 30 days), Banned.
 
 ### 7.2 Player Detail View
 
-- [ ] **FR-7.3:** Clicking a player opens their detail view showing:
+- [x] **FR-7.3:** Clicking a player opens their detail view showing:
   - **Profile:** Alias, email, Firebase UID, avatar, created_at, last_login_at, terms_accepted_at.
   - **Characters:** List of characters with name, class, level, created_at, last_played_at. Click to expand full stats.
   - **Activity Summary:** Login count (last 30 days), total playtime, current chapter, total essence earned.
@@ -337,23 +337,23 @@ Player submits ticket → [open]
 
 ### 7.3 Ban/Unban
 
-- [ ] **FR-7.4:** Admins can **ban** a player, which sets `is_banned = true` and records:
+- [x] **FR-7.4:** Admins can **ban** a player, which sets `is_banned = true` and records:
   - `banned_at` timestamp.
   - `banned_by` (admin email).
   - `ban_reason` (required text, 10-500 chars).
-- [ ] **FR-7.5:** Banned players are immediately blocked from all API access (enforced by `get_current_player()` middleware).
-- [ ] **FR-7.6:** Admins can **unban** a player, which sets `is_banned = false` and records `unbanned_at` and `unbanned_by`.
-- [ ] **FR-7.7:** Ban/unban actions must require a confirmation modal ("Are you sure you want to ban [alias]? This will immediately terminate their session.").
-- [ ] **FR-7.8:** Ban/unban actions are logged in the **admin audit log** (see §9).
+- [x] **FR-7.5:** Banned players are immediately blocked from all API access (enforced by `get_current_player()` middleware).
+- [x] **FR-7.6:** Admins can **unban** a player, which sets `is_banned = false` and records `unbanned_at` and `unbanned_by`.
+- [x] **FR-7.7:** Ban/unban actions must require a confirmation modal ("Are you sure you want to ban [alias]? This will immediately terminate their session.").
+- [x] **FR-7.8:** Ban/unban actions are logged in the **admin audit log** (see §9).
 
 ### 7.4 Admin API Endpoints
 
-- [ ] **FR-7.9:** `GET /api/admin/players` — Paginated player list (search, filter, sort params).
-- [ ] **FR-7.10:** `GET /api/admin/players/{player_id}` — Full player detail.
-- [ ] **FR-7.11:** `POST /api/admin/players/{player_id}/ban` — Ban player. Input: `{ reason: string }`.
-- [ ] **FR-7.12:** `POST /api/admin/players/{player_id}/unban` — Unban player.
-- [ ] **FR-7.13:** `PATCH /api/admin/players/{player_id}` — Edit player fields (alias, avatar override).
-- [ ] **FR-7.14:** `GET /api/admin/players/{player_id}/activity` — Player activity summary.
+- [x] **FR-7.9:** `GET /api/admin/players` — Paginated player list (search, filter, sort params).
+- [x] **FR-7.10:** `GET /api/admin/players/{player_id}` — Full player detail.
+- [x] **FR-7.11:** `POST /api/admin/players/{player_id}/ban` — Ban player. Input: `{ reason: string }`.
+- [x] **FR-7.12:** `POST /api/admin/players/{player_id}/unban` — Unban player.
+- [x] **FR-7.13:** `PATCH /api/admin/players/{player_id}` — Edit player fields (alias, avatar override).
+- [x] **FR-7.14:** `GET /api/admin/players/{player_id}/activity` — Player activity summary.
 
 ---
 
@@ -409,58 +409,58 @@ Full observability covering three domains: **player behavior analytics** (what p
 
 ### 9.2 Player Activity Events
 
-- [ ] **FR-9.1:** The backend must log the following player events to an `activity_events` table:
+- [x] **FR-9.1:** The backend must log the following player events to an `activity_events` table:
   - `player_login` — on successful login.
-  - `player_logout` — on logout.
+  - `player_logout` — on logout (via `POST /api/auth/logout`).
   - `character_created` — character creation with class_id.
-  - `chapter_started` — player enters a new chapter.
-  - `chapter_completed` — player completes a chapter.
-  - `scene_completed` — player completes a scene.
-  - `upgrade_purchased` — upgrade purchase with upgrade_id and cost.
-  - `essence_milestone` — player reaches an essence milestone (1K, 10K, 100K, 1M, etc.).
+  - `chapter_started` — player enters a new chapter. *(Deferred — gameplay not yet built)*
+  - `chapter_completed` — player completes a chapter. *(Deferred)*
+  - `scene_completed` — player completes a scene. *(Deferred)*
+  - `upgrade_purchased` — upgrade purchase with upgrade_id and cost. *(Deferred)*
+  - `essence_milestone` — player reaches an essence milestone. *(Deferred)*
   - `support_ticket_created` — ticket submission.
   - `profile_updated` — alias or avatar changed.
-- [ ] **FR-9.2:** Each event is stored in the `activity_events` table (see [Schema doc §5](1_ONBOARDING_INIT_SCHEMA.md#5-activity--audit-tables)) with player_id, event_type, JSONB event_data payload, IP address, user agent, and timestamp.
-- [ ] **FR-9.3:** Events are written **asynchronously** (fire-and-forget) so they do not impact API response latency. If the event write fails, log the failure but do not raise an error to the player.
+- [x] **FR-9.2:** Each event is stored in the `activity_events` table (see [Schema doc §5](1_ONBOARDING_INIT_SCHEMA.md#5-activity--audit-tables)) with player_id, event_type, JSONB event_data payload, IP address, user agent, and timestamp.
+- [x] **FR-9.3:** Events are written **asynchronously** (fire-and-forget) so they do not impact API response latency. If the event write fails, log the failure but do not raise an error to the player.
 
 ### 9.3 Admin Audit Log
 
-- [ ] **FR-9.4:** The backend must log all admin actions to the `admin_audit_log` table (see [Schema doc §5](1_ONBOARDING_INIT_SCHEMA.md#5-activity--audit-tables)). Logged actions include:
+- [x] **FR-9.4:** The backend must log all admin actions to the `admin_audit_log` table (see [Schema doc §5](1_ONBOARDING_INIT_SCHEMA.md#5-activity--audit-tables)). Logged actions include:
   - `player_banned`, `player_unbanned`, `player_edited`
   - `config_changed`, `config_reset`
   - `ticket_status_changed`, `ticket_priority_changed`, `ticket_assigned`, `ticket_note_added`
-- [ ] **FR-9.5:** Audit log records are **immutable** — no update or delete operations. This is an append-only log.
+- [x] **FR-9.5:** Audit log records are **immutable** — no update or delete operations. This is an append-only log.
 
 ### 9.4 Analytics Dashboard (Admin UI)
 
-- [ ] **FR-9.6:** **Overview Cards** (top of admin dashboard):
+- [x] **FR-9.6:** **Overview Cards** (top of admin dashboard):
   - Total Players (all time).
   - Active Players (logged in within 24h / 7d / 30d).
   - New Registrations (today / this week / this month).
   - Open Support Tickets.
-- [ ] **FR-9.7:** **Player Activity Graph:**
+- [x] **FR-9.7:** **Player Activity Graph:**
   - Line chart showing daily active users (DAU) over the last 30 days.
   - Selectable time range: 7d, 30d, 90d.
-- [ ] **FR-9.8:** **Registration Graph:**
+- [x] **FR-9.8:** **Registration Graph:**
   - Bar chart showing new registrations per day over the last 30 days.
-- [ ] **FR-9.9:** **Chapter Distribution:**
+- [x] **FR-9.9:** **Chapter Distribution:**
   - Bar chart or table showing how many active players are on each chapter. Identifies where players are getting stuck or dropping off.
-- [ ] **FR-9.10:** **Recent Activity Feed:**
+- [x] **FR-9.10:** **Recent Activity Feed:**
   - Scrollable list of the last 50 player events (across all players) with: timestamp, player alias, event type, summary.
   - Filterable by event type.
-- [ ] **FR-9.11:** **Admin Audit Log Viewer:**
+- [x] **FR-9.11:** **Admin Audit Log Viewer:**
   - Paginated, filterable list of admin audit log entries.
   - Filterable by: admin email, action type, target type, date range.
   - Cannot be edited or deleted from the UI.
 
 ### 9.5 Analytics API Endpoints
 
-- [ ] **FR-9.12:** `GET /api/admin/analytics/overview` — Return overview card stats.
-- [ ] **FR-9.13:** `GET /api/admin/analytics/dau?range=30d` — Return DAU time series.
-- [ ] **FR-9.14:** `GET /api/admin/analytics/registrations?range=30d` — Return registration time series.
-- [ ] **FR-9.15:** `GET /api/admin/analytics/chapter-distribution` — Return player count per chapter.
-- [ ] **FR-9.16:** `GET /api/admin/analytics/events?type=&limit=50&offset=0` — Return recent activity events (paginated, filterable).
-- [ ] **FR-9.17:** `GET /api/admin/audit-log?admin=&action=&target_type=&limit=50&offset=0` — Return admin audit log (paginated, filterable).
+- [x] **FR-9.12:** `GET /api/admin/analytics/overview` — Return overview card stats.
+- [x] **FR-9.13:** `GET /api/admin/analytics/dau?range=30d` — Return DAU time series.
+- [x] **FR-9.14:** `GET /api/admin/analytics/registrations?range=30d` — Return registration time series.
+- [x] **FR-9.15:** `GET /api/admin/analytics/chapter-distribution` — Return player count per chapter.
+- [x] **FR-9.16:** `GET /api/admin/analytics/events?type=&limit=50&offset=0` — Return recent activity events (paginated, filterable).
+- [x] **FR-9.17:** `GET /api/admin/audit-log?admin=&action=&target_type=&limit=50&offset=0` — Return admin audit log (paginated, filterable).
 
 ---
 
@@ -566,8 +566,8 @@ Full observability covering three domains: **player behavior analytics** (what p
 | Frontend: Home Base | ✅ Complete | 2026-02-28 |
 | Server config system | ✅ Complete | 2026-02-28 |
 | Support ticket system | ✅ Complete | 2026-02-28 |
-| Admin: User management | 🛠️ In Progress | |
-| Activity events & audit log | 🛠️ In Progress | |
+| Admin: User management | ✅ Complete | 2026-02-28 |
+| Activity events & audit log | ✅ Complete | 2026-02-28 |
 | Admin: Hardened auth | 🛠️ In Progress | |
 
 ---

@@ -22,13 +22,14 @@ logger = logging.getLogger(__name__)
 from db import get_session
 from auth import init_firebase, get_current_player, get_current_admin, get_current_owner, get_client_ip
 from models import (
-    Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress, 
-    PlayerEssence, ServerConfig, AdminAuditLog, SupportTicket, SupportReply,
+    Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress,
+    PlayerEssence, ServerConfig, AdminAuditLog, ActivityEvent, SupportTicket, SupportReply,
     AdminWhitelistEmail, AdminWhitelistIP
 )
 from utils import load_profanity_blocklist, is_profane
 import config_cache
 from audit import write_audit_log
+from events import log_activity_event
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,10 +38,10 @@ async def lifespan(app: FastAPI):
     load_profanity_blocklist()
     # Load server config into memory cache
     try:
-        session_gen = get_session()
-        session = next(session_gen)
-        config_cache.load_config(session)
-        session.close()
+        from sqlmodel import Session
+        from db import engine
+        with Session(engine) as session:
+            config_cache.load_config(session)
     except Exception as e:
         # In testing or first-run environments, server_config might not exist yet.
         # We log a warning but allow the app to start.
@@ -169,7 +170,7 @@ def get_public_config(session: Session = Depends(get_session)):
 # ---------------------------------------------------------------------------
 
 @app.post("/api/auth/login")
-async def login(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
+async def login(request: Request, token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     """
     Validate token, upsert player, return profile + characters + is_new_player.
     FR-3.1, FR-3.2, FR-3.7
@@ -223,11 +224,25 @@ async def login(token: dict = Depends(get_current_player), session: Session = De
     # Get settings to include in response
     settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
 
+    log_activity_event(request, player.id, "player_login", {"is_new_player": is_new_player})
+
     return {
         "player": {**player.model_dump(), "settings": settings.model_dump() if settings else None},
         "characters": characters,
         "is_new_player": is_new_player or player.terms_accepted_at is None
     }
+
+
+@app.post("/api/auth/logout")
+async def logout(request: Request, token: dict = Depends(get_current_player)):
+    """
+    Log a player_logout activity event. Firebase sign-out is handled client-side;
+    this endpoint exists solely to record the event. FR-9.1
+    """
+    player = token.get("player")
+    if player:
+        log_activity_event(request, player.id, "player_logout", {})
+    return {"status": "logged_out"}
 
 
 @app.get("/debug-routes")
@@ -312,6 +327,7 @@ async def check_alias(alias: str, session: Session = Depends(get_session)):
 
 @app.patch("/api/players/me")
 async def update_profile(
+    request: Request,
     update_data: dict,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session)
@@ -349,6 +365,10 @@ async def update_profile(
     session.add(player)
     session.commit()
     session.refresh(player)
+
+    log_activity_event(request, player.id, "profile_updated", {
+        "fields_changed": [k for k in ("alias", "avatar_preset_key") if k in update_data]
+    })
 
     return player
 
@@ -478,6 +498,7 @@ def get_classes(session: Session = Depends(get_session)):
 
 @app.post("/api/players/me/characters")
 async def create_character(
+    request: Request,
     body: dict,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session)
@@ -573,6 +594,13 @@ async def create_character(
     session.refresh(essence)
     session.refresh(character)
     session.refresh(char_class)
+
+    log_activity_event(request, player.id, "character_created", {
+        "character_id": character.id,
+        "character_name": character_name,
+        "class_id": class_id,
+        "class_name": char_class.name,
+    })
 
     return {
         "character": {**jsonable_encoder(character), "class": jsonable_encoder(char_class)},
@@ -678,6 +706,7 @@ def _auto_close_ticket(ticket: SupportTicket, session: Session) -> None:
 
 @app.post("/api/support/tickets")
 async def create_ticket(
+    request: Request,
     body: dict,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -734,6 +763,11 @@ async def create_ticket(
     session.commit()
     session.refresh(ticket)
     session.refresh(reply)
+
+    log_activity_event(request, player.id, "support_ticket_created", {
+        "ticket_id": ticket.id,
+        "category": category,
+    })
 
     return {
         "ticket": ticket.model_dump(),
@@ -1952,6 +1986,228 @@ async def admin_update_player(
 
     session.refresh(player)
     return player.model_dump()
+
+
+# =============================================================================
+# Admin: Analytics & Audit Log  (FR-9.12 through FR-9.17)
+# =============================================================================
+
+def _parse_range_days(range_str: str, default: int = 30) -> int:
+    """Convert '7d' / '30d' / '90d' strings to an integer day count."""
+    mapping = {"7d": 7, "30d": 30, "90d": 90}
+    return mapping.get(range_str, default)
+
+
+@app.get("/api/admin/analytics/overview")
+async def admin_analytics_overview(
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Overview card stats: total players, active counts, new registrations, open tickets.
+    FR-9.6, FR-9.12
+    """
+    now = datetime.now(timezone.utc)
+
+    total_players = session.exec(select(func.count(Player.id))).one()
+    active_24h = session.exec(
+        select(func.count(Player.id)).where(Player.last_login_at >= now - timedelta(hours=24))
+    ).one()
+    active_7d = session.exec(
+        select(func.count(Player.id)).where(Player.last_login_at >= now - timedelta(days=7))
+    ).one()
+    active_30d = session.exec(
+        select(func.count(Player.id)).where(Player.last_login_at >= now - timedelta(days=30))
+    ).one()
+
+    reg_today = session.exec(
+        select(func.count(Player.id)).where(
+            Player.created_at >= now.replace(hour=0, minute=0, second=0, microsecond=0)
+        )
+    ).one()
+    reg_week = session.exec(
+        select(func.count(Player.id)).where(Player.created_at >= now - timedelta(days=7))
+    ).one()
+    reg_month = session.exec(
+        select(func.count(Player.id)).where(Player.created_at >= now - timedelta(days=30))
+    ).one()
+
+    open_tickets = session.exec(
+        select(func.count(SupportTicket.id)).where(SupportTicket.status == "open")
+    ).one()
+
+    return {
+        "players": {
+            "total": total_players,
+            "active_24h": active_24h,
+            "active_7d": active_7d,
+            "active_30d": active_30d,
+        },
+        "registrations": {
+            "today": reg_today,
+            "this_week": reg_week,
+            "this_month": reg_month,
+        },
+        "tickets": {
+            "open": open_tickets,
+        },
+    }
+
+
+@app.get("/api/admin/analytics/dau")
+async def admin_analytics_dau(
+    range: str = "30d",
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Daily active users (unique players with a player_login event) over N days.
+    FR-9.7, FR-9.13
+    """
+    days = _parse_range_days(range)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    rows = session.exec(
+        select(
+            func.date_trunc("day", ActivityEvent.created_at).label("day"),
+            func.count(func.distinct(ActivityEvent.player_id)).label("count"),
+        )
+        .where(ActivityEvent.event_type == "player_login")
+        .where(ActivityEvent.created_at >= since)
+        .group_by(func.date_trunc("day", ActivityEvent.created_at))
+        .order_by(func.date_trunc("day", ActivityEvent.created_at))
+    ).all()
+
+    return {"range": range, "data": [{"date": str(r.day)[:10], "count": r.count} for r in rows]}
+
+
+@app.get("/api/admin/analytics/registrations")
+async def admin_analytics_registrations(
+    range: str = "30d",
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    New player registrations per day over N days.
+    FR-9.8, FR-9.14
+    """
+    days = _parse_range_days(range)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    rows = session.exec(
+        select(
+            func.date_trunc("day", Player.created_at).label("day"),
+            func.count(Player.id).label("count"),
+        )
+        .where(Player.created_at >= since)
+        .group_by(func.date_trunc("day", Player.created_at))
+        .order_by(func.date_trunc("day", Player.created_at))
+    ).all()
+
+    return {"range": range, "data": [{"date": str(r.day)[:10], "count": r.count} for r in rows]}
+
+
+@app.get("/api/admin/analytics/chapter-distribution")
+async def admin_analytics_chapter_distribution(
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Player count per chapter (from player_progress).
+    FR-9.9, FR-9.15
+    """
+    rows = session.exec(
+        select(
+            PlayerProgress.book_number,
+            PlayerProgress.chapter_number,
+            func.count(PlayerProgress.id).label("count"),
+        )
+        .group_by(PlayerProgress.book_number, PlayerProgress.chapter_number)
+        .order_by(PlayerProgress.book_number, PlayerProgress.chapter_number)
+    ).all()
+
+    return {
+        "data": [
+            {"book": r.book_number, "chapter": r.chapter_number, "count": r.count}
+            for r in rows
+        ]
+    }
+
+
+@app.get("/api/admin/analytics/events")
+async def admin_analytics_events(
+    event_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Recent activity events, optionally filtered by event_type (paginated).
+    FR-9.10, FR-9.16
+    """
+    query = select(ActivityEvent)
+    count_query = select(func.count(ActivityEvent.id))
+
+    if event_type:
+        query = query.where(ActivityEvent.event_type == event_type)
+        count_query = count_query.where(ActivityEvent.event_type == event_type)
+
+    total = session.exec(count_query).one()
+    events = session.exec(
+        query.order_by(ActivityEvent.created_at.desc()).offset(offset).limit(min(limit, 200))
+    ).all()
+
+    # Enrich with player alias
+    result = []
+    for ev in events:
+        alias = None
+        if ev.player_id:
+            p = session.get(Player, ev.player_id)
+            alias = p.alias or p.google_display_name if p else None
+        result.append({**ev.model_dump(), "player_alias": alias})
+
+    return {"total": total, "offset": offset, "limit": limit, "events": result}
+
+
+@app.get("/api/admin/audit-log")
+async def admin_audit_log(
+    admin: Optional[str] = None,
+    action: Optional[str] = None,
+    target_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """
+    Admin audit log entries, filterable and paginated. Immutable (read-only).
+    FR-9.11, FR-9.17
+    """
+    query = select(AdminAuditLog)
+    count_query = select(func.count(AdminAuditLog.id))
+
+    if admin:
+        query = query.where(AdminAuditLog.admin_email.ilike(f"%{admin}%"))
+        count_query = count_query.where(AdminAuditLog.admin_email.ilike(f"%{admin}%"))
+    if action:
+        query = query.where(AdminAuditLog.action == action)
+        count_query = count_query.where(AdminAuditLog.action == action)
+    if target_type:
+        query = query.where(AdminAuditLog.target_type == target_type)
+        count_query = count_query.where(AdminAuditLog.target_type == target_type)
+
+    total = session.exec(count_query).one()
+    entries = session.exec(
+        query.order_by(AdminAuditLog.created_at.desc()).offset(offset).limit(min(limit, 200))
+    ).all()
+
+    return {
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "entries": [e.model_dump() for e in entries],
+    }
 
 
 if __name__ == "__main__":

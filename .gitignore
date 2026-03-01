@@ -481,14 +481,8 @@ blob-report/
 
 # ERP DB Exports
 erp_export*
-backend/test.db
-backend/test_system.db
 backend/uploads/
 
-# Firebase / GCP service account keys
-**/secrets/
-*.json.key
-backend/test_characters.db
-backend/test_config.db
-backend/test_erp.db
-backend/test_support.db
+# Test SQLite databases (in-memory now, but ignore any file-based stragglers)
+backend/test*.db
+backend/*.db

@@ -1,39 +1,33 @@
 import pytest
-import os
-import uuid
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
+from sqlalchemy.pool import StaticPool
 from main import app
 from db import get_session
 from auth import get_current_player, get_current_admin
 # Explicitly import ALL models to ensure they are registered with SQLModel.metadata
 from models import (
-    Player, PlayerSettings, CharacterClass, PlayerCharacter, 
-    PlayerProgress, PlayerEssence, SupportTicket, SupportReply, 
-    ServerConfig, AdminAuditLog
+    Player, PlayerSettings, CharacterClass, PlayerCharacter,
+    PlayerProgress, PlayerEssence, SupportTicket, SupportReply,
+    ServerConfig, AdminAuditLog, ActivityEvent,
+    AdminWhitelistEmail, AdminWhitelistIP
 )
 from datetime import datetime, timezone
 
 @pytest.fixture(name="session")
 def session_fixture():
-    # Create a unique database file for each test to avoid file locking and state bleed
-    db_name = f"test_{uuid.uuid4().hex}.db"
-    db_url = f"sqlite:///{db_name}"
-    engine = create_engine(db_url, connect_args={"check_same_thread": False})
-    
+    # In-memory SQLite: no files created, no cleanup required, perfectly isolated per test.
+    # StaticPool ensures all connections within the same engine share the same in-memory DB.
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     SQLModel.metadata.create_all(engine)
-    
     with Session(engine) as session:
         yield session
-    
-    # Cleanup: drop tables and delete file
     SQLModel.metadata.drop_all(engine)
     engine.dispose()
-    if os.path.exists(db_name):
-        try:
-            os.remove(db_name)
-        except PermissionError:
-            pass # Windows occasionally locks files briefly
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):

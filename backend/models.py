@@ -223,6 +223,22 @@ class ServerConfig(SQLModel, table=True):
     updated_by: Optional[str] = Field(default=None, max_length=255)
 
 
+class ActivityEvent(SQLModel, table=True):
+    """Maps to the `activity_events` table. Player behavior event log."""
+
+    __tablename__ = "activity_events"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    player_id: Optional[int] = Field(default=None, foreign_key="players.id")
+    event_type: str = Field(max_length=50, nullable=False)
+    # Use TEXT in SQLite, JSONB in Postgres. SQLModel handles some abstraction,
+    # but for SQLite tests we need a compatible type.
+    event_data: Optional[Any] = Field(default=None, sa_column=Column(JSON))
+    ip_address: Optional[str] = Field(default=None, max_length=45)
+    user_agent: Optional[str] = Field(default=None)
+    created_at: Optional[datetime] = Field(default=None)
+
+
 class AdminAuditLog(SQLModel, table=True):
     """Maps to the `admin_audit_log` table. Immutable admin action audit trail."""
 

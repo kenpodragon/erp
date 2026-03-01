@@ -145,7 +145,230 @@
   color: #4caf50;
 }
 
+/* ── Overview Cards ─────────────────────────────────────────────────── */
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.ov-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.ov-card:hover { border-color: #646cff; }
+.ov-card.warning { border-color: #ff9800; }
+
+.ov-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+}
+
+.ov-value {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ov-sub-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ov-sub-row span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ov-sub-row strong {
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.ov-sub-row em {
+  font-size: 0.65rem;
+  color: #555;
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+.ov-link {
+  font-size: 0.8rem;
+  color: #ff9800;
+  text-decoration: none;
+  margin-top: 0.25rem;
+}
+
+.ov-link:hover { text-decoration: underline; }
+
+/* ── Charts Row ─────────────────────────────────────────────────────── */
+.dash-charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card { min-height: 280px; }
+
+.chart-empty {
+  color: #555;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.range-toggle {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.range-toggle button {
+  background: #222;
+  border: 1px solid #333;
+  color: #888;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+
+.range-toggle button:hover { border-color: #646cff; color: #fff; }
+.range-toggle button.active { background: #646cff; border-color: #646cff; color: #fff; }
+
+/* ── Bottom Row ─────────────────────────────────────────────────────── */
+.dash-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Chapter Distribution Table */
+.dist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.dist-table th {
+  text-align: left;
+  color: #555;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.dist-table td {
+  padding: 0.5rem 0.25rem;
+  color: #ccc;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+/* Activity Feed */
+.activity-feed-card { overflow: hidden; }
+
+.feed-meta {
+  font-size: 0.75rem;
+  color: #444;
+  margin-bottom: 0.75rem;
+}
+
+.feed-filter {
+  background: #222;
+  border: 1px solid #333;
+  color: #bbb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: 140px 140px 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #1e1e1e;
+  font-size: 0.82rem;
+}
+
+.feed-time { color: #555; font-size: 0.75rem; }
+
+.feed-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  background: #2a2a2a;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feed-badge.event-player-login    { background: #1a2a1a; color: #4caf50; }
+.feed-badge.event-player-logout   { background: #2a1a1a; color: #f44336; }
+.feed-badge.event-character-created { background: #1a1a2a; color: #646cff; }
+.feed-badge.event-profile-updated { background: #2a2a1a; color: #ff9800; }
+.feed-badge.event-support-ticket-created { background: #2a1a2a; color: #e91e63; }
+
+.feed-player { color: #888; font-size: 0.8rem; }
+
+/* ── Quick Actions (smaller row) ───────────────────────────────────── */
+.dash-quick-row { margin-top: 0; }
+.dash-quick-row .dash-card { max-width: 340px; }
+
+/* ── Error ──────────────────────────────────────────────────────────── */
+.dash-error {
+  color: #f44336;
+  background: #1a0a0a;
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.dash-loading {
+  color: #555;
+  text-align: center;
+  padding: 4rem;
+}
+
+@media (max-width: 900px) {
+  .dash-bottom-row { grid-template-columns: 1fr; }
+  .dash-charts-row { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 600px) {
   .dash-grid { grid-template-columns: 1fr; }
   .card-stats { grid-template-columns: 1fr; gap: 1.5rem; }
+  .overview-cards { grid-template-columns: 1fr; }
+  .feed-item { grid-template-columns: 1fr 1fr; }
 }

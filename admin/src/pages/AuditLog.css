@@ -1,0 +1,194 @@
+.audit-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.audit-header {
+  margin-bottom: 2rem;
+}
+
+.audit-header h1 {
+  font-size: 2rem;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.audit-subtitle {
+  color: #555;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Filters */
+.audit-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.audit-input,
+.audit-select {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  min-width: 180px;
+}
+
+.audit-input:focus,
+.audit-select:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.audit-btn {
+  background: #646cff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+
+.audit-btn:hover:not(:disabled) { background: #535bf2; }
+.audit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.audit-btn.secondary { background: #333; color: #bbb; }
+.audit-btn.secondary:hover:not(:disabled) { background: #3a3a3a; }
+
+/* Meta */
+.audit-meta {
+  color: #555;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.audit-error {
+  color: #f44336;
+  background: #1a0a0a;
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.audit-loading,
+.audit-empty {
+  color: #444;
+  text-align: center;
+  padding: 4rem;
+  font-size: 0.9rem;
+}
+
+/* Table */
+.audit-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #222;
+  border-radius: 8px;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.audit-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: #555;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #222;
+  background: #111;
+  white-space: nowrap;
+}
+
+.audit-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.audit-row:hover { background: #1a1a1a; }
+
+.audit-row td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid #1a1a1a;
+  vertical-align: middle;
+}
+
+.audit-time  { color: #555; font-size: 0.78rem; white-space: nowrap; }
+.audit-admin { color: #aaa; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+.audit-target-type { color: #888; }
+.audit-target-id { color: #777; font-family: monospace; }
+.audit-ip { color: #555; font-family: monospace; font-size: 0.78rem; }
+.audit-details-toggle { color: #444; text-align: center; width: 30px; }
+
+/* Action badges */
+.audit-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  background: #2a2a2a;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.audit-badge.action-player-banned    { background: #2a0a0a; color: #f44336; }
+.audit-badge.action-player-unbanned  { background: #0a2a0a; color: #4caf50; }
+.audit-badge.action-player-edited    { background: #1a1a2a; color: #646cff; }
+.audit-badge.action-config-changed   { background: #2a1a0a; color: #ff9800; }
+.audit-badge.action-config-reset     { background: #1a2a2a; color: #00bcd4; }
+.audit-badge.action-ticket-status-changed  { background: #2a0a2a; color: #e91e63; }
+.audit-badge.action-ticket-priority-changed { background: #2a1a1a; color: #ff7043; }
+.audit-badge.action-ticket-assigned   { background: #1a1a1a; color: #9e9e9e; }
+.audit-badge.action-ticket-note-added { background: #1a1a1a; color: #9e9e9e; }
+
+/* Detail expansion */
+.audit-detail-row td {
+  background: #111;
+  padding: 0;
+}
+
+.audit-detail-json {
+  margin: 0;
+  padding: 1rem 1.5rem;
+  color: #7cb8ff;
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Pagination */
+.audit-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.audit-page-info {
+  color: #555;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 700px) {
+  .audit-filters { flex-direction: column; align-items: stretch; }
+  .audit-input, .audit-select { min-width: unset; width: 100%; }
+}
