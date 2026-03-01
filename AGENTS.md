@@ -59,8 +59,9 @@ When in doubt, consult these files in order:
 3. **Security:** Never expose secrets. Assume any variable starting with `STRIPE_`, `FIREBASE_`, or `DB_` is sensitive.
 4. **Validation:** Every feature implementation must be accompanied by an update to the `TODO.md`, verification of the technical requirements in `docs/recs/`, and checking off completed items.
 5. **Testing First:** Run `testing/run_tests.bat` before pushing to `main`. If you add a feature, you **must** add a corresponding test in the appropriate test directory.
-6. **SQL Migrations:** When applying `.sql` files to production, follow the procedure in `@docs/inst/DB_MIGRATIONS.md` (using `psql` and connection strings from `backend/.env`).
-7. **Clean Handover:** Ensure `TODO.md` reflects exactly what is left to do, and `DONE.md` reflects a verified history of completion. Move **entire blocks** only when fully complete.
+6. **SQL Migrations:** When applying `.sql` files to production, follow the procedure in `@docs/inst/DB_MIGRATIONS.md` (using `psql` and connection strings pulled from `backend/.env`).
+7. **Database Mandate:** ALWAYS PULL database connection strings directly from `/backend/.env`. NEVER hardcode, log, or print these values. Use `psql` with these variables for all migrations and direct scripts.
+8. **Clean Handover:** Ensure `TODO.md` reflects exactly what is left to do, and `DONE.md` reflects a verified history of completion. Move **entire blocks** only when fully complete.
 
 ## 📖 Lore Context
 The game follows the "Towers of Elysium" narrative. Every chapter in the books represents a "Level" in the game. Characters, enemies, and atmosphere must reflect the specific chapter the player is currently in.

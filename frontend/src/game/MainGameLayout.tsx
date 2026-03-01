@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import OverworldMap from './components/OverworldMap';
 import BottomAnimatedBanner from './components/BottomAnimatedBanner';
 import StoryMode from './components/StoryMode';
+import HomeBase from './components/HomeBase';
 import { GameProvider, useGame } from './GameContext';
 import { CharacterCreator } from '../components/CharacterCreator';
 
@@ -70,7 +71,7 @@ const GameContent: React.FC<MainGameLayoutProps> = ({ player, character, onChara
       case 'shop':
         return <div className="placeholder-view">Overworld Shop View (Coming Soon)</div>;
       case 'home':
-        return <div className="placeholder-view">Home Base View (Coming Soon)</div>;
+        return <HomeBase player={player} character={character} />;
       default:
         return <OverworldMap />;
     }

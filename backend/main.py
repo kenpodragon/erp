@@ -26,7 +26,8 @@ from models import (
     Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress,
     PlayerEssence, ServerConfig, AdminAuditLog, ActivityEvent, SupportTicket, SupportReply,
     AdminWhitelistEmail, AdminWhitelistIP, Chapter, Scene, StoryBeat, Entity, Skill,
-    StatDefinition, EntityGameplayData, SceneGameplayData, BenefitEffectData, Book
+    StatDefinition, EntityGameplayData, SceneGameplayData, BenefitEffectData, Book,
+    Artifact, PlayerCollection
 )
 from utils import load_profanity_blocklist, is_profane, sanitize_text
 import config_cache
@@ -746,10 +747,28 @@ async def get_game_map(
     session: Session = Depends(get_session)
 ):
     """
-    Return the full book, chapter, and scene hierarchy from book data.
+    Return the full book, chapter, and scene hierarchy with real player progress states.
     """
-    books = session.exec(select(Book).order_by(Book.id.asc())).all()
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    # Fetch player's current character and its progress
+    # Note: MVP assumes 1 character per player for now
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return [] # No character, no map progress
+
+    progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
+    if not progress:
+        # Should not happen if character is created correctly, but fallback to start
+        p_book, p_chapter, p_scene = 1, 1, 1
+    else:
+        p_book, p_chapter, p_scene = progress.book_number, progress.chapter_number, progress.scene_number
+
+    books = session.exec(select(Book).order_by(Book.book_number.asc())).all()
     result = []
+    
     for book in books:
         chapters = session.exec(
             select(Chapter)
@@ -757,23 +776,88 @@ async def get_game_map(
             .order_by(Chapter.sort_order.asc())
         ).all()
         
+        book_total_scenes = 0
+        book_completed_scenes = 0
         chapter_list = []
+        
         for chapter in chapters:
             scenes = session.exec(
                 select(Scene)
                 .where(Scene.chapter_id == chapter.id)
                 .order_by(Scene.sort_order.asc())
             ).all()
+            
+            scene_list = []
+            chapter_completed_count = 0
+            
+            for scene in scenes:
+                book_total_scenes += 1
+                # Determine state
+                # 1. Is it in a completed book?
+                if book.book_number < p_book:
+                    status = "completed"
+                # 2. Is it in the current book but a completed chapter?
+                elif book.book_number == p_book and chapter.chapter_number < p_chapter:
+                    status = "completed"
+                # 3. Is it in the current chapter but a completed scene?
+                elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number < p_scene:
+                    status = "completed"
+                # 4. Is it the current active scene?
+                elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number == p_scene:
+                    status = "available"
+                # 5. Everything else is locked
+                else:
+                    status = "locked"
+
+                if status == "completed":
+                    chapter_completed_count += 1
+                    book_completed_scenes += 1
+
+                # Explicit fetch to avoid relationship loading issues
+                gp_data = session.exec(select(SceneGameplayData).where(SceneGameplayData.scene_id == scene.id)).first()
+                scene_list.append({
+                    **scene.model_dump(),
+                    "status": status,
+                    "summary": scene.summary,
+                    "gameplay_data": gp_data.model_dump() if gp_data else None
+                })
+
+            # Calculate chapter progress %
+            chapter_progress = round((chapter_completed_count / len(scenes)) * 100) if scenes else 0
+            
             chapter_list.append({
                 **chapter.model_dump(),
-                "scenes": [s.model_dump() for s in scenes]
+                "progress": chapter_progress,
+                "scenes": scene_list
             })
             
+        # Calculate book progress %
+        book_progress = round((book_completed_scenes / book_total_scenes) * 100) if book_total_scenes else 0
+        
+        # Determine book status
+        book_status = "available" if book.book_number <= p_book else "locked"
+        if book_progress == 100:
+            book_status = "completed"
+
         result.append({
             **book.model_dump(),
+            "status": book_status,
+            "progress": book_progress,
             "chapters": chapter_list
         })
     return result
+
+
+@app.get("/api/game/stat-definitions")
+async def get_stat_definitions(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all available stat definitions for entities/classes.
+    """
+    stats = session.exec(select(StatDefinition)).all()
+    return stats
 
 
 @app.get("/api/game/scenes/{scene_id}")
@@ -795,17 +879,309 @@ async def get_scene_details(
         .order_by(StoryBeat.sort_order.asc())
     ).all()
 
-    # Potential for entity bridge here (finding enemies in this scene)
-    
     return {
         **scene.model_dump(),
+        "gameplay_data": scene.gameplay_data.model_dump() if scene.gameplay_data else None,
         "story_beats": [b.model_dump() for b in beats]
     }
 
 
 # ---------------------------------------------------------------------------
-# Support Ticket endpoints (player-facing)
+# Home Base Hub endpoints
 # ---------------------------------------------------------------------------
+
+@app.get("/api/game/artifacts")
+async def get_artifacts(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all artifacts and highlight those owned by the current character.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    
+    all_artifacts = session.exec(select(Artifact)).all()
+    if not character:
+        return [{"artifact": a, "unlocked": False} for a in all_artifacts]
+
+    unlocked_ids = session.exec(
+        select(PlayerCollection.artifact_id).where(PlayerCollection.character_id == character.id)
+    ).all()
+    
+    return [
+        {
+            **a.model_dump(),
+            "unlocked": a.id in unlocked_ids
+        } for a in all_artifacts
+    ]
+
+
+@app.get("/api/game/leaderboards")
+async def get_leaderboards(
+    type: str = "progression",
+    limit: int = 10,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return rankings based on progression or essence.
+    """
+    if type == "essence":
+        # Join PlayerCharacter and PlayerEssence
+        stmt = (
+            select(PlayerCharacter.character_name, PlayerEssence.current_balance)
+            .join(PlayerEssence, PlayerCharacter.id == PlayerEssence.character_id)
+            .order_by(PlayerEssence.current_balance.desc())
+            .limit(limit)
+        )
+        rankings = session.exec(stmt).all()
+        return [{"name": r[0], "value": f"{int(r[1]):,} Essence"} for r in rankings]
+    else:
+        # Join PlayerCharacter and PlayerProgress
+        stmt = (
+            select(PlayerCharacter.character_name, PlayerProgress.book_number, PlayerProgress.chapter_number, PlayerProgress.scene_number)
+            .join(PlayerProgress, PlayerCharacter.id == PlayerProgress.character_id)
+            .order_by(PlayerProgress.book_number.desc(), PlayerProgress.chapter_number.desc(), PlayerProgress.scene_number.desc())
+            .limit(limit)
+        )
+        rankings = session.exec(stmt).all()
+        return [{"name": r[0], "value": f"Book {r[1]} - {r[2]}-{r[3]}"} for r in rankings]
+
+
+@app.get("/api/game/journal")
+async def get_journal(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return scene summaries for all scenes completed by the player.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return []
+
+    progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
+    if not progress:
+        return []
+
+    # Fetch all completed scenes
+    completed_scenes = session.exec(
+        select(Scene)
+        .join(Chapter)
+        .where(Chapter.book_id <= progress.book_number)
+        .where((Chapter.chapter_number < progress.chapter_number) | 
+               ((Chapter.chapter_number == progress.chapter_number) & (Scene.scene_number < progress.scene_number)))
+        .order_by(Chapter.chapter_number.asc(), Scene.scene_number.asc())
+    ).all()
+
+    return [
+        {
+            "id": s.id,
+            "location": f"Chapter {s.chapter.chapter_number}",
+            "title": s.title,
+            "summary": s.summary,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        } for s in completed_scenes
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Home Base Hub endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/game/artifacts")
+async def get_artifacts(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all artifacts and highlight those owned by the current character.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    
+    all_artifacts = session.exec(select(Artifact)).all()
+    if not character:
+        return [{"artifact": a, "unlocked": False} for a in all_artifacts]
+
+    unlocked_ids = session.exec(
+        select(PlayerCollection.artifact_id).where(PlayerCollection.character_id == character.id)
+    ).all()
+    
+    return [
+        {
+            **a.model_dump(),
+            "unlocked": a.id in unlocked_ids
+        } for a in all_artifacts
+    ]
+
+
+@app.get("/api/game/leaderboards")
+async def get_leaderboards(
+    type: str = "progression",
+    limit: int = 10,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return rankings based on progression or essence.
+    """
+    if type == "essence":
+        # Rank by current_balance
+        rankings = session.exec(
+            select(PlayerCharacter.character_name, PlayerEssence.current_balance)
+            .join(PlayerEssence, PlayerCharacter.id == PlayerEssence.character_id)
+            .order_by(PlayerEssence.current_balance.desc())
+            .limit(limit)
+        ).all()
+        return [{"name": r[0], "value": f"{int(r[1]):,} Essence"} for r in rankings]
+    else:
+        # Rank by book/chapter/scene progression
+        rankings = session.exec(
+            select(PlayerCharacter.character_name, PlayerProgress.book_number, PlayerProgress.chapter_number, PlayerProgress.scene_number)
+            .join(PlayerProgress, PlayerCharacter.id == PlayerProgress.character_id)
+            .order_by(PlayerProgress.book_number.desc(), PlayerProgress.chapter_number.desc(), PlayerProgress.scene_number.desc())
+            .limit(limit)
+        ).all()
+        return [{"name": r[0], "value": f"Book {r[1]} - {r[2]}-{r[3]}"} for r in rankings]
+
+
+@app.get("/api/game/journal")
+async def get_journal(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return scene summaries for all scenes completed by the player.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return []
+
+    progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
+    if not progress:
+        return []
+
+    # Fetch all chapters/scenes logically BEFORE the player's current position
+    # (Simplified for MVP: all chapters in current book or previous books)
+    completed_scenes = session.exec(
+        select(Scene)
+        .join(Chapter)
+        .where(Chapter.book_id <= progress.book_number)
+        .where((Chapter.chapter_number < progress.chapter_number) | 
+               ((Chapter.chapter_number == progress.chapter_number) & (Scene.scene_number < progress.scene_number)))
+        .order_by(Chapter.chapter_number.asc(), Scene.scene_number.asc())
+    ).all()
+
+    return [
+        {
+            "id": s.id,
+            "location": f"Book {progress.book_number} - CH {s.chapter.chapter_number}",
+            "title": s.title,
+            "summary": s.summary,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        } for s in completed_scenes
+    ]
+
+
+@app.get("/api/game/artifacts")
+async def get_artifacts(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all artifacts and highlight those owned by the current character.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    
+    all_artifacts = session.exec(select(Artifact)).all()
+    if not character:
+        return [{"artifact": a, "unlocked": False} for a in all_artifacts]
+
+    unlocked_ids = session.exec(
+        select(PlayerCollection.artifact_id).where(PlayerCollection.character_id == character.id)
+    ).all()
+    
+    return [
+        {
+            **a.model_dump(),
+            "unlocked": a.id in unlocked_ids
+        } for a in all_artifacts
+    ]
+
+
+@app.get("/api/game/leaderboards")
+async def get_leaderboards(
+    type: str = "progression",
+    limit: int = 10,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return rankings based on progression or essence.
+    """
+    if type == "essence":
+        # Join PlayerCharacter and PlayerEssence
+        stmt = (
+            select(PlayerCharacter.character_name, PlayerEssence.current_balance)
+            .join(PlayerEssence, PlayerCharacter.id == PlayerEssence.character_id)
+            .order_by(PlayerEssence.current_balance.desc())
+            .limit(limit)
+        )
+        rankings = session.exec(stmt).all()
+        return [{"name": r[0], "value": f"{int(r[1]):,} Essence"} for r in rankings]
+    else:
+        # Join PlayerCharacter and PlayerProgress
+        stmt = (
+            select(PlayerCharacter.character_name, PlayerProgress.book_number, PlayerProgress.chapter_number, PlayerProgress.scene_number)
+            .join(PlayerProgress, PlayerCharacter.id == PlayerProgress.character_id)
+            .order_by(PlayerProgress.book_number.desc(), PlayerProgress.chapter_number.desc(), PlayerProgress.scene_number.desc())
+            .limit(limit)
+        )
+        rankings = session.exec(stmt).all()
+        return [{"name": r[0], "value": f"Book {r[1]} - {r[2]}-{r[3]}"} for r in rankings]
+
+
+@app.get("/api/game/journal")
+async def get_journal(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return scene summaries for all scenes completed by the player.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return []
+
+    progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
+    if not progress:
+        return []
+
+    # Fetch all completed scenes
+    completed_scenes = session.exec(
+        select(Scene)
+        .join(Chapter, Scene.chapter_id == Chapter.id)
+        .where(Chapter.book_id <= progress.book_number) 
+        .where((Chapter.chapter_number < progress.chapter_number) | 
+               ((Chapter.chapter_number == progress.chapter_number) & (Scene.scene_number < progress.scene_number)))
+        .order_by(Chapter.chapter_number.asc(), Scene.scene_number.asc())
+    ).all()
+
+    return [
+        {
+            "id": s.id,
+            "location": f"Chapter {s.chapter.chapter_number}",
+            "title": s.title,
+            "summary": s.summary,
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        } for s in completed_scenes
+    ]
 
 VALID_TICKET_CATEGORIES = {"bug_report", "account_issue", "payment_issue", "feedback", "other"}
 

@@ -9,7 +9,9 @@ interface Scene {
   chapter_id: number;
   name: string;
   title?: string;
-  required_time_seconds: number;
+  gameplay_data?: {
+    required_time_seconds: number;
+  } | null;
   sort_order: number;
   status?: 'locked' | 'available' | 'completed' | 'mastered';
 }

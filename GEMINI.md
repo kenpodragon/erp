@@ -6,7 +6,8 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 - **Read Access:** Full access to `/backend`, `/frontend`, `/admin`, `/db`, `/docs`, `/infra`, `/tools`, and `/testing`.
 - **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
 - **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/tools`, and `/testing`.
-- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md`.
+- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md`. 
+    - **Connection Mandate:** ALWAYS PULL database connection strings and credentials directly from `/backend/.env`. NEVER hardcode, log, or print these values.
 - **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
 
 ## 🤖 Agent Operating Procedures

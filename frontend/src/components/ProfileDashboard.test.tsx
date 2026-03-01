@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { ProfileDashboard } from './ProfileDashboard';
 
 vi.mock('./AliasEditor', () => ({
@@ -44,7 +45,11 @@ describe('ProfileDashboard', () => {
   };
 
   it('renders core profile sections', () => {
-    render(<ProfileDashboard player={mockPlayer} {...defaultProps} />);
+    render(
+      <MemoryRouter>
+        <ProfileDashboard player={mockPlayer} {...defaultProps} />
+      </MemoryRouter>
+    );
 
     expect(screen.getByText('test@example.com')).toBeTruthy();
     expect(screen.getByTestId('alias-editor')).toBeTruthy();
@@ -53,13 +58,21 @@ describe('ProfileDashboard', () => {
   });
 
   it('shows logout button at the top', () => {
-    render(<ProfileDashboard player={mockPlayer} {...defaultProps} />);
+    render(
+      <MemoryRouter>
+        <ProfileDashboard player={mockPlayer} {...defaultProps} />
+      </MemoryRouter>
+    );
     expect(screen.getByRole('button', { name: /Logout/i })).toBeTruthy();
   });
 
   it('shows terms of service button if not accepted', () => {
     const playerNoTerms = { ...mockPlayer, terms_accepted_at: null };
-    render(<ProfileDashboard player={playerNoTerms} {...defaultProps} />);
+    render(
+      <MemoryRouter>
+        <ProfileDashboard player={playerNoTerms} {...defaultProps} />
+      </MemoryRouter>
+    );
     expect(screen.getByText(/Accept Terms of Service/i)).toBeTruthy();
   });
 });

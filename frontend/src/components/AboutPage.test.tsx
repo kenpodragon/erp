@@ -35,8 +35,8 @@ describe('AboutPage', () => {
     expect(screen.getByText(/Competitive Leaderboards/)).toBeTruthy();
   });
 
-  it('renders return to home link', () => {
+  it('renders enter the tower link', () => {
     renderWithRouter(<AboutPage />);
-    expect(screen.getByText('Return to Home')).toBeTruthy();
+    expect(screen.getByText('Enter the Tower')).toBeTruthy();
   });
 });

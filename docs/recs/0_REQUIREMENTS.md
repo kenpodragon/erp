@@ -48,18 +48,18 @@ The design and mechanics of ERP are grounded in several successful titles. These
 ## 3. Core Gameplay Mechanics (Three-Loop Architecture)
 The primary goal of ERP is to provide an immersive environment where players **read the book series while playing the game**. The architecture is built on three interconnected loops that balance active play, passive progression, and overworld strategy. The initial design and implementation will be to put these frameworks into place. Population and expansion of these into the full story and components related to the story should be described (e.g. start with 4 basic classes, but allow ability to add more as time progresses. Start with 4 skills. 4 enemy types, etc.. - however a process to expand those as they become defined and tooling to extract and create them (from the extracted book contents)).
 ### 2.0 Loop A: Overworld / Hub (Strategy & Navigation)
-- [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
-- [ ] **UI/UX Design Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
+- [x] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
+- [x] **UI/UX Design Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
 
 ### 2.1 Loop A: Overworld / Hub (Strategy & Navigation)
-- [ ] **Detailed Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
-- [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
-- [ ] **Node-Based Map:** A "Chronicle-style" interactive map showing chapter and scene progression.
-- [ ] **Centralized Interface:** Access point for story mode, idle training, shops, and social features.
-- [ ] **Home Base Hub:** Display collections, leaderboard standings, and a personal journal of uncovered story beats.
-- [ ] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth.
-
-### 2.2 Loop B: Story Mode / Clicker Combat (Active Play)
+- [x] **Detailed Requirements:** [2.1_OVERWORLD_HUB.md](2.1_OVERWORLD_HUB.md)
+- [x] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
+- [x] **Node-Based Map:** A "Chronicle-style" interactive map showing chapter and scene progression.
+- [x] **Centralized Interface:** Access point for story mode, idle training, shops, and social features.
+- [x] **Home Base Hub:** Display collections, leaderboard standings, and a personal journal of uncovered story beats.
+- [x] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth.
+...
+- [x] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
 - [ ] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
 - [ ] **The Reading & Listening Experience:** 
     - [ ] **Eleven Reader Integration:** The core of Story Mode is the audiobook narration. Users listen to the book series while playing the game.
@@ -151,8 +151,17 @@ The primary goal of ERP is to provide an immersive environment where players **r
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
 - [x] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
-- [ ] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
-- [x] **Database (PostgreSQL):** Optimized for high-frequency leaderboard and state updates.
+- [ ] **Game Content Management:** 
+    - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
+    - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
+
+### 2.7 Dual Economy & Inventory
+- [ ] **Elysium Essence:** Meta-currency earned from Story Mode, consumed by Training.
+- [ ] **Inventory System:** Slots for Weapons, Armor, and Trinkets (affects permanent stats).
+- [ ] **Artifacts & Collections:** Rare items earned from Chapter Mastery or boss drops.
+    - [ ] **Collection View:** Dedicated hub to inspect lore and bonuses of collected artifacts.
+    - [ ] **Admin Editor:** Interface to define new artifacts, rarity, and drop conditions.
+
 - [x] **Deployment:** Dockerized services on Google Cloud Run with automated Google Cloud Build CI/CD.
 - [x] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
 

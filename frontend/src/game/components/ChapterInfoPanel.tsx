@@ -6,11 +6,12 @@ interface StoryBeat {
   beat_number: number;
   content_text: string;
 }
-
 interface Scene {
   id: number;
   name: string;
-  required_time_seconds: number;
+  gameplay_data?: {
+    required_time_seconds: number;
+  } | null;
   story_beats?: StoryBeat[];
 }
 
@@ -21,7 +22,8 @@ interface ChapterInfoPanelProps {
 }
 
 const ChapterInfoPanel: React.FC<ChapterInfoPanelProps> = ({ scene, onClose, onEnter }) => {
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds?: number) => {
+    if (seconds === undefined || seconds === null) return '0m';
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}m ${secs > 0 ? secs + 's' : ''}`;
@@ -39,10 +41,11 @@ const ChapterInfoPanel: React.FC<ChapterInfoPanelProps> = ({ scene, onClose, onE
           <div className="scene-meta">
             <div className="meta-item">
               <span className="label">Estimated Duration:</span>
-              <span className="value">{formatTime(scene.required_time_seconds)}</span>
+              <span className="value">{formatTime(scene.gameplay_data?.required_time_seconds)}</span>
             </div>
             <div className="meta-item">
               <span className="label">Type:</span>
+...
               <span className="value">Narrative Combat</span>
             </div>
           </div>

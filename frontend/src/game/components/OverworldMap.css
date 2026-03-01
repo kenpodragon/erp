@@ -319,11 +319,66 @@
   100% { transform: scale(1); box-shadow: 0 0 0px rgba(96, 165, 250, 0); }
 }
 
-/* Hide scrollbar for scenes horizontal but allow scrolling */
-.scenes-horizontal::-webkit-scrollbar {
-  display: none;
+@media (max-width: 1024px) {
+  .overworld-map-wrapper {
+    flex-direction: column;
+  }
+
+  .book-nav-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid #333;
+    padding: 0.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .book-nav-title {
+    display: none;
+  }
+
+  .book-nav-item {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    min-width: 140px;
+  }
+
+  .book-nav-progress {
+    display: none; /* Hide progress bar in mobile sidebar to save space */
+  }
+
+  .book-nav-item .book-num {
+    margin-right: 0.5rem;
+  }
+
+  .overworld-map-content {
+    padding: 1rem;
+  }
+
+  .book-section-title {
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+  }
+
+  .chapter-row {
+    margin-bottom: 2.5rem;
+  }
 }
-.scenes-horizontal {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+@media (max-width: 480px) {
+  .scene-node {
+    min-width: 90px;
+  }
+  
+  .node-circle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .scene-name {
+    font-size: 0.65rem;
+  }
 }

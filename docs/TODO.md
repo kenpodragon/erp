@@ -12,7 +12,7 @@
         - [x] Build the `OverworldMap` structure (Vertical chapter list with horizontal scene nodes).
     - [x] **State & Testing**
         - [x] Define global `GameContext` (Session stats, active training, current scene).
-        - [ ] Create 2.0 Interface and UX validation tests (Vitest/Playwright).
+        - [x] Create 2.0 Interface and UX validation tests (Vitest/Playwright).
 
 - [ ] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
     - [x] **Backend: DB-Driven Map Content**
@@ -24,8 +24,22 @@
         - [x] Update `OverworldMap.tsx` to fetch real data from the backend.
         - [x] Implement `ChapterInfoPanel` modal (Scene details, "Enter Story" action).
         - [x] Build transition framework to `StoryMode.tsx` (Loop B).
-    - [ ] Implement node state logic (locked, available, completed) based on real `PlayerProgress`.
-    - [ ] Develop detailed UI for `OverworldMap` (Pulsing nodes, chapter list).
+    - [x] **State Logic & UI Polish**
+        - [x] Implement real node state logic (locked, available, completed) based on the database `PlayerProgress`.
+        - [x] Implement real progress percentage aggregation for the Book/Chapter progress bars.       
+        - [x] Polish `ChapterInfoPanel` with real lore summaries, best score tracking, and actual audio durations.
+        - [x] Develop detailed UI for `OverworldMap` (Pulsing nodes, chapter list, mobile responsiveness/collapsing sidebar).
+    - [x] **Home Base Hub**
+        - [x] Implement the Home Base view.
+        - [x] Add Personal Journal (uncovered story beats from completed chapters).
+        - [x] Add Collections (rare items/artifacts display).
+        - [x] Add Leaderboard Standings view.
+    - [ ] **Atmospheric Battle Banner (PixiJS)**
+        - [ ] Implement infinite side-scrolling background logic.
+        - [ ] Add player character sprite animation (walk cycle).
+        - [ ] Implement enemy spawning and scrolling logic.
+        - [ ] Connect banner visuals to current chapter (background/enemies).
+        - [ ] Implement growth indicators (swap equipment/vfx based on player stats).
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.

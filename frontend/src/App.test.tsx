@@ -1,8 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { signInWithPopup } from 'firebase/auth'
+
+// Mock game layout to avoid PixiJS resolution issues in tests
+vi.mock('./game/MainGameLayout', () => ({
+  default: () => <div data-testid="mock-game-layout">Game Layout Mock</div>
+}));
 
 // App uses useNavigate/useLocation so we render inside MemoryRouter
 // (main.tsx wraps with BrowserRouter, but tests use MemoryRouter)

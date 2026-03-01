@@ -10,7 +10,9 @@ from models import (
     Player, PlayerSettings, CharacterClass, PlayerCharacter,
     PlayerProgress, PlayerEssence, SupportTicket, SupportReply,
     ServerConfig, AdminAuditLog, ActivityEvent,
-    AdminWhitelistEmail, AdminWhitelistIP
+    AdminWhitelistEmail, AdminWhitelistIP, Book, Chapter, Scene, StoryBeat,
+    Artifact, PlayerCollection, Skill, StatDefinition, BenefitEffectData, Location,
+    Entity, EntityGameplayData, SceneGameplayData
 )
 from datetime import datetime, timezone
 
@@ -101,3 +103,13 @@ def admin_client(session: Session):
         yield client
     
     app.dependency_overrides.clear()
+
+@pytest.fixture
+def player_token(test_player: Player):
+    """Mock standard player auth."""
+    def get_current_player_override():
+        return {"uid": test_player.firebase_uid, "email": test_player.email, "player": test_player}
+
+    app.dependency_overrides[get_current_player] = get_current_player_override
+    yield "mock_token"
+    app.dependency_overrides.pop(get_current_player, None)

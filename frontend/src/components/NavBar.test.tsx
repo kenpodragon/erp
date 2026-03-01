@@ -41,9 +41,9 @@ describe('NavBar', () => {
     expect(onLogout).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Home and About links for all users', () => {
+  it('shows Tower and About links for all users', () => {
     renderWithRouter(<NavBar isLoggedIn={false} onLogin={vi.fn()} onLogout={vi.fn()} />);
-    expect(screen.getByText('Home')).toBeTruthy();
+    expect(screen.getByText('Tower')).toBeTruthy();
     expect(screen.getByText('About')).toBeTruthy();
   });
 });
