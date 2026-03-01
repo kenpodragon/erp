@@ -258,6 +258,21 @@ class AdminAuditLog(SQLModel, table=True):
 # Game Loop 2.0 Entities (Narrative + Gameplay)
 # ---------------------------------------------------------------------------
 
+class Book(SQLModel, table=True):
+    """Maps to the existing `books` table."""
+    __tablename__ = "books"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    book_number: int = Field(unique=True, nullable=False)
+    title: str = Field(max_length=255, nullable=False)
+    source_file: str = Field(max_length=255, nullable=False)
+    created_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    chapters: List["Chapter"] = Relationship(back_populates="book")
+
+
 class Chapter(SQLModel, table=True):
     """Maps to the existing `chapters` table from the book data."""
     __tablename__ = "chapters"
@@ -273,6 +288,7 @@ class Chapter(SQLModel, table=True):
     updated_at: Optional[datetime] = Field(default=None)
 
     # Relationships
+    book: Book = Relationship(back_populates="chapters")
     scenes: List["Scene"] = Relationship(back_populates="chapter")
 
 

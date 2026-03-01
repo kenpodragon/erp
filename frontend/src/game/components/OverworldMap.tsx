@@ -16,36 +16,32 @@ interface Scene {
 
 interface Chapter {
   id: number;
-  name: string;
+  book_id: number;
+  chapter_number: number;
   title?: string;
+  name?: string;
   sort_order: number;
-  progress?: number; // 0-100 percentage
+  progress?: number; 
   scenes: Scene[];
 }
 
+interface BookData {
+  id: number;
+  title: string;
+  author?: string;
+  description?: string;
+  status?: 'locked' | 'available' | 'completed';
+  progress?: number;
+  chapters: Chapter[];
+}
+
 const OverworldMap: React.FC = () => {
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [books, setBooks] = useState<BookData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
 
   const { enterScene } = useGame();
-
-  // Mocking book IDs for now as we transition
-  const books = [
-    { id: 1, title: 'Book 1: The Ascent', status: 'available' },
-    { id: 2, title: 'Book 2: The Core', status: 'locked' },
-    { id: 3, title: 'Book 3: The Beyond', status: 'locked' },
-  ];
-
-  const enrichedBooks = books.map(book => {
-    // Chapters 1-4 = Book 1, 5-8 = Book 2, etc.
-    const bookChapters = chapters.filter(ch => ch.id >= (book.id - 1) * 4 + 1 && ch.id <= book.id * 4);
-    const avgProgress = bookChapters.length > 0 
-      ? Math.round(bookChapters.reduce((acc, ch) => acc + (ch.progress || 0), 0) / bookChapters.length)
-      : 0;
-    return { ...book, progress: avgProgress };
-  });
 
   const scrollToBook = (bookId: number) => {
     const element = document.getElementById(`book-section-${bookId}`);
@@ -60,16 +56,21 @@ const OverworldMap: React.FC = () => {
         const res = await api.get('/api/game/map');
         if (res.ok) {
           const data = await res.json();
-          // For now, manually mock status since progress tracking isn't fully implemented
-          const enrichedData = data.map((ch: Chapter, chIdx: number) => ({
-            ...ch,
-            progress: 0, // Everyone starts at 0% for now
-            scenes: ch.scenes.map((sc: Scene, scIdx: number) => ({
-              ...sc,
-              status: chIdx === 0 && scIdx === 0 ? 'available' : 'locked'
+          // Enrich data with status and progress
+          const enrichedData = data.map((book: BookData, bIdx: number) => ({
+            ...book,
+            status: bIdx === 0 ? 'available' : 'locked',
+            progress: 0,
+            chapters: book.chapters.map((ch: Chapter, cIdx: number) => ({
+              ...ch,
+              progress: 0,
+              scenes: ch.scenes.map((sc: Scene, sIdx: number) => ({
+                ...sc,
+                status: bIdx === 0 && cIdx === 0 && sIdx === 0 ? 'available' : 'locked'
+              }))
             }))
           }));
-          setChapters(enrichedData);
+          setBooks(enrichedData);
         } else {
           setError('Failed to load map data');
         }
@@ -91,7 +92,7 @@ const OverworldMap: React.FC = () => {
       {/* Book Navigation Sidebar */}
       <aside className="book-nav-sidebar">
         <div className="book-nav-title">Chronicles</div>
-        {enrichedBooks.map(book => (
+        {books.map(book => (
           <button 
             key={book.id} 
             className={`book-nav-item ${book.status}`}
@@ -103,9 +104,9 @@ const OverworldMap: React.FC = () => {
             </div>
             <div className="book-nav-progress">
               <div className="progress-bar-mini">
-                <div className="progress-fill" style={{ width: `${book.progress}%` }} />
+                <div className="progress-fill" style={{ width: `${book.progress || 0}%` }} />
               </div>
-              <span className="progress-text">{book.progress}%</span>
+              <span className="progress-text">{book.progress || 0}%</span>
             </div>
           </button>
         ))}
@@ -118,7 +119,7 @@ const OverworldMap: React.FC = () => {
             <section key={book.id} id={`book-section-${book.id}`} className={`book-section ${book.status}`}>
               <h2 className="book-section-title">{book.title}</h2>
               <div className="book-chapters">
-                {chapters.map((chapter) => (
+                {book.chapters.map((chapter) => (
                   <div key={chapter.id} className="chapter-row">
                     <div className="chapter-header">
                       <h3 className="chapter-name">{chapter.title || chapter.name}</h3>
@@ -141,8 +142,8 @@ const OverworldMap: React.FC = () => {
                               {scene.status === 'locked' && <span className="lock">🔒</span>}
                             </div>
                             <div className="scene-label-container">
-                              <span className="chapter-prefix">{(chapter.title || chapter.name || '').split(':')[0] || `Chapter ${chapter.sort_order}`}</span>
-                              <span className="scene-number">{chapter.sort_order}-{scene.sort_order}</span>
+                              <span className="chapter-prefix">{(chapter.title || chapter.name || '').split(':')[0] || `Chapter ${chapter.chapter_number}`}</span>
+                              <span className="scene-number">{chapter.chapter_number}-{scene.sort_order}</span>
                               <span className="scene-name">{scene.title || scene.name}</span>
                             </div>
                           </div>
@@ -164,6 +165,7 @@ const OverworldMap: React.FC = () => {
           ))}
         </div>
       </div>
+...
 
       {selectedScene && (
         <ChapterInfoPanel 

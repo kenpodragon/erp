@@ -26,7 +26,7 @@ from models import (
     Player, PlayerSettings, CharacterClass, PlayerCharacter, PlayerProgress,
     PlayerEssence, ServerConfig, AdminAuditLog, ActivityEvent, SupportTicket, SupportReply,
     AdminWhitelistEmail, AdminWhitelistIP, Chapter, Scene, StoryBeat, Entity, Skill,
-    StatDefinition, EntityGameplayData, SceneGameplayData, BenefitEffectData
+    StatDefinition, EntityGameplayData, SceneGameplayData, BenefitEffectData, Book
 )
 from utils import load_profanity_blocklist, is_profane, sanitize_text
 import config_cache
@@ -746,20 +746,32 @@ async def get_game_map(
     session: Session = Depends(get_session)
 ):
     """
-    Return the full chapter and scene hierarchy from book data.
-    Uses sort_order for sequencing.
+    Return the full book, chapter, and scene hierarchy from book data.
     """
-    chapters = session.exec(select(Chapter).order_by(Chapter.sort_order.asc())).all()
+    books = session.exec(select(Book).order_by(Book.id.asc())).all()
     result = []
-    for chapter in chapters:
-        scenes = session.exec(
-            select(Scene)
-            .where(Scene.chapter_id == chapter.id)
-            .order_by(Scene.sort_order.asc())
+    for book in books:
+        chapters = session.exec(
+            select(Chapter)
+            .where(Chapter.book_id == book.id)
+            .order_by(Chapter.sort_order.asc())
         ).all()
+        
+        chapter_list = []
+        for chapter in chapters:
+            scenes = session.exec(
+                select(Scene)
+                .where(Scene.chapter_id == chapter.id)
+                .order_by(Scene.sort_order.asc())
+            ).all()
+            chapter_list.append({
+                **chapter.model_dump(),
+                "scenes": [s.model_dump() for s in scenes]
+            })
+            
         result.append({
-            **chapter.model_dump(),
-            "scenes": [s.model_dump() for s in scenes]
+            **book.model_dump(),
+            "chapters": chapter_list
         })
     return result
 
