@@ -74,7 +74,6 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
 
       <div className="top-bar-right">
         <button className="settings-btn" title="Settings">⚙️</button>
-        <button className="exit-btn" title="Exit to Profile" onClick={() => navigate('/profile')}>🚪</button>
       </div>
     </header>
   );

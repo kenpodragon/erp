@@ -17,6 +17,8 @@ interface Character {
   intelligence: number | null;
   created_at: string;
   class: { id: number; name: string; lore_blurb: string | null; base_strength: number; base_agility: number; base_intelligence: number; sprite_key: string | null; is_available: boolean } | null;
+  essence?: { current_balance: number };
+  progress?: { book_number: number; chapter_number: number; scene_number: number };
 }
 
 interface Player {
@@ -90,7 +92,7 @@ const GameContent: React.FC<MainGameLayoutProps> = ({ player, character, onChara
 
 const MainGameLayout: React.FC<MainGameLayoutProps> = (props) => {
   return (
-    <GameProvider>
+    <GameProvider initialEssence={props.character?.essence?.current_balance || 0}>
       <GameContent {...props} />
     </GameProvider>
   );

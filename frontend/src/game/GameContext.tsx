@@ -19,18 +19,20 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: number }> = ({ children, initialEssence }) => {
   const [state, setState] = useState<GameState>({
-    essence: 450, // Initial mock values
+    essence: initialEssence || 0,
     gold: 0,
     activeTrainingId: null,
     activeSceneId: null,
   });
 
-  // Future: Fetch initial state from backend
+  // Sync state if initialEssence changes (e.g. after fresh fetch)
   useEffect(() => {
-    // api.get('/api/game/state').then(...)
-  }, []);
+    if (initialEssence !== undefined) {
+      setState(prev => ({ ...prev, essence: initialEssence }));
+    }
+  }, [initialEssence]);
 
   const updateEssence = (amount: number) => {
     setState(prev => ({ ...prev, essence: prev.essence + amount }));

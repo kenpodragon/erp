@@ -445,6 +445,7 @@ function App() {
         <Route path="/game/*" element={
           isLoggedIn ? (
             <MainGameLayout 
+              player={backendUser}
               character={character} 
               onCharacterCreated={(c) => {
                 setCharacter(c);
