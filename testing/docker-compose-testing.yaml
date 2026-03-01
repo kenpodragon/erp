@@ -19,7 +19,7 @@ services:
     volumes:
       - ../backend:/app
     environment:
-      - DATABASE_URL=sqlite:///./test.db
+      - "DATABASE_URL=sqlite:///:memory:"
     command: pytest -v
 
   frontend:
@@ -34,6 +34,12 @@ services:
       - /app/node_modules
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5173/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   frontend-test:
     build:
@@ -55,6 +61,12 @@ services:
       - /app/node_modules
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5174/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   admin-test:
     build:
@@ -73,8 +85,10 @@ services:
       - CI=true
     command: sh -c "npm install && npx playwright test"
     depends_on:
-      - frontend
-      - admin
+      frontend:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
 
 networks:
   default:

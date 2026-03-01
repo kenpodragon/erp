@@ -2069,13 +2069,13 @@ async def admin_analytics_dau(
 
     rows = session.exec(
         select(
-            func.date_trunc("day", ActivityEvent.created_at).label("day"),
+            func.date(ActivityEvent.created_at).label("day"),
             func.count(func.distinct(ActivityEvent.player_id)).label("count"),
         )
         .where(ActivityEvent.event_type == "player_login")
         .where(ActivityEvent.created_at >= since)
-        .group_by(func.date_trunc("day", ActivityEvent.created_at))
-        .order_by(func.date_trunc("day", ActivityEvent.created_at))
+        .group_by(func.date(ActivityEvent.created_at))
+        .order_by(func.date(ActivityEvent.created_at))
     ).all()
 
     return {"range": range, "data": [{"date": str(r.day)[:10], "count": r.count} for r in rows]}
@@ -2096,12 +2096,12 @@ async def admin_analytics_registrations(
 
     rows = session.exec(
         select(
-            func.date_trunc("day", Player.created_at).label("day"),
+            func.date(Player.created_at).label("day"),
             func.count(Player.id).label("count"),
         )
         .where(Player.created_at >= since)
-        .group_by(func.date_trunc("day", Player.created_at))
-        .order_by(func.date_trunc("day", Player.created_at))
+        .group_by(func.date(Player.created_at))
+        .order_by(func.date(Player.created_at))
     ).all()
 
     return {"range": range, "data": [{"date": str(r.day)[:10], "count": r.count} for r in rows]}

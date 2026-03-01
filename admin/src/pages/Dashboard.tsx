@@ -105,9 +105,6 @@ function DauChart() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Initial state is already true; subsequent changes to 'range' will trigger this.
-    // We only need to ensure it's true when starting a new fetch if it wasn't already.
-    setLoading(true)
     api.get(`/api/admin/analytics/dau?range=${range}`)
       .then(r => r.json())
       .then(d => setData(d.data || []))
@@ -124,7 +121,7 @@ function DauChart() {
             <button
               key={r}
               className={range === r ? 'active' : ''}
-              onClick={() => setRange(r)}
+              onClick={() => { setLoading(true); setRange(r) }}
             >{r}</button>
           ))}
         </div>
@@ -236,8 +233,6 @@ function ActivityFeed() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Initial loading is true. We only need to reset it if filter changes.
-    setLoading(true)
     const qs = filter ? `?event_type=${filter}&limit=50` : '?limit=50'
     api.get(`/api/admin/analytics/events${qs}`)
       .then(r => r.json())
@@ -253,7 +248,7 @@ function ActivityFeed() {
         <select
           className="feed-filter"
           value={filter}
-          onChange={e => setFilter(e.target.value)}
+          onChange={e => { setLoading(true); setFilter(e.target.value) }}
         >
           {EVENT_TYPES.map(t => (
             <option key={t} value={t}>{t ? EVENT_LABELS[t] || t : 'All Events'}</option>

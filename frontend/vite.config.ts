@@ -6,10 +6,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: [
-      'erp-frontend-223240539839.us-east1.run.app',
-      'play.does-god-exist.org'
-    ]
+    host: true,
+    allowedHosts: true,
   },
   test: {
     globals: true,
