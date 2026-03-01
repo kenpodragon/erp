@@ -1,8 +1,13 @@
 # ERP Project Kickstart TODO
-
-## 7. Phase 1: Onboarding, Authentication, Profiles & Initial Admin Panel
-... [rest of file] ...
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
+
+## REC_2: Core Gameplay Mechanics
+  - [ ] Create the breakdown requirements and detailed information needed to build out the first implementation of the game.
+  - [ ] Need to ensure it captures the story mapping portion (clicker part), and then bake into the skills leveling (progression outside of the clicking game - things like progresing in the game will unlock auto-progress skills outside the game - skill design and other bits should be related to concepts and things from within the Elysium Rising books)
+  - [ ] Break components up into meaningful requiement sections (game loop, etc...) and continue iterating through the requirements.
+  - [ ] Formulate a development/design plan to get these bits done
+  - [ ] Migrate the detailed plan into TODO to track and capture.
+  - [ ] Begin work on the UI/UX layouts for the game loop screens (no animation or characters yet, just screens and placeholder items)
 
 ---
 *Updated: 2026-03-01*
@@ -10,6 +15,7 @@
 ## Book Processing 📚
 - [ ] **Book Processing**
   - [ ] Execute processing and load to DB (Phase 1 - extract and split the text).
+  - [ ] Re-do and expand BOOK SUMMARY, CHARACTER GUIDE, ENVIRONMENT GUIDE, because it's missing important characters and key locations across the books. Character GUide and Environment Guide seem to be only from the final book, and the Books Summary is missing a lot of key characters (like Adityi from book 1, Todd's Girlfriend, and others).
 
 ## Book Processing Post Processing Stuff
 - [ ] **Book Processing Phase 3**
@@ -29,6 +35,9 @@
   - [ ] Research Eleven Reader API for streaming background audio. (Would like them to advance, need to have access to that part of the book before they can proceed - e.g. on free eleven readers account, so they'd have to buy the book - get stuck in early tutorial lands or something).
   - [ ] Research Eleven SUNO API for streaming background audio.
   - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
-
+- [ ] **Class and Skill Design**
+  - [ ] Design the classes and systems based off of components from the book. Expand the existing choices to match aesthetic of the book.
+- [ ] **Graphics Design**
+  - [ ] Generation of actual characters, icons, and other pieces (based on descriptions of the book)
 ---
 

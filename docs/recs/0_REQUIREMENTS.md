@@ -29,40 +29,68 @@ Narrative data has also been programmatically extracted into the PostgreSQL data
     - [x] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
     - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
-## 2. Core Gameplay Mechanics (Incremental MMORPG)
-- [ ] UI/UX for the game loop screen (need where this will go - some battlefield or something (need to come up with name)). 
-- [ ] **High Level Game Loop:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
-    - [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
+## 2. Core Gameplay Mechanics (Three-Loop Architecture)
+The primary goal of ERP is to provide an immersive environment where players **read the book series while playing the game**. The architecture is built on three interconnected loops that balance active play, passive progression, and overworld strategy. The initial design and implementation will be to put these frameworks into place. Population and expansion of these into the full story and components related to the story should be described (e.g. start with 4 basic classes, but allow ability to add more as time progresses. Start with 4 skills. 4 enemy types, etc.. - however a process to expand those as they become defined and tooling to extract and create them (from the extracted book contents)).
+### 2.1 Loop A: Overworld / Hub (Strategy & Navigation)
+- [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
+- [ ] **UI/UX Design Requirements:** Need to define what these look like (use the 2.0 GAME LOOP bits as a starting point)
+
+### 2.1 Loop A: Overworld / Hub (Strategy & Navigation)
 - [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
-    - [ ] **Sub-Chapter Nodes:** Chapters are further divided into narrative nodes representing specific story beats.
-    - [ ] **Story Beat Bosses:** Mini-boss and Chapter-boss encounters based on specific events in the book content.
-- [ ] **Incremental Clicker Engine:**
-    - [ ] Resource generation (e.g., "Elysium Essence").
-    - [ ] Auto-clicker upgrades and passive progression.
-    - [ ] Anti-cheat detection (multi-click, botting, rate limiting; detection based on human mouse vs macro).
-- [ ] **Progression Gating (Time-Boxing):**
-    - [ ] Users cannot advance narrative nodes faster than the corresponding audio book section played at 1x speed.
-    - [ ] Progression is synced with Eleven Reader playback duration.
-- [ ] **Character System:**
-    - [ ] **Visuals (AI-Driven):** 
-        - [ ] Use AI (e.g., Stable Diffusion/DALL-E) to generate initial character and enemy designs based on descriptions in `docs/lore/` (falling back to `../Books/BOOKS.md` if necessary). (Extracted out to the DB)
-        - [ ] **Asset Caching & Sharing:** Once an asset is generated, it is cached and shared globally to ensure visual consistency and minimize API costs.
-        - [ ] Text overlay to allow users to read the story as it progresses. The end of the chapter (final/final boss beat), show a cinematic detailing the actions from the book with text on screen of the book itself.
-        - [ ] Offline progress - if a user comes back, calculate the progress. At most it will end the current chatper/storybeat (current segment), and require the user to listen to the story/read the text at least once before progressing.
-        - [ ] Future loops (reset-progression) enemies get stronger, pallet changes, more enemies, other things to bring them back, but on future playthroughs they don't have to listen to the story and can allow for further skipping ahead.
-        - [ ] Home base mechanic (display collections, leaderboard, read parts of the story you've uncovered so far).
-        - [ ] Copy protection - text should be in image format (some post processiong pre-display like Kindle) to prevent users from copy and pasting the text itself outside of the game (since this is browser based).
-    - [ ] **Animations:** Idle, damage, and death animations for all entities.
-    - [ ] **Combat Visuals:** Attack animations and specific spell effects (VFX) for player abilities.
-    - [ ] **Stats:** Strength, Agility, Intelligence, etc., derived from the book's power system.
-    - [ ] **Inventory:** Equipment slots (Weapon, Armor, Trinkets) with rarity tiers.
-    - [ ] **Leveling:** Character XP and Chapter XP.
-- [ ] **Audio & Music Integration:**
-    - [ ] **Narration:** Real-time streaming of Eleven Reader audio books corresponding to the active chapter.
-    - [ ] **Background Music (SUNO):** 
-        - [ ] Integration with SUNO for thematic music generation.
-        - [ ] **Caching & Randomization:** Cache generated tracks and implement a randomized playlist generation system based on chapter mood.
-    - [ ] **Sound Effects (SFX):** Integrated SFX for clicking, UI interaction, attacks, spell casting, and enemy defeat.
+- [ ] **Node-Based Map:** A "Chronicle-style" interactive map showing chapter and scene progression.
+- [ ] **Centralized Interface:** Access point for story mode, idle training, shops, and social features.
+- [ ] **Home Base Hub:** Display collections, leaderboard standings, and a personal journal of uncovered story beats.
+- [ ] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth.
+
+### 2.2 Loop B: Story Mode / Clicker Combat (Active Play)
+- [ ] **The Reading & Listening Experience:** 
+    - [ ] **Eleven Reader Integration:** The core of Story Mode is the audiobook narration. Users listen to the book series while playing the game.
+    - [ ] **Synced Text Overlay:** Story text scrolls and appears paragraph-by-paragraph in real-time, synced with Eleven Reader audio, allowing users to read along.
+    - [ ] **Cinematics:** Chapter-ending cutscenes (final boss victory) detailing the book's action with high-fidelity on-screen text overlays.
+    - [ ] **Copy Protection:** Story text rendered as images (Kindle-style) to prevent unauthorized extraction.
+- [ ] **Combat Engine:** "Clicker Heroes-style" enemy-centric combat with waves and prominent HP bars.
+- [ ] **Boss System:**
+    - [ ] **Mini-Bosses:** Scene-end encounters with enrage timers and unique lore-based abilities.
+    - [ ] **Chapter Bosses:** Major multi-phase encounters featuring target zones and skill-based checks.
+- [ ] **Strict Narrative Gating:** 
+    - [ ] **Audio-Linked Progression:** Users **cannot fight the boss** (even if they have defeated enough minions) or advance to the next node until the corresponding audiobook segment has finished playing.
+    - [ ] **Timer-Based Gate:** The gate is strictly tied to the 1x playback duration of the segment. Even if the user mutes the audio or does not actively listen, they must wait for the full segment duration to pass on their first playthrough.
+- [ ] **AI-Driven Visuals:** 
+    - [ ] Use AI (Stable Diffusion/DALL-E) to generate character and enemy designs from book descriptions.
+    - [ ] **Asset Caching:** Globally shared cache for AI assets to ensure consistency and minimize API costs.
+- [ ] **Animations & VFX:** Idle, damage, and death animations for all entities; specific spell effects for player abilities.
+- [ ] **Narrative Gating:** Progression synced with audio duration; players cannot advance nodes faster than 1x playback speed.
+
+### 2.3 Loop C: Idle Training (Passive Progression)
+- [ ] **Skill-Based Growth:** "Melvor Idle-style" passive training system for combat, magic, and utility skills.
+- [ ] **Background Execution:** Training continues offline and while playing Story Mode.
+- [ ] **Session Floor:** Idle Training levels determine the "base stats" and power floor for Story Mode sessions.
+- [ ] **Manual Advancement:** Users can select only one skill at a time to train. The training rate is like Melvor Idle. However, users can also click into the skill itself and play clicker versions of the skill game to advance the training further. Gold earned during these sessions (enemies they encoutner come from the pool of any enemies they've unlocked up to that point in the books), gives a percentage boost (after exiting). So for example the idle level up time is 5 hours. If a user actively plays and earns gold/defeats levels - if they make it to level 500 in the manual mode, then 100% of the remaining time to level up would be gained (or something to that effect).
+
+### 2.4 Character & Progression Systems, Classes, and Skills
+- [ ] **Core Stats:** Strength, Agility, and Intelligence derived from the book's power system. Should be related to things found in the book.
+- [ ] **Inventory System:** Equipment slots (Weapon, Armor, Trinkets) with color-coded rarity tiers. Should be related to things found in the book.
+- [ ] **Dual Leveling:** 
+    - [ ] **Character XP:** Permanent growth via Idle Training and Story completion.
+    - [ ] **Chapter XP:** Progression tracking through the Tower's narrative.
+- [ ] **Prestige (NG+):** Higher difficulty loops with scaled enemies, palette swaps, and exclusive rewards.
+- [ ] **Classes:** Character classes have all different skills and abilities (base). Shoudl be related to components within the book.
+- [ ] **Skill System:** Skills need to be based off of skills found in the books. Skill names, effects, need to be designed to encompass the full story.
+
+### 2.5 Audio & Music Integration
+- [ ] **Audiobook Narration (Eleven Reader):** 
+    - [ ] Real-time streaming of audio books corresponding to the active chapter/scene.
+    - [ ] **Playback Tracking:** Server-side tracking of audio progress to enforce the narrative gate.
+    - [ ] **Replay Flexibility:** Once a segment has been completed at 1x speed, subsequent playthroughs allow for faster progression and optional audio.
+- [ ] **Dynamic Music:** SUNO-generated thematic playlists that rotate based on chapter mood.
+- [ ] **Tactile SFX:** Distinct sounds for clicks, crits, enemy defeats, and UI interactions.
+
+### 2.6 Economy & Anti-Cheat
+- [ ] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades.
+- [ ] **Advanced Anti-Cheat:** 
+    - [ ] **Behavioral Detection:** System must distinguish between human mouse movements/click patterns and automated macros/bots.
+    - [ ] **Server Validation:** Real-time validation of click rates, damage calculations, and playback-based gating.
+
 
 ## 3. Economy & Monetization (Stripe)
 - [ ] **Currency System:** 
