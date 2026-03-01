@@ -19,9 +19,6 @@
 - [ ] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
   - [ ] Check for some consolidation and cleanup (realize entities from other books might be different.)
   - [ ] Check for missing data in the locations tables, entity tables (e.g. base description, emotional state, sounds, smells, equipment, abilities). If missing, generate and INSERT/UPDATE via SQL.
-- [ ] **MISC** (text cleanup via SQL queries against the DB)
-  - [ ] Clean up text, lots of the ******** from when I left page breaks in there. There's also the introductory bits (copyright pages - chapter 1 for each book). Might want to keep it, maybe just skip it or use as an easter egg (what the hell is this crap - as part of the tutorial or something - also need to see where the TOC went in all of this).
-
 
 ## OTHER MAJOR TASKS  
 - [ ] **Security and anti-cheat**
