@@ -101,19 +101,6 @@ This document defines the complete database schema for the onboarding, authentic
 | `is_internal_note` | `BOOLEAN` | If `true`, only visible to admins. Default `false`. |
 | `created_at` | `TIMESTAMPTZ` | Default `NOW()`. |
 
-### `support_attachments`
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | `SERIAL PK` | Auto-incrementing primary key. |
-| `ticket_id` | `INTEGER FK` | References `support_tickets.id`. `ON DELETE CASCADE`. |
-| `reply_id` | `INTEGER FK` | References `support_replies.id`. Nullable (null = attached to initial ticket). `ON DELETE CASCADE`. |
-| `file_name` | `VARCHAR(255)` | Original file name. |
-| `file_path` | `TEXT` | Storage path (local or GCS). |
-| `file_size` | `INTEGER` | File size in bytes. |
-| `mime_type` | `VARCHAR(100)` | MIME type (image/jpeg, application/pdf, etc.). |
-| `uploaded_by` | `INTEGER FK` | References `players.id`. Nullable for admin uploads. |
-| `created_at` | `TIMESTAMPTZ` | Default `NOW()`. |
-
 ---
 
 ## 4. Server Config Table
@@ -187,8 +174,7 @@ players
   ├── player_settings        (ON DELETE CASCADE)
   ├── player_characters      (ON DELETE CASCADE)
   ├── support_tickets        (ON DELETE CASCADE)
-  │     ├── support_replies      (ON DELETE CASCADE)
-  │     └── support_attachments  (ON DELETE CASCADE)
+  │     └── support_replies      (ON DELETE CASCADE)
   └── activity_events        (ON DELETE SET NULL — preserves event history)
 ```
 
@@ -255,10 +241,10 @@ INSERT INTO server_config (key, value, value_type, category, description, defaul
 ## 10. Migration File
 
 - [ ] **SCH-1:** All tables, indexes, constraints, and seed data in this document must be created via a single SQL migration file: `/db/007_onboarding_and_admin.sql`.
-- [ ] **SCH-2:** Tables must be created in dependency order: `players` → `player_settings` → `character_classes` → `player_characters` → `support_tickets` → `support_replies` → `support_attachments` → `server_config` → `activity_events` → `admin_audit_log`.
+- [ ] **SCH-2:** Tables must be created in dependency order: `players` → `player_settings` → `character_classes` → `player_characters` → `support_tickets` → `support_replies` → `server_config` → `activity_events` → `admin_audit_log`.
 - [ ] **SCH-3:** Case-insensitive unique constraints on `players.alias` and `player_characters.character_name` must use `CREATE UNIQUE INDEX ... ON ... (LOWER(...))` expressions.
 - [ ] **SCH-4:** The migration must be idempotent — use `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`.
 
 ---
 
-*Last Updated: 2026-02-27*
+*Last Updated: 2026-02-28*

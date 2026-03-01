@@ -1,12 +1,13 @@
 # ERP Project Kickstart TODO
 
 This document tracks the initial setup and development phases for the Elysium Rising mmorPg (ERP).
+**Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
 ---
 *Updated: 2026-02-28*
 
 ## Phase 7: Onboarding, Profiles & Initial Admin 🧭
-> **Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
+> **Requirements:** [recs/1_ONBOARDING_INIT_RECS.md](recs/1_ONBOARDING_INIT_RECS.md) | **Schema:** [recs/1_ONBOARDING_INIT_SCHEMA.md](recs/1_ONBOARDING_INIT_SCHEMA.md)
 
 - [ ] **7.10 — Admin: User Management** *(RECS §7, FR-7.1 through FR-7.14)*
   - [ ] **Admin API:**
@@ -53,6 +54,23 @@ This document tracks the initial setup and development phases for the Elysium Ri
   - [ ] Verify: no admin route leaks which check failed (generic "Access denied" only).
 
 
+- [ ] **7.13 — Onboarding & Admin: Polishing & Refinements**
+  - [ ] **Support System:**
+    - [ ] Implement robust background task for auto-closing resolved tickets (FR-6.6).
+  - [ ] **User Management:**
+    - [ ] Implement "Force Logout" action (Session/Token invalidation logic).
+  - [ ] **Security & Maintenance:**
+    - [ ] Create `backend/utils.py` sanitization helpers (NFR-2).
+    - [ ] Apply sanitization to all player inputs (alias, character name, ticket body).
+    - [ ] Implement activity log retention policy (NFR-7).
+  - [ ] **UI/UX Polish:**
+    - [ ] Character Creator: Improve visual feedback for stats.
+    - [ ] Admin: Add "Average Resolution Time" and other missing metrics from §9.4.
+
+
+## Book Processing 📚
+- [ ] **Book Processing**
+  - [ ] Execute processing and load to DB (Phase 1 - extract and split the text).
 
  ## OTHER MAJOR TASKS
  - [ ] **Book Processing Phase 3**
@@ -69,4 +87,6 @@ This document tracks the initial setup and development phases for the Elysium Ri
     - [ ] Research Eleven Reader API for streaming background audio. (Would like them to advance, need to have access to that part of the book before they can proceed - e.g. on free eleven readers account, so they'd have to buy the book - get stuck in early tutorial lands or something).
     - [ ] Research Eleven SUNO API for streaming background audio.
     - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
+
+---
 

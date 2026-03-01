@@ -50,7 +50,7 @@ This document describes the technical architecture of the Elysium Rising mmorPg 
 ### Infrastructure & Deployment
 - **Containerization:** Docker (separate containers for frontend, backend, and admin).
 - **Hosting:** Google Cloud Run.
-- **CI/CD:** GitHub Actions.
+- **CI/CD:** Google Cloud Build.
 - **Secrets:** Google Secret Manager.
 
 ## Service Interaction

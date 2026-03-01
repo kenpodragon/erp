@@ -2,21 +2,30 @@
 
 This document serves as the single source of truth for the features and constraints of the Elysium Rising mmorPg (ERP).
 
-## 1. Onboarding & Authentication & Initial Admin Panel Stuff
+## 0. Narrative Source & Database Extraction
+The primary source of narrative truth for this project is the **[BOOKS.md](../../Books/BOOKS.md)** file (located in the peer `Books` directory). 
+- All story beats, entity descriptions, location details, and sensory data originate from the *Towers of Elysium* trilogy.
+- This narrative data has been programmatically extracted and structured into the PostgreSQL database via the **Book Agent Reader** tool.
+- For the technical mapping of how this narrative data is stored, refer to the **[A_BOOK_AGENT_SCHEMA.md](A_BOOK_AGENT_SCHEMA.md)**.
+
+## 1. Onboarding & Authentication & Initial Admin Panel Stuff 
+**Requirements:** [1_ONBOARDING_INIT_RECS.md](1_ONBOARDING_INIT_RECS.md) | **Schema:** [1_ONBOARDING_INIT_SCHEMA.md](1_ONBOARDING_INIT_SCHEMA.md)
 - [x] **Google SSO Integration:** Primary authentication via Firebase for seamless web and mobile-adjacent access.
-- [ ] **Profile Creation:** Users must be able to create a profile linked to their Google Identity.
-- [ ] **Terms & Privacy:** Automated prompts for accepting terms based on the Elysium Rising IP.
-- [ ] **Onboarding Flow:** Splash page -> About/Instructions -> Auth -> Character Selection/Creation.
+- [x] **Profile Creation:** Users must be able to create a profile linked to their Google Identity.
+- [x] **Terms & Privacy:** Automated prompts for accepting terms based on the Elysium Rising IP.
+- [x] **Onboarding Flow:** Splash page -> About/Instructions -> Auth -> Character Selection/Creation.
 - [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
-- [ ] **Support Dashboard** Submit a ticket. See results, discuss about tickets, etc...
+- [x] **Support Dashboard** Submit a ticket. See results, discuss about tickets, etc...
 - [ ] **Initial Admin Panel Stuff:**
     - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
     - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics.
     - [ ] **Server, User Activity Logs, Graphs and Tracking:** View logs, activity history, and metrics.
-    - [ ] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
-    - [ ] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
+    - [x] **Server Config Management:** Ability to adjust settings for the servers (stored in the DB).
+    - [x] **Support Dashboard:** User ticket management system (tracking open/closed/etc...), replies, etc...  
 
 ## 2. Core Gameplay Mechanics (Incremental MMORPG)
+- [ ] **High Level Game Loop:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
+    - [ ] **Requirements:** [2.0_GAME_LOOP.md](2.0_GAME_LOOP.md) 
 - [ ] **Chapter-Based Progression:** The game is divided into levels matching chapters from the *Towers of Elysium* trilogy.
     - [ ] **Sub-Chapter Nodes:** Chapters are further divided into narrative nodes representing specific story beats.
     - [ ] **Story Beat Bosses:** Mini-boss and Chapter-boss encounters based on specific events in the book content.
@@ -29,7 +38,7 @@ This document serves as the single source of truth for the features and constrai
     - [ ] Progression is synced with Eleven Reader playback duration.
 - [ ] **Character System:**
     - [ ] **Visuals (AI-Driven):** 
-        - [ ] Use AI (e.g., Stable Diffusion/DALL-E) to generate initial character and enemy designs based on descriptions in `../Books/BOOKS.md`.
+        - [ ] Use AI (e.g., Stable Diffusion/DALL-E) to generate initial character and enemy designs based on descriptions in `../Books/BOOKS.md`. (Extracted out to the DB)
         - [ ] **Asset Caching & Sharing:** Once an asset is generated, it is cached and shared globally to ensure visual consistency and minimize API costs.
         - [ ] Text overlay to allow users to read the story as it progresses. The end of the chapter (final/final boss beat), show a cinematic detailing the actions from the book with text on screen of the book itself.
         - [ ] Offline progress - if a user comes back, calculate the progress. At most it will end the current chatper/storybeat (current segment), and require the user to listen to the story/read the text at least once before progressing.
@@ -80,10 +89,20 @@ This document serves as the single source of truth for the features and constrai
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
 - [x] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
 - [x] **Database (PostgreSQL):** Optimized for high-frequency leaderboard and state updates.
-- [x] **Deployment:** Dockerized services on Google Cloud Run with automated GitHub Actions CI/CD.
-- [ ] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
+- [x] **Deployment:** Dockerized services on Google Cloud Run with automated Google Cloud Build CI/CD.
+- [x] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
 
 ## 7. Non-Functional Requirements
 - [ ] **Latency:** Core clicker actions must feel instantaneous (optimistic UI).
 - [ ] **Scalability:** System must handle 1,000+ concurrent players in chat/leaderboard instances.
 - [ ] **Security:** Rigorous JWT validation and Stripe webhook signature verification.
+
+## TOOLING AND UTILITIES
+
+## A. Book Agent Reader
+**Requirements:** [A_BOOK_AGENT_READER.md](A_BOOK_AGENT_READER.md) | **Schema:** [A_BOOK_AGENT_SCHEMA.md](A_BOOK_AGENT_SCHEMA.md)
+- [x] **Automated Book Ingestion:** Process raw text from the *Towers of Elysium* trilogy.
+- [x] **Contextual Analysis:** Extract characters, locations, and narrative beats into the DB (Refer to `A_BOOK_AGENT_SCHEMA.md` §1-§4).
+- [x] **Scene Splitting:** Break chapters into manageable scenes for gameplay gating.
+- [x] **Boss Identification:** Automatically identify mini-bosses and chapter-bosses from the text.
+- [x] **Data Export:** Generate SQL migrations or CSV dumps for database seeding.

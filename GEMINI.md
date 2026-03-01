@@ -6,7 +6,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 - **Read Access:** Full access to `/backend`, `/frontend`, `/admin`, `/db`, `/docs`, `/infra`, `/init`, and `/testing`.
 - **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
 - **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/init`, and `/testing`.
-- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/DB_MIGRATIONS.md`.
+- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md`.
 - **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
 
 ## 🤖 Agent Operating Procedures
@@ -23,7 +23,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 
 ## 📚 Reference Documentation
 1. `AGENTS.md`: Project-wide mission control.
-2. `@docs/TESTING.md`: Detailed testing protocols.
+2. `@docs/inst/TESTING.md`: Detailed testing protocols.
 3. `@docs/ARCHITECTURE.md`: Technical stack details.
 
 ---

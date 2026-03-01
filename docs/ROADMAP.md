@@ -9,7 +9,7 @@ This roadmap outlines the development phases for the Elysium Rising mmorPg (ERP)
 - [x] **Scaffolding:** 
     - [x] Python/FastAPI Backend skeleton.
     - [x] React/Vite Frontend & Admin skeleton.
-    - [x] Dockerization and GitHub Actions CI/CD.
+    - [x] Dockerization and Google Cloud Build CI/CD.
 - [ ] **Documentation:** Finalize Requirements, Architecture, and initial Data Models.
 
 ## Phase 1: Core Loop & Immersion (Alpha) 🎮
