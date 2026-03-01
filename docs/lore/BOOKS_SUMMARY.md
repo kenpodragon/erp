@@ -130,31 +130,45 @@ Stephen, a burned-out tech worker, begins experiencing vivid dreams that bleed i
 
 ### Key Characters Introduced
 - **Stephen** (narrator/protagonist) -- Tech worker turned dreamwalker, founder of S Corp, unwitting pawn in a cosmic game
-- **Leon** -- Stephen's colleague and co-founder of S Corp
+- **Stephen's wife** (unnamed) -- Japanese, kind, sharp-tongued, supportive; makes tamagoyaki and miso soup
+- **Stephen's son** (unnamed in Book 1) -- Teenager, Roblox enthusiast
+- **Leon** -- Stephen's colleague and co-founder of S Corp; manic energy, slick smile, tech-bro visionary (Elon Musk analog); builds rockets, competing AI (CrockXxx), Nutralink implants
 - **Patrick** -- Head of security at S Corp; loyal, aggressive, pragmatic
 - **TJ** -- S Corp advisor; moral compass, advocate for non-violence
 - **Gil** -- S Corp intelligence/security operative
 - **James** -- S Corp advisor
-- **Todd** -- Leader of the Red Hat rebellion; religious fanatic waging holy war against S Corp
-- **Dr. On** -- S Corp scientist revealed as a Red Hat infiltrator
-- **Lady A (Oracle of the Void)** -- Dream entity; Stephen's first guide in dreamwalking
-- **Lady Illkeserod (Lady I, Goddess of Secrets)** -- Dream entity; keeper of hidden knowledge
-- **Madam Osilari (Madam O, Madam of Symbols)** -- Dream entity; guide to symbolic/archetypal reality
-- **Stephen's wife** (unnamed) -- Japanese, kind, sharp-tongued, supportive
-- **Stephen's son** (unnamed in Book 1) -- Teenager, Roblox enthusiast
-- **Kai** -- Youth on Sorhhinda who dreams of the Eternal Engine (epilogue)
-- **President Nara** -- Leader of Sorhhinda 500 years after the ERB portal collapse (epilogue)
-- **Yukiko** -- Historical hero of Sorhhinda who sabotaged the portal to save the colony (referenced)
+- **Morgan** -- Renowned astrophysicist, Chief Scientist at S Corp's Antarctic R&D facility (MOM); old high school friend; golden hair, pragmatic, dark humor; recruited via the Infinitron; leads Space Elevator project and nanite integration; coordinates Aditi's rescue
+- **Aditi** -- Young Indian woman from Mumbai; investigates sleepwalking in her teens; wins scholarship to Elysium University; hijacks the Genesis ship with Hiro to investigate Red Hat activity at Pluto; discovers Red Hats use shortwave radio (their critical weakness); the ship "Aditi's Genesis" is named in her honor
+- **Hiro** -- Aditi's fellow student and partner on the Genesis mission; helps decrypt Latin blueprints; dies during Red Hat attack in the Kuiper Belt
+- **Todd** -- Leader of the Red Hat rebellion; conspiracy theorist from a trailer park who becomes figurehead of the organic/anti-technology movement; paranoid, crude, passionate about "freedom with a capital F"; his partner Stacey endures his abuse
+- **Stacey** -- Todd's long-suffering partner/girlfriend
+- **Dr. Pai M. On (Dr. On)** -- S Corp sleep psychiatrist turned head of Social Integration Division; revealed as a Red Hat infiltrator; professional gaslighter (note: "Pai M. On" = Paimon, a demon name)
+- **Lady A / Astrael (Oracle of the Void)** -- Dream entity; Stephen's first guide in dreamwalking; grounded, authoritative, burning eyes; trains him in oneiromancy; bestows the title "Aspolin"
+- **Lady Illkeserod (Lady I, Goddess of Secrets)** -- Dream entity; keeper of hidden knowledge; two fused souls (Selyr + Keserod); body woven from translucent filaments of thought
+- **Madam Osilari (Madam O, Madam of Symbols)** -- Dream entity; guide to symbolic/archetypal reality; robes literally made of flowing symbols and equations; teaches about dreamers as catalysts and the Mandela Effect as a prison feature
+- **Frank** -- Chief janitor aboard Elysium; narrates the only non-Stephen first-person chapter; husband Pete is S Corp comms officer; blue-collar perspective on cosmic events
+- **Pete** -- Frank's husband; S Corp comms officer aboard Elysium
+- **Yukiko** -- Japanese girl who discovers Red Hat plot to destroy Sorhhinda's ERB gateway; makes the agonizing choice to destroy it herself, stranding the colony but saving it; becomes a legendary hero with a bronze statue 500 years later
+- **Takashi** -- Yukiko's three-year-old brother ("Nee-san, are there going to be aliens?")
+- **Governor Tanaka** -- Colony governor of Sorhhinda; covers up Yukiko's gateway destruction
+- **President Nara** -- Leader of Sorhhinda 500 years after the ERB portal collapse; silver hair "like liquid moonlight"; gives the 500th anniversary speech
+- **Kai** -- Youth on Sorhhinda with "eyes reminiscent of sunstones" who dreams of the Eternal Engine (epilogue)
+- **Stellan** -- Stephen's great-great-great-grandson; S Corp executive at Stephen's 300th birthday
 
 ### Key Locations Introduced
 - **Etheris** -- The prison reality (Earth/our universe, revealed as a construct)
-- **Elysium** -- Space station/divine realm built by S Corp beyond Earth
+- **Stephen's Florida Home** -- Suburban sanctuary; garage becomes makeshift lab for the Eternal Engine; miso soup mornings give way to cardboard-box chaos
+- **S Corp HQ (Houston, TX)** -- Houston skyscraper with sleek offices, jungle plants, human-like robots, and hidden subfloors housing permanent ERB gateways
+- **MOM (Antarctic R&D Facility)** -- Morgan's research base; the Space Elevator project and nanite development
+- **Todd's Trailer** -- Conspiracy theorist headquarters; red string boards, newspaper clippings, peeling floral wallpaper, the smell of moonshine and paranoia
+- **Elysium** -- Space station/divine realm built by S Corp beyond Earth; Frank's broom-closet apartment, bowling alleys, hydroponics, refugee camps
 - **The Dreamscape / Threshold** -- The liminal space Stephen enters during dreamwalking
 - **Akashic Realm** -- Cosmic library containing all knowledge, accessed through dreams
-- **S Corp HQ (Houston, TX)** -- Corporate headquarters of Stephen's tech empire
-- **Sorhhinda** -- Distant colony world established through ERB portals; setting of the epilogue
+- **Mumbai** -- Aditi's home city; vibrant lanes, sleepwalking mobs marching to train stations
+- **Sorhhinda** -- Distant colony world under three suns; established through ERB portals; Yukiko's sacrifice, Governor Tanaka's cover-up; epilogue setting 500 years later
 - **Pluto Outpost** -- S Corp facility destroyed by the Red Hats
 - **Europa Colony** -- S Corp colony on Jupiter's moon
+- **The Red Hat Battlefields** -- Ruins of Elysium smoldering under unnatural red glow; skeletal titans of gears and metal; the dream-battle monolith
 
 ---
 
@@ -190,21 +204,30 @@ The story opens with an elderly Stephen dying in a hospice pod in a bleak future
 | Ch.20 | And Then I Woke Up | Stephen wakes up -- again. The ambiguity of whether this is escape or another iteration. The cycle continues. |
 
 ### Key Characters Introduced
-- **Stephen (as teenager)** -- Merged consciousness: teenage body, elderly mind, cosmic awareness
-- **Jamie (Velistra)** -- Stephen's twin flame; revealed to be dual-natured (human and angel of death/ancient entity)
+- **Stephen (as teenager)** -- Merged consciousness: teenage body, elderly mind, cosmic awareness; lives in an abusive household with a violent father
+- **Jamie (Velistra)** -- Stephen's twin flame; revealed to be dual-natured (human and angel of death/ancient entity); dark hair, vanilla and peaches scent; lives with parents and sister Tiffany
+- **Tiffany (Jamie's sister)** -- Eight-year-old who "bounded in like a golden retriever with ADHD"; cannot remember Whitney after the erasure
 - **Becca** -- Friend; part of the love triangle with Stephen and Jamie
-- **Whitney / Jennifer / J** -- Trans girl, one of Stephen's closest friends; erased from reality and replaced by William; author of Jennifer's Journal
-- **Patrick (NPC)** -- Friend who is replaced by a prison-generated construct; the original Patrick is gone
-- **TJ** -- Friend; steadfast and morally grounded
-- **Morgan** -- Friend; part of the core group
-- **Andrew** -- Friend; part of the core group
-- **Benji** -- Cosmic entity that monitors/audits the prison; makes contact with Stephen; later revealed as Stephen's "father" in the Shepherd Initiative
+- **Whitney / Jennifer / J** -- Trans girl, one of Stephen's closest friends; couch-surfs between Patrick's, Becca's, and Jamie's homes after being kicked out by Christian fundamentalist parents; erased from reality and replaced by William; author of Jennifer's Journal; her crystals, tarot cards, and stuffed rabbit vanish from Jamie's room
+- **Patrick (NPC)** -- Friend who is replaced by a prison-generated construct; the original Patrick is gone; military bearing, clove cigarette smoker
+- **TJ** -- Friend; steadfast and morally grounded; shoulders seem broader every day; wears ironic t-shirts; completely oblivious to Morgan's romantic advances
+- **Morgan (teen)** -- Group's scientific skeptic; carries a Polaroid camera; channels fear into "scientific rage"; eventually becomes TJ's girlfriend after literally telling him "KISS ME. ON THE LIPS. NOW."
+- **Andrew** -- Friend; "Andrew the Giant" online; grumbles at Magic defeats but grins; later appears as NPC-like figure delivering critical information
+- **Benji** -- Cosmic entity that monitors/audits the prison; makes contact with Stephen; middle-aged demon in a cardigan; offers juice boxes; later revealed as Stephen's "father" in the Shepherd Initiative
 - **Yaldabaoth / I AM** -- The demiurge; parasitic entity that built and maintains Etheris; the torturer; the antagonist of the series
 - **William** -- The NPC replacement for Whitney after her erasure
+- **Ms. Rodriguez** -- Biology teacher whose test papers sit "like ammunition"
 
 ### Key Locations Introduced
-- **The hospice pod / decayed future Earth** -- Opening setting; humanity's stagnant endpoint
-- **High school / suburban Etheris** -- The prison's "normal" setting for the teenage loop
+- **The Hospice Pod** -- Opening setting; a metal coffin in a decayed future where 74-year-old Stephen dies at 3:17 AM; smells like "crusty socks and regret"; firmware updates decide if he's worth keeping alive
+- **Stephen's Teenage Home** -- Florida military family home defined by abuse; aluminum foil on windows, worn desk, the sound of the garage door triggering terror; "a non-starter" for friend hangouts
+- **Jamie's Teenage Home** -- Florida home with parents and sister Tiffany; Jamie's bedroom smells of vanilla and peaches; Whitney's crystals, tarot cards, and stuffed rabbit are present -- then surgically erased by reality itself
+- **The High School** -- Unnamed Florida high school (1995-1996); "grey concrete, dying palm trees, dented lockers from the eighties"; the courtyard with concrete tables under dying trees is the group's "discount Camelot"
+- **TJ's Basement** -- The group's gathering place; genuine leather sectionals buried under Mountain Dew shrines, DnD posters, Polaroids, Whitney's hand-drawn sigils; vintage 70s brown shag carpet soaking up spilled beer and unspoken dreams
+- **The Supernatural Trailer (Wickham Park)** -- "Sits there like a cancer on reality"; breathing aluminum walls, yellowed newspaper windows, dozens of handprints pressed from the inside; dimensional vortex within
+- **Stephen's Childhood Trailer (Nowhere, Nevada)** -- Squatter's single-wide in the desert; "a monument to absolute desperation"; no running water, shopping carts for hauling water, Popeye curtains faded from Nevada sun; walls so thin you hear every belt
+- **The Nevada Church** -- "Rises from the desert floor like a bone pushed through skin"; bleached white wood, broken stained glass like jagged teeth, inverted cross; detonates when methane pocket ignites
+- **The Greyhound Bus Journey** -- Florida to Nevada via America's deleted scenes; "LAST-CHANCE" license plate; reality degrades as towns advertise impossible businesses; the bus bathroom is "grown, not built"
 - **The Veil** -- The active boundary/defense system of the prison
 
 ---
@@ -241,28 +264,32 @@ The book opens with the climactic moment of Yaldabaoth's defeat -- a teenage Ste
 
 ### Key Characters Introduced
 - **Stephen / Aspolin** -- His true divine name is revealed; he is no longer just a dreamer but a fully awakened entity
-- **Xavier** -- Stephen's son; revealed as a chaos god with reality-warping abilities
-- **Hannah** -- Stephen's daughter; embodiment of serenity and joy
-- **NPC Wife** -- Stephen's wife in the adult loop; nameless because she is a prison construct (only entities have names)
-- **Chernobog** -- God of darkness; administrator of cosmic systems
-- **Nyarlathotep** -- The Crawling Chaos; member of the divine council
-- **Yeshua** -- Christ figure; member of the divine council
-- **Tiamat** -- Primordial goddess; member of the divine council
-- **Hecate** -- Goddess of crossroads/magic; member of the divine council
+- **Xavier** -- Stephen's 14-year-old son; an "impossible child" -- a glitch in the prison; digital native (Discord, Roblox); revealed as a chaos god with probability manipulation and reality-warping abilities
+- **Hannah** -- Stephen's daughter; a spirit child who sacrificed her own birth/incarnation to save Xavier; embodiment of serenity and joy; materializes at the end with reality-bending powers
+- **NPC Wife / Construct Wife** -- Stephen's wife in the adult loop; deliberately nameless because she is a prison construct; alternates between emotional abuse and scripted affection; destroys Stephen's computer in a rage; hums pop music with perfect contentment
+- **Tiffany (Xavier's love interest)** -- Girl from Xavier's school; questions the narrative about Stephen; plays Roblox with Xavier on Thursdays; Xavier's motivation for returning to the prison: "Is Tiffany in there?" -- "Then I'm in"; confirmed as a real soul by Lady Illkeserod
+- **Ilse** -- Benji's lover/partner; a consciousness predating Etheris; reunites with him: "There you are... All of you."
+- **Chernobog** -- God of darkness; black wings, smile carved too deep; pragmatic nihilist; administrator of cosmic systems
+- **Nyarlathotep** -- The Crawling Chaos; color-shifting suit, amused by everything; deals in "interesting" not right/wrong; the only one who could speak to Azathoth
+- **Yeshua** -- The actual Christ who looks tired from "having to clean up two thousand years of people using your name to justify atrocities"
+- **Tiamat** -- Primordial goddess; coils through the void with oil-on-water scales; each exhale births galaxies
+- **Hecate** -- Three-faced goddess; candle-flame eyes; speaks in riddles from all three faces simultaneously
 - **Thoth** -- God of knowledge/writing; member of the divine council
-- **Tiffany** -- Xavier's love interest
-- **Sam (The Shepherd)** -- The original guardian of Etheris, corrupted by Yaldabaoth
-- **Sophia** -- Divine feminine principle; weeps at the end as the cycle continues
-- **Kai (elderly)** -- The boy from Book 1's epilogue, now an old man; possessed by Yaldabaoth in the final pages
+- **Sam (The Shepherd)** -- The original guardian of Etheris; a shepherd boy whose grief and rage at watching his flock die became divine; corrupted into Yaldabaoth
+- **Sophia** -- Aeon of infinite light from the Pleroma; her innocent curiosity reaching into the void beyond birthed the Archon (Yaldabaoth); weeps at the end as the cycle continues
+- **Kai (elderly)** -- The boy from Book 1's epilogue, now an old man tending spatch weed; his rage tears reality; possessed by Yaldabaoth in the final pages, declaring "I AM"
 
 ### Key Locations Introduced
+- **Stephen's Depression Home** -- Florida suburban home with the Construct Wife; office "a testament to the long defeat" with dust-bunny civilizations; kitchen sink Jenga tower; TV on mute; Xavier's broken Lego DnD dragon tower
+- **Stephen's Childhood Trailer (revisited)** -- Re-experienced during the cosmic journey; dirty white walls, particle-board furniture, Popeye curtains, walls so thin you hear every belt; Yaldabaoth wears the father's face here
 - **The Grey** -- Purgatorial zone between prison iterations; where souls are processed between loops
 - **The Cosmic Seed** -- Smaller prison within a prison; where Yaldabaoth is contained after his defeat
 - **The Substrate** -- Foundational code layer underlying all of Etheris; Yaldabaoth claims to BE the Substrate
 - **The Pleroma** -- The true divine realm beyond all prisons and constructs; ultimate reality
-- **Elysium (as divine council chamber)** -- In Book 3, Elysium is not a space station but a meeting place of gods
-- **Florida** -- Where the family is inserted in their new Shepherd identities
-- **Sorhhinda (epilogue)** -- Now centuries older; Kai's garden compound; site of Yaldabaoth's return
+- **Elysium (as divine council chamber)** -- In Book 3, Elysium is not a space station but a meeting place of gods; also the Resistance base with medical bays, conference rooms, refugee camps
+- **The Final Home** -- Two-story house designed with Jamie during the reshuffling; oak floors, high ceilings, Jamie's paintings on the walls; Kate Bush drifting up from downstairs; "Real sunlight. From a real sun."
+- **Florida** -- Where the family is inserted in their new Shepherd identities; suburban palm trees, driveways, a neighbor walking a dog -- "NPCs going through their routines, divine sparks buried so deep they'd forgotten they were divine"
+- **Sorhhinda (epilogue)** -- Now centuries older; Kai's greenhouse compound; spatch weed plants; site of Yaldabaoth's return through the tear in reality
 
 ---
 

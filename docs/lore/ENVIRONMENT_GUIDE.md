@@ -615,6 +615,416 @@ Optional exploration area / random encounter during travel sequences.
 
 ---
 
+### 18. Stephen's Florida Home (Book 1)
+
+**Description:**
+Stephen's domestic sanctuary in Florida during Book 1. A suburban home shared with his Japanese wife and teenage son. The setting oscillates between peaceful normalcy (miso soup mornings, Percy Jackson on Disney Plus) and escalating chaos as Stephen's discoveries consume his life. The garage becomes a makeshift lab housing the Eternal Engine. By tax day, the home has transformed into "a chaotic labyrinth of boxes, product samples, and packing supplies."
+
+**Sensory Details:**
+- Pre-dawn Florida winter cold -- rare, hushed, impossible
+- Microwave clock blinking 6:45 AM, soft digital glow painting the room
+- Coffee aroma dancing with the delicate sweetness of miso soup
+- The smell of tamagoyaki cooking
+- Percy Jackson on Disney Plus under a shared blanket in the evenings
+- Garage: oil and damp concrete, the Eternal Engine gleaming faintly in its enclosure
+- Later: the constant smell of packing tape and fresh cardboard clinging to clothes
+
+**Visual Direction:**
+- **Color Palette:** Warm domestic tones -- morning light amber, kitchen cream, Florida sunshine, garage concrete grey
+- **Mood:** Sanctuary crumbling. The domestic paradise that can't survive contact with cosmic truth. Early warmth giving way to boxes, chaos, and a garage hiding world-changing technology.
+- **Art Direction:** Start with cozy domestic realism -- Japanese cooking, Disney Plus, sleeping bags for camping trips. The garage should contrast sharply: cold concrete, the Eternal Engine's alien geometry amid oil stains and mundane tools. As the story progresses, the home drowns in cardboard and S Corp materials.
+
+**Books/Chapters:**
+- ER: Chapters 1-20+ (domestic scenes, garage lab, S Corp founding chaos)
+
+**Game Level Mapping:**
+Narrative-only flashback area. Establishes the "normal" that Stephen loses. The garage/Eternal Engine scene could be a tutorial crafting area.
+
+---
+
+### 19. Stephen's Depression Home (Book 3)
+
+**Description:**
+Stephen's suburban Florida home in the Book 3 adult loop. A prison disguised as domesticity, shared with the Construct Wife and Xavier. Every detail radiates depression, stagnation, and the suffocating weight of an NPC marriage. The office is "a testament to the long defeat" -- unopened mail, dust-bunny civilizations, tissues that couldn't make it to the trash. The kitchen sink is a Jenga tower of dirty plates. The bedroom has indistinguishable clean/dirty laundry heaps.
+
+**Sensory Details:**
+- Thin grey light filtering through drawn curtains
+- Stale air of the office -- the smell of inertia
+- LinkedIn scrolling on a screen in a chair worn concave from two years of disuse
+- Xavier's keyboard clicks from the living room providing silent soundtrack
+- Television on mute -- bright, loud reality show casting cold blue light
+- Coffee table: cluttered landscape of unread mail and Xavier's broken Lego DnD dragon tower
+- The construct wife humming to pop music, perfectly content and oblivious
+
+**Visual Direction:**
+- **Color Palette:** Washed-out grey, depression beige, muted blue TV light, dirty plate ceramic, LinkedIn interface blue
+- **Mood:** Domestic suffocation. Depression as architecture. Every room is a symptom of spiritual imprisonment.
+- **Art Direction:** Naturalistic suburban home but rendered with oppressive weight. Desaturated colors. Clutter as environmental storytelling -- each pile of mail, each unwashed dish, each piece of ignored laundry tells the story of a man who has given up. The construct wife should appear in contrast: too put-together, too content, humming along to pop music in a home that screams despair.
+
+**Books/Chapters:**
+- EFE: Chapters 1-6 (domestic depression, the construct wife scenes, Xavier noticing glitches)
+
+**Game Level Mapping:**
+Story area for the Book 3 opening arc. The mundane prison before awakening. Environmental puzzles: find the cracks in reality hidden in the domestic setting.
+
+---
+
+### 20. Stephen's Teenage Home (Book 2)
+
+**Description:**
+Stephen's home during the teen timeline in Book 2. A Florida military family home defined entirely by fear and abuse rather than physical comfort. The garage door opening triggers bladder-loosening terror. Stephen's bedroom has aluminum foil taped over windows, a worn desk with a college-ruled notebook. The home is described as "a non-starter" for hangouts -- everyone knows his father is an abusive asshole. Bruises hidden under baggy hoodies.
+
+**Sensory Details:**
+- 6:19 PM light bleeding out, ceiling catching the red stain of sunset
+- Shadows conspiring in the corners of the bedroom
+- The sound of the garage door opening -- triggering primal fear
+- "Spots that scream in silence" -- the sounds of abuse hidden behind closed doors
+- A shared family phone in the living room
+- The suffocating silence of walking on eggshells
+
+**Visual Direction:**
+- **Color Palette:** Sunset blood-red light, shadow black, bruise purple, aluminum foil silver, baggy hoodie grey
+- **Mood:** Domestic horror of the real kind. No cosmic entities needed -- the father IS the monster. The house should feel like a trap where every creak could mean violence.
+- **Art Direction:** Mundane suburban exterior hiding interior terror. Aluminum foil on windows signals paranoia and hiding. Shadows should be prominent -- the father's presence implied even when absent. The garage door opening should be a visual/audio trigger.
+
+**Books/Chapters:**
+- EF: Throughout (teenage home scenes, abuse flashbacks)
+
+**Game Level Mapping:**
+Story-only area. The domestic horror that mirrors the cosmic horror -- Yaldabaoth wears the father's face for a reason. Environmental storytelling: bruises, foil-covered windows, the garage door as jump scare.
+
+---
+
+### 21. Jamie's Teenage Home (Book 2)
+
+**Description:**
+Jamie's home in the teen timeline, where she lives with her parents and eight-year-old sister Tiffany. Jamie's bedroom smells of vanilla and peaches -- the recurring sensory anchor across all timelines. Whitney's crystals catch late afternoon light from the window. Whitney's belongings are scattered throughout -- her tarot cards, half her clothes, a stuffed rabbit she's had since she was eight. After Whitney's erasure, the space feels "wrong -- too clean, too organized" and every trace of Whitney vanishes, including carpet indentations from her overnight bag.
+
+**Sensory Details:**
+- Vanilla and peaches (Jamie's signature scent)
+- Whitney's crystals catching late afternoon light
+- Jamie's mother's collection of old grimoires
+- Tiffany bounding in "like a golden retriever with ADHD"
+- Post-erasure: the uncanny wrongness of a space too clean, too organized
+
+**Visual Direction:**
+- **Color Palette:** Vanilla cream, peach warm tones, crystal refraction light, afternoon gold, religious family home neutrals
+- **Mood:** Teen normalcy with supernatural undercurrents. Before the erasure: lived-in, shared, full of Whitney's presence. After: eerily clean, the visual equivalent of a missing persons case where even the evidence of existence has been deleted.
+- **Art Direction:** Two-phase design. Phase 1: cluttered teen bedroom with occult touches (crystals, tarot cards, grimoires from mom). Phase 2: same room, pristinely clean, every trace of Whitney surgically removed by reality itself. The carpet should be smooth where overnight bag indentations used to be.
+
+**Books/Chapters:**
+- EF: Chapters covering Jamie's home, Whitney's erasure, Tiffany scenes
+
+**Game Level Mapping:**
+Story area. The before/after of Whitney's erasure is a major narrative beat. Players should notice what's missing.
+
+---
+
+### 22. The High School (Book 2)
+
+**Description:**
+The unnamed Florida high school where most of Book 2 takes place. Set in 1995-1996. "Gray concrete, dying palm trees, the same dented lockers that have been here since the eighties." The courtyard is the friend group's kingdom: concrete tables under dying trees, "where we gather like some discount version of Camelot." Biology class with Ms. Rodriguez. The parking lot where secrets are shared after school. The high school represents Etheris's prison at its most mundane -- institutional control dressed up as education.
+
+**Sensory Details:**
+- Dented lockers from the eighties, laughter echoing off them
+- Biology class: Ms. Rodriguez's test papers "like ammunition," the smell of formaldehyde
+- Courtyard: concrete tables, dying tree shade, cards and lunch scattered "like tarot readings for nerds"
+- Parking lot: after-school whispered conversations at 4:20 PM
+- Cafeteria food that makes noses scrunch
+
+**Visual Direction:**
+- **Color Palette:** Institutional grey concrete, dying palm tree green, dented locker metal, 90s school tones (teal, mauve, faded bulletin board colors)
+- **Mood:** 90s high school nostalgia curdled with the knowledge that it's all a prison. Familiar teen drama masking cosmic horror. "School looks like school" -- and that's the point.
+- **Art Direction:** Authentic 1990s Florida high school -- concrete block construction, dying landscaping, institutional everything. The courtyard lunch scene should be the visual anchor: a group of misfits playing Magic: The Gathering at concrete tables while reality unravels around them. Subtle wrongness: shadows at wrong angles, repeating locker numbers, test papers with impossible questions.
+
+**Books/Chapters:**
+- EF: Nearly all chapters (the primary setting of the teenage timeline)
+
+**Game Level Mapping:**
+Major story hub for the Book 2 arc. The school represents the mundane prison. As the story progresses, the school should degrade -- glitch effects, NPC students freezing, the Glitch School sequence where reality fully breaks down.
+
+**Enemies Found Here:**
+- NPC students (construct classmates running scripted behaviors)
+- Teachers running diagnostic scripts
+- Post-breakdown: all Glitch School enemies
+
+**Environmental Hazards:**
+- Social pressure (the prison using normalcy as control)
+- Memory manipulation zones (certain hallways cause deja vu)
+- Progressive reality degradation as the story advances
+
+---
+
+### 23. The Hospice Pod (Book 2 Opening)
+
+**Description:**
+The setting where 74-year-old Stephen dies at 3:17 AM, opening Book 2. A metal coffin of a medical pod in a bleak future where AI cured cancer but killed human ambition. The pod "smells like crusty socks and regret." Through the greasy window: a world "spread out like a fever dream painted in rust and disappointment." The pod's life support glitches -- oxygen cuts to nothing, firmware updates decide whether he's worth keeping alive, then kicks back on "pretending nothing happened." At the moment of death: the scent of peaches and vanilla (Jamie's ghost), strange glyphs on the screen, reversed Latin chanting.
+
+**Sensory Details:**
+- The pod smells like crusty socks and regret
+- Sweet recycled air flooding the chest after oxygen cuts
+- Greasy window revealing a rust-and-disappointment cityscape
+- Digital glyph appearance on the life support screen
+- Peaches and vanilla -- "perfume from a teenage love that never existed"
+- The guttural gasp, the wet rattle of dying lungs
+- The pod's mechanical lullaby humming constantly
+
+**Visual Direction:**
+- **Color Palette:** Medical grey, rust, digital glyph green, greasy window amber, life-support blue, disappointment brown
+- **Mood:** The end of human ambition. A man dying alone in a machine while civilization atrophies around him. Not dramatic death -- boring death, bureaucratic death, firmware-update death.
+- **Art Direction:** Claustrophobic metal coffin interior. Greasy window showing dystopian cityscape -- empty playgrounds, converted schools, wind through broken windows. The life support screen should be the focal point: digital readouts, then the glyphs appearing, then the strange reversed text. At death: a burst of impossible sensory detail -- vanilla, peaches, geometric patterns -- before everything goes dark.
+
+**Books/Chapters:**
+- EF: Chapter 1 "The Last Innovation" (opening sequence)
+
+**Game Level Mapping:**
+Narrative-only prologue sequence. Establishes the cyclical nature of the prison -- Stephen dies in the future, wakes up in the past. The pod could serve as a "death screen" motif throughout the game.
+
+---
+
+### 24. The Supernatural Trailer (Wickham Park)
+
+**Description:**
+A weathered aluminum trailer squatting between pine trees in Wickham Park that "sits there like a cancer on reality." Spanish moss drapes from branches that shouldn't exist this close to suburban Florida. The trailer breathes -- aluminum siding expanding and contracting like diseased lungs. Yellowed newspaper covering windows shifts and writhes. The door, once white, is stained with dozens of handprints pressed from the inside, as if people were clawing to get out. Inside: a dimensional vortex that pulls people through reality layers.
+
+**Sensory Details:**
+- The trailer inhales and exhales in a rhythm that makes your pulse race to match it
+- Aluminum siding expanding and contracting like diseased lungs
+- Yellowed newspaper fluttering despite complete absence of wind
+- Spanish moss creating unnaturally thick canopy -- afternoon sun barely penetrates
+- Shapes moving behind the glass
+- Inside: the pull of the dimensional vortex, dislocated shoulders, screaming at shadows
+
+**Visual Direction:**
+- **Color Palette:** Diseased aluminum grey, yellowed newspaper, Spanish moss grey-green, handprint dark, vortex impossible-color
+- **Mood:** Suburban cosmic horror. A mundane object (trailer) that has become something alive and wrong. The kind of thing you'd drive past without noticing -- until you did.
+- **Art Direction:** Photorealistic weathered trailer with supernatural layering. The breathing effect should be subtle at first -- barely noticeable expansion/contraction of the walls. The handprints on the door are the visual hook. Spanish moss should hang like funeral shrouds. Inside: Escher-like spatial distortion, the vortex pulling at everything.
+
+**Books/Chapters:**
+- EF: Chapters 12-13, the trailer descent sequence (the group's investigation, Morgan's dislocated shoulder, the dimensional vortex)
+
+**Game Level Mapping:**
+Mid-game dungeon entrance. The trailer serves as a gateway to deeper reality layers. Environmental puzzle: figuring out how to enter without being consumed. The breathing walls and handprint door are visual progression markers.
+
+**Enemies Found Here:**
+- Dimensional vortex entities
+- Shadow creatures clawing at the trailer's interior
+- The trailer itself (environmental enemy)
+
+**Environmental Hazards:**
+- Dimensional pull (the vortex drags players deeper)
+- Breathing walls (crushing damage on exhale cycles)
+- Handprint door (touching triggers memory floods)
+
+---
+
+### 25. Stephen's Childhood Trailer (Nowhere, Nevada)
+
+**Description:**
+A squatter's single-wide trailer in the Nevada wasteland -- "a monument to absolute desperation." Stephen's family was homeless, always running from people his dad owed money to. This trailer was the first place that felt like somewhere. His father found it abandoned and moved in ("said if nobody came looking for six months, it was ours by right"). No running water -- three shopping carts for hauling water from the gas station. Surrounded by stolen debris, broken equipment, busted appliances his father thought he could sell. "The whole place looks like it's held together with prayer and spite."
+
+**Sensory Details:**
+- Dirty white walls, particle-board dresser swollen from humidity
+- Toys scattered across fake-wood linoleum
+- Light blue Popeye curtains faded from years of Nevada sun
+- Walls so thin you can hear every argument, every sob, every belt hitting flesh
+- Narrow hallway like a throat, industrial brown carpet worn thin in path-patterns
+- Cold linoleum, gritty with dirt that never quite cleans off
+- Pictures of people nobody recognizes on the walls
+
+**Visual Direction:**
+- **Color Palette:** Desert bleach-white, particle-board tan, industrial brown carpet, faded Popeye blue, Nevada sun harsh yellow, rust, broken-dream grey
+- **Mood:** Grinding poverty as origin story. The place where love turned to poison and hope became too dangerous to feel. Not nostalgic -- traumatic. But also the first "home" Stephen ever had.
+- **Art Direction:** Desert wasteland exterior -- shopping carts, stolen debris, broken equipment. Interior: cramped, thin-walled, fake-wood linoleum, faded children's curtains that feel like relics of an attempt at normalcy. The hallway should feel like being swallowed. The particle-board furniture should look ready to collapse.
+
+**Books/Chapters:**
+- EF: Childhood flashback sequences (memories of the trailer)
+- EFE: Chapter 14-15 (Stephen physically re-experiences the trailer during the cosmic journey)
+
+**Game Level Mapping:**
+Story area for the "Father-Mask" Yaldabaoth encounter. The domestic horror of Stephen's childhood is weaponized by the Demiurge. Players navigate the trailer while Yaldabaoth wears the father's face.
+
+**Enemies Found Here:**
+- Yaldabaoth's Father-Mask manifestation
+- Memory parasites feeding on childhood trauma
+- The belt (environmental horror element)
+
+**Environmental Hazards:**
+- Thin walls (arguments and violence bleed through as audio/psychic damage)
+- Memory loops (getting trapped in recurring abuse patterns)
+- Poverty-despair aura (passive debuff)
+
+---
+
+### 26. Todd's Trailer (Book 1)
+
+**Description:**
+Todd's base of operations -- a paranoid conspiracy theorist's single-wide trailer. "The dim glow of a single incandescent bulb" casts shifting shadows. Once-vibrant floral wallpaper now faded and peeling. Every surface covered in stacks of newspapers, scribbled notes, red string webbing across walls connecting photos and clippings. Empty takeout containers piled next to a collapsing couch. The air is stale -- cigarette smoke and old food. Todd sits in the middle with dark circles under bloodshot eyes, looking like a detective in a crime drama.
+
+**Sensory Details:**
+- Single incandescent bulb casting long, shifting shadows
+- Stale air: cigarette smoke, old food, sweat, moonshine
+- Red string stretched across walls in conspiracy-board patterns
+- Photos and newspaper clippings pinned everywhere
+- Shag carpet stained with tangled paper and yarn
+- Small unassuming box of rat poison tucked in the kitchen cabinet corner
+
+**Visual Direction:**
+- **Color Palette:** Incandescent yellow, conspiracy-red string, newspaper grey, stale-food brown, peeling floral wallpaper, moonshine amber
+- **Mood:** Paranoid bunker. The headquarters of a revolution run from a trailer park. Obsessive intelligence work done by a man with nothing but his fears and a roll of red string.
+- **Art Direction:** Dense, claustrophobic conspiracy aesthetic. Every wall is a conspiracy board. The red string should form patterns that, from the right angle, actually make sense. The floral wallpaper peeling reveals something underneath -- a metaphor for reality itself.
+
+**Books/Chapters:**
+- ER: Prologue 3 (first appearance), Chapter ~35-36 (Red Hat movement scenes)
+
+**Game Level Mapping:**
+Optional story area. Exploring Todd's trailer reveals Red Hat lore and motivation. The conspiracy board serves as an environmental puzzle -- connecting the right threads reveals hidden information.
+
+---
+
+### 27. S Corp HQ (Houston, Texas)
+
+**Description:**
+A Houston skyscraper that houses S Corp's global headquarters. Transformed from empty void into "the heart of an empire." Sleek modern offices alongside innovative labs. Human-like robots and jungle plants fill the building, "creating the illusion of a bustling corporate environment." Multiple hidden subfloors buried deep beneath the skyscraper house permanent ERB gateways forming the backbone of global expansion. Stephen's corner office has afternoon sun filtering through blinds, casting bands of light across his desk while he mindlessly scrolls Facebook.
+
+**Sensory Details:**
+- Afternoon sun through office blinds, bands of light across desks
+- The buzz of quiet tension in meeting rooms
+- The hum of gateways in the hidden subfloors
+- Jungle plants giving the sterile corporate space organic warmth
+- Human-like robots moving through corridors -- almost indistinguishable from real employees
+- Under siege: transformed into "a haunted cathedral" with paranoia as resident specter, "a labyrinth of distorted corridors"
+
+**Visual Direction:**
+- **Color Palette:** Corporate chrome and glass, jungle plant green, afternoon sun gold, gateway energy blue, hidden-subfloor cold steel
+- **Mood:** Corporate utopia hiding cosmic infrastructure. The gleaming surface of technological triumph concealing ERB gateways to other worlds. Under siege: corporate horror -- the familiar office space transformed into a war zone.
+- **Art Direction:** Split aesthetic: the upper floors are sleek corporate futurism (glass, chrome, plants, robots). The subfloors are cold, functional, alien -- permanent portals humming with dimensional energy. During the Red Hat siege: the corporate veneer cracks, revealing the building as a fortress under assault.
+
+**Books/Chapters:**
+- ER: Chapters 20-50+ (S Corp founding, growth, operations), Chapters 74-78 (siege and battle)
+
+**Game Level Mapping:**
+Major story area for the Book 1 arc. Functions as player hub during the S Corp era, then transforms into a battle area during the Red Hat siege. The hidden subfloors are explorable dungeon areas.
+
+**Enemies Found Here:**
+- Red Hat infiltrators (during siege)
+- Corrupted robot employees
+- Dr. On (pre-reveal, functioning as a gaslighting NPC)
+
+**Environmental Hazards:**
+- ERB gateway instability (dimensional bleed)
+- Siege damage (structural collapse, fire)
+- Robot malfunction (during system corruption)
+
+---
+
+### 28. The Battle Landscapes (Red Hat War -- Book 1)
+
+**Description:**
+The end of Book 1 features large-scale interstellar warfare between S Corp and the Red Hat rebellion. The ruins of Elysium smolder under an unnatural red glow, crawling with "grotesque, red-headed monstrosities" whose twisted limbs move unnaturally. On the horizon: a skeletal titan of gears and grinding metal, each step making the cracked earth groan, clawed hand raking the crimson sky, raining sparks like a million fireflies. The dream battle features a monolith -- blacker than the void, shimmering with sickly iridescence, pulsating with unnatural rhythm. Shadows pour from it like sentient smoke.
+
+**Sensory Details:**
+- Unnatural red glow across smoldering ruins
+- Gears grinding and churning deep within the skeletal titan
+- Sparks raining down like fireflies from the titan's clawed hand
+- Cracked earth groaning under the titan's steps
+- Sentient smoke shadows pouring from the monolith
+- Sickly iridescence pulsating in rhythms that resonate in bones
+
+**Visual Direction:**
+- **Color Palette:** Crimson glow, void-black monolith, sickly iridescence, sparking fire orange, cracked earth brown, ash grey
+- **Mood:** Interstellar war rendered as cosmic horror. Not a glorious battle -- a desperate fight against something incomprehensible. Scale that dwarfs human understanding.
+- **Art Direction:** Multiple scales: intimate combat in smoldering ruins, mid-distance skeletal titans of impossible size, cosmic-scale dream battles against reality-warping monoliths. The Red Hat army should look like "red-hatted ants" against the S Corp fortress. The monolith should make the screen distort.
+
+**Books/Chapters:**
+- ER: Chapters 72-78 (Dawn of the Scarlet Tide, the Red Hat assault, the Oenomancer battle, the monolith)
+
+**Game Level Mapping:**
+Late-game combat zone for the Book 1 arc. Multi-phase battle: ground combat in ruins, titan encounter (environmental boss), monolith confrontation (reality-warping boss arena).
+
+**Enemies Found Here:**
+- Red Hat soldiers (human enemies with crude weapons)
+- Red-headed monstrosities (twisted limbs, unnatural movement)
+- The skeletal titan (environmental boss)
+- Sentient shadow smoke (from the monolith)
+
+---
+
+### 29. The Nevada Church & Battlefield (Book 2 Climax)
+
+**Description:**
+The climactic battlefield of Book 2. An abandoned church in Nowhere, Nevada -- "a town that exists on no official maps." The church "rises from the desert floor like a bone pushed through skin." Weathered wood bleached white as skulls, tilted at angles that make eyes water. Stained glass windows broken into jagged teeth. The bell tower lists like a broken neck. The cross atop is inverted. Inside: pews scattered like broken ribs, air that tastes "soupy and thin, like breathing through copper wire." The interior has been systematically desecrated. The climax: the church doesn't just explode -- "it vaporizes" when a methane pocket beneath it ignites, launching bedrock the size of cars while molten sand rains down like napalm.
+
+**Sensory Details:**
+- Desert heat hitting like an opening oven door -- dry, merciless, alive with malevolence
+- Absolute silence -- no birds, no insects, no wind, pressing against eardrums until you hear your own heartbeat
+- Joshua trees like crucified scarecrows
+- Air inside tasting soupy and thin, like breathing through copper wire
+- Dust particles dancing in shafts of light through the broken roof
+- The smell of burning feces and Clorox bleach from the desecration
+- The detonation: methane igniting with the force of a star, molten sand raining as napalm
+
+**Visual Direction:**
+- **Color Palette:** Desert bleach-white, bone-white wood, broken stained glass fragments, inverted cross black, methane explosion orange, molten sand gold
+- **Mood:** Holy ground profaned. The American desert as a cosmic battlefield. A church that has become an anti-church, then becomes ground zero for a reality-shattering detonation.
+- **Art Direction:** The church should look wrong from every angle -- tilted geometry, jagged glass teeth, inverted cross. The desert surroundings should feel emptied of life, like the simulation forgot to render anything here. The explosion sequence should be catastrophic -- not just fire but reality itself cracking open.
+
+**Books/Chapters:**
+- EF: Chapters 19-20 (the Nowhere, Nevada journey, the church confrontation, the explosion, the climax)
+
+**Game Level Mapping:**
+Book 2 final boss arena. Multi-phase encounter: desert approach (survival horror), church interior (psychological horror), Yaldabaoth confrontation, explosion escape sequence.
+
+**Enemies Found Here:**
+- Yaldabaoth manifestation
+- Desert void entities
+- Desecrated church constructs
+
+**Environmental Hazards:**
+- Desert heat (passive damage)
+- Absolute silence zones (disorientation)
+- Church desecration effects (sanity damage)
+- Methane detonation (instant death zone, timed escape)
+
+---
+
+### 30. The Greyhound Bus Journey (Book 2)
+
+**Description:**
+The surreal bus journey from Florida to Nowhere, Nevada. The Greyhound station "squats on the wrong side of town like a concrete toad, sweating diesel and desperation." The bus looks "assembled from the parts of other, sadder buses" with license plate 'LAST-CHANCE.' As the journey progresses, reality degrades: town signs advertise impossible businesses ('JEFF'S LIMB EXCHANGE,' 'YESTERDAY'S TOMORROW, TODAY!' and simply 'MEAT'). Jamie declares "We're leaving the rendered area. Going off-map." The landscape becomes "more theoretical with each mile" until they're driving through "America's deleted scenes, the parts God left on the cutting room floor."
+
+**Sensory Details:**
+- Greyhound station: diesel and desperation, beef-jerky-faced clerk
+- Bus interior: burnt rubber, despair, something medicinal, seats held together with duct tape and human hair
+- Bus bathroom: grown not built, walls ribbed with cartilage, smells like amniotic fluid, needles crunching underfoot
+- Wendy's sign flickering between 'Fresh Never Frozen' and 'Flesh Never Forgotten'
+- Reality thinning: towns with fewer buildings, empty interstate stretching in both directions
+- Nevada approach: "the desert starts to solidify, matching the photo like reality is remembering what it's supposed to look like"
+
+**Visual Direction:**
+- **Color Palette:** Diesel-stain grey, duct tape silver, Greyhound blue, highway asphalt, degrading-reality static, desert emergence tan
+- **Mood:** Road trip as reality dissolution. America's interstate system as the path between rendered and unrendered space. The farther you go, the less real everything becomes -- until it snaps back into focus at the destination.
+- **Art Direction:** Progressive visual degradation. Start with recognizable (if rundown) Greyhound aesthetics. Each stop degrades further: town signs with impossible names, buildings that are clearly texture-mapped rather than real, sky becoming loading-screen flat. The bus bathroom is body horror. The final approach should show reality re-rendering in real time.
+
+**Books/Chapters:**
+- EF: The bus journey sequence (multiple chapters covering the Florida-to-Nevada transit)
+
+**Game Level Mapping:**
+Transitional sequence/fast-travel area with random encounters. The degrading reality serves as a loading screen mechanic made narrative. The bus bathroom is an optional horror exploration area. The unrendered zones are environmental storytelling about Etheris's coded nature.
+
+**Enemies Found Here:**
+- Bus "passengers" (potential construct NPCs)
+- Unrendered reality entities (things that live in the deleted scenes)
+- Bus bathroom organisms
+
+**Environmental Hazards:**
+- Reality degradation (progressive disorientation as rendering fails)
+- The bus bathroom (biological hazard)
+- Infinite road loops (if you try to turn back)
+- Off-map zones (contact with unrendered space)
+
+---
+
 ## Environment Types for Game Design
 
 These categories group locations by visual theme for consistent art direction across the game.
@@ -623,21 +1033,21 @@ These categories group locations by visual theme for consistent art direction ac
 
 ### Urban Reality (Etheris Surface)
 
-**Locations:** The Workplace, suburban homes, strip malls, highways, Orlando, Nashville surface
-**Color Palette:** Muted greys, fluorescent whites, beige institutional, suburban earth tones, parking lot asphalt
-**Mood:** Uncanny valley normalcy. Everything is slightly wrong. The mundane is the cage.
-**Key Visual Markers:** Shadows at wrong angles, reflections that lag, repeating textures, fluorescent flicker
-**Used For:** Tutorial areas, early game levels, return visits during mid/late game
+**Locations:** The Workplace, Stephen's Florida Home (ER), Stephen's Depression Home (EFE), Stephen's Teenage Home (EF), Jamie's Teenage Home (EF), The High School (EF), suburban homes, strip malls, highways, Orlando, Nashville surface
+**Color Palette:** Muted greys, fluorescent whites, beige institutional, suburban earth tones, parking lot asphalt, depression desaturation
+**Mood:** Uncanny valley normalcy. Everything is slightly wrong. The mundane is the cage. Domestic spaces range from sanctuary (ER home) to prison (EFE home) to active horror (EF abusive home).
+**Key Visual Markers:** Shadows at wrong angles, reflections that lag, repeating textures, fluorescent flicker, 90s school institutional tones, domestic clutter as environmental storytelling
+**Used For:** Tutorial areas, early game levels, return visits during mid/late game, domestic horror sequences
 
 ---
 
 ### Liminal / Transitional Spaces
 
-**Locations:** The Grey, The Benji Waiting Room, The Infinite Gas Station, doorways between realities
-**Color Palette:** Desaturated monochrome, institutional beige, fluorescent white, occasional color flickers at the edge of perception
-**Mood:** Oppressive emptiness. Waiting. The anxiety of being between states. Bureaucratic cosmic horror.
-**Key Visual Markers:** Identical geometry repeating infinitely, objects that are "too perfect," absence rather than darkness
-**Used For:** Death/respawn areas, transition sequences, mid-game narrative setpieces
+**Locations:** The Grey, The Benji Waiting Room, The Infinite Gas Station, The Greyhound Bus Journey, The Hospice Pod, doorways between realities
+**Color Palette:** Desaturated monochrome, institutional beige, fluorescent white, occasional color flickers at the edge of perception, highway asphalt degradation
+**Mood:** Oppressive emptiness. Waiting. The anxiety of being between states. Bureaucratic cosmic horror. The bus journey adds road-trip dissolution -- America's deleted scenes.
+**Key Visual Markers:** Identical geometry repeating infinitely, objects that are "too perfect," absence rather than darkness, reality degradation along transit routes, hospice pod as metal coffin
+**Used For:** Death/respawn areas, transition sequences, mid-game narrative setpieces, fast-travel areas
 
 ---
 
@@ -653,11 +1063,11 @@ These categories group locations by visual theme for consistent art direction ac
 
 ### Horror Zones
 
-**Locations:** The Pallid Mask Theatre, cultist lairs, body horror transformation areas
-**Color Palette:** Sickly canary yellow (King in Yellow), deep crimson, bioluminescent greens, oil-slick iridescence, pale flesh tones
-**Mood:** Sensual dread. Body horror. Escalating wrongness that starts beautiful and ends in mutilation. The horror is that it remains seductive.
-**Key Visual Markers:** Yellow satin, impossible beauty degrading into impossible anatomy, vertical maws, too-symmetrical faces, flesh that moves like liquid
-**Used For:** Mid-game dungeons, combat encounters, horror setpieces
+**Locations:** The Pallid Mask Theatre, The Supernatural Trailer (Wickham Park), Stephen's Childhood Trailer (Nevada), The Nevada Church, cultist lairs, body horror transformation areas
+**Color Palette:** Sickly canary yellow (King in Yellow), deep crimson, bioluminescent greens, oil-slick iridescence, pale flesh tones, breathing aluminum, bone-white bleached wood
+**Mood:** Sensual dread. Body horror. Domestic horror. Escalating wrongness that starts beautiful and ends in mutilation. The horror is that it remains seductive. The trailers add poverty-horror and supernatural-domestic horror.
+**Key Visual Markers:** Yellow satin, impossible beauty degrading into impossible anatomy, vertical maws, too-symmetrical faces, flesh that moves like liquid, breathing walls, handprint doors, inverted crosses, desert desolation
+**Used For:** Mid-game dungeons, combat encounters, horror setpieces, domestic horror sequences, boss arenas
 
 ---
 
@@ -715,16 +1125,20 @@ These categories group locations by visual theme for consistent art direction ac
 
 | Game Phase | Primary Environment | Secondary Environments |
 |---|---|---|
-| Tutorial / Early Game | Urban Reality (Etheris Surface) | The Workplace |
-| Early-Mid Game | Jamie's Marginalia, Patrick's Compound | Occult Sanctuaries |
-| Mid Game | The Grey, Benji Waiting Room, TJ's Basement | Liminal Spaces, Horror Zones |
+| Prologue / Narrative | The Hospice Pod, Stephen's Homes | Liminal Spaces, Urban Reality |
+| Tutorial / Early Game | Urban Reality (Etheris Surface) | The Workplace, The High School |
+| Early-Mid Game | Jamie's Marginalia, Patrick's Compound | Occult Sanctuaries, S Corp HQ |
+| Mid Game (Book 2 Arc) | The High School, TJ's Basement, Jamie's Home | Urban Reality, Domestic Horror |
+| Mid Game (Supernatural) | The Supernatural Trailer, The Grey, Benji Waiting Room | Horror Zones, Liminal Spaces |
+| Mid Game (Journey) | The Greyhound Bus Journey, The Nevada Church | Liminal Spaces, Horror Zones |
 | Mid-Late Game | The Pallid Mask Theatre, Glitch School | Horror Zones, Broken Simulation |
-| Late Game (Transition) | The Paddock, Gateway Ritual | Occult Sanctuary to Cosmic |
+| Late Game (Battle) | Red Hat Battlefields, S Corp HQ (siege) | Battle Landscapes |
+| Late Game (Transition) | The Paddock, Stephen's Childhood Trailer, Gateway Ritual | Occult Sanctuary, Horror Zones |
 | Late Game (Akashic) | Akashic Realm, Tower of Secrets | Cosmic / Ethereal |
 | Endgame Hub | Elysium Station | Sci-Fi Hub |
 | Final Dungeon | The Substrate / Azathoth's Domain | Eldritch Depths |
 | Post-Game | Sorhhinda, Cosmic Seed Prison | Alien Worlds |
-| Narrative Sequences | The Cosmic Library | Cosmic / Ethereal (peaceful) |
+| Narrative Sequences | The Cosmic Library, Todd's Trailer | Cosmic / Ethereal, Conspiracy Horror |
 
 ---
 

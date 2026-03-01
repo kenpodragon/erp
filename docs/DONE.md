@@ -36,6 +36,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
 - [x] Verify that a pause occurs at the end of the Phase 1 to Phase 2 transition.
 - [x] Update requirements for "mini-bosses" and "big boss" identification.
 - [x] Create a dump table CSV export system.
+- [x] Execute processing and load to DB (Phase 1 & 2 - extract and split the text).
 
 ## Phase 5: CI/CD & Deployment 🤖
 - [x] **Google Cloud Build Integration** (Migrated from GitHub Actions).

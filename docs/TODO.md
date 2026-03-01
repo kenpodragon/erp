@@ -12,11 +12,6 @@
 ---
 *Updated: 2026-03-01*
 
-## Book Processing 📚
-- [ ] **Book Processing**
-  - [ ] Execute processing and load to DB (Phase 1 - extract and split the text).
-  - [ ] Re-do and expand BOOK SUMMARY, CHARACTER GUIDE, ENVIRONMENT GUIDE, because it's missing important characters and key locations across the books. Character GUide and Environment Guide seem to be only from the final book, and the Books Summary is missing a lot of key characters (like Adityi from book 1, Todd's Girlfriend, and others).
-
 ## Book Processing Post Processing Stuff
 - [ ] **Book Processing Phase 3**
   - [ ] Add in some hidden/secret enemies Variants of ********** (this is the name of the character since that's appearing in my text frequently a series of 10x*) (ranging from class E -> Class SS). Generate these as book relevant characters (get all the big-bosses and come up with a chaotic/cosmic horror mesh as a description). 

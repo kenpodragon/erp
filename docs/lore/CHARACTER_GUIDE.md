@@ -474,7 +474,68 @@ Development reference for consistent character portrayal across the Elysium Risi
 
 ---
 
-#### 6. Metatron
+#### 6. Todd
+
+- **Full Name / Aliases:** Todd (surname not specified)
+- **Role:** Leader of the Red Hat rebellion. A conspiracy theorist from the bottom of the socioeconomic ladder who becomes the figurehead of an organic/anti-technology movement that wages holy war against S Corp. Ironically, his rebellion serves Yaldabaoth's interests by attacking the very innovations that threaten the prison.
+- **Physical Description:**
+  - Unshaven, stubble verging on a beard
+  - Dark circles under bloodshot eyes
+  - Sits in a battered recliner, hand-rolled cigarette smoldering
+  - Wears a tinfoil hat; carries a flashlight and tire iron
+  - Room reeks of sweat, smoke, and moonshine
+  - In Book 3 (broken): something has shattered behind his eyes, rocks back and forth, traces invisible patterns on the table
+- **Personality:**
+  - Paranoid conspiracy theorist -- searches Dark 4chan, believes in government mind control
+  - Passionate about "freedom, with a capital F"
+  - Crude and abusive to his partner Stacey
+  - After cosmic reset (EFE): completely insane, muttering "Organic. Organic. The flesh remembers." Rocking, tracing patterns, but still capable of revealing crucial information about the cosmic seed
+- **Abilities/Powers:**
+  - No supernatural powers -- charismatic leadership and conspiracy-fueled determination
+  - Commands an army of "organic Luddites" across the cosmos
+- **Key Relationships:**
+  - **Stacey:** Partner, whom he treats terribly
+  - **Leon:** Paradoxically protective of Leon despite paranoia about S Corp
+  - **Dr. S / Stephen:** Primary enemy as leader of the rebellion against S Corp
+- **First Appearance:** ER Prologue 3 (conspiracy trailer scene), throughout Book 1
+- **Fate:** Survives but is driven completely insane by cosmic events; provides critical intel about the Cosmic Seed in EFE
+- **Visual Direction:**
+  - **Colors:** Red (Red Hat), rust, smoke grey, conspiracy-board string red, moonshine amber
+  - **Mood:** Paranoid desperation. The everyman who became a revolutionary and lost his mind.
+  - **Art Style:** Red string conspiracy boards, cluttered trailer aesthetics, paranoid bunker mentality. In his broken state: hollow-eyed, rocking, muttering -- a man who saw too much and shattered.
+
+---
+
+#### 7. Dr. Pai M. On (Dr. On)
+
+- **Full Name / Aliases:** Dr. Pai M. On (note: "Pai M. On" = Paimon, a demon name -- a hidden-in-plain-sight clue)
+- **Role:** S Corp sleep psychiatrist, later head of S Corp's Social Integration Division. Revealed as a Red Hat infiltrator. Professional gaslighter who dismissed every warning about the Red Hats and supernatural phenomena while actively sabotaging S Corp from within.
+- **Physical Description:**
+  - Warm, practiced smile that feels more clinical than genuine
+  - Polished smile that feels "like a blade wrapped in silk"
+  - Wears skirts, heels clicking against obsidian floors
+  - Professional, clinical appearance
+- **Personality:**
+  - Master manipulator and gaslighter: "You're exhausted. Sleep deprivation can cause heightened dream states."
+  - Dismissive of supernatural phenomena: "Your Eternal Engine is a marvel of engineering, but it's still a tool. It doesn't create dreams."
+  - Subtly threatening: "I AM here because you have nowhere else to turn" (note the deliberate "I AM" capitalization -- a hidden reference to Yaldabaoth)
+  - Clinical detachment masking active sabotage
+- **Abilities/Powers:**
+  - Professional gaslighting and institutional manipulation
+  - Red Hat intelligence network
+- **Key Relationships:**
+  - **Stephen:** Her patient and target -- gaslit him about his dreams and S Corp's threats
+  - **S Corp:** Ran the Social Integration Division, used position to dismiss Red Hat warnings
+  - **Red Hats:** Secret member; exposed when her sabotage is discovered
+- **First Appearance:** ER (therapy sessions, home visit, Social Integration Division)
+- **Visual Direction:**
+  - **Colors:** Clinical white, antiseptic green, polished silver, hidden red (Red Hat allegiance)
+  - **Mood:** Professional betrayal. The therapist whose comfort is a weapon.
+  - **Art Style:** Sterile clinical perfection masking something sinister. Her smile should feel slightly too practiced, too warm, too controlled.
+
+---
+
+#### 8. Metatron
 
 - **Full Name / Aliases:** Metatron, The First Angel (after Lucifer)
 - **Role:** Yaldabaoth's perfect architect and enforcer. Commands the angelic armies. Manages the prison's harvesting operations with cold, geometric efficiency.
@@ -530,10 +591,69 @@ The Thirteen are a cabal of entities operating outside Etheris -- gods and disca
 - **Notable:** Folds into his own shadow to depart.
 - **Visual Direction:** Slavic dark god. Jet-black wings, too-wide smile carved into angular features. Colors: absolute black, bone-white smile, shadow-purple.
 
-#### Lady Osilari
-- **Description:** Drifts from the starlight. Wears robes of symbols and shadow.
-- **Personality:** Observant, precise. Thinks in terms of tears in reality and currents.
-- **Visual Direction:** Robes that are literally made of flowing symbols and equations. Colors: starlight gold, shadow-dark robes, symbol-green.
+#### Lady A (Astrael) -- Oracle of the Void
+
+- **Full Name / Aliases:** Lady A, Astrael (Amharic name imprinted on Stephen's mind, not spoken)
+- **Role:** Dream entity and Stephen's first guide in dreamwalking. Part of the cosmic triad (Lady A, Lady I, Madam O) who helped contain chaos during the Eternal War. Oracle of the Void -- a guide through liminal spaces. Trains Stephen in oneiromancy and bestows the title "Aspolin."
+- **Physical Description:**
+  - Presence is "heavier, grounded" compared to Lady I
+  - Eyes burning with quiet intensity that pierce through chaos
+  - Otherworldly and radiant yet terrifying in perfection
+  - Ethereal form that exudes authority so profound even archangels hesitate
+  - Aura of ancient knowledge
+- **Personality:**
+  - Firm but not cruel -- stern teacher who strips away arrogance through grueling lessons
+  - Proud and demanding: "You have earned this title... It is not just a name but a duty."
+  - Faintly smiling: "You are progressing well..."
+  - Haunting laughter: "Dreams are a gateway to transformation. Embrace them."
+  - More grounded and direct than Lady I's ethereal wisdom
+- **Abilities/Powers:**
+  - **Archangel Extraction:** Can extract Stephen from angelic entities with a single gesture
+  - **Sanctuary Creation:** Whisks people to sanctuary realms
+  - **Mark Inscription:** Inscribes magical tattoo marks that pulse with power as seals of commitment
+  - **Oneiromancy Training:** Teaches dream magic, safe dreamscape traversal, presence-masking
+  - **Dream Realm Sealing:** Part of the triad that sealed the dream realms during the Eternal War
+- **Key Relationships:**
+  - **Stephen (Aspolin):** Primary mentor. Bestows his dreamwalker title. "The dreamscape is not yours to conquer, it is to be respected."
+  - **Lady Illkeserod:** Fellow triad member and ally
+  - **Madam Osilari:** Fellow triad member and ally
+- **First Appearance:** ER (dreamwalking sequences, training, Aspolin naming ceremony)
+- **Visual Direction:**
+  - **Colors:** Deep void-black, burning intensity amber, radiant white-gold authority
+  - **Mood:** Grounded divine authority. The stern mentor whose approval must be earned.
+  - **Art Style:** More solid and grounded than Lady I. Her presence should feel like gravity -- anchoring, demanding, impossible to ignore. Burning eyes as focal point. When she acts, archangels recoil.
+
+---
+
+#### Lady Osilari (Madam O) -- Madam of Symbols
+
+- **Full Name / Aliases:** Lady Osilari, Madam O, Madam of Symbols
+- **Role:** Dream entity and third member of the cosmic triad (Lady A, Lady I, Madam O). Expert on the language of symbols -- the foundation of creation. Teaches Stephen about dreamers as catalysts, time manipulation through dreams, and the Mandela Effect as a feature of the prison. Proposes the alternative solution where humanity ascends within Etheris.
+- **Physical Description:**
+  - Drifts from the starlight
+  - Wears robes of symbols and shadow -- literally made of flowing equations and sigils
+  - Knowing smile that carries the weight of eternity
+  - Voice described as "a melodic resonance"
+  - Eyes gleaming with trust
+- **Personality:**
+  - Enigmatic: "It changes nothing. And everything."
+  - Observant, precise -- thinks in terms of tears in reality and currents
+  - Patient teacher of symbolic language and dream-time manipulation
+  - Strategist -- proposes the plan to influence other dreamers and seal breaches
+- **Abilities/Powers:**
+  - **Symbol Mastery:** "Symbols are the foundation of creation, capable of transcending barriers and unlocking hidden truths"
+  - **Temporal Dreamscape Manipulation:** Creates vivid tableaux of historical scenes within the dreamscape
+  - **Time Knowledge:** "Time is not a straight path... It is a tapestry" -- understands how dreams flow in all directions
+  - **Akashic Record Access:** Deep knowledge of the living memory of all existence
+  - **Dream Realm Sealing:** Part of the triad that sealed dream realms during the Eternal War
+- **Key Relationships:**
+  - **Stephen:** Reveals that dreamers are "rare conduits" and "catalysts" -- "Your ability to traverse realms is more than a gift -- it's a weapon."
+  - **Lady A, Lady I:** Fellow triad members
+- **First Appearance:** ER (introduced by Lady I as "the Madam of Symbols"), EFE (resistance gathering)
+- **Visual Direction:**
+  - **Colors:** Starlight gold, shadow-dark robes, symbol-green, flowing equation-light
+  - **Mood:** Living language. A being whose very garments are made of meaning.
+  - **Art Style:** Robes that are literally made of flowing symbols and equations, constantly shifting and rearranging. When she moves, symbols trail behind her like afterimages. When she speaks of time, the symbols around her flow backwards.
 
 #### Sophia
 - **Description:** Wisdom descending like a cool hand to soothe a fever. Light trying to wrap around pain. An Aeon of infinite light from the Pleroma.
@@ -574,14 +694,311 @@ The Thirteen are a cabal of entities operating outside Etheris -- gods and disca
 
 ---
 
-#### Andrew & Morgan
+#### Andrew
 
-- **Role:** Recurring "NPC" figures who appear in multiple timelines. Part of the teen friend group in EF.
-- **Description:**
-  - **Morgan:** Scientifically minded. Camera-carrying. Dislocated shoulder during supernatural event. "Scientific rage." Her skepticism cracks like old paint.
-  - **Andrew:** Called "Andrew the Giant" online. Practical, skeptical.
-- **First Appearance:** EF (teen timeline group)
-- **Visual Direction:** Grounded normality contrasting with the supernatural. Morgan with a camera. Andrew as physically large presence.
+- **Full Name / Aliases:** Andrew, "Andrew the Giant" (online handle)
+- **Role:** Part of Stephen's core high school friend group. Functions as a "reality glitch" character -- NPC-like most of the time in the adult iterations, but capable of snapping into focus to deliver critical plot information. Confirmed as a "real soul" rescued by Lady Illkeserod.
+- **Physical Description:**
+  - Large physical presence (hence "Andrew the Giant")
+  - In NPC state (EFE): dead eyes, emptiness, moves "in that same slow, deliberate way, like wading through invisible water"
+- **Personality:**
+  - Practical, skeptical
+  - Grumbles with humor -- "Stupid white weenie bullshit" when beaten at Magic but grins anyway
+  - Initially pulls away from supernatural investigations with the skeptic faction
+- **Key Relationships:**
+  - **Morgan:** Paired together frequently; they appear and move in sync in the adult iterations
+  - **The Group:** Core friend group member
+  - **Stephen:** Delivers critical information in EFE about Patrick's location and Whitney's connection
+- **First Appearance:** EF (teen timeline), EFE Chapter 9 (bookshop sighting), EFE Chapter 15 (Best Buy critical info)
+- **Visual Direction:**
+  - **Colors:** Neutral tones, static-grey in NPC mode
+  - **Mood:** Grounded normality that occasionally flickers with something deeper. The everyman who almost remembers.
+  - **Art Style:** Mundane retail/suburban aesthetic. In NPC mode: movements too synchronized, too deliberate, then sudden snap to clarity when delivering crucial information.
+
+---
+
+#### Morgan
+
+- **Full Name / Aliases:** Morgan (surname not specified)
+- **Role:** Exists in two major iterations across the trilogy. As a teenager (EF): the group's scientific skeptic who eventually becomes a believer. As an adult (ER): S Corp's Chief Scientist and renowned astrophysicist running the Antarctic R&D facility (MOM). These are the same soul in different reality iterations.
+
+**Teen Morgan (EF):**
+- **Physical Description:**
+  - Twirls a strand of hair around her finger
+  - Carries a Polaroid camera constantly
+  - Dislocates shoulder during the supernatural trailer descent
+- **Personality:**
+  - Scientific skeptic -- takes psychology classes to "learn to recognize symptoms of group delusion"
+  - Channels fear into rage: "YOU ARE JUST A FUCKING SYSTEM! You follow rules! I will find your variables! I will dissect you! I will turn you into a fucking data set and I will write the equation that UNMAKES you!"
+  - Flirtatious but blunt with TJ, who is completely oblivious to her advances
+  - Loyal -- returns to the group when Whitney's ghost appears to her
+  - Documents supernatural events with Polaroid photos
+
+**Scientist Morgan (ER):**
+- **Physical Description:**
+  - Golden hair glinting under sterile lab lights
+  - Brisk stride, confident physical presence
+  - Commands rooms "like a general rallying her troops"
+- **Personality:**
+  - "A force of nature, equal parts pragmatist and visionary"
+  - Dark sense of humor: "You and your fucking slogans. I swear you're like a walking motivational poster some days."
+  - Characteristic enthusiasm mixed with demanding precision
+  - Pragmatic to the core: "The elevator is crucial. No room for error."
+- **Abilities/Powers:**
+  - No supernatural powers
+  - Expert in astrophysics, carbon nanotube composites, material science, space elevator engineering, nanite technology integration
+  - Recruited by the Infinitron as an ideal candidate for S Corp
+- **Key Relationships:**
+  - **TJ (teen):** Love interest -- their dynamic is comic relief. She has to literally say "KISS ME. ON THE LIPS. NOW."
+  - **Jamie (teen):** Discovers Jamie's demonic nature, tries to protect the group, photographs Jamie's true form in mirrors
+  - **Whitney:** Initially erased from Morgan's memory, dramatically remembered when Whitney's ghost appears in her darkroom
+  - **Stephen / Dr. S:** Old high school friends, professional collaborator at S Corp
+  - **Aditi:** Coordinates Aditi's rescue from the Kuiper Belt
+- **First Appearance:** ER (recruited to S Corp via Facebook), EF (teen timeline group), EFE (NPC state at bookshop/Best Buy)
+- **Visual Direction:**
+  - **Colors:** Lab-coat white, golden highlights, Polaroid cream (teen), steel-blue scientific precision (adult)
+  - **Mood:** The scientist whose rationality is both her greatest strength and the last thing to break.
+  - **Art Style:** In teen mode: camera in hand, notebook full of observations, skeptical expression cracking under supernatural weight. In scientist mode: commanding presence in lab environments, golden hair under sterile lights.
+
+---
+
+#### Leon
+
+- **Full Name / Aliases:** Leon (surname not specified)
+- **Role:** Stephen's colleague and co-founder of S Corp. A visionary tech mogul and Elon Musk analog who builds rockets, competing AI (CrockXxx), Nutralink implants, and hydrogen-powered cars. The public face of technological ambition in Book 1.
+- **Physical Description:**
+  - Manic energy, bouncing off walls
+  - Slick smile
+  - Physical details are sparse -- defined more by energy and presence than appearance
+- **Personality:**
+  - "Manic energy" -- convinced each project is "about to birth the singularity"
+  - Slick and charismatic: "his slick smile, ketamine-induced hallucinations"
+  - Laughing constantly -- "I hear Leon laughing in both places, both lifetimes. He says my pain was a fan favorite."
+  - Visionary genius who "represented so much more than just hydrogen powered cars"
+  - Tech-bro archetype played for both satire and genuine ambition
+- **Abilities/Powers:**
+  - No supernatural powers
+  - Vast technological empire and resources
+  - Co-founded S Corp with Stephen
+- **Key Relationships:**
+  - **Stephen:** Business partner and co-founder of S Corp
+  - **Todd:** Todd is paradoxically protective of Leon while fighting S Corp
+  - **ExSpacey:** Company referenced in EF alternate timeline
+- **First Appearance:** ER (early chapters, S Corp founding), EF (referenced in memories)
+- **Visual Direction:**
+  - **Colors:** Tech chrome, rocket-flame orange, corporate blue, manic energy white
+  - **Mood:** Silicon Valley ambition incarnate. The billionaire visionary who genuinely believes he can change the world.
+  - **Art Style:** Always in motion, always gesturing. Surrounded by screens, rockets, prototypes. The tech-bro aesthetic rendered with both satire and grudging respect.
+
+---
+
+#### Aditi
+
+- **Full Name / Aliases:** Aditi (surname not specified)
+- **Role:** A young Indian woman from Mumbai who rises from poverty to become a key figure in the fight against the Red Hat movement. Appears in three life stages: teenage student investigating sleepwalking in Mumbai, university student on Elysium, and rogue space explorer who hijacks the Genesis ship. Her intelligence about Red Hat communications enables S Corp's counter-offensive.
+- **Physical Description:**
+  - School bag bumping against her back (teen)
+  - "Threadbare Earth clothes" that clash with Elysium's designer silks (university)
+  - No explicit detailed physical description beyond contextual Mumbai/Indian heritage details
+- **Personality:**
+  - Fighter and resilient: "Aditi was a fighter"
+  - Intellectually hungry -- exceptional grades in Cosmology, devours sci-fi stories
+  - Determined and courageous -- hijacks an experimental ship: "No. But I'm sure I'll figure it out."
+  - Socially conscious -- empathizes with Red Hats' frustrations about inequality
+  - Resourceful digital native investigator since her teen years
+  - Family-oriented -- deeply connected to her mother, driven by guilt about leaving her behind
+  - Wry humor: "insanity's the price of progress"
+- **Abilities/Powers:**
+  - No supernatural powers
+  - Exceptional intelligence in cosmology and astrophysics
+  - Signal decryption skills (with Hiro's help)
+  - Self-taught experimental ship pilot
+- **Key Relationships:**
+  - **Her Mother (Amma):** Deep, guilt-laden bond. Her mother begs to join her on Elysium.
+  - **Rahul (brother):** Younger brother who joined the Red Hats while she was away
+  - **Hiro:** Fellow student and partner in the Genesis mission. He dies during the Red Hat attack in the Kuiper Belt.
+  - **Professor Nakamura:** Mentor at Elysium University
+  - **Morgan:** Morgan coordinates Aditi's rescue and works closely with her
+  - **Dr. S / Stephen:** She becomes vital to S Corp's war effort; the ship "Aditi's Genesis" is named in her honor
+- **First Appearance:** ER Chapter 58 (Mumbai sleepwalking investigation), ER Chapter 71 (Elysium University)
+- **Visual Direction:**
+  - **Colors:** Mumbai warm golds, Elysium sterile white contrasted with threadbare Earth tones, deep space black
+  - **Mood:** Resilience incarnate. The underdog who figures it out on the fly.
+  - **Art Style:** Contrast between her humble origins and the vast cosmic stage she steps onto. In Mumbai: vibrant, chaotic street life. On Elysium: fish-out-of-water in sterile perfection. In space: alone, determined, surrounded by incomprehensible technology she's teaching herself to use.
+
+---
+
+#### Yukiko
+
+- **Full Name / Aliases:** Yukiko (surname not specified)
+- **Role:** Japanese girl who becomes the founding hero of Sorhhinda colony. Child prodigy who discovers the Red Hat terrorist plot to destroy the ERB gateway. Makes the agonizing decision to destroy the gateway herself, permanently stranding the colony but saving it from invasion. Becomes a legendary historical figure with a towering bronze statue 500 years later.
+- **Physical Description:**
+  - Dark hair neatly braided (teenager)
+  - As a statue 500 years later: "a towering statue of Yukiko, her bronze hair whipping in the wind"
+- **Personality:**
+  - Brave older sister: "determined to show him that there was nothing to fear"
+  - Curious and excited about discovery: "Dreams really do come true"
+  - Resourceful under pressure -- uses scanner flashlight to blind terrorists
+  - Carries immense guilt but shows defiance and leadership
+  - "A warrior born from necessity"
+- **Key Relationships:**
+  - **Takashi (brother):** Little brother, 3 years old at departure. "Nee-san, are there going to be aliens?"
+  - **Her Mother:** Chief scientist on Sorhhinda
+  - **Her Father:** Ex-Japan Self-Defense Force veteran, stayed on Earth at the Vatican
+  - **Governor Tanaka:** Colony governor who covers up the gateway destruction
+- **First Appearance:** ER Chapter 64 (space elevator to Elysium), ER Chapter 68 (Sorhhinda sacrifice)
+- **Visual Direction:**
+  - **Colors:** Sorhhinda copper-gold sunlight, dark braided hair, bronze statue tones, emergency red
+  - **Mood:** The child who had to make an impossible choice. Youth and sacrifice.
+  - **Art Style:** Young girl against alien landscape backdrop. The moment of decision should be the visual anchor -- her hands on the emergency controls, the weight of a colony on her shoulders.
+
+---
+
+#### Kai
+
+- **Full Name / Aliases:** Kai (surname not specified)
+- **Role:** Youth on Sorhhinda who dreams of the Eternal Engine in the Book 1 epilogue (500 years after the colony's founding). In the Book 3 epilogue, now an elderly farmer tending spatch weed plants. His rage at the destruction of his garden tears reality and allows Yaldabaoth to seep back through from the Cosmic Seed, possessing him and declaring "I AM."
+- **Physical Description:**
+  - Youth: "Eyes reminiscent of sunstones" -- deeply moved by President Nara's speech
+  - Elderly: A gardener tending his beloved plants in the greenhouse compound
+- **Personality:**
+  - Youth: Wonder-struck, reverent of his colony's history
+  - Elderly: Devoted gardener, peaceful until his rage at destruction tears reality
+- **Key Relationships:**
+  - **President Nara:** Observes her speech as a youth, deeply inspired
+  - **Yaldabaoth:** Possessed by the Demiurge in the epilogue -- the vessel through which I AM returns
+- **First Appearance:** ER Epilogue (youth at 500th anniversary), EFE Epilogue (elderly gardener)
+- **Visual Direction:**
+  - **Colors:** Sorhhinda copper-gold, sunstone amber eyes, garden green, anti-reality black (possession)
+  - **Mood:** Cyclical tragedy. The innocent gardener who becomes the conduit for cosmic evil's return.
+  - **Art Style:** Peaceful garden scenes shattered by subterranean horror emergence. The possession should be a visual crescendo -- from gentle old man to vessel of the Demiurge.
+
+---
+
+#### President Nara
+
+- **Full Name / Aliases:** President Nara (first name not specified)
+- **Role:** Leader of Sorhhinda 500 years after its founding. Gives the 500th anniversary speech honoring the colony's history, survival, and Yukiko's sacrifice.
+- **Physical Description:**
+  - Silver hair cascading "like liquid moonlight," casting a radiant halo
+  - Eyes holding a lifetime of experience
+  - "A vision of grace and wisdom amidst the sea of exuberance"
+- **Personality:**
+  - Charismatic orator: voice "rich and warm," carrying "the weight of five centuries"
+  - Reverent of history while forward-looking
+  - Inspires immense pride in her people
+- **First Appearance:** ER Epilogue (500th anniversary speech)
+- **Visual Direction:**
+  - **Colors:** Liquid moonlight silver, Sorhhinda copper-gold, ceremonial elegance
+  - **Mood:** Legacy and leadership. The culmination of 500 years of survival.
+
+---
+
+#### Frank & Pete
+
+- **Full Name / Aliases:** Frank (janitor), Pete (comms officer)
+- **Role:** Frank is the chief janitor aboard the Elysium space station. Pete is his husband, S Corp's comms officer. Frank narrates the only non-Stephen first-person chapter in the entire series. A blue-collar perspective on the cosmic drama -- fixing toilets, wrangling space raccoons, and dealing with irradiated cucumber smoothies while the universe falls apart.
+- **Physical Description:**
+  - Frank: Not physically described beyond exhaustion and perpetually frazzled energy
+  - Pete: "Calm, steady, and with just a hint of his trademark sarcasm"
+  - They live in a "windowless broom closet of an apartment deep within the station's guts"
+- **Personality:**
+  - Frank: Uses plumbing metaphors for everything: "It's all pipes. Just depends on what kind of shit's flowing through them." Self-deprecating, resourceful, endlessly practical.
+  - Pete: The yin to Frank's frazzled yang. Calm and sarcastic.
+- **Key Relationships:**
+  - **Each other:** Married. Loving. Pete worries about Frank taking on impossible problems.
+  - **S Corp:** Pete works comms; Frank maintains the station
+- **First Appearance:** ER Chapter ~67 (Frank's solo first-person chapter)
+- **Visual Direction:**
+  - **Colors:** Utilitarian grey, duct tape silver, Elysium white, zero-g coffee brown
+  - **Mood:** Blue-collar space opera. The mundane heroes keeping the cosmic drama's toilets flushing.
+  - **Art Style:** Utilitarian worker aesthetic against gleaming sci-fi backdrop. Duct tape, tool belts, the gritty reality beneath the utopian veneer.
+
+---
+
+#### Stellan
+
+- **Full Name / Aliases:** Stellan (Stephen's great-great-great-grandson)
+- **Role:** Descendant of Stephen who has "stepped firmly into his role within S Corp's hierarchy." Appears at Stephen's 300th birthday celebration, worrying about Stephen's mental state. Represents the passing of generations within S Corp's empire.
+- **First Appearance:** ER Chapter ~77 (300th birthday celebration)
+- **Visual Direction:** Future S Corp executive aesthetic. The weight of legacy.
+
+---
+
+#### Tiffany (Jamie's Sister)
+
+- **Full Name / Aliases:** Tiffany (surname not specified)
+- **Role:** Jamie's eight-year-old little sister in the teen timeline (EF). Energetic, nosy, provides comic relief. Importantly, she cannot remember Whitney at all after the erasure -- "Who's Whitney?... Is that someone from your old school?" -- demonstrating the totality of the prison's reality edits.
+- **Physical Description:**
+  - "Bounded in like a golden retriever with ADHD"
+  - Eight years old, chattery, energetic
+- **Personality:**
+  - Relentlessly curious: asks if Stephen "likes-likes" Jamie or "just likes" her
+  - Childlike innocence contrasted with the cosmic horror surrounding the group
+- **First Appearance:** EF (Jamie's bedroom scene)
+- **Visual Direction:**
+  - **Colors:** Bright, childlike tones -- sunshine yellow, puppy-dog energy
+  - **Mood:** Innocent normalcy against the backdrop of cosmic horror.
+
+---
+
+#### Tiffany (Xavier's Love Interest)
+
+- **Full Name / Aliases:** Tiffany (surname not specified)
+- **Role:** Xavier's school crush in Book 3. One of the few people who questions the mainstream narrative about Stephen. Xavier's motivation for volunteering to return to the prison: "Is Tiffany in there?" -- "Then I'm in." Confirmed by Lady Illkeserod as a real soul, "currently rostered in your third-period Spanish class" and "an active mod on your Discord server."
+- **Personality:**
+  - Perceptive: questions the narrative about Stephen -- "She says it 'doesn't sound like you.'"
+  - Xavier declares she is "not an NPC"
+  - Plays Roblox with Xavier on Thursdays
+- **First Appearance:** EFE (Xavier's school/Discord references)
+- **Visual Direction:**
+  - **Colors:** Warm, digital-age tones
+  - **Mood:** The human connection that anchors Xavier to the prison -- love as both chain and reason to fight.
+
+---
+
+#### Hiro
+
+- **Full Name / Aliases:** Hiro (surname not specified)
+- **Role:** Aditi's fellow university student on Elysium and partner in the Genesis mission. Helps her decrypt Latin blueprints for a faster-than-light engine. Reluctantly follows her into danger. Dies during the Red Hat attack in the Kuiper Belt.
+- **Personality:**
+  - Reluctant adventurer -- buddy-comedy dynamic with Aditi
+  - Technically skilled in decryption
+- **First Appearance:** ER Chapter 71 (Elysium University)
+- **Fate:** Killed during Red Hat attack on their ship in the Kuiper Belt
+
+---
+
+#### Ilse
+
+- **Full Name / Aliases:** Ilse (full name not specified)
+- **Role:** Benji's lover/partner, a consciousness that predates Etheris. Reunites with the awakened Benji: "There you are... All of you." Has been searching for him "since the moment you didn't come back."
+- **First Appearance:** EFE (resistance scenes)
+- **Visual Direction:**
+  - **Colors:** Pre-Etheris ancient light, warm recognition
+  - **Mood:** Reunion across cosmic distances. Love that outlasts reality itself.
+
+---
+
+#### Stacey
+
+- **Full Name / Aliases:** Stacey (surname not specified)
+- **Role:** Todd's partner/girlfriend. Endures his paranoia and abuse. Grumbles about missed child support and rent money. Represents the collateral damage of Todd's obsessive conspiracy crusade.
+- **First Appearance:** ER Prologue 3 (Todd's trailer)
+- **Visual Direction:**
+  - **Colors:** Worn domestic tones, frustration grey
+  - **Mood:** Long-suffering. The human cost of paranoia.
+
+---
+
+#### Governor Tanaka
+
+- **Full Name / Aliases:** Governor Tanaka (first name not specified)
+- **Role:** Colony governor on Sorhhinda. "A tall man with eyes the color of Alnitak's blue sun." Covers up Yukiko's destruction of the ERB gateway to prevent panic and maintain colonial stability.
+- **First Appearance:** ER Chapter 68 (Sorhhinda arc)
+- **Visual Direction:**
+  - **Colors:** Alnitak blue, colonial authority tones, Sorhhinda copper
+  - **Mood:** Pragmatic colonial leadership. The administrator who must bury the truth to preserve order.
 
 ---
 
@@ -756,10 +1173,19 @@ Organized by threat tier, mapping to game enemy classes. All enemies are drawn f
 | Whitney | Hannah | Serenity / Joy | Soft violet | Luminous beacon glow |
 | Benji | Benjamin Castellan | Dimensional Transit | Spectrum-shift brown | Flickering cardigan |
 | Lady Illkeserod | Selyr + Keserod | Wisdom / Secrets | Blue-white | Translucent filaments |
+| Lady A | Astrael | Void / Oneiromancy | Void-black / amber | Burning eyes, authority |
+| Madam Osilari | Osilari | Symbols / Time | Starlight gold | Robes of flowing symbols |
 | Yaldabaoth | I AM / Sam | Consumption / Control | Void-black / sickly yellow | Shadow and mouths |
+| Todd | -- | Red Hat Rebellion | Conspiracy red | Tinfoil hat, red string |
+| Dr. On | Pai M. On (Paimon) | Infiltration / Gaslighting | Clinical white | Too-practiced smile |
 | Metatron | -- | Enforcement / Order | Chrome white-gold | Wheels within wheels |
 | Hastur | King in Yellow | Madness / Mutation | Sickly yellow | The Yellow Sign |
 | Nyarlathotep | Crawling Chaos | Trickery / Passage | Color-shifting | The ever-changing suit |
+| Aditi | -- | Resilience / Discovery | Mumbai gold | Threadbare Earth clothes |
+| Morgan | -- | Science / Skepticism | Lab-coat white / gold | Polaroid camera (teen) |
+| Leon | -- | Tech Ambition | Chrome / rocket orange | Manic energy |
+| Yukiko | -- | Sacrifice / Leadership | Bronze / copper-gold | Dark braided hair |
+| Frank | -- | Blue-collar Endurance | Utilitarian grey | Duct tape, tool belt |
 
 ---
 
