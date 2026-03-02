@@ -6,9 +6,9 @@ You are an agent working on **ERP (Elysium Rising mmorPg)**, a browser-based inc
 To build a high-fidelity, narrative-driven incremental game that serves as a gateway to the Elysium Rising universe, leveraging audio-book immersion and competitive social mechanics.
 
 ## 🛠️ Tech Stack Mandates
-- **Frontend:** React + Vite + TypeScript. (Use **Vanilla CSS** for styling).
+- **Frontend:** React + Vite + TypeScript. (Use **Vanilla CSS** for styling). PixiJS (via `@pixi/react`) for 2D game.
 - **Backend:** Python + FastAPI + SQLModel/SQLAlchemy.
-- **Database:** PostgreSQL (Cloud SQL) for all development. A local `test.db` (SQLite) is used **only** for mocking unit tests.
+- **Database:** PostgreSQL (Cloud SQL) for all development. A local `test.db` (SQLite in MEMORY) is used **only** for mocking unit tests.
 - **Auth:** Firebase (Google SSO).
 - **Payments:** Stripe.
 - **DevOps:** Docker, **Google Cloud Build**, Google Cloud Run.

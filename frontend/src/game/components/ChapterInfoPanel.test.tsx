@@ -6,9 +6,12 @@ describe('ChapterInfoPanel Component', () => {
   const mockScene = {
     id: 1,
     name: 'The Gate',
-    required_time_seconds: 180,
+    gameplay_data: {
+      required_time_seconds: 180,
+    }
   };
   const mockOnClose = vi.fn();
+
   const mockOnEnter = vi.fn();
 
   it('renders scene title and formatted duration', () => {

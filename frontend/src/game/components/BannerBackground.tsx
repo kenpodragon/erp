@@ -88,17 +88,24 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
   };
 
   return (
-    <pixiContainer>
+    <pixiContainer sortableChildren={true}>
       {/* Current Chapter Layers */}
-      {renderLayer(currentChapter, 'far', 1.0)}
-      {renderLayer(currentChapter, 'mid', 1.0)}
+      <pixiContainer zIndex={0}>
+        {renderLayer(currentChapter, 'far', 1.0)}
+        {renderLayer(currentChapter, 'mid', 1.0)}
+      </pixiContainer>
 
       {/* Next Chapter (Fading In) */}
-      {nextChapter !== null && renderLayer(nextChapter, 'far', fadeAlpha)}
-      {nextChapter !== null && renderLayer(nextChapter, 'mid', fadeAlpha)}
+      {nextChapter !== null && (
+        <pixiContainer zIndex={1}>
+          {renderLayer(nextChapter, 'far', fadeAlpha)}
+          {renderLayer(nextChapter, 'mid', fadeAlpha)}
+        </pixiContainer>
+      )}
 
       {/* Solid Ground Layer */}
       <pixiGraphics
+        zIndex={2}
         draw={(g) => {
           g.clear().rect(0, 75, width, 75).fill({ color: 0x1a1a1a });
           g.stroke({ width: 2, color: 0x333333 });
@@ -106,6 +113,7 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
       />
     </pixiContainer>
   );
+
 };
 
 export default BannerBackground;

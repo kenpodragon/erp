@@ -7,7 +7,7 @@ import { api } from '../../api';
 vi.mock('../../api', () => ({
   api: {
     get: vi.fn(),
-    post: vi.fn()
+    post: vi.fn().mockResolvedValue({ ok: true })
   }
 }));
 
@@ -19,6 +19,7 @@ describe('HomeBase Component', () => {
     vi.resetAllMocks();
     
     // Default mock responses
+    (api.post as any).mockResolvedValue({ ok: true });
     (api.get as any).mockImplementation((url: string) => {
       if (url.includes('artifacts')) return Promise.resolve({ ok: true, json: () => Promise.resolve([
         { id: 1, name: 'Core', rarity: 'rare', unlocked: true, lore_text: 'Lore A' }
@@ -68,7 +69,7 @@ describe('HomeBase Component', () => {
   it('switches leaderboard tabs', async () => {
     render(<HomeBase player={mockPlayer} character={mockCharacter} />);
     
-    const essenceTab = screen.getByText('Essence');
+    const essenceTab = await screen.findByText('Essence');
     fireEvent.click(essenceTab);
 
     expect(api.get).toHaveBeenCalledWith(expect.stringContaining('type=essence'));
@@ -78,7 +79,7 @@ describe('HomeBase Component', () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
     render(<HomeBase player={mockPlayer} character={mockCharacter} />);
     
-    const wipeBtn = screen.getByText(/Wipe Character Data/);
+    const wipeBtn = await screen.findByText(/Wipe Character Data/);
     fireEvent.click(wipeBtn);
 
     expect(confirmSpy).toHaveBeenCalled();

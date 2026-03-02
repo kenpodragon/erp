@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { signInWithPopup } from 'firebase/auth'
@@ -19,12 +19,28 @@ const renderApp = (initialEntries = ['/']) =>
   )
 
 describe('Frontend App', () => {
+  const originalFetch = global.fetch;
+
+  beforeAll(() => {
+    global.fetch = vi.fn(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ message: 'Mock API', database: 'connected' })
+      }) as Promise<Response>
+    );
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
+  });
+
   it('renders the NavBar brand and splash hero', () => {
     renderApp()
     // "Elysium" and "Rising" appear in both NavBar and SplashPage hero
     expect(screen.getAllByText('Elysium').length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText('Rising').length).toBeGreaterThanOrEqual(1)
   })
+
 
   it('shows splash page with CTA when not authenticated', () => {
     renderApp()

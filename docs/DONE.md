@@ -5,6 +5,9 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-01*
 
+## REC_2: Game Loop 2.0 (The Towers of Elysium)
+- [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
+
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
   - [x] Check for some consolidation and cleanup (realize entities from other books might be different.)

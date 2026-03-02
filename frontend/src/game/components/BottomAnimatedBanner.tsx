@@ -249,10 +249,12 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   });
 
   return (
-    <pixiContainer>
-      <BannerBackground chapterId={state.activeVisualChapterId} scrollSpeed={scrollSpeed} width={width} height={height} />
+    <pixiContainer sortableChildren={true}>
+      <pixiContainer zIndex={0}>
+        <BannerBackground chapterId={state.activeVisualChapterId} scrollSpeed={scrollSpeed} width={width} height={height} />
+      </pixiContainer>
 
-      <pixiContainer>
+      <pixiContainer zIndex={20}>
         {damageNumbers.map(num => (
           <pixiText 
             key={num.id}
@@ -271,16 +273,16 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
         ))}
       </pixiContainer>
 
-      <pixiContainer alpha={player.isDead ? 0.3 : 1.0}>
+      <pixiContainer zIndex={10} alpha={player.isDead ? 0.3 : 1.0} sortableChildren={true}>
         <pixiContainer 
+          zIndex={5}
           x={player.x} 
           y={player.y}
-          scale={visualScale}
+          scale={{ x: visualScale, y: player.animState === 'idle_stretch' ? visualScale + Math.sin(time * 0.05) * 0.1 : visualScale }}
           skew={{ 
             x: player.animState === 'walking' ? Math.sin(time * 0.1 * speedMult) * 0.05 : 0, 
             y: player.animState === 'walking' ? Math.cos(time * 0.1 * speedMult) * 0.02 : 0 
           }}
-          scaleY={player.animState === 'idle_stretch' ? visualScale + Math.sin(time * 0.05) * 0.1 : visualScale}
         >
           {textures.player ? (
             <pixiSprite texture={textures.player} anchor={{ x: 0.5, y: 1.0 }} />
@@ -334,24 +336,32 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           )}
         </pixiContainer>
 
-        {enemies.map(en => (
-          <pixiContainer key={en.id} x={en.x} y={en.y} scale={1.5} skew={{ x: Math.sin(time * 0.15) * 0.1 }}>
-            <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />
-            {textures[en.spriteKey] ? (
-              <pixiSprite texture={textures[en.spriteKey]} anchor={{ x: 0.5, y: 1.0 }} />
-            ) : (
-              <pixiGraphics draw={(g) => { g.clear().circle(0, -15, 10).fill({ color: 0xff0000 }); }} />
-            )}
-            <pixiGraphics
-              draw={(g) => {
-                const hpW = (en.hp / en.maxHp) * 20;
-                g.clear().rect(-10, -35, 20, 3).fill({ color: 0x333333 }).rect(-10, -35, hpW, 3).fill({ color: 0xff0000 });
-              }}
-            />
-          </pixiContainer>
-        ))}
+        <pixiContainer zIndex={4}>
+          {enemies.map(en => (
+            <pixiContainer key={en.id} x={en.x} y={en.y} scale={{ x: 1.5, y: 1.5 }} skew={{ x: Math.sin(time * 0.15) * 0.1, y: 0 }}>
+              <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />
+              {textures[en.spriteKey] ? (
+                <pixiSprite texture={textures[en.spriteKey]} anchor={{ x: 0.5, y: 1.0 }} />
+              ) : (
+                <pixiGraphics draw={(g) => { 
+                  g.clear()
+                   .rect(-15, -30, 30, 30).fill({ color: 0xffffff, alpha: 0.8 })
+                   .circle(0, -15, 10).fill({ color: 0xff0000 }); 
+                }} />
+              )}
+              <pixiGraphics
+                draw={(g) => {
+                  const hpW = (en.hp / en.maxHp) * 20;
+                  g.clear().rect(-10, -45, 20, 4).fill({ color: 0x333333 }).rect(-10, -45, hpW, 4).fill({ color: 0xff0000 });
+                }}
+              />
+            </pixiContainer>
+          ))}
+        </pixiContainer>
       </pixiContainer>
+
     </pixiContainer>
+
   );
 };
 
@@ -360,16 +370,24 @@ interface BannerProps {
 }
 
 const BottomAnimatedBanner: React.FC<BannerProps> = ({ character }) => {
-  const width = window.innerWidth;
-  const height = 150;
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: 150 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({ width: window.innerWidth, height: 150 });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="bottom-banner-container">
-      <Application width={width} height={height} background="#111111" antialias={true}>
+      <Application width={dimensions.width} height={dimensions.height} background="#111111" antialias={true}>
         <BannerContent character={character} />
       </Application>
     </div>
   );
 };
+
 
 export default BottomAnimatedBanner;

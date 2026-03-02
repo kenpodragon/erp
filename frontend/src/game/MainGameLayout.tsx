@@ -86,11 +86,16 @@ const GameContent: React.FC<MainGameLayoutProps> = ({ player, character, onChara
           <div className="game-main-view">
             {renderContent()}
           </div>
-          {activeTab === 'map' && !state.activeSceneId && character && <BottomAnimatedBanner />}
+          {activeTab === 'map' && !state.activeSceneId && character && (
+            <div style={{ flexShrink: 0 }}>
+              <BottomAnimatedBanner character={character} />
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
+
 };
 
 const MainGameLayout: React.FC<MainGameLayoutProps> = (props) => {

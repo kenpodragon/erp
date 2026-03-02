@@ -1,23 +1,24 @@
 .game-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* LOCK to viewport */
-  width: 100vw;
+  flex: 1; /* FILL remaining main-content space */
+  height: 100%;
+  width: 100%;
   background-color: #111;
   color: #ddd;
-  overflow: hidden; /* Prevent outer scroll */
+  overflow: hidden; 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .game-middle-container {
   display: flex;
   flex: 1;
-  overflow: hidden; /* Prevent middle-container scroll */
+  overflow: hidden; 
 }
 
 @media (max-width: 768px) {
   .game-middle-container {
-    flex-direction: column-reverse;
+    flex-direction: column-reverse; /* Sidebar on bottom */
   }
 }
 
@@ -28,12 +29,12 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Stack children without outer scroll */
+  overflow: hidden; 
 }
 
 .game-main-view {
   flex: 1;
-  overflow-y: auto; /* THIS is the scrolling area for Map/Home/etc */
+  overflow-y: auto; /* Internal scrolling for content */
   position: relative;
 }
 

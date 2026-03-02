@@ -4,16 +4,6 @@
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-- [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
-    - [x] **Core Game Skeleton & Framework**
-        - [x] Implement `MainGameLayout` (Top Bar, Left Sidebar, Main Content, Bottom Banner).
-        - [x] Setup `GameNavigationController` (Map, Skills, Home, Shop, Chat).
-        - [x] Implement `BottomAnimatedBanner` (Basic skeleton and side-scrolling pixel art framework/animation).
-        - [x] Build the `OverworldMap` structure (Vertical chapter list with horizontal scene nodes).
-    - [x] **State & Testing**
-        - [x] Define global `GameContext` (Session stats, active training, current scene).
-        - [x] Create 2.0 Interface and UX validation tests (Vitest/Playwright).
-
 - [ ] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
     - [x] **Backend: DB-Driven Map Content**
         - [x] Create `db/010_game_entities.sql` (Chapters, Scenes, Story Beats, Enemies, Skills).
@@ -43,14 +33,16 @@
         - [x] Implement death resetting and "Vengeance" buff sequence (§2.3).
         - [x] Connect enemy spawning to real `PlayerProgress` pools and "clear-to-spawn" logic (§2.4).
         - [x] Implement cross-fade transitions for chapter/context changes (§2.1).
-        - [x] Setup paper-doll layering and procedural hue/size variants (§5.1).
+        - [x] Added Vitest unit tests for PixiJS components and layout logic (§6).
+        - [ ] Setup paper-doll layering and procedural hue/size variants (§5.1).
      - [ ] **Fix the Bugs** 
-        - [ ] Enemies not appearing.
-        - [ ] Add in tests.
-        - [ ] Implement the paperdoll layering that was missed.
-        - [ ] Update requirements
+        - [x] Enemies not appearing.
+        - [x] Bottom bar is stil looking weird with it's positioning. There is the outside scroll. And then the issue when the mobile interface moves the side navigation to the bottom (it's being pushed below the bottom of the visible window display). This should look more like an app, and not have the external scroll bars. (Still needs the internal scroll bars on the map because the map is huge).
+        - [x] Add in tests.        
+        - [x] Update requirements
         - [x] Split out main and app.py - they're getting way to large (break into modules to make more managable). Update agents and gemini and add a coding standards guide (refer to use).
-        - [ ] Make tests and get this working
+        - [x] Make tests and get this working
+        - [ ] Implement the paperdoll layering that was missed.
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.
