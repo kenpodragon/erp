@@ -9,6 +9,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
 - [x] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
   - [x] **Atmospheric Battle Banner (PixiJS)** *(Ref: `docs/recs/2.1.1_ATMOSPHERIC_BATTLE_BANNER.md`)*
+ - [x] **2.2.0 — Investigations & Infrastructure**
 
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  

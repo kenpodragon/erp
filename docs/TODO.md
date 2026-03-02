@@ -4,30 +4,31 @@
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
-    - [ ] **2.2.0 — Investigations & Infrastructure**
-        - [ ] **Technical Investigation (Eleven Reader & Suno):** 
-            - [ ] Research Eleven Reader API/embedding capabilities; verify if external apps can trigger playback via user accounts.
-            - [ ] Investigate Suno API or manual generation workflow for chapter-themed background music.
-            - [ ] Define "Fallback Mode" architecture: (Text + Suno Music) if Eleven Reader is unavailable or user lacks an account.        
+- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*       
     - [ ] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
         - [ ] **Base Layout:** Build the 4-zone master layout (Narrative, Combat, Stats, Upgrades).
         - [ ] **Combat VFX:** Implement HP bar color-shift/shake, Hit Flash, and Sprite-only shake.
         - [ ] **Odometer & Gold:** Build the Digit-Flip gold counter with "Pop & Fly" coin VFX.
         - [ ] **Large Numbers:** Implement Standard/Alphabetical suffix formatting (K-No, aa-zz).
+        - [ ] **Visual Fallback:** Implement **Generic Shadow Sprite** display for missing enemy assets.
         - [ ] **Narrative Sync:** Build the scroll-up/fade narrative block area.
         - [ ] **Parallax Stage:** Implement the dynamic-scaling PixiJS stage with layered backgrounds.
     - [ ] **2.2.2 — Combat Engine & Wave Logic** *(Ref: `docs/recs/2.2_STORY_MODE.md#1-combat-engine-clicker-heroes-style`)*
         - [ ] **Damage:** Implement active clicking vs. Auto-DPS stacking logic.
         - [ ] **Waves:** Build the 10-monster zone structure (9 minions, 1 boss).
+        - [ ] **Data Robustness:** Implement **Entity Fallback & Stat Injection** for incomplete DB records.
         - [ ] **Scaling:** Implement the exponential HP formula ($10 \times (1.55^{Zone-1} + Zone - 1)$).
         - [ ] **Modes:** Build the Progression Mode vs. Farm Mode toggles.
         - [ ] **Bosses:** Implement the 30s enrage timer and Chapter Boss Interrupt Zones.
-    - [ ] **2.2.3 — Narrative & Audiobook Integration** *(Ref: `docs/recs/2.2_STORY_MODE.md#2-narrative-experience--eleven-reader`)*
-        - [ ] **Eleven Reader:** Integrate the footer player with Play/Pause/Rewind/Speed.
-        - [ ] **Bi-directional Pause:** Sync audio pause with combat pause.
-        - [ ] **Dual-Condition Gate:** Enforce 100% audio + wave completion for advancement.
-        - [ ] **Infinite Waves:** Implement "Additional enemies discovered!" logic for long audio.
+        - [ ] **Logging:** Build the `dev_content_audit` logger for missing assets/stats.
+    - [ ] **2.2.3 — Narrative & Combat Sync** *(Ref: `docs/recs/2.2_STORY_MODE.md#2-narrative-experience`)*
+        - [ ] **Delay-Based Sync:** Implement paragraph-by-paragraph text triggers based on word count and user WPM settings.
+        - [ ] **Sync Logic:** Sync narrative progress with combat waves.
+        - [ ] **Fallback Mode:** Implement the "Fallback Mode" (Text + Loop Music) if primary audio fails.
+        - [ ] **Bi-directional Pause:** Sync audio player state (play/pause) with combat engine state.
+        - [ ] **Dual-Condition Gate:** Enforce 100% narrative + wave completion for advancement.
+        - [ ] **Infinite Waves:** Implement "Additional enemies discovered!" logic for long story segments.
+        - [ ] **Generic 8 Bit music"** Generate 4 sample tracks (from the 4 general thematic story types - 8 bit tracks 5 minutes long for use as placeholder music).
     - [ ] **2.2.4 — In-Session Progression & Scaling** *(Ref: `docs/recs/2.2_STORY_MODE.md#4-in-session-progression--scaling`)*
         - [ ] **Upgrade Menu:** Build the Toggle-based (x1, x10, xMax) purchase logic.
         - [ ] **Skill Scaling:** Implement session-gold buy-in/leveling for unlocked skills.
@@ -51,9 +52,15 @@
     - [ ] Setup Class-specific abilities and skill trees.
 
 - [ ] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`)*
-    - [ ] Implement SUNO music rotation logic based on active chapter.
-    - [ ] Add spatial/contextual SFX (Click, Death, Level Up).
-    - [ ] Finalize Eleven Reader narration streaming and sync.
+    - [ ] **Infrastructure:**
+        - [ ] **Duration Utility:** Build a backend script to extract/update scene narrative durations (based on word counts or audio).
+        - [ ] **Asset Management:** Implement the `dev_content_audit` logger for missing audio/music.
+    - [ ] **Frontend Components:**
+        - [ ] **Audio Player Embed:** Implement a standard audio player with Play, Pause, Restart, and Playback Speed (0.5x - 2.0x).
+        - [ ] **Suno Music Manager:** Build the looping background audio manager with cross-fade support.
+    - [ ] **Experience:**
+        - [ ] **Spatial SFX:** Add tactile feedback for clicks, hits, and level-ups.
+        - [ ] **Advanced Narrative (ElevenLabs):** Research and prototype word-level timestamp sync for future implementation.
 
 - [ ] **2.6 — Economy & Anti-Cheat** *(Ref: `docs/recs/2.6_ECONOMY_ANTICHEAT.md`)*
     - [ ] Implement currency conversion (Session Gold -> Essence/Resources).
