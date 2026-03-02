@@ -2,35 +2,48 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
-**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.2   
-- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
-    - [ ] Formulate detailed development/design plan for 2.2.
-    - [ ] **Combat Engine (Clicker Heroes Style)**
-        - [ ] Implement active clicking damage and Auto-DPS from skills.
-        - [ ] Build Wave (1-9) and Boss (10) structure with HP scaling.
-        - [ ] Add floating damage numbers and particle effects for crits.
-        - [ ] Implement **Chapter Boss Interrupt Zones** (Option C).
-        - [ ] Implement "Failure" state (Reset to wave 9 on boss loss).
-    - [ ] **Narrative & Audiobook Integration**
-        - [ ] Integrate Eleven Reader for real-time scene audio streaming (Pause sync enabled).
-        - [ ] Implement **Dual-Condition Gate:** 1x playback + required wave completion.
-        - [ ] Build synced text overlay (paragraph-by-paragraph) using **Pre-rendered PNGs**.
-        - [ ] Implement **Extended Waves** logic if combat finishes before audio.
-    - [ ] **In-Session Progression**
-        - [ ] Build session gold system (earning from kills, persisting across chapter).
-        - [ ] Implement **Skill Scaling:** Idle base level + session gold buy-in/leveling.
-        - [ ] Implement **Dark Ritual** chapter-wide persistence.
-    - [ ] **Victory & Meta-Rewards**
-        - [ ] Convert session gold/performance into permanent Elysium Essence.
-        - [ ] Implement "Continue vs. Return to Hub" post-completion flow.
-...
-- [ ] **Graphics Design**
-  - [ ] Generation of actual characters, icons, and other pieces (based on descriptions of the book)
-  - [ ] **PNG Text Asset Generator:** Build tool to convert book scene text into copy-protected PNG image overlays for Story Mode.
----
+**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-    - [ ] Implement "One-at-a-time" skill training logic and XP accumulation.
-    - [ ] Build the Offline Progression handler (Login delta calculation).
+- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
+    - [ ] **2.2.0 — Investigations & Infrastructure**
+        - [ ] **Technical Investigation (Eleven Reader & Suno):** 
+            - [ ] Research Eleven Reader API/embedding capabilities; verify if external apps can trigger playback via user accounts.
+            - [ ] Investigate Suno API or manual generation workflow for chapter-themed background music.
+            - [ ] Define "Fallback Mode" architecture: (Text + Suno Music) if Eleven Reader is unavailable or user lacks an account.
+        - [ ] **Asset Pipeline Setup:** Configure workflows for the tools defined in [C_STORY_ASSET_GENERATORS.md](recs/C_STORY_ASSET_GENERATORS.md). 
+    - [ ] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
+        - [ ] **Base Layout:** Build the 4-zone master layout (Narrative, Combat, Stats, Upgrades).
+        - [ ] **Combat VFX:** Implement HP bar color-shift/shake, Hit Flash, and Sprite-only shake.
+        - [ ] **Odometer & Gold:** Build the Digit-Flip gold counter with "Pop & Fly" coin VFX.
+        - [ ] **Large Numbers:** Implement Standard/Alphabetical suffix formatting (K-No, aa-zz).
+        - [ ] **Narrative Sync:** Build the scroll-up/fade narrative block area.
+        - [ ] **Parallax Stage:** Implement the dynamic-scaling PixiJS stage with layered backgrounds.
+    - [ ] **2.2.2 — Combat Engine & Wave Logic** *(Ref: `docs/recs/2.2_STORY_MODE.md#1-combat-engine-clicker-heroes-style`)*
+        - [ ] **Damage:** Implement active clicking vs. Auto-DPS stacking logic.
+        - [ ] **Waves:** Build the 10-monster zone structure (9 minions, 1 boss).
+        - [ ] **Scaling:** Implement the exponential HP formula ($10 \times (1.55^{Zone-1} + Zone - 1)$).
+        - [ ] **Modes:** Build the Progression Mode vs. Farm Mode toggles.
+        - [ ] **Bosses:** Implement the 30s enrage timer and Chapter Boss Interrupt Zones.
+    - [ ] **2.2.3 — Narrative & Audiobook Integration** *(Ref: `docs/recs/2.2_STORY_MODE.md#2-narrative-experience--eleven-reader`)*
+        - [ ] **Eleven Reader:** Integrate the footer player with Play/Pause/Rewind/Speed.
+        - [ ] **Bi-directional Pause:** Sync audio pause with combat pause.
+        - [ ] **Dual-Condition Gate:** Enforce 100% audio + wave completion for advancement.
+        - [ ] **Infinite Waves:** Implement "Additional enemies discovered!" logic for long audio.
+    - [ ] **2.2.4 — In-Session Progression & Scaling** *(Ref: `docs/recs/2.2_STORY_MODE.md#4-in-session-progression--scaling`)*
+        - [ ] **Upgrade Menu:** Build the Toggle-based (x1, x10, xMax) purchase logic.
+        - [ ] **Skill Scaling:** Implement session-gold buy-in/leveling for unlocked skills.
+        - [ ] **Dark Ritual:** Implement the chapter-persistent multiplier and header buff bar.
+        - [ ] **Exponential Math:** Integrate `break_infinity.js` for all frontend calculations.
+    - [ ] **2.2.5 — Victory & Meta-Rewards** *(Ref: `docs/recs/2.2_STORY_MODE.md#5-victory--meta-rewards`)*
+        - [ ] **Essence Conversion:** Calculate rewards based on wave/boss performance.
+        - [ ] **Post-Battle:** Build the "Continue vs. Return to Hub" summary flow.
+
+- [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
+    - [ ] **Skill Implementation**
+        - [ ] Implement "One-at-a-time" skill training logic and XP accumulation.
+        - [ ] Build the Offline Progression handler (Login delta calculation).
+    - [ ] **Visuals**
+        - [ ] Implement Melvor Idle-style progress bars and skill category list.
 
 - [ ] **2.4 — Character & Progression Systems, Classes, and Skills** *(Ref: `docs/recs/2.4_CHARACTER_PROGRESSION.md`)*
     - [ ] Design and implement core stats (Str/Agi/Int) logic.
@@ -64,26 +77,6 @@
         - [ ] Implement tiered reward badges and Vessel Profile snapshots for Leaderboards.
         - [ ] Build the Achievement Matrix (100+ challenges) with Shard/Title rewards.
 
-
----
-*Updated: 2026-03-01*
-
-
-
-## OTHER MAJOR TASKS  
-- [ ] **Security and anti-cheat**
-  - [ ] Some level of keyed encryption between server and front end to prevent people on the front from just sending random bonuses to the back end.
-  - [ ] Actions and progress must be held server side, all activities have to be passed to the back (clicks, sent tot he back, validated, and then recorded on the back end server).
-  - [ ] Purchases, upgrades, etc... are all validated by the back end server (purchase clicked on front end - sent to back). Server detects if the user has enough for the purchase and then debits it, stats updates back to the front end.    
-- [ ] **Audio Integration**
-  - [ ] Research Eleven Reader API for streaming background audio. (Would like them to advance, need to have access to that part of the book before they can proceed - e.g. on free eleven readers account, so they'd have to buy the book - get stuck in early tutorial lands or something).
-  - [ ] Research Eleven SUNO API for streaming background audio.
-  - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
-  - [ ] **Audio/Text Sync Editor:** Build interface to map chapter audio timestamps to PNG text assets.
-- [ ] **Class and Skill Design**
-  - [ ] Design the classes and systems based off of components from the book. Expand the existing choices to match aesthetic of the book.
-- [ ] **Graphics Design**
-  - [ ] Generation of actual characters, icons, and other pieces (based on descriptions of the book)
-  - [ ] Creation of PNG generator for text overlays for the book (text security).
 ---
 
+*Updated: 2026-03-02*

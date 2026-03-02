@@ -188,3 +188,10 @@ The primary goal of ERP is to provide an immersive environment where players **r
 **Requirements:** [B_DB_CLEANUP_CONSOLIDATION.md](B_DB_CLEANUP_CONSOLIDATION.md)
 - [x] **Duplicate Analysis:** Identify potential duplicates using `check_duplicates.py`.
 - [x] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.
+
+## C. Story Mode Asset Generators
+**Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
+- [ ] **PNG Text Generator:** Convert book scene text into copy-protected PNG image blocks.
+- [ ] **Audio Metadata Utility:** Extract asset lengths and scene durations from Eleven Reader.
+- [ ] **Sync Mapping Editor:** Map audio timestamps to specific PNG text blocks for the `scene_audio_sync` table.
+- [ ] **Suno Music Generation:** Generate atmospheric background tracks matching the book's mood.
