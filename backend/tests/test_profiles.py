@@ -6,7 +6,9 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone
 
-from main import app, get_session, get_current_player
+from main import app
+from db import get_session
+from auth import get_current_player
 from models import Player, PlayerSettings, CharacterClass, PlayerCharacter
 
 # --- Test DB Setup ---

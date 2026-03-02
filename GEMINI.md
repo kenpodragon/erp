@@ -26,6 +26,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 1. `AGENTS.md`: Project-wide mission control.
 2. `@docs/inst/TESTING.md`: Detailed testing protocols.
 3. `@docs/ARCHITECTURE.md`: Technical stack details.
+4. `@docs/inst/CODING_GUIDE.md`: Backend coding standards and module conventions.
 
 ## NOTES
 1. As permissions are requested, keep track of them and help provide a list of updates to gemini.md so that permission settings can be maintained and updated.

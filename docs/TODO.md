@@ -49,7 +49,7 @@
         - [ ] Add in tests.
         - [ ] Implement the paperdoll layering that was missed.
         - [ ] Update requirements
-        - [ ] Split out main and app.py - they're getting way to large (break into modules to make more managable). Update agents and gemini and add a coding standards guide (refer to use).
+        - [x] Split out main and app.py - they're getting way to large (break into modules to make more managable). Update agents and gemini and add a coding standards guide (refer to use).
         - [ ] Make tests and get this working
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*

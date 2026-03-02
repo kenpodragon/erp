@@ -30,6 +30,8 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 
 ## 📁 Directory Structure & Ownership
 - `/backend`: API, Game Logic, DB Models, Stripe Webhooks.
+  - `/backend/routes`: FastAPI router modules, one per domain.
+  - `/backend/models`: SQLModel ORM models, split by domain with `__init__.py` re-export.
 - `/frontend`: Player-facing React app, Audio streaming, Clicker UI.
 - `/admin`: Internal management dashboard.
 - `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL changes must be created as .SQL files in this folder. **Refer to `@docs/inst/DB_MIGRATIONS.md` for applying changes.**
@@ -52,6 +54,7 @@ When in doubt, consult these files in order:
 9. `@docs/inst/DB_MIGRATIONS.md`: How to apply database updates.
 10. `@docs/inst/TESTING.md`: How to test the system.
 11. `@docs/inst/INIT_INFRA.md`: Environment setup.
+12. `@docs/inst/CODING_GUIDE.md`: Backend coding standards and module conventions.
 
 ## 🤖 Agent Operating Procedures
 1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.

@@ -21,7 +21,9 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone, timedelta
 
-from main import app, get_session, get_current_player, get_current_admin
+from main import app
+from db import get_session
+from auth import get_current_player, get_current_admin
 from models import Player, SupportTicket, SupportReply, ServerConfig
 import config_cache
 

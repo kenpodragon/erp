@@ -2,7 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, text
 from sqlalchemy.pool import StaticPool
-from main import app, get_session, get_current_admin
+from main import app
+from db import get_session
+from auth import get_current_admin
 
 # --- Test DB Setup ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
