@@ -10,6 +10,14 @@ This document tracks the completed development phases for the Elysium Rising mmo
 - [x] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
   - [x] **Atmospheric Battle Banner (PixiJS)** *(Ref: `docs/recs/2.1.1_ATMOSPHERIC_BATTLE_BANNER.md`)*
  - [x] **2.2.0 — Investigations & Infrastructure**
+ - [x] **2.2.0 — Backend Infrastructure**        
+ - [x] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
+ - [x] **2.2.2 — Combat Engine & Wave Logic**        
+ - [x] **2.2.3 — Narrative & Combat Sync**        
+ - [x] **2.2.4 — In-Session Progression & Scaling**        
+ - [x] **2.2.5 — Victory & Meta-Rewards**        
+ - [x] **2.2.6 — Frontend Tests** *(Ref: `docs/inst/TESTING.md`)*        
+ - [x] **2.2.7 — Polish & Remaining Requirements** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*          
 
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  
