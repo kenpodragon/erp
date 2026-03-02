@@ -5,6 +5,7 @@
   flex-direction: column;
   padding: 1rem 0;
   z-index: 90;
+  border-right: 1px solid #333;
 }
 
 .sidebar-tabs {
@@ -12,11 +13,12 @@
   flex-direction: column;
   gap: 0.5rem;
   align-items: center;
+  width: 100%;
 }
 
 .sidebar-tab-btn {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -27,12 +29,20 @@
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
-  font-size: 0.65rem;
+  padding: 4px;
 }
 
 .sidebar-tab-btn .tab-icon {
-  font-size: 1.4rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.sidebar-tab-btn .tab-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  display: block;
 }
 
 .sidebar-tab-btn:hover {
@@ -47,21 +57,22 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
+/* 📱 Responsive Mobile View */
 @media (max-width: 768px) {
   .game-sidebar {
     width: 100%;
-    height: 60px;
+    height: 70px;
     flex-direction: row;
-    position: fixed;
-    bottom: 0;
     padding: 0;
+    border-right: none;
     border-top: 1px solid #333;
   }
   
   .sidebar-tabs {
     flex-direction: row;
-    width: 100%;
-    justify-content: space-around;
+    height: 100%;
+    justify-content: space-evenly;
+    align-items: stretch;
     gap: 0;
   }
 
@@ -70,5 +81,15 @@
     height: 100%;
     flex: 1;
     border-radius: 0;
+    margin: 0;
+  }
+
+  .sidebar-tab-btn .tab-icon {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-tab-btn .tab-label {
+    font-size: 0.6rem;
   }
 }

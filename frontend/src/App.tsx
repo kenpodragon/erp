@@ -415,48 +415,50 @@ function App() {
         />
       )}
 
-      <Routes>
-        <Route path="/" element={
-          isLoggedIn ? (
-            character ? <Navigate to="/game" replace /> : <Navigate to="/profile" replace />
-          ) : (
-            <SplashPage onLogin={handleLogin} />
-          )
-        } />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/license" element={<LicensePage />} />
-        <Route path="/support" element={isLoggedIn ? <SupportCenter /> : <GuestSupportPage />} />
-        <Route path="/profile" element={
-          <ProfilePage
-            apiMessage={apiMessage}
-            health={health}
-            authEnabled={authEnabled}
-            user={user}
-            backendUser={backendUser}
-            character={character}
-            verifyUserWithBackend={verifyUserWithBackend}
-            setCharacter={setCharacter}
-            handleLogout={handleLogout}
-            backendError={backendError}
-          />
-        } />
-        <Route path="/game/*" element={
-          isLoggedIn ? (
-            <MainGameLayout 
-              player={backendUser}
-              character={character} 
-              onCharacterCreated={(c) => {
-                setCharacter(c);
-                verifyUserWithBackend();
-              }} 
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={
+            isLoggedIn ? (
+              character ? <Navigate to="/game" replace /> : <Navigate to="/profile" replace />
+            ) : (
+              <SplashPage onLogin={handleLogin} />
+            )
+          } />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/license" element={<LicensePage />} />
+          <Route path="/support" element={isLoggedIn ? <SupportCenter /> : <GuestSupportPage />} />
+          <Route path="/profile" element={
+            <ProfilePage
+              apiMessage={apiMessage}
+              health={health}
+              authEnabled={authEnabled}
+              user={user}
+              backendUser={backendUser}
+              character={character}
+              verifyUserWithBackend={verifyUserWithBackend}
+              setCharacter={setCharacter}
+              handleLogout={handleLogout}
+              backendError={backendError}
             />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        } />
-      </Routes>
+          } />
+          <Route path="/game/*" element={
+            isLoggedIn ? (
+              <MainGameLayout 
+                player={backendUser}
+                character={character} 
+                onCharacterCreated={(c) => {
+                  setCharacter(c);
+                  verifyUserWithBackend();
+                }} 
+              />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } />
+        </Routes>
+      </main>
     </div>
   )
 }

@@ -57,7 +57,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Node-Based Map:** A "Chronicle-style" interactive map showing chapter and scene progression.
 - [x] **Centralized Interface:** Access point for story mode, idle training, shops, and social features.
 - [x] **Home Base Hub:** Display collections, leaderboard standings, and a personal journal of uncovered story beats.
-- [x] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth.
+- [x] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth. [2.1.1_ATMOSPHERIC_BATTLE_BANNER.md](2.1.1_ATMOSPHERIC_BATTLE_BANNER.md)
 ...
 - [x] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
 - [ ] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
@@ -144,6 +144,10 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
 - [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.
+- [ ] **Banner & Scaling Editor:** 
+    - [ ] **Visual Weights:** Configure how much each stat (Str/Agi/Int) affects sprite size, speed, and VFX.
+    - [ ] **Global Wave Settings:** Set `max_enemies_per_wave` and default spawn intervals.
+    - [ ] **Intensity Curves:** Define how wave density increases across chapters and resets per book.
 - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...

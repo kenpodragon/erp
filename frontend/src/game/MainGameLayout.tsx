@@ -83,10 +83,12 @@ const GameContent: React.FC<MainGameLayoutProps> = ({ player, character, onChara
       <div className="game-middle-container">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         <main className="game-content-area">
-          {renderContent()}
+          <div className="game-main-view">
+            {renderContent()}
+          </div>
+          {activeTab === 'map' && !state.activeSceneId && character && <BottomAnimatedBanner />}
         </main>
       </div>
-      {activeTab === 'map' && !state.activeSceneId && character && <BottomAnimatedBanner />}
     </div>
   );
 };

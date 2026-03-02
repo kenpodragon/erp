@@ -34,12 +34,16 @@
         - [x] Add Personal Journal (uncovered story beats from completed chapters).
         - [x] Add Collections (rare items/artifacts display).
         - [x] Add Leaderboard Standings view.
-    - [ ] **Atmospheric Battle Banner (PixiJS)**
-        - [ ] Implement infinite side-scrolling background logic.
-        - [ ] Add player character sprite animation (walk cycle).
-        - [ ] Implement enemy spawning and scrolling logic.
-        - [ ] Connect banner visuals to current chapter (background/enemies).
-        - [ ] Implement growth indicators (swap equipment/vfx based on player stats).
+    - [ ] **Atmospheric Battle Banner (PixiJS)** *(Ref: `docs/recs/2.1.1_ATMOSPHERIC_BATTLE_BANNER.md`)*
+        - [x] Implement infinite parallax background framework with variable scroll rates (§3.1).
+        - [x] Build player character controller with dynamic `x` movement and "forward momentum" (§2.2).
+        - [x] Implement sinusoidal skewing for walk/attack/idle animations (§3.2).
+        - [x] Build wave state machine (`COMBAT`, `IDLE`) and "silly" idle behaviors (§2.3, §3.2).
+        - [x] Implement browser-side combat logic with enemy scaling and 2-min "Focus" buff (§3.2).
+        - [ ] Implement death resetting and "Vengeance" buff sequence (§2.3).
+        - [ ] Connect enemy spawning to real `PlayerProgress` pools and "clear-to-spawn" logic (§2.4).
+        - [ ] Implement cross-fade transitions for chapter/context changes (§2.1).
+        - [ ] Setup paper-doll layering and procedural hue/size variants (§5.1).
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.

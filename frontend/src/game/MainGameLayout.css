@@ -1,26 +1,40 @@
 .game-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* LOCK to viewport */
   width: 100vw;
-  background-color: #111; /* Magic Research 2 Dark Background */
+  background-color: #111;
   color: #ddd;
-  overflow: hidden;
+  overflow: hidden; /* Prevent outer scroll */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .game-middle-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: hidden; /* Prevent middle-container scroll */
+}
+
+@media (max-width: 768px) {
+  .game-middle-container {
+    flex-direction: column-reverse;
+  }
 }
 
 .game-content-area {
   flex: 1;
-  background-color: #1a1a1a; /* Surface color */
+  background-color: #1a1a1a;
   border-left: 1px solid #333;
-  overflow-y: auto;
-  padding: 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Stack children without outer scroll */
+}
+
+.game-main-view {
+  flex: 1;
+  overflow-y: auto; /* THIS is the scrolling area for Map/Home/etc */
+  position: relative;
 }
 
 .placeholder-view {
