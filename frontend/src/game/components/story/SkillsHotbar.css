@@ -1,0 +1,125 @@
+.skills-hotbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #0d0d1e;
+  border-top: 1px solid #1a1a3a;
+}
+
+.skill-slot {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  background: #111122;
+  border: 1px solid #2a2a5a;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  font-family: 'Courier New', monospace;
+  user-select: none;
+}
+
+.skill-slot:hover {
+  border-color: #5555aa;
+}
+
+.skill-slot--locked {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.skill-slot--locked:hover {
+  opacity: 0.75;
+  border-color: #aa8800;
+}
+
+.skill-slot--ready {
+  border-color: #6666cc;
+  box-shadow: 0 0 6px rgba(100, 100, 255, 0.25);
+}
+
+.skill-slot--ready:hover {
+  border-color: #9988ff;
+  box-shadow: 0 0 10px rgba(150, 130, 255, 0.4);
+}
+
+.skill-slot--active {
+  border-color: #44cc66;
+  box-shadow: 0 0 8px rgba(60, 200, 80, 0.3);
+}
+
+.skill-slot--gcd {
+  opacity: 0.7;
+  border-color: #444466;
+}
+
+.skill-slot--dark-ritual {
+  border-color: #880000;
+}
+
+.skill-slot--dark-ritual:hover {
+  border-color: #cc2200;
+  box-shadow: 0 0 10px rgba(200, 30, 0, 0.35);
+}
+
+.skill-short {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ccccff;
+  line-height: 1;
+}
+
+.skill-name {
+  font-size: 7px;
+  color: #666688;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 2px;
+  padding: 0 2px;
+}
+
+.skill-cost {
+  font-size: 8px;
+  color: #ffcc44;
+  margin-top: 2px;
+}
+
+/* Cooldown fill overlay — covers from top down as cooldown counts */
+.skill-cd-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transition: height 0.25s linear;
+}
+
+.skill-cd-label {
+  position: absolute;
+  bottom: 3px;
+  right: 4px;
+  font-size: 8px;
+  color: #aaaadd;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.skill-energize-pip {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 8px;
+  font-weight: bold;
+  color: #ffdd00;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0 2px;
+  border-radius: 2px;
+  pointer-events: none;
+}

@@ -51,6 +51,11 @@ class PlayerSettings(SQLModel, table=True):
     music_volume: int = Field(default=80)
     sfx_volume: int = Field(default=80)
     narration_speed: float = Field(default=1.0)
+    narration_wpm: int = Field(default=200)
+    narration_font_size: int = Field(default=14)
+    narration_block_height: int = Field(default=50)
+    ui_scale: float = Field(default=1.0)
+    game_text_scale: float = Field(default=1.0)
     updated_at: Optional[datetime] = Field(default=None)
 
     # Relationships

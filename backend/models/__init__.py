@@ -18,6 +18,11 @@ from models.admin import (
     ServerConfig, AdminAuditLog, ActivityEvent,
     AdminWhitelistEmail, AdminWhitelistIP,
 )
+from models.story_mode import (
+    GameConfig, PlayerStorySession, SessionUpgrade,
+    PlayerMetaProgression, DevContentAudit,
+    CharacterSkillLevel, EntitySceneAppearance,
+)
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -29,4 +34,7 @@ __all__ = [
     "InventoryItem", "PlayerInventory", "Artifact", "PlayerCollection",
     "ServerConfig", "AdminAuditLog", "ActivityEvent",
     "AdminWhitelistEmail", "AdminWhitelistIP",
+    "GameConfig", "PlayerStorySession", "SessionUpgrade",
+    "PlayerMetaProgression", "DevContentAudit",
+    "CharacterSkillLevel", "EntitySceneAppearance",
 ]

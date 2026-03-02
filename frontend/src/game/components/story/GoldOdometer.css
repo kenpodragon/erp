@@ -1,0 +1,48 @@
+.gold-odometer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffcc44;
+  user-select: none;
+  overflow: visible;
+}
+
+.gold-icon {
+  font-size: 13px;
+  color: #ffaa00;
+}
+
+.gold-value {
+  display: inline-block;
+  min-width: 60px;
+  text-align: right;
+  transition: color 0.15s;
+}
+
+.gold-value--roll {
+  animation: goldRoll 0.25s ease-out;
+}
+
+@keyframes goldRoll {
+  0%   { transform: translateY(0);    color: #ffe000; }
+  40%  { transform: translateY(-4px); color: #ffffff; }
+  100% { transform: translateY(0);    color: #ffcc44; }
+}
+
+.gold-coin-pop {
+  position: absolute;
+  top: -4px;
+  font-size: 12px;
+  color: #ffd700;
+  pointer-events: none;
+  animation: coinFly 0.65s ease-out forwards;
+}
+
+@keyframes coinFly {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-28px) scale(0.6); }
+}

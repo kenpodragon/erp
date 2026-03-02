@@ -37,6 +37,11 @@ interface PlayerProfile {
     music_volume: number;
     sfx_volume: number;
     narration_speed: number;
+    narration_wpm: number;
+    narration_font_size: number;
+    narration_block_height: number;
+    ui_scale: number;
+    game_text_scale: number;
   };
   uid?: string;
 }

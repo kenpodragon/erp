@@ -1,0 +1,141 @@
+/* ── Story Mode Master Layout ───────────────────────────────────────────── */
+
+.story-mode {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #08080f;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+
+/* Header */
+.story-global-header {
+  flex-shrink: 0;
+}
+
+/* Main content area */
+.story-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* 1. Left Column: Narrative */
+.narrative-col {
+  width: 300px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: 1px solid #1a1a3a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 2. Middle Column: Combat */
+.story-center {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 3. Right Column: Dashboard */
+.story-right-panel {
+  width: 320px;
+  flex-shrink: 0;
+  height: 100%;
+  background: #0d0d1a;
+  border-left: 1px solid #1a1a3a;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+/* Force components to fill their columns */
+.narrative-col > .narrative-block {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.story-center > .combat-stage-wrap {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Ensure components inside right panel look good stacked */
+.story-right-panel > div {
+  flex-shrink: 0;
+}
+
+/* ── UI Components ───────────────────────────────────────────────────────── */
+
+.story-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1.5rem;
+}
+
+.story-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #1a1a2e;
+  border-top-color: #8b0000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.story-gate-ready {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #4a0000, #8b0000);
+  color: #ffd700;
+  padding: 1.5rem 3rem;
+  border: 3px solid #ffd700;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  animation: pulse-gate 1.5s ease-in-out infinite;
+  z-index: 500;
+  text-transform: uppercase;
+}
+
+@keyframes pulse-gate {
+  0%, 100% { box-shadow: 0 0 8px #ffd70066; }
+  50% { box-shadow: 0 0 20px #ffd700cc; }
+}
+
+.story-exit-btn {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(139, 0, 0, 0.3);
+  color: #ff4444;
+  border: 1px solid #8b0000;
+  padding: 4px 12px;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 200;
+  border-radius: 2px;
+}

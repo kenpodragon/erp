@@ -1,0 +1,40 @@
+.hero-stats {
+  background: #0d0d1e;
+  border: 1px solid #1a1a3a;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.hero-stats-title {
+  color: #5555aa;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #1a1a3a;
+  padding-bottom: 4px;
+}
+
+.hero-stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  color: #8888aa;
+}
+
+.hero-stats-row--highlight .hero-stats-value {
+  color: #cc8800;
+}
+
+.hero-stats-label {
+  color: #666688;
+}
+
+.hero-stats-value {
+  color: #aaaacc;
+  font-weight: bold;
+  text-align: right;
+}

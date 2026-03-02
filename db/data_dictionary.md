@@ -29,6 +29,11 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `012` | Standardize Scene Durations | Standardized `required_time_seconds` to 300 across all scenes in `scene_gameplay_data`. |
 | `013` | Story Mode State | Created `game_configs`, `player_story_sessions`, `session_upgrades`, and `player_meta_progression`. Added `uuid-ossp` extension. |
 | `014` | Skill & Config Refinement | Added cooldown/cost columns to `skills`. Created `scene_audio_sync`. Added `crit_multiplier` and `wave_duration_seconds` to `game_configs`. |
+| `015` | Story Mode Additions | Created `dev_content_audit` and `character_skill_levels` tables. Added `narrative_progress_pct` to `player_story_sessions`. Added `narration_wpm` to `player_settings`. Seeded `auto_dps_base`, `gold_drop_bonus`, `click_storm_cps` benefit effects. Seeded "Auto-Strike" idle skill + 9 active Story Mode hotbar skills (Clickstorm, Powersurge, Lucky Strikes, Metal Detector, Golden Clicks, The Dark Ritual, Super Clicks, Energize, Reload). Seeded `base_auto_dps_tick_ms`, `default_player_wpm`, `boss_enrage_seconds`, `primal_boss_chance` game configs. |
+| `016` | Story Beats Image Path | Added `content_image_path VARCHAR(255) DEFAULT NULL` to `story_beats`. Hook point for future PNG-based copy-protected narrative assets. NULL for all existing rows; will be populated by the asset pipeline. |
+| `017` | Story Beats Audio Columns | Added `audio_path VARCHAR(255) DEFAULT NULL` and `audio_duration_seconds INTEGER NOT NULL DEFAULT 0` to `story_beats`. Syncs DB with ORM model; hooks for future per-beat audio narration and WPM-gating fallback. |
+| `018` | Player Settings Polish | Added `narration_font_size`, `narration_block_height`, `ui_scale`, and `game_text_scale` to `player_settings`. Added `first_clear_multiplier` to `game_configs`. |
+| `019` | Game Configs Expansion | Moved hardcoded combat/upgrade constants (`monsters_per_zone`, `boss_zone_interval`, `crit_chance`, `auto_dps_tick_ms`, `gcd_ms`, `upgrade_cost_scaling`, `cd_reduction_per_level`, `max_cd_reduction`, `base_click_upgrade_cost`, `base_auto_dps_upgrade_cost`, `base_skill_unlock_cost`, `base_skill_level_upgrade_cost`, `milestone_interval`, `milestone_start`, `click_dmg_mult_per_level`, `auto_dps_mult_per_level`) to `game_configs`. |
 
 ---
 
@@ -41,7 +46,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `books` | Top-level container for the book series. |
 | `chapters` | Chapters within a book, containing raw text and processing status. |
 | `scenes` | Narrative nodes within chapters, linked to locations. |
-| `story_beats` | The smallest narrative units within a scene, tracking intensity and pacing. |
+| `story_beats` | The smallest narrative units within a scene, tracking intensity and pacing. Includes `content_image_path` (PNG hook, NULL), `audio_path` (per-beat audio, NULL), and `audio_duration_seconds` (WPM-gating fallback, defaults 0). |
 | `locations` | Master list of canonical locations within the Tower. |
 | `entities` | Master list of characters, enemies, and neutral figures from the lore. |
 | `entity_aliases` | Alternate names or titles for entities. |
@@ -97,11 +102,13 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `player_story_sessions` | Active combat session state, allowing for "Continue" functionality. |
-| `session_upgrades` | Temporary upgrades purchased with gold during a Story Mode run. |
+| `player_story_sessions` | Active combat session state, including zone/wave/gold progress and `narrative_progress_pct` (WPM-based, 0–100). |
+| `session_upgrades` | Temporary upgrades (click_dmg, auto_dps, skill_unlock) purchased with gold during a Story Mode run. |
 | `player_meta_progression` | Permanent currency (Elysium Essence) earned from active play. |
-| `game_configs` | Admin-tunable game settings (scaling, caps, rates). |
-| `scene_audio_sync` | Precise mapping of audio timestamps to text assets (PNGs). |
+| `game_configs` | **Game-specific tuning** (scaling factors, caps, rates). Distinct from `server_config` (see §8). Managed via admin panel and seeded in migrations. |
+| `scene_audio_sync` | Mapping of audio timestamps to text/PNG assets for future Eleven Reader integration (currently unused). |
+| `character_skill_levels` | Per-character skill XP and level, bridging Story Mode (auto-DPS calculation) and Idle Training (2.3). Defaults to level 1 if no record exists. |
+| `dev_content_audit` | Auto-logged entries for missing enemy sprites, stats, or entities detected during combat session start. Used by the content pipeline to prioritize missing assets. |
 
 ### 8. Support & Administration
 
@@ -112,7 +119,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `support_attachments` | Files uploaded to support tickets. |
 | `admin_whitelist_emails` | Email-based access control for the Admin Panel. |
 | `admin_whitelist_ips` | IP-based access control for the Admin Panel. |
-| `server_config` | Legacy system configuration (to be unified with `game_configs`). |
+| `server_config` | **Operational/admin settings** (maintenance mode, rate limits, feature flags). Managed by admins at runtime. NOT for game tuning — use `game_configs` for that. |
 | `activity_events` | Granular player activity log for anti-cheat and analytics. |
 | `admin_audit_log` | Detailed log of all administrative actions. |
 

@@ -1,0 +1,82 @@
+.story-global-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 1rem;
+  background: #0a0a18;
+  border-bottom: 2px solid #8b0000;
+  flex-shrink: 0;
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+
+.story-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.breadcrumb-chapter {
+  color: #8b0000;
+  font-weight: bold;
+}
+
+.breadcrumb-sep { color: #444; }
+
+.breadcrumb-scene { color: #aaa; }
+
+/* Buff tray */
+.story-buff-tray {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.buff-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  background: #1a001a;
+  border: 1px solid #660066;
+  border-radius: 12px;
+  font-size: 0.65rem;
+}
+
+.buff-name { color: #cc66cc; font-weight: bold; }
+.buff-timer { color: #ff88ff; }
+
+/* Dark Ritual bar */
+.dark-ritual-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.dark-ritual-label {
+  font-size: 0.65rem;
+  color: #8b0000;
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+}
+
+.dark-ritual-track {
+  width: 80px;
+  height: 6px;
+  background: #1a0000;
+  border: 1px solid #440000;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dark-ritual-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4a0000, #ff0000);
+  transition: width 0.5s ease;
+  border-radius: 3px;
+}

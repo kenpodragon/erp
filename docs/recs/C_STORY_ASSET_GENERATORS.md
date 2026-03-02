@@ -12,6 +12,15 @@ To prevent easy copy-pasting and scraping of the book's content, story text must
 - [ ] **1.2 Theming:** Support for different font styles and background transparencies matching the chapter's mood.
 - [ ] **1.3 Batch Processing:** Ability to process entire chapters/scenes in a single command.
 - [ ] **1.4 Optimization:** Automated cropping and compression (TinyPNG/WebP) to minimize frontend load times.
+- [x] **1.5 PNG Hook-Point (Frontend):** `NarrativeBlock.tsx` detects `image_path` in `StoryBeat`. If present, it renders an `<img>` with copy-protection (contextmenu/drag disabled) instead of raw text.
+
+## 2. Background Parallax Pipeline
+- [ ] **2.1 Specifications:** Each chapter requires 2-3 layers:
+    - `far`: Static/Slow-scroll clouds/sky (1024x512, seamless loop).
+    - `mid`: Parallax structures/landscape (1024x512, seamless loop, transparent sky).
+    - `near` (Optional): Floor texture / high-speed foreground.
+- [ ] **2.2 Asset Naming:** `/assets/game/backgrounds/bg_{chapter_id}_{layer}.png`.
+- [x] **2.3 Current State:** Chapter 1-4 placeholders implemented using generic dark-fantasy gradients.
 
 ---
 

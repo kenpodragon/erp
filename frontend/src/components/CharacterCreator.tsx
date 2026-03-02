@@ -30,10 +30,18 @@ interface CharacterCreatorProps {
 }
 
 const CLASS_AVATAR_MAP: Record<string, string> = {
+  class_sentinel: 'engineer',
   class_engineer: 'engineer',
+  class_arcanist: 'conduit',
   class_conduit:  'conduit',
+  class_wanderer: 'drifter',
   class_drifter:  'drifter',
+  class_invoker:  'vessel',
   class_vessel:   'vessel',
+  class_cleric:   'cleric',
+  class_mage:     'mage',
+  class_rogue:    'rogue',
+  class_warrior:  'warrior',
 };
 
 interface ClassVisual { filter: string; transform: string; accentColor: string; }

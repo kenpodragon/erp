@@ -1,0 +1,152 @@
+.post-battle-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: backdropFade 0.25s ease-out;
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.post-battle-modal {
+  background: #0d0d1e;
+  border: 1px solid #3a3a7a;
+  border-radius: 6px;
+  padding: 28px 32px;
+  min-width: 320px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'Courier New', monospace;
+  animation: modalSlide 0.25s ease-out;
+  box-shadow: 0 0 40px rgba(80, 60, 200, 0.3);
+}
+
+@keyframes modalSlide {
+  from { transform: translateY(-16px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.post-battle-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ccccff;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.post-battle-divider {
+  height: 1px;
+  background: #1e1e4a;
+}
+
+.post-battle-loading {
+  text-align: center;
+  color: #666688;
+  font-size: 12px;
+  padding: 12px 0;
+}
+
+.post-battle-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-battle-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.post-battle-stat--ritual {
+  border-top: 1px solid #2a1a1a;
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.post-battle-stat-label {
+  color: #666688;
+}
+
+.post-battle-stat-value {
+  font-weight: bold;
+  color: #aaaacc;
+  text-align: right;
+}
+
+.post-battle-stat-value--gold {
+  color: #ffcc44;
+}
+
+.post-battle-stat-value--essence {
+  color: #aa66ff;
+}
+
+.post-battle-stat-value--ritual {
+  color: #cc4400;
+}
+
+.post-battle-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.post-battle-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+
+.post-battle-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.post-battle-btn--continue {
+  background: #1e1e4a;
+  color: #aaaadd;
+  border: 1px solid #4444aa;
+}
+
+.post-battle-btn--hub {
+  background: #3a1a6a;
+  color: #ddaaff;
+  border: 1px solid #8855cc;
+}
+
+.post-battle-reward--hide {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.post-battle-reward--show {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.post-battle-hint {
+  font-size: 9px;
+  color: #444466;
+  text-align: center;
+  padding-top: 2px;
+}

@@ -1,0 +1,17 @@
+.combat-stage-wrap {
+  flex: 1;
+  min-width: 0;
+  min-height: 300px;
+  position: relative;
+  cursor: crosshair;
+  background: #080810;
+  border: 1px solid #1a1a3a;
+  border-radius: 4px;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.combat-stage-wrap canvas {
+  display: block;
+  /* PixiJS owns canvas dimensions — no CSS override or distortion occurs */
+}

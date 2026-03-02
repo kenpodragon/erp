@@ -4,40 +4,106 @@
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*       
-    - [ ] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
-        - [ ] **Base Layout:** Build the 4-zone master layout (Narrative, Combat, Stats, Upgrades).
-        - [ ] **Combat VFX:** Implement HP bar color-shift/shake, Hit Flash, and Sprite-only shake.
-        - [ ] **Odometer & Gold:** Build the Digit-Flip gold counter with "Pop & Fly" coin VFX.
-        - [ ] **Large Numbers:** Implement Standard/Alphabetical suffix formatting (K-No, aa-zz).
-        - [ ] **Visual Fallback:** Implement **Generic Shadow Sprite** display for missing enemy assets.
-        - [ ] **Narrative Sync:** Build the scroll-up/fade narrative block area.
-        - [ ] **Parallax Stage:** Implement the dynamic-scaling PixiJS stage with layered backgrounds.
-    - [ ] **2.2.2 — Combat Engine & Wave Logic** *(Ref: `docs/recs/2.2_STORY_MODE.md#1-combat-engine-clicker-heroes-style`)*
-        - [ ] **Damage:** Implement active clicking vs. Auto-DPS stacking logic.
-        - [ ] **Waves:** Build the 10-monster zone structure (9 minions, 1 boss).
-        - [ ] **Data Robustness:** Implement **Entity Fallback & Stat Injection** for incomplete DB records.
-        - [ ] **Scaling:** Implement the exponential HP formula ($10 \times (1.55^{Zone-1} + Zone - 1)$).
-        - [ ] **Modes:** Build the Progression Mode vs. Farm Mode toggles.
-        - [ ] **Bosses:** Implement the 30s enrage timer and Chapter Boss Interrupt Zones.
-        - [ ] **Logging:** Build the `dev_content_audit` logger for missing assets/stats.
-    - [ ] **2.2.3 — Narrative & Combat Sync** *(Ref: `docs/recs/2.2_STORY_MODE.md#2-narrative-experience`)*
-        - [ ] **Delay-Based Sync:** Implement paragraph-by-paragraph text triggers based on word count and user WPM settings.
-        - [ ] **Sync Logic:** Sync narrative progress with combat waves.
-        - [ ] **Fallback Mode:** Implement the "Fallback Mode" (Text + Loop Music) if primary audio fails.
-        - [ ] **Bi-directional Pause:** Sync audio player state (play/pause) with combat engine state.
-        - [ ] **Dual-Condition Gate:** Enforce 100% narrative + wave completion for advancement.
-        - [ ] **Infinite Waves:** Implement "Additional enemies discovered!" logic for long story segments.
-        - [ ] **Generic 8 Bit music"** Generate 4 sample tracks (from the 4 general thematic story types - 8 bit tracks 5 minutes long for use as placeholder music).
-    - [ ] **2.2.4 — In-Session Progression & Scaling** *(Ref: `docs/recs/2.2_STORY_MODE.md#4-in-session-progression--scaling`)*
-        - [ ] **Upgrade Menu:** Build the Toggle-based (x1, x10, xMax) purchase logic.
-        - [ ] **Skill Scaling:** Implement session-gold buy-in/leveling for unlocked skills.
-        - [ ] **Dark Ritual:** Implement the chapter-persistent multiplier and header buff bar.
-        - [ ] **Exponential Math:** Integrate `break_infinity.js` for all frontend calculations.
-    - [ ] **2.2.5 — Victory & Meta-Rewards** *(Ref: `docs/recs/2.2_STORY_MODE.md#5-victory--meta-rewards`)*
-        - [ ] **Essence Conversion:** Calculate rewards based on wave/boss performance.
-        - [ ] **Post-Battle:** Build the "Continue vs. Return to Hub" summary flow.
-    - [ ] **Asset Pipeline Setup:** Configure workflows for the tools defined in [C_STORY_ASSET_GENERATORS.md](recs/C_STORY_ASSET_GENERATORS.md). 
+- [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
+    - [x] **2.2.0 — Backend Infrastructure**
+        - [x] **Migration 015:** `dev_content_audit`, `character_skill_levels`, `narrative_progress_pct`, 9 hotbar skills, `game_configs` seeds.
+        - [x] **Models:** `GameConfig`, `PlayerStorySession`, `SessionUpgrade`, `PlayerMetaProgression`, `DevContentAudit`, `CharacterSkillLevel`, `EntitySceneAppearance`.
+        - [x] **Routes (`/api/game/story/`):** `GET /configs`, `GET /scenes/{id}/narrative`, `GET /scenes/{id}/enemies`, `POST /session/start`, `GET /session/{id}`, `POST /session/{id}/tick`, `POST /session/{id}/upgrade`, `POST /session/{id}/skill`, `POST /session/{id}/narrative`, `POST /session/{id}/complete`.
+        - [x] **Anti-cheat:** CPS cap validation, gold anomaly capping (20× tolerance) in tick endpoint.
+        - [x] **Entity fallback:** Zone-scaled stat injection + `dev_content_audit` logging for missing data.
+        - [x] **Auto-DPS calc:** `_calc_auto_dps()` sums `auto_dps_base × level` across all skills.
+        - [x] **Tests:** `backend/tests/test_story_mode.py` with full coverage.
+    - [x] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
+        - [x] **Base Layout:** `StoryMode.tsx` 4-zone master layout (Narrative, Combat, Stats, Upgrades). CSS dark theme.
+        - [x] **Combat VFX:** HP bar color-shift (green→yellow→red), shake at <10% HP, hit-flash on crits (`CombatStage.tsx`).
+        - [x] **Odometer & Gold:** `GoldOdometer.tsx` digit-roll animation + coin pop VFX.
+        - [x] **Large Numbers:** `utils/numbers.ts` — K/M/B/T/Qa…No/aa…zz suffix formatting.
+        - [x] **Visual Fallback:** Generic Shadow Sprite fallback drawn with PixiJS Graphics.
+        - [x] **Narrative Block:** `NarrativeBlock.tsx` WPM-timed paragraph reveal with auto-scroll.
+        - [x] **PixiJS Stage:** `CombatStage.tsx` dynamic-sizing canvas with ResizeObserver.
+        - [x] **Global Header:** `GlobalHeader.tsx` chapter breadcrumb, buff chip tray, Dark Ritual bar.
+        - [x] **Hero Stats:** `HeroStats.tsx` live session stat panel.
+        - [x] **Audio Player:** `AudioPlayer.tsx` 4-track HTML5 player, speed/volume, CSS waveform.
+    - [x] **2.2.2 — Combat Engine & Wave Logic**
+        - [x] **Damage:** Click damage + Auto-DPS (500ms tick) with crit system.
+        - [x] **Waves:** 10-monster zone structure, boss every 5th zone, Primal Boss 25% chance.
+        - [x] **Data Robustness:** Entity fallback + stat injection + `dev_content_audit` logging.
+        - [x] **Scaling:** `zoneHp()` formula `10 × (1.55^(zone-1) + zone-1)`. Configurable via `game_configs`.
+        - [x] **Modes:** Farm Mode (continue after narrative + waves done) vs. Return to Hub.
+        - [x] **Bosses:** 30s enrage timer, interrupt zone (red ring at <10s).
+        - [x] **Floating VFX:** Damage numbers (white/yellow-crit/blue-auto), coin particles on kill.
+    - [x] **2.2.3 — Narrative & Combat Sync**
+        - [x] **Delay-Based Sync:** `display_delay_seconds = (word_count / wpm) × 60`, min 2s.
+        - [x] **Dual-Condition Gate:** Both `narrativeProgressPct === 100` AND `wavesComplete` required.
+        - [x] **Infinite Waves:** "Additional enemies discovered!" mode when waves finish before narrative.
+        - [x] **Generic Music:** 4 × 5-minute 8-bit WAV placeholder tracks generated (`exploration`, `combat`, `mystery`, `boss`).        
+    - [x] **2.2.4 — In-Session Progression & Scaling**
+        - [x] **Upgrade Menu:** `UpgradeMenu.tsx` x1/x10/x100/MAX toggle, click-dmg + auto-dps tracks, `1.07^L` cost formula.
+        - [x] **Skill Hotbar:** `SkillsHotbar.tsx` 9 active skills, unlock/activate flow, GCD, cooldown bars, Energize/Reload meta-skills.
+        - [x] **Dark Ritual:** Chapter-persistent multiplier, stored server-side, shown in GlobalHeader buff bar.
+        - [x] **Exponential Math:** `break_infinity.js` installed; `upgradeCost`, `maxAffordable`, `formatNumber` implemented.
+    - [x] **2.2.5 — Victory & Meta-Rewards**
+        - [x] **Essence Conversion:** Server calculates `essence_earned` on `POST /session/{id}/complete`.
+        - [x] **Post-Battle:** `PostBattleSummary.tsx` — gold/essence/waves summary, Continue vs. Return to Hub.
+    - [x] **2.2.6 — Frontend Tests** *(Ref: `docs/inst/TESTING.md`)*
+        - [x] `numbers.test.ts` — 20 unit tests (formatNumber, upgradeCost, zoneHp, etc.)
+        - [x] `GoldOdometer.test.tsx` — 4 tests
+        - [x] `HeroStats.test.tsx` — 7 tests
+        - [x] `AudioPlayer.test.tsx` — 9 tests
+        - [x] `PostBattleSummary.test.tsx` — 8 tests
+        - [x] `StoryMode.test.tsx` — session lifecycle, tick loop, dual-condition gate
+        - [x] `NarrativeBlock.test.tsx` — WPM timing, beat reveal, onComplete callback
+        - [x] `CombatStage.test.tsx` — mock PixiJS, click/DPS damage, wave advance
+        - [x] `SkillsHotbar.test.tsx` — unlock, activate, GCD, cooldown display
+        - [x] `UpgradeMenu.test.tsx` — qty toggle, affordability, cost calculation
+    - [ ] **2.2.7 — Polish & Remaining Requirements** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*      
+        - [x] **WPM Settings UI:** Add narration WPM slider to player Settings page. *(DB column `narration_wpm` exists)*
+        - [x] **Narrative Scroll-Back:** Allow scrolling up to previously revealed story beats.
+        - [x] **Narrative Dimmer:** Background blur/dim behind narrative text area for readability.
+        - [x] **Parallax Background:** 2–3 layer PixiJS parallax in combat stage background.
+        - [x] **Enemy Animations:** Idle breathing, recoil on hit, particle burst on death.
+        - [x] **Audio Restart Button:** Add Restart control to `AudioPlayer.tsx`.
+        - [x] **Audio Progress Bar:** Current time / total duration display in `AudioPlayer.tsx`.
+        - [x] **Gold Fly-Path:** Animate coin particles from kill location to gold odometer.
+        - [x] **Cursor Shockwave:** Render cursor-position particle burst on click.
+        - [x] **Combo Heat:** Screen-edge glow/heat VFX when CPS > 10.
+        - [x] **Silent Authority:** Force-update gold odometer on server tick mismatch correction.
+        - [x] **Progression Mode Toggle:** In-combat toggle to auto-advance to next zone.
+        - [x] **DPS Spike Multiplier:** Wire actual 4× damage at Lv200+ every 25 levels; 10× every 1000.
+        - [x] **Monsters remaining:** Need to show how many more monsters are in the zone, remaining.
+        - [x] **Wave Increments:** If a user continues beyond the end of the level the wave counter should just go up (not 10/10 but just Wave 11).
+        - [x] **Death / Failure Logic:** Reset to start of current zone on boss enrage failure.
+        - [x] **Skip Gate:** Skip narrative gate for previously 100%-completed scenes.
+        - [x] **First-Time Clear Bonus:** Essence multiplier for scene first-clear. (configurable in game_settings)
+        - [x] **Chronicle Map Update:** Log scene completion to update Overworld Map node state.
+        - [x] **Asset Pipeline PNG Hook:** Update `C_STORY_ASSET_GENERATORS.md` with PNG hook-point docs.
+        - [x] **Clicking and nothing happens:** I should click and things happen (damage). Fixed in `CombatStage.tsx`.
+        - [x] **Need gold accumulation:** Gold earned from kills shown in odometer and flies to it.
+        - [x] **Pause and resume functionality:** Resumes active session on re-entry. (Icon updated on map)
+        - [x] **Story ending:** Scene completion requires both narrative AND waves.
+        - [x] **Calculate WPM:** Syncs beat delay with user setting.
+        - [x] **Side Navigation Doesn't make sense:** Removed for Story Mode (full-width).
+        - [x] **When the server resets:** Waiting/Exit logic added.
+        - [x] **Amount of text, block size, and font:** Adjustable user settings.
+        - [x] **Enemies change:** Seamless image swap implemented.
+        - [x] **UI SCALE:** Overall interface scaling implemented.
+        - [x] **TXT Scale:** Combat text scaling implemented.
+        - [x] **Scene complete UI:** Repositioned to center-ready banner.
+        - [x] **Placeholder backgrounds:** Chapter 1-4 assets generated/mapped.
+        - [x] **Meta-Skill Tooltips:** Detailed hover state explaining Meta logic.
+        - [x] **Mobile Touch Polish:** Added touch-action manipulation.
+        - [x] **Post-Scene Summary VFX:** Animated count-up and reward reveal.
+        - [x] **Player settings in DB:** All player configuration settings (UI scale, font size, etc.) are stored in the DB.
+        - [ ] Words scroller is broken
+        - [ ] Some enemies are "undefined" the names are in the entity table they should still appear (just their stats and image should be the placeholder)
+        - [ ] Sometimes on the gold flyout, the coins get stuck before dissappearing.
+        - [ ] 10 mobs per wave. Make sure there is always a mobs left per wave. At the end of the wave you fight a mini-boss. (not sure where ZONE came from)
+        - [ ] Mobs need to be scaling by level (I'm at some wave 30 and the mobs still only have 10 hp)
+        - [ ] When the server restarts, I get bounced back to profile. It should gracefully (no backend connectivity, and keep retrying - using a ramp so it's not pinging forever. Gameplay should pause if no connectivty). Then when it comes back I shouldn't have the whole page refreshed (I should stway where I was, eitehr on the map, in the tower, etc...)
+        - [ ] In farm mode I shoudl still be able to read the story again.
+        - [ ] The settings gear does nothing - it should pop up the settings (UI Scale, sound, etc...)
+        - [ ] When I  (select other tracks) through new music it stops the music. Should keep playing.
+        - [ ] Exit Button is ontop of the logout button.
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
     - [ ] **Skill Implementation**
@@ -58,6 +124,7 @@
     - [ ] **Frontend Components:**
         - [ ] **Audio Player Embed:** Implement a standard audio player with Play, Pause, Restart, and Playback Speed (0.5x - 2.0x).
         - [ ] **Suno Music Manager:** Build the looping background audio manager with cross-fade support.
+        - [ ] **WAV → MP3:** ffmpeg conversion of `/frontend/public/music/` tracks; update `AudioPlayer.tsx` src paths.
     - [ ] **Experience:**
         - [ ] **Spatial SFX:** Add tactile feedback for clicks, hits, and level-ups.
         - [ ] **Advanced Narrative (ElevenLabs):** Research and prototype word-level timestamp sync for future implementation.

@@ -245,6 +245,31 @@ async def update_settings(
         if not (0.5 <= s <= 2.0):
             raise HTTPException(status_code=422, detail="narration_speed must be between 0.5 and 2.0")
         settings.narration_speed = s
+    if "narration_wpm" in update_data:
+        w = update_data["narration_wpm"]
+        if not (50 <= w <= 500):
+            raise HTTPException(status_code=422, detail="narration_wpm must be between 50 and 500")
+        settings.narration_wpm = w
+    if "narration_font_size" in update_data:
+        fs = update_data["narration_font_size"]
+        if not (8 <= fs <= 32):
+            raise HTTPException(status_code=422, detail="narration_font_size must be between 8 and 32")
+        settings.narration_font_size = fs
+    if "narration_block_height" in update_data:
+        bh = update_data["narration_block_height"]
+        if not (10 <= bh <= 100):
+            raise HTTPException(status_code=422, detail="narration_block_height must be between 10 and 100")
+        settings.narration_block_height = bh
+    if "ui_scale" in update_data:
+        us = update_data["ui_scale"]
+        if not (0.5 <= us <= 2.0):
+            raise HTTPException(status_code=422, detail="ui_scale must be between 0.5 and 2.0")
+        settings.ui_scale = us
+    if "game_text_scale" in update_data:
+        ts = update_data["game_text_scale"]
+        if not (0.5 <= ts <= 2.5):
+            raise HTTPException(status_code=422, detail="game_text_scale must be between 0.5 and 2.5")
+        settings.game_text_scale = ts
 
     settings.updated_at = datetime.now(timezone.utc)
     session.add(settings)

@@ -492,7 +492,14 @@ const BottomAnimatedBanner: React.FC<BannerProps> = ({ character }) => {
 
   return (
     <div className="bottom-banner-container">
-      <Application width={dimensions.width} height={dimensions.height} background="#111111" antialias={true}>
+      {/* key ensures we don't reload the whole Pixi app unless the character ID changes */}
+      <Application 
+        key={character?.id || 'no-char'}
+        width={dimensions.width} 
+        height={dimensions.height} 
+        background="#111111" 
+        antialias={true}
+      >
         <BannerContent character={character} />
       </Application>
     </div>

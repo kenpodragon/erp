@@ -1,0 +1,147 @@
+.upgrade-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  touch-action: manipulation;
+}
+
+/* Quantity toggle row */
+.upgrade-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+  justify-content: center;
+}
+
+.upgrade-qty-label {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: #555577;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
+.upgrade-qty-btn {
+  background: #111122;
+  border: 1px solid #2a2a5a;
+  border-radius: 3px;
+  color: #7777aa;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.upgrade-qty-btn:hover {
+  border-color: #5555aa;
+  color: #aaaadd;
+}
+
+.upgrade-qty-btn--active {
+  border-color: #6666cc;
+  background: #1a1a3a;
+  color: #ccccff;
+  font-weight: bold;
+}
+
+/* Upgrade rows */
+.upgrade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #111122;
+  border: 1px solid #1e1e3e;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: 'Courier New', monospace;
+}
+
+.upgrade-row:hover:not(.upgrade-row--disabled) {
+  border-color: #5555aa;
+  background: #161630;
+}
+
+.upgrade-row--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.upgrade-row--spike {
+  animation: upgradeSpike 0.7s ease-out;
+}
+
+@keyframes upgradeSpike {
+  0%   { box-shadow: 0 0 0 rgba(100, 200, 255, 0); border-color: #6666cc; }
+  30%  { box-shadow: 0 0 20px rgba(100, 200, 255, 0.6); border-color: #aaffcc; }
+  100% { box-shadow: 0 0 0 rgba(100, 200, 255, 0); border-color: #1e1e3e; }
+}
+
+.upgrade-row-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upgrade-short {
+  width: 24px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #8888bb;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.upgrade-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.upgrade-name {
+  font-size: 10px;
+  color: #aaaacc;
+  font-weight: bold;
+}
+
+.upgrade-level {
+  font-size: 9px;
+  color: #666688;
+  white-space: nowrap;
+}
+
+.upgrade-milestone {
+  font-size: 8px;
+  color: #ffcc44;
+  font-weight: bold;
+  animation: milestonePulse 0.5s ease-out infinite alternate;
+}
+
+@keyframes milestonePulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1.0; }
+}
+
+.upgrade-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.upgrade-cost {
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffcc44;
+}
+
+.upgrade-qty-badge {
+  font-size: 8px;
+  color: #8888aa;
+}
