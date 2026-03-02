@@ -9,8 +9,7 @@
         - [ ] **Technical Investigation (Eleven Reader & Suno):** 
             - [ ] Research Eleven Reader API/embedding capabilities; verify if external apps can trigger playback via user accounts.
             - [ ] Investigate Suno API or manual generation workflow for chapter-themed background music.
-            - [ ] Define "Fallback Mode" architecture: (Text + Suno Music) if Eleven Reader is unavailable or user lacks an account.
-        - [ ] **Asset Pipeline Setup:** Configure workflows for the tools defined in [C_STORY_ASSET_GENERATORS.md](recs/C_STORY_ASSET_GENERATORS.md). 
+            - [ ] Define "Fallback Mode" architecture: (Text + Suno Music) if Eleven Reader is unavailable or user lacks an account.        
     - [ ] **2.2.1 — UI/UX & Interaction Layer** *(Ref: `docs/recs/2.2.1_STORY_MODE_UI.md`)*
         - [ ] **Base Layout:** Build the 4-zone master layout (Narrative, Combat, Stats, Upgrades).
         - [ ] **Combat VFX:** Implement HP bar color-shift/shake, Hit Flash, and Sprite-only shake.
@@ -37,6 +36,7 @@
     - [ ] **2.2.5 — Victory & Meta-Rewards** *(Ref: `docs/recs/2.2_STORY_MODE.md#5-victory--meta-rewards`)*
         - [ ] **Essence Conversion:** Calculate rewards based on wave/boss performance.
         - [ ] **Post-Battle:** Build the "Continue vs. Return to Hub" summary flow.
+    - [ ] **Asset Pipeline Setup:** Configure workflows for the tools defined in [C_STORY_ASSET_GENERATORS.md](recs/C_STORY_ASSET_GENERATORS.md). 
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
     - [ ] **Skill Implementation**
