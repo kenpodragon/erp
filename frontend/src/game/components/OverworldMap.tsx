@@ -43,7 +43,7 @@ const OverworldMap: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
 
-  const { enterScene } = useGame();
+  const { enterScene, setVisualChapter } = useGame();
 
   const scrollToBook = (bookId: number) => {
     const element = document.getElementById(`book-section-${bookId}`);
@@ -137,7 +137,12 @@ const OverworldMap: React.FC = () => {
                         <React.Fragment key={scene.id}>
                           <div 
                             className={`scene-node ${scene.status || 'locked'}`}
-                            onClick={() => scene.status !== 'locked' && setSelectedScene(scene)}
+                            onClick={() => {
+                              if (scene.status !== 'locked') {
+                                setSelectedScene(scene);
+                                setVisualChapter(chapter.chapter_number);
+                              }
+                            }}
                           >
                             <div className="node-circle">
                               {scene.status === 'completed' && <span className="check">✓</span>}

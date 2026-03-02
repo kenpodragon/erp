@@ -4,8 +4,9 @@ import { Container, Graphics, Text, TextStyle, TilingSprite, Assets, Texture, Sp
 import './BottomAnimatedBanner.css';
 import BannerBackground from './BannerBackground';
 import { useGame } from '../GameContext';
+import { api } from '../../api';
 
-// Register Pixi elements
+// Register Pixi elements for use in React JSX
 extend({ Container, Graphics, Text, TilingSprite, Sprite });
 
 interface BannerEntity {
@@ -21,6 +22,15 @@ interface BannerEntity {
   isDead: boolean;
 }
 
+interface DamageNumber {
+  id: string;
+  x: number;
+  y: number;
+  value: number;
+  isCrit: boolean;
+  alpha: number;
+}
+
 /**
  * Inner content component to access Pixi hooks like useTick
  */
@@ -30,17 +40,18 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   const height = 150;
   const groundY = 75; 
 
-  // ── Asset Loading ────────────────────────────────────────────────
+  // ── Asset Loading & Enemy Pool ──────────────────────────────────
   const [textures, setTextures] = useState<Record<string, Texture>>({});
+  const [enemyPool, setEnemyPool] = useState<any[]>([]);
   
   useEffect(() => {
     const loadAssets = async () => {
       const paths = {
         player: '/assets/game/classes/base_vessel.png',
-        sludge: '/assets/game/enemies/enemy_sludge.png',
-        voidling: '/assets/game/enemies/enemy_voidling.png',
-        guardian: '/assets/game/enemies/enemy_guardian.png',
-        remnant: '/assets/game/enemies/enemy_remnant.png',
+        enemy_sludge: '/assets/game/enemies/enemy_sludge.png',
+        enemy_voidling: '/assets/game/enemies/enemy_voidling.png',
+        enemy_guardian: '/assets/game/enemies/enemy_guardian.png',
+        enemy_remnant: '/assets/game/enemies/enemy_remnant.png',
       };
       const loaded: any = {};
       for (const [key, path] of Object.entries(paths)) {
@@ -52,11 +63,22 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       }
       setTextures(loaded);
     };
+
+    const fetchPool = async () => {
+      try {
+        const res = await api.get('/api/game/enemies/encountered');
+        if (res.ok) setEnemyPool(await res.json());
+      } catch (err) {
+        console.error('Banner: Failed to fetch enemy pool', err);
+      }
+    };
+
     loadAssets();
+    fetchPool();
   }, []);
 
-  // ── Local State (Initialized with real stats) ─────────────────────
-  const [player, setPlayer] = useState<BannerEntity & { animState: string }>({
+  // ── Local State ───────────────────────────────────────────────────
+  const [player, setPlayer] = useState<BannerEntity & { animState: string, vengeance: boolean }>({
     id: 'player',
     type: 'player',
     x: 100,
@@ -71,28 +93,47 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
     spriteKey: 'player',
     name: character?.character_name || 'PLAYER',
     isDead: false,
-    animState: 'walking'
+    animState: 'walking',
+    vengeance: false
   });
 
-  // Derived Multipliers from Stats
-  const visualScale = useMemo(() => 1.2 + (player.stats.strength / 100), [player.stats.strength]);
-  const speedMult = useMemo(() => 1.0 + (player.stats.agility / 50), [player.stats.agility]);
-  const vfxIntensity = useMemo(() => player.stats.intelligence / 5, [player.stats.intelligence]);
-
   const [enemies, setEnemies] = useState<BannerEntity[]>([]);
+  const [damageNumbers, setDamageNumbers] = useState<DamageNumber[]>([]);
   const [scrollSpeed, setScrollSpeed] = useState(1);
   const [waveTimer, setWaveTimer] = useState(0);
   const [idleTimer, setIdleTimer] = useState(0);
+  const [deathTimer, setDeathTimer] = useState(0);
   const [focusActive, setFocusActive] = useState(false);
   const [time, setTime] = useState(0);
+
+  // Derived Multipliers
+  const visualScale = useMemo(() => 1.2 + (player.stats.strength / 100), [player.stats.strength]);
+  const speedMult = useMemo(() => 1.0 + (player.stats.agility / 50), [player.stats.agility]);
+  const vfxIntensity = useMemo(() => player.stats.intelligence / 5, [player.stats.intelligence]);
 
   // ── Physics & Combat Loop ─────────────────────────────────────────
   useTick((delta) => {
     const dt = delta.deltaTime;
     setTime(t => t + dt);
     
+    setDamageNumbers(prev => prev.map(num => ({
+      ...num,
+      y: num.y - (1.0 * dt),
+      alpha: num.alpha - (0.02 * dt)
+    })).filter(num => num.alpha > 0));
+
     const nearestEnemy = enemies.length > 0 ? enemies[0] : null;
     const dist = nearestEnemy ? nearestEnemy.x - player.x : 9999;
+
+    if (player.isDead) {
+      setDeathTimer(prev => prev + dt);
+      setScrollSpeed(0);
+      if (deathTimer > 180) { 
+        setPlayer(prev => ({ ...prev, isDead: false, hp: prev.maxHp, x: -100, vengeance: true, animState: 'walking' }));
+        setDeathTimer(0);
+      }
+      return; 
+    }
 
     if (enemies.length > 0) {
       setWaveTimer(prev => prev + dt);
@@ -102,6 +143,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       setWaveTimer(0);
       setIdleTimer(prev => prev + dt);
       setFocusActive(false);
+      if (player.vengeance) setPlayer(prev => ({ ...prev, vengeance: false }));
     }
 
     let moveX = 0;
@@ -109,9 +151,17 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
 
     if (nearestEnemy && dist < 200) {
       nextAnimState = 'fighting';
-      setScrollSpeed(0.2);
-      if (dist < 60) moveX = -0.5 * dt;
-      else moveX = 0.8 * dt * speedMult; // Forward surge speed scales with Agi
+      setScrollSpeed(0.1);
+      if (dist < 60) {
+        moveX = -0.5 * dt; 
+        setPlayer(prev => {
+          const newHp = prev.hp - (0.2 * dt);
+          if (newHp <= 0) return { ...prev, isDead: true, hp: 0, animState: 'dead' };
+          return { ...prev, hp: newHp };
+        });
+      } else {
+        moveX = (player.vengeance ? 2.5 : 0.8) * dt * speedMult;
+      }
     } else if (enemies.length === 0) {
       if (idleTimer > 180 && idleTimer < 360) { 
         const cycle = Math.floor(idleTimer / 180) % 4;
@@ -121,7 +171,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
         moveX = 0;
       } else {
         nextAnimState = 'walking';
-        setScrollSpeed(1.0 * speedMult); // Walking speed scales with Agi
+        setScrollSpeed(1.0 * speedMult);
         moveX = 1.2 * dt * speedMult;
       }
     }
@@ -129,7 +179,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
     setPlayer(prev => ({
       ...prev,
       animState: nextAnimState,
-      x: Math.max(20, Math.min(width * 0.4, prev.x + moveX)),
+      x: Math.max(-100, Math.min(width * 0.4, prev.x + moveX)),
       y: groundY
     }));
 
@@ -137,31 +187,60 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       ...en,
       x: en.x - (1.5 + (1.5 * scrollSpeed)) * dt,
       y: groundY
-    })).filter(en => en.x > -100));
+    })).filter(en => en.x > -150));
 
+    // Wave Spawning (Using real dynamic pool)
     if (enemies.length === 0 && Math.random() < (nextAnimState === 'walking' ? 0.05 : 0.01)) {
-      const types = ['sludge', 'voidling', 'guardian', 'remnant'];
-      const type = types[Math.floor(Math.random() * types.length)];
-      setEnemies([{
-        id: `en_${Date.now()}`,
-        type: 'enemy',
-        x: width + 50,
-        y: groundY,
-        hp: 50,
-        maxHp: 50,
-        stats: {},
-        spriteKey: type,
-        name: type.toUpperCase(),
-        isDead: false
-      }]);
+      if (enemyPool.length > 0) {
+        const template = enemyPool[Math.floor(Math.random() * enemyPool.length)];
+        setEnemies([{
+          id: `en_${Date.now()}`,
+          type: 'enemy',
+          x: width + 50,
+          y: groundY,
+          hp: template.gameplay_data?.base_hp || 50,
+          maxHp: template.gameplay_data?.base_hp || 50,
+          stats: template.gameplay_data?.stat_block || {},
+          spriteKey: template.gameplay_data?.sprite_key || 'enemy_sludge',
+          name: template.canonical_name.toUpperCase(),
+          isDead: false
+        }]);
+      } else {
+        // Hard fallback if pool is empty
+        setEnemies([{
+          id: `en_fallback_${Date.now()}`,
+          type: 'enemy',
+          x: width + 50,
+          y: groundY,
+          hp: 50,
+          maxHp: 50,
+          stats: {},
+          spriteKey: 'enemy_sludge',
+          name: 'SLUDGE',
+          isDead: false
+        }]);
+      }
     }
 
     if (nearestEnemy && dist < 80) {
       setEnemies(prev => {
         if (prev.length === 0) return prev;
         const next = [...prev];
-        // Damage scales with STR and speed scales with AGI
-        const damage = (1.0 + (player.stats.strength / 20)) * dt * (focusActive ? 10 : 1);
+        const isCrit = Math.random() < 0.1;
+        const baseDamage = (1.0 + (player.stats.strength / 20));
+        const damage = baseDamage * dt * (focusActive ? 10 : (player.vengeance ? 5 : 1)) * (isCrit ? 2 : 1);
+        
+        if (Math.random() < 0.2) {
+          setDamageNumbers(d => [...d, {
+            id: `dmg_${Date.now()}_${Math.random()}`,
+            x: nearestEnemy.x + (Math.random() * 20 - 10),
+            y: nearestEnemy.y - 40,
+            value: Math.ceil(damage * 10),
+            isCrit,
+            alpha: 1.0
+          }]);
+        }
+
         next[0].hp -= damage;
         if (next[0].hp <= 0) return next.slice(1);
         return next;
@@ -171,14 +250,32 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
 
   return (
     <pixiContainer>
-      <BannerBackground chapterId={1} scrollSpeed={scrollSpeed} width={width} height={height} />
+      <BannerBackground chapterId={state.activeVisualChapterId} scrollSpeed={scrollSpeed} width={width} height={height} />
 
       <pixiContainer>
-        {/* Render Player */}
+        {damageNumbers.map(num => (
+          <pixiText 
+            key={num.id}
+            text={num.value.toString()}
+            x={num.x}
+            y={num.y}
+            alpha={num.alpha}
+            style={new TextStyle({
+              fontFamily: 'monospace',
+              fontSize: num.isCrit ? 18 : 12,
+              fill: num.isCrit ? '#ffcc00' : '#ffffff',
+              fontWeight: 'bold',
+              stroke: { width: 2, color: '#000000' }
+            })}
+          />
+        ))}
+      </pixiContainer>
+
+      <pixiContainer alpha={player.isDead ? 0.3 : 1.0}>
         <pixiContainer 
           x={player.x} 
           y={player.y}
-          scale={visualScale} // Size scales with STR
+          scale={visualScale}
           skew={{ 
             x: player.animState === 'walking' ? Math.sin(time * 0.1 * speedMult) * 0.05 : 0, 
             y: player.animState === 'walking' ? Math.cos(time * 0.1 * speedMult) * 0.02 : 0 
@@ -188,10 +285,9 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           {textures.player ? (
             <pixiSprite texture={textures.player} anchor={{ x: 0.5, y: 1.0 }} />
           ) : (
-            <pixiGraphics draw={(g) => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
+            <pixiGraphics draw={g => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
           )}
 
-          {/* Intelligence-based Ambient VFX */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -203,34 +299,41 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
             }}
           />
 
-          {player.animState === 'idle_check' && (
-            <pixiGraphics
-              draw={(g) => {
-                g.clear().rect(10, -25, 15, 10).fill({ color: 0x00ffff, alpha: 0.4 });
-                g.stroke({ width: 1, color: 0x00ffff, alpha: 0.8 });
-              }}
-            />
-          )}
-
-          {player.animState === 'idle_shine' && (
+          {player.vengeance && (
             <pixiGraphics
               draw={(g) => {
                 const pulse = Math.abs(Math.sin(time * 0.2));
-                g.clear().poly([15,-20, 18,-15, 23,-15, 19,-12, 20,-7, 15,-10, 10,-7, 11,-12, 7,-15, 12,-15]).fill({ color: 0xffffff, alpha: pulse });
+                g.clear().circle(0, -15, 22).stroke({ width: 3, color: 0xff0000, alpha: pulse * 0.8 });
               }}
             />
           )}
 
-          {focusActive && (
+          {!player.isDead && (
             <pixiGraphics
               draw={(g) => {
-                g.clear().circle(0, -15, 20).stroke({ width: 2, color: 0xff0000, alpha: 0.4 });
+                const hpW = (player.hp / player.maxHp) * 30;
+                g.clear()
+                 .rect(-15, -45, 30, 4).fill({ color: 0x333333 })
+                 .rect(-15, -45, hpW, 4).fill({ color: 0x4caf50 });
               }}
             />
+          )}
+
+          {player.animState === 'idle_check' && (
+            <pixiGraphics draw={(g) => {
+              g.clear().rect(10, -25, 15, 10).fill({ color: 0x00ffff, alpha: 0.4 });
+              g.stroke({ width: 1, color: 0x00ffff, alpha: 0.8 });
+            }} />
+          )}
+
+          {player.animState === 'idle_shine' && (
+            <pixiGraphics draw={(g) => {
+              const pulse = Math.abs(Math.sin(time * 0.2));
+              g.clear().poly([15,-20, 18,-15, 23,-15, 19,-12, 20,-7, 15,-10, 10,-7, 11,-12, 7,-15, 12,-15]).fill({ color: 0xffffff, alpha: pulse });
+            }} />
           )}
         </pixiContainer>
 
-        {/* Render Enemies */}
         {enemies.map(en => (
           <pixiContainer key={en.id} x={en.x} y={en.y} scale={1.5} skew={{ x: Math.sin(time * 0.15) * 0.1 }}>
             <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />

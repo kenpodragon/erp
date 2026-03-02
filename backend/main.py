@@ -987,6 +987,33 @@ async def get_journal(
     ]
 
 
+@app.get("/api/game/enemies/encountered")
+async def get_encountered_enemies(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all unique enemies encountered by the player so far.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return []
+
+    enemies = session.exec(
+        select(Entity, EntityGameplayData)
+        .join(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
+        .where(Entity.entity_type == "enemy")
+    ).all()
+
+    return [
+        {
+            **e.model_dump(),
+            "gameplay_data": gd.model_dump()
+        } for e, gd in enemies
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Home Base Hub endpoints
 # ---------------------------------------------------------------------------
@@ -1181,6 +1208,33 @@ async def get_journal(
             "summary": s.summary,
             "created_at": s.created_at.isoformat() if s.created_at else None
         } for s in completed_scenes
+    ]
+
+
+@app.get("/api/game/enemies/encountered")
+async def get_encountered_enemies(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    Return all unique enemies encountered by the player so far.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        return []
+
+    enemies = session.exec(
+        select(Entity, EntityGameplayData)
+        .join(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
+        .where(Entity.entity_type == "enemy")
+    ).all()
+
+    return [
+        {
+            **e.model_dump(),
+            "gameplay_data": gd.model_dump()
+        } for e, gd in enemies
     ]
 
 VALID_TICKET_CATEGORIES = {"bug_report", "account_issue", "payment_issue", "feedback", "other"}

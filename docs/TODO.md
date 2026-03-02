@@ -40,10 +40,17 @@
         - [x] Implement sinusoidal skewing for walk/attack/idle animations (§3.2).
         - [x] Build wave state machine (`COMBAT`, `IDLE`) and "silly" idle behaviors (§2.3, §3.2).
         - [x] Implement browser-side combat logic with enemy scaling and 2-min "Focus" buff (§3.2).
-        - [ ] Implement death resetting and "Vengeance" buff sequence (§2.3).
-        - [ ] Connect enemy spawning to real `PlayerProgress` pools and "clear-to-spawn" logic (§2.4).
-        - [ ] Implement cross-fade transitions for chapter/context changes (§2.1).
-        - [ ] Setup paper-doll layering and procedural hue/size variants (§5.1).
+        - [x] Implement death resetting and "Vengeance" buff sequence (§2.3).
+        - [x] Connect enemy spawning to real `PlayerProgress` pools and "clear-to-spawn" logic (§2.4).
+        - [x] Implement cross-fade transitions for chapter/context changes (§2.1).
+        - [x] Setup paper-doll layering and procedural hue/size variants (§5.1).
+     - [ ] **Fix the Bugs** 
+        - [ ] Enemies not appearing.
+        - [ ] Add in tests.
+        - [ ] Implement the paperdoll layering that was missed.
+        - [ ] Update requirements
+        - [ ] Split out main and app.py - they're getting way to large (break into modules to make more managable). Update agents and gemini and add a coding standards guide (refer to use).
+        - [ ] Make tests and get this working
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.

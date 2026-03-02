@@ -5,7 +5,7 @@ interface GameState {
   gold: number;
   activeTrainingId: string | null;
   activeSceneId: string | null;
-  // stats could be expanded here
+  activeVisualChapterId: number; // Syncs banner biome
 }
 
 interface GameContextType {
@@ -15,6 +15,7 @@ interface GameContextType {
   startTraining: (skillId: string) => void;
   enterScene: (sceneId: string) => void;
   exitScene: () => void;
+  setVisualChapter: (chapterId: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     gold: 0,
     activeTrainingId: null,
     activeSceneId: null,
+    activeVisualChapterId: 1, // Default
   });
 
   // Sync state if initialEssence changes (e.g. after fresh fetch)
@@ -44,20 +46,22 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
 
   const startTraining = (skillId: string) => {
     setState(prev => ({ ...prev, activeTrainingId: skillId }));
-    // Future: Sync with backend
   };
 
   const enterScene = (sceneId: string) => {
-    setState(prev => ({ ...prev, activeSceneId: sceneId, gold: 0 })); // Gold resets on entry
+    setState(prev => ({ ...prev, activeSceneId: sceneId, gold: 0 }));
   };
 
   const exitScene = () => {
     setState(prev => ({ ...prev, activeSceneId: null }));
-    // Future: Calculate Essence rewards based on session performance
+  };
+
+  const setVisualChapter = (chapterId: number) => {
+    setState(prev => ({ ...prev, activeVisualChapterId: chapterId }));
   };
 
   return (
-    <GameContext.Provider value={{ state, updateEssence, updateGold, startTraining, enterScene, exitScene }}>
+    <GameContext.Provider value={{ state, updateEssence, updateGold, startTraining, enterScene, exitScene, setVisualChapter }}>
       {children}
     </GameContext.Provider>
   );
