@@ -45,6 +45,75 @@ def test_get_game_map_with_data(client: TestClient, session: Session, player_tok
     assert len(data[0]["chapters"][0]["scenes"]) == 1
     assert data[0]["chapters"][0]["scenes"][0]["title"] == "Test Scene"
 
+def test_map_states_logic(client: TestClient, session: Session, player_token, test_character: PlayerCharacter):
+    """Test the in_progress and mastered logic in the map endpoint."""
+    # Seed data: 1 Book, 1 Chapter, 2 Scenes
+    book = Book(book_number=1, title="Book 1", source_file="b1.txt")
+    session.add(book)
+    session.commit()
+    session.refresh(book)
+
+    ch = Chapter(book_id=book.id, chapter_number=1, title="CH1", sort_order=1)
+    session.add(ch)
+    session.commit()
+    session.refresh(ch)
+
+    s1 = Scene(chapter_id=ch.id, scene_number=1, title="S1", sort_order=1)
+    s2 = Scene(chapter_id=ch.id, scene_number=2, title="S2", sort_order=2)
+    session.add(s1)
+    session.add(s2)
+    session.commit()
+
+    # Case 1: Player at Scene 1, Beat 1 -> S1 is "available", S2 is "locked"
+    progress = PlayerProgress(player_id=test_character.player_id, character_id=test_character.id, book_number=1, chapter_number=1, scene_number=1, beat_number=1)
+    session.add(progress)
+    session.commit()
+
+    response = client.get("/api/game/map", headers={"Authorization": f"Bearer {player_token}"})
+    scenes = response.json()[0]["chapters"][0]["scenes"]
+    assert scenes[0]["status"] == "available"
+    assert scenes[1]["status"] == "locked"
+
+    # Case 2: Player at Scene 1, Beat 2 -> S1 is "in_progress"
+    progress.beat_number = 2
+    session.add(progress)
+    session.commit()
+
+    response = client.get("/api/game/map", headers={"Authorization": f"Bearer {player_token}"})
+    scenes = response.json()[0]["chapters"][0]["scenes"]
+    assert scenes[0]["status"] == "in_progress"
+
+    # Case 3: Player at Scene 2, Beat 1 -> S1 is "mastered", S2 is "available"
+    progress.scene_number = 2
+    progress.beat_number = 1
+    session.add(progress)
+    session.commit()
+
+    response = client.get("/api/game/map", headers={"Authorization": f"Bearer {player_token}"})
+    scenes = response.json()[0]["chapters"][0]["scenes"]
+    assert scenes[0]["status"] == "mastered"
+    assert scenes[1]["status"] == "available"
+
+def test_debug_advance_endpoint(client: TestClient, session: Session, player_token, test_character: PlayerCharacter):
+    """Test the debug advance endpoint progresses the player."""
+    # Ensure progress exists
+    progress = PlayerProgress(player_id=test_character.player_id, character_id=test_character.id, book_number=1, chapter_number=1, scene_number=1, beat_number=1)
+    session.add(progress)
+    session.commit()
+
+    # Advance once (Beat 1 -> 2)
+    response = client.post("/api/game/debug/advance", headers={"Authorization": f"Bearer {player_token}"})
+    assert response.status_code == 200
+    assert response.json()["beat_number"] == 2
+
+    # Advance multiple times to trigger scene change (Beat 2 -> 3 -> 4 -> 5(Scene 2, Beat 1))
+    client.post("/api/game/debug/advance", headers={"Authorization": f"Bearer {player_token}"})
+    client.post("/api/game/debug/advance", headers={"Authorization": f"Bearer {player_token}"})
+    res = client.post("/api/game/debug/advance", headers={"Authorization": f"Bearer {player_token}"})
+    
+    assert res.json()["scene_number"] == 2
+    assert res.json()["beat_number"] == 1
+
 def test_get_scene_details(client: TestClient, session: Session, player_token):
     """Test fetching detailed scene info with story beats."""
     book = Book(book_number=1, title="Test Book", source_file="test.txt")

@@ -38,7 +38,10 @@ vi.mock('pixi.js', () => ({
     load: vi.fn().mockResolvedValue({}),
   },
   Texture: vi.fn(),
-  Sprite: 'Sprite'
+  Sprite: 'Sprite',
+  ColorMatrixFilter: class {
+    hue = vi.fn()
+  }
 }));
 
 // Mock the child BannerBackground component

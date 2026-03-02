@@ -9,6 +9,7 @@ interface StoryBeat {
 interface Scene {
   id: number;
   name: string;
+  summary?: string;
   gameplay_data?: {
     required_time_seconds: number;
   } | null;
@@ -52,8 +53,7 @@ const ChapterInfoPanel: React.FC<ChapterInfoPanelProps> = ({ scene, onClose, onE
 
           <div className="lore-preview">
             <p>
-              "The air here is thick with the scent of ozone and ancient decay. 
-              The Lower Towers haven't seen a living soul in centuries..."
+              {scene.summary || '"The Akashic records for this sector are heavily encrypted. Data reconstruction in progress..."'}
             </p>
           </div>
 

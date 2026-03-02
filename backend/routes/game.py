@@ -48,9 +48,9 @@ async def get_game_map(
 
     progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
     if not progress:
-        p_book, p_chapter, p_scene = 1, 1, 1
+        p_book, p_chapter, p_scene, p_beat = 1, 1, 1, 1
     else:
-        p_book, p_chapter, p_scene = progress.book_number, progress.chapter_number, progress.scene_number
+        p_book, p_chapter, p_scene, p_beat = progress.book_number, progress.chapter_number, progress.scene_number, progress.beat_number
 
     books = session.exec(select(Book).order_by(Book.book_number.asc())).all()
     result = []
@@ -78,18 +78,24 @@ async def get_game_map(
 
             for scene in scenes:
                 book_total_scenes += 1
+                
+                # Determine scene completion status
                 if book.book_number < p_book:
-                    status = "completed"
+                    status = "mastered"
                 elif book.book_number == p_book and chapter.chapter_number < p_chapter:
-                    status = "completed"
+                    status = "mastered"
                 elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number < p_scene:
-                    status = "completed"
+                    status = "mastered"
                 elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number == p_scene:
-                    status = "available"
+                    # Current active scene
+                    if p_beat > 1:
+                        status = "in_progress"
+                    else:
+                        status = "available"
                 else:
                     status = "locked"
 
-                if status == "completed":
+                if status in ["completed", "mastered"]:
                     chapter_completed_count += 1
                     book_completed_scenes += 1
 
@@ -122,6 +128,55 @@ async def get_game_map(
             "chapters": chapter_list
         })
     return result
+
+
+@router.post("/debug/advance")
+async def advance_progress(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session)
+):
+    """
+    DEBUG: Advance to the next beat or scene.
+    """
+    player = token.get("player")
+    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == character.id)).first()
+    if not progress:
+        progress = PlayerProgress(
+            player_id=player.id,
+            character_id=character.id,
+            book_number=1,
+            chapter_number=1,
+            scene_number=1,
+            beat_number=1
+        )
+        session.add(progress)
+    
+    # Logic to move to next beat
+    progress.beat_number += 1
+    
+    # If beat > 10, move to next scene (hardcoded for Rule of 4)
+    if progress.beat_number > 4:
+        progress.beat_number = 1
+        progress.scene_number += 1
+        
+    if progress.scene_number > 4:
+        progress.scene_number = 1
+        progress.chapter_number += 1
+        
+    if progress.chapter_number > 4:
+        progress.chapter_number = 1
+        progress.book_number += 1
+        
+    progress.updated_at = datetime.now(timezone.utc)
+    session.add(progress)
+    session.commit()
+    session.refresh(progress)
+    
+    return progress
 
 
 @router.get("/stat-definitions")

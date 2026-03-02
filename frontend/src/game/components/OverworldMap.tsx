@@ -58,21 +58,7 @@ const OverworldMap: React.FC = () => {
         const res = await api.get('/api/game/map');
         if (res.ok) {
           const data = await res.json();
-          // Enrich data with status and progress
-          const enrichedData = data.map((book: BookData, bIdx: number) => ({
-            ...book,
-            status: bIdx === 0 ? 'available' : 'locked',
-            progress: 0,
-            chapters: book.chapters.map((ch: Chapter, cIdx: number) => ({
-              ...ch,
-              progress: 0,
-              scenes: ch.scenes.map((sc: Scene, sIdx: number) => ({
-                ...sc,
-                status: bIdx === 0 && cIdx === 0 && sIdx === 0 ? 'available' : 'locked'
-              }))
-            }))
-          }));
-          setBooks(enrichedData);
+          setBooks(data);
         } else {
           setError('Failed to load map data');
         }
@@ -145,8 +131,10 @@ const OverworldMap: React.FC = () => {
                             }}
                           >
                             <div className="node-circle">
-                              {scene.status === 'completed' && <span className="check">✓</span>}
+                              {(scene.status === 'completed' || scene.status === 'mastered') && <span className="check">✓</span>}
                               {scene.status === 'locked' && <span className="lock">🔒</span>}
+                              {scene.status === 'in_progress' && <span className="pulse-dot" />}
+                              {scene.status === 'mastered' && <div className="mastery-star">★</div>}
                             </div>
                             <div className="scene-label-container">
                               <span className="chapter-prefix">{(chapter.title || chapter.name || '').split(':')[0] || `Chapter ${chapter.chapter_number}`}</span>

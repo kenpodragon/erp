@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
-import { Container, Graphics, Text, TextStyle, TilingSprite, Assets, Texture, Sprite } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle, TilingSprite, Assets, Texture, Sprite, ColorMatrixFilter } from 'pixi.js';
 import './BottomAnimatedBanner.css';
 import BannerBackground from './BannerBackground';
 import { useGame } from '../GameContext';
@@ -20,6 +20,9 @@ interface BannerEntity {
   spriteKey: string;
   name: string;
   isDead: boolean;
+  hueShift?: number;
+  level?: number;
+  scaleVariation?: number;
 }
 
 interface DamageNumber {
@@ -30,6 +33,98 @@ interface DamageNumber {
   isCrit: boolean;
   alpha: number;
 }
+
+/**
+ * Inner component for the layered player character (Paper-doll)
+ */
+const PlayerPaperDoll: React.FC<{ 
+  player: BannerEntity, 
+  textures: Record<string, Texture>,
+  visualScale: number,
+  time: number,
+  speedMult: number
+}> = ({ player, textures, visualScale, time, speedMult }) => {
+  
+  // Growth Scaling: Visual indicators for Level 1-99 benchmarks
+  const level = player.level || 1;
+  const growthScale = 1.0 + (level / 200);
+  const finalScale = visualScale * growthScale;
+
+  // Level-based Glow (Aura)
+  const getAuraColor = (lvl: number) => {
+    if (lvl >= 81) return 0x00ffff; // Radiant/Cosmic
+    if (lvl >= 61) return 0xffd700; // Gold
+    if (lvl >= 41) return 0xc0c0c0; // Silver
+    if (lvl >= 21) return 0xcd7f32; // Bronze
+    return null;
+  };
+  const auraColor = getAuraColor(level);
+
+  return (
+    <pixiContainer 
+      zIndex={5}
+      x={player.x} 
+      y={player.y}
+      scale={{ 
+        x: finalScale, 
+        y: player.stats.animState === 'idle_stretch' ? finalScale + Math.sin(time * 0.05) * 0.1 : finalScale 
+      }}
+      skew={{ 
+        x: player.stats.animState === 'walking' ? Math.sin(time * 0.1 * speedMult) * 0.05 : 0, 
+        y: player.stats.animState === 'walking' ? Math.cos(time * 0.1 * speedMult) * 0.02 : 0 
+      }}
+    >
+      {/* Level Aura */}
+      {auraColor !== null && (
+        <pixiGraphics
+          draw={(g) => {
+            const pulse = 0.4 + Math.abs(Math.sin(time * 0.1)) * 0.2;
+            g.clear()
+             .circle(0, -15, 20)
+             .fill({ color: auraColor, alpha: pulse });
+          }}
+        />
+      )}
+
+      {/* Layer 1: Base Body */}
+      {textures.player ? (
+        <pixiSprite texture={textures.player} anchor={{ x: 0.5, y: 1.0 }} />
+      ) : (
+        <pixiGraphics draw={g => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
+      )}
+
+      {/* Layer 2: Armor Slot (Placeholder fallback) */}
+      <pixiGraphics draw={g => {
+        g.clear();
+        // Only draw if level > 10 as a "progression" indicator
+        if (level > 10) {
+          g.rect(-8, -25, 16, 12)
+           .fill({ color: 0x555555, alpha: 0.6 });
+        }
+      }} />
+
+      {/* Layer 3: Head Slot (Placeholder fallback) */}
+      <pixiGraphics draw={g => {
+        g.clear();
+        if (level > 30) {
+          g.circle(0, -30, 6)
+           .fill({ color: 0x888888, alpha: 0.8 });
+        }
+      }} />
+
+      {/* Layer 4: Weapon Slot (Placeholder fallback) */}
+      <pixiGraphics draw={g => {
+        g.clear();
+        if (level > 5) {
+          const weaponY = -15 + Math.sin(time * 0.2) * 2;
+          g.moveTo(10, weaponY)
+           .lineTo(10, weaponY - 20)
+           .stroke({ width: 2, color: 0xaaaaaa });
+        }
+      }} />
+    </pixiContainer>
+  );
+};
 
 /**
  * Inner content component to access Pixi hooks like useTick
@@ -90,6 +185,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       agility: character?.agility || 5, 
       intelligence: character?.intelligence || 5 
     },
+    level: character?.level || 1,
     spriteKey: 'player',
     name: character?.character_name || 'PLAYER',
     isDead: false,
@@ -107,7 +203,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   const [time, setTime] = useState(0);
 
   // Derived Multipliers
-  const visualScale = useMemo(() => 1.2 + (player.stats.strength / 100), [player.stats.strength]);
+  const visualScale = useMemo(() => 1.2 + (player.stats.strength / 200), [player.stats.strength]);
   const speedMult = useMemo(() => 1.0 + (player.stats.agility / 50), [player.stats.agility]);
   const vfxIntensity = useMemo(() => player.stats.intelligence / 5, [player.stats.intelligence]);
 
@@ -146,8 +242,8 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       if (player.vengeance) setPlayer(prev => ({ ...prev, vengeance: false }));
     }
 
-    let moveX = 0;
     let nextAnimState = 'walking';
+    let moveX = 0;
 
     if (nearestEnemy && dist < 200) {
       nextAnimState = 'fighting';
@@ -191,6 +287,9 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
 
     // Wave Spawning (Using real dynamic pool)
     if (enemies.length === 0 && Math.random() < (nextAnimState === 'walking' ? 0.05 : 0.01)) {
+      const hueShift = Math.random() * 360;
+      const scaleVar = 1.3 + Math.random() * 0.4;
+      
       if (enemyPool.length > 0) {
         const template = enemyPool[Math.floor(Math.random() * enemyPool.length)];
         setEnemies([{
@@ -203,7 +302,9 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           stats: template.gameplay_data?.stat_block || {},
           spriteKey: template.gameplay_data?.sprite_key || 'enemy_sludge',
           name: template.canonical_name.toUpperCase(),
-          isDead: false
+          isDead: false,
+          hueShift,
+          scaleVariation: scaleVar
         }]);
       } else {
         // Hard fallback if pool is empty
@@ -217,7 +318,9 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           stats: {},
           spriteKey: 'enemy_sludge',
           name: 'SLUDGE',
-          isDead: false
+          isDead: false,
+          hueShift,
+          scaleVariation: scaleVar
         }]);
       }
     }
@@ -274,22 +377,17 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       </pixiContainer>
 
       <pixiContainer zIndex={10} alpha={player.isDead ? 0.3 : 1.0} sortableChildren={true}>
-        <pixiContainer 
-          zIndex={5}
-          x={player.x} 
-          y={player.y}
-          scale={{ x: visualScale, y: player.animState === 'idle_stretch' ? visualScale + Math.sin(time * 0.05) * 0.1 : visualScale }}
-          skew={{ 
-            x: player.animState === 'walking' ? Math.sin(time * 0.1 * speedMult) * 0.05 : 0, 
-            y: player.animState === 'walking' ? Math.cos(time * 0.1 * speedMult) * 0.02 : 0 
-          }}
-        >
-          {textures.player ? (
-            <pixiSprite texture={textures.player} anchor={{ x: 0.5, y: 1.0 }} />
-          ) : (
-            <pixiGraphics draw={g => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
-          )}
+        {/* Layered Player Character */}
+        <PlayerPaperDoll 
+          player={player} 
+          textures={textures} 
+          visualScale={visualScale} 
+          time={time} 
+          speedMult={speedMult} 
+        />
 
+        {/* Ambient VFX on Player */}
+        <pixiContainer x={player.x} y={player.y} zIndex={6}>
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -320,42 +418,17 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
               }}
             />
           )}
-
-          {player.animState === 'idle_check' && (
-            <pixiGraphics draw={(g) => {
-              g.clear().rect(10, -25, 15, 10).fill({ color: 0x00ffff, alpha: 0.4 });
-              g.stroke({ width: 1, color: 0x00ffff, alpha: 0.8 });
-            }} />
-          )}
-
-          {player.animState === 'idle_shine' && (
-            <pixiGraphics draw={(g) => {
-              const pulse = Math.abs(Math.sin(time * 0.2));
-              g.clear().poly([15,-20, 18,-15, 23,-15, 19,-12, 20,-7, 15,-10, 10,-7, 11,-12, 7,-15, 12,-15]).fill({ color: 0xffffff, alpha: pulse });
-            }} />
-          )}
         </pixiContainer>
 
+        {/* Enemies */}
         <pixiContainer zIndex={4}>
           {enemies.map(en => (
-            <pixiContainer key={en.id} x={en.x} y={en.y} scale={{ x: 1.5, y: 1.5 }} skew={{ x: Math.sin(time * 0.15) * 0.1, y: 0 }}>
-              <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />
-              {textures[en.spriteKey] ? (
-                <pixiSprite texture={textures[en.spriteKey]} anchor={{ x: 0.5, y: 1.0 }} />
-              ) : (
-                <pixiGraphics draw={(g) => { 
-                  g.clear()
-                   .rect(-15, -30, 30, 30).fill({ color: 0xffffff, alpha: 0.8 })
-                   .circle(0, -15, 10).fill({ color: 0xff0000 }); 
-                }} />
-              )}
-              <pixiGraphics
-                draw={(g) => {
-                  const hpW = (en.hp / en.maxHp) * 20;
-                  g.clear().rect(-10, -45, 20, 4).fill({ color: 0x333333 }).rect(-10, -45, hpW, 4).fill({ color: 0xff0000 });
-                }}
-              />
-            </pixiContainer>
+            <EnemySprite 
+              key={en.id} 
+              enemy={en} 
+              textures={textures} 
+              time={time} 
+            />
           ))}
         </pixiContainer>
       </pixiContainer>
@@ -364,6 +437,43 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
 
   );
 };
+
+/**
+ * Procedural Enemy Sprite with Hue/Size variants
+ */
+const EnemySprite: React.FC<{ enemy: BannerEntity, textures: Record<string, Texture>, time: number }> = ({ enemy, textures, time }) => {
+  const filter = useMemo(() => {
+    const f = new ColorMatrixFilter();
+    if (enemy.hueShift) f.hue(enemy.hueShift, false);
+    return f;
+  }, [enemy.hueShift]);
+
+  return (
+    <pixiContainer x={enemy.x} y={enemy.y} scale={{ x: enemy.scaleVariation || 1.5, y: enemy.scaleVariation || 1.5 }} skew={{ x: Math.sin(time * 0.15) * 0.1, y: 0 }}>
+      <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />
+      {textures[enemy.spriteKey] ? (
+        <pixiSprite 
+          texture={textures[enemy.spriteKey]} 
+          anchor={{ x: 0.5, y: 1.0 }} 
+          filters={[filter]}
+        />
+      ) : (
+        <pixiGraphics draw={(g) => { 
+          g.clear()
+           .rect(-15, -30, 30, 30).fill({ color: 0xffffff, alpha: 0.8 })
+           .circle(0, -15, 10).fill({ color: 0xff0000 }); 
+        }} filters={[filter]} />
+      )}
+      <pixiGraphics
+        draw={(g) => {
+          const hpW = (enemy.hp / enemy.maxHp) * 20;
+          g.clear().rect(-10, -45, 20, 4).fill({ color: 0x333333 }).rect(-10, -45, hpW, 4).fill({ color: 0xff0000 });
+        }}
+      />
+    </pixiContainer>
+  );
+};
+
 
 interface BannerProps {
   character: any;

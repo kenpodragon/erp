@@ -6,6 +6,7 @@ describe('ChapterInfoPanel Component', () => {
   const mockScene = {
     id: 1,
     name: 'The Gate',
+    summary: 'A dark entrance to the tower.',
     gameplay_data: {
       required_time_seconds: 180,
     }
@@ -14,9 +15,10 @@ describe('ChapterInfoPanel Component', () => {
 
   const mockOnEnter = vi.fn();
 
-  it('renders scene title and formatted duration', () => {
+  it('renders scene title, summary and formatted duration', () => {
     render(<ChapterInfoPanel scene={mockScene} onClose={mockOnClose} onEnter={mockOnEnter} />);
     expect(screen.getByText('The Gate')).toBeDefined();
+    expect(screen.getByText('A dark entrance to the tower.')).toBeDefined();
     expect(screen.getByText('3m')).toBeDefined();
   });
 
