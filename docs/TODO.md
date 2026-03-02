@@ -2,46 +2,7 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
-**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.2
-
-   - [ ] **2.1 — Loop A: Overworld / Hub (Detailed Implementation)** *(Ref: `docs/recs/2.1_OVERWORLD_HUB.md`)*
-        - [x] **Backend: DB-Driven Map Content**
-            - [x] Create `db/010_game_entities.sql` (Chapters, Scenes, Story Beats, Enemies, Skills).
-            - [x] Add `Chapter`, `Scene`, and `StoryBeat` models to `backend/models.py`.
-            - [x] Implement `GET /api/game/map` (Return all chapters and scenes with titles/meta).
-            - [x] Implement `GET /api/game/scenes/{id}` (Detailed story beat + narrative data).
-        - [x] **Frontend: Hook Up Real Data**
-            - [x] Update `OverworldMap.tsx` to fetch real data from the backend.
-            - [x] Implement `ChapterInfoPanel` modal (Scene details, "Enter Story" action).
-            - [x] Build transition framework to `StoryMode.tsx` (Loop B).
-        - [ ] **State Logic & UI Polish**
-            - [x] **Requirement 2.1: Node States**
-                - [x] Implement real node state logic (locked, available, completed) based on the database `PlayerProgress`.
-                - [x] Add `in_progress` (pulsing) and `mastered` (gold border) node states.
-            - [x] **Requirement 3: Lore Summary (Chapter Info Panel)**
-                - [x] Polish `ChapterInfoPanel` with best score tracking, and actual audio durations.
-                - [x] Add narrative lore hooks/summaries to `ChapterInfoPanel`.
-            - [x] Implement real progress percentage aggregation for the Book/Chapter progress bars.       
-            - [x] Develop detailed UI for `OverworldMap` (Pulsing nodes, chapter list, mobile responsiveness/collapsing sidebar).
-        - [x] **Atmospheric Battle Banner (PixiJS)** *(Ref: `docs/recs/2.1.1_ATMOSPHERIC_BATTLE_BANNER.md`)*
-            - [x] Implement infinite parallax background framework with variable scroll rates (§3.1).
-            - [x] Build player character controller with dynamic `x` movement and "forward momentum" (§2.2).
-            - [x] Implement sinusoidal skewing for walk/attack/idle animations (§3.2).
-            - [x] Build wave state machine (`COMBAT`, `IDLE`) and "silly" idle behaviors (§2.3, §3.2).
-            - [x] Implement browser-side combat logic with enemy scaling and 2-min "Focus" buff (§3.2).
-            - [x] Implement death resetting and "Vengeance" buff sequence (§2.3).
-            - [x] Connect enemy spawning to real `PlayerProgress` pools and "clear-to-spawn" logic (§2.4).
-            - [x] Implement cross-fade transitions for chapter/context changes (§2.1).
-            - [x] Added Vitest unit tests for PixiJS components and layout logic (§6).
-            - [x] Setup paper-doll layering and procedural hue/size variants (§5.1).
-        - [x] **Fix the Bugs** 
-            - [x] Enemies not appearing.
-            - [x] Bottom bar is stil looking weird with it's positioning. There is the outside scroll. And then the issue when the mobile interface moves the side navigation to the bottom (it's being pushed below the bottom of the visible window display). This should look more like an app, and not have the external scroll bars. (Still needs the internal scroll bars on the map because the map is huge).
-            - [x] Add in tests.        
-            - [x] Update requirements
-            - [x] Split out main and app.py - they're getting way to large (break into modules to make more managable). Update agents and gemini and add a coding standards guide (refer to use).
-            - [x] Make tests and get this working
-            - [x] Implement the paperdoll layering that was missed.
+**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.2   
 
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.
