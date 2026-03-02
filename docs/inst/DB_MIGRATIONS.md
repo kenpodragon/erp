@@ -31,3 +31,4 @@ PGPASSWORD='<password>' psql -h <public_ip> -U <username> -d <database_name> -f 
 1. **Always verify the SQL content** before running it on production.
 2. **Never commit the `.env` file** or hardcode the password in permanent scripts.
 3. **Authorized Networks:** Ensure your current public IP is added to the Cloud SQL "Authorized Networks" in the GCP Console if you are connecting from a local machine.
+4. **Data Dictionary:** After any successful migration, you **MUST** update `db/data_dictionary.md` to reflect the changes (History and Schema).

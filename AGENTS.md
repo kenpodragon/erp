@@ -34,7 +34,7 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
   - `/backend/models`: SQLModel ORM models, split by domain with `__init__.py` re-export.
 - `/frontend`: Player-facing React app, Audio streaming, Clicker UI.
 - `/admin`: Internal management dashboard.
-- `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL changes must be created as .SQL files in this folder. **Refer to `@docs/inst/DB_MIGRATIONS.md` for applying changes.**
+- `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL changes must be created as .SQL files in this folder. **Refer to `@docs/inst/DB_MIGRATIONS.md` for applying changes and `db/data_dictionary.md` for the current schema overview. Any schema change MUST update the data dictionary.**
 - `/docs`: All technical, architectural, and requirement specs.
 - `/infra`: Dockerfiles, Cloud Build YAMLs, Deployment scripts.
 - `/tools`: Book processor, duplicate analysis, and initial data ingestion tools.
@@ -64,7 +64,9 @@ When in doubt, consult these files in order:
 5. **Testing First:** Run `testing/run_tests.bat` before pushing to `main`. If you add a feature, you **must** add a corresponding test in the appropriate test directory.
 6. **SQL Migrations:** When applying `.sql` files to production, follow the procedure in `@docs/inst/DB_MIGRATIONS.md` (using `psql` and connection strings pulled from `backend/.env`).
 7. **Database Mandate:** ALWAYS PULL database connection strings directly from `/backend/.env`. NEVER hardcode, log, or print these values. Use `psql` with these variables for all migrations and direct scripts.
-8. **Clean Handover:** Ensure `TODO.md` reflects exactly what is left to do, and `DONE.md` reflects a verified history of completion. Move **entire blocks** only when fully complete.
+8. Clean Handover: Ensure `TODO.md` reflects exactly what is left to do, and `DONE.md` reflects a verified history of completion. Move **entire blocks** only when fully complete.
+9. **Data Dictionary:** Any change to the database schema, including new `.sql` migrations or manual updates to existing tables, **MUST** be reflected in `db/data_dictionary.md` immediately.
+
 
 ## 📖 Lore Context
 The game follows the "Towers of Elysium" narrative. Every chapter in the books represents a "Level" in the game. Characters, enemies, and atmosphere must reflect the specific chapter the player is currently in.

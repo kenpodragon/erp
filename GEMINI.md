@@ -6,7 +6,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 - **Read Access:** Full access to `/backend`, `/frontend`, `/admin`, `/db`, `/docs`, `/infra`, `/tools`, and `/testing`.
 - **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
 - **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/tools`, and `/testing`.
-- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md`. 
+- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md` and update `db/data_dictionary.md` accordingly.
     - **Connection Mandate:** ALWAYS PULL database connection strings and credentials directly from `/backend/.env`. NEVER hardcode, log, or print these values. Make sure you create `.sql` files for any Non-programming data specific database operations for the underlying data (e.g. seeding new characters, INSERT/UPDATE/DELETE) so these can be tracked and maintained. 
 - **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
 

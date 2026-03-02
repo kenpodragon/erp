@@ -60,24 +60,24 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Visual Feedback:** Side-scrolling animated battle banner (pixel art style) providing atmospheric feedback of character growth. [2.1.1_ATMOSPHERIC_BATTLE_BANNER.md](2.1.1_ATMOSPHERIC_BATTLE_BANNER.md)
 ...
 - [x] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
+
+### 2.2 — Loop B: Story Mode / Clicker Combat (Active Play)
 - [ ] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
 - [ ] **The Reading & Listening Experience:** 
-    - [ ] **Eleven Reader Integration:** The core of Story Mode is the audiobook narration. Users listen to the book series while playing the game.
-    - [ ] **Synced Text Overlay:** Story text scrolls and appears paragraph-by-paragraph in real-time, synced with Eleven Reader audio, allowing users to read along.
-    - [ ] **Cinematics:** Chapter-ending cutscenes (final boss victory) detailing the book's action with high-fidelity on-screen text overlays.
-    - [ ] **Copy Protection:** Story text rendered as images (Kindle-style) to prevent unauthorized extraction.
-- [ ] **Combat Engine:** "Clicker Heroes-style" enemy-centric combat with waves and prominent HP bars.
+    - [ ] **Eleven Reader Integration:** Audio narration streams and syncs with pre-rendered PNG text overlays.
+    - [ ] **Pause Sync:** Pausing the game automatically pauses the audiobook.
+    - [ ] **Dual-Condition Completion:** Scene is only "complete" when both the audio finishes and required waves/bosses are defeated.
+    - [ ] **Extended Waves:** If waves finish before audio, extra waves generate until audio is 100% complete.
+- [ ] **Combat Engine:** "Clicker Heroes-style" with exponential scaling and active skills.
+    - [ ] **Skill Scaling:** Base power from Idle Training levels; must be purchased and leveled with session gold each run.
+    - [ ] **Dark Ritual Persistence:** Multiplier persists across all scenes in a Chapter (resets per Book).
 - [ ] **Boss System:**
-    - [ ] **Mini-Bosses:** Scene-end encounters with enrage timers and unique lore-based abilities.
-    - [ ] **Chapter Bosses:** Major multi-phase encounters featuring target zones and skill-based checks.
-- [ ] **Strict Narrative Gating:** 
-    - [ ] **Audio-Linked Progression:** Users **cannot fight the boss** (even if they have defeated enough minions) or advance to the next node until the corresponding audiobook segment has finished playing.
-    - [ ] **Timer-Based Gate:** The gate is strictly tied to the 1x playback duration of the segment. Even if the user mutes the audio or does not actively listen, they must wait for the full segment duration to pass on their first playthrough.
-- [ ] **AI-Driven Visuals:** 
-    - [ ] Use AI (Stable Diffusion/DALL-E) to generate character and enemy designs from book descriptions.
-    - [ ] **Asset Caching:** Globally shared cache for AI assets to ensure consistency and minimize API costs.
-- [ ] **Animations & VFX:** Idle, damage, and death animations for all entities; specific spell effects for player abilities.
-- [ ] **Narrative Gating:** Progression synced with audio duration; players cannot advance nodes faster than 1x playback speed.
+    - [ ] **Mini-Bosses:** Scene-end encounters with enrage timers.
+    - [ ] **Primal Bosses:** 25% chance for Elysium Essence rewards on first defeat.
+    - [ ] **Chapter Bosses:** Features **Option C Interrupt Zones** during charge attacks.
+- [ ] **Narrative Gating:** 
+    - [ ] Strictly tied to 1x playback duration + wave completion.
+    - [ ] After completion, users can **CONTINUE** to farm or **GO BACK** to the Hub, updating the map.
 
 ### 2.3 Loop C: Idle Training (Passive Progression)
 - [ ] **Detailed Requirements:** [2.3_IDLE_TRAINING.md](2.3_IDLE_TRAINING.md)
@@ -187,4 +187,4 @@ The primary goal of ERP is to provide an immersive environment where players **r
 ## B. DB Cleanup & Consolidation
 **Requirements:** [B_DB_CLEANUP_CONSOLIDATION.md](B_DB_CLEANUP_CONSOLIDATION.md)
 - [x] **Duplicate Analysis:** Identify potential duplicates using `check_duplicates.py`.
-- [ ] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.
+- [x] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.

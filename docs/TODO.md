@@ -3,28 +3,32 @@
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.2   
-
 - [ ] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*
     - [ ] Formulate detailed development/design plan for 2.2.
     - [ ] **Combat Engine (Clicker Heroes Style)**
         - [ ] Implement active clicking damage and Auto-DPS from skills.
         - [ ] Build Wave (1-9) and Boss (10) structure with HP scaling.
         - [ ] Add floating damage numbers and particle effects for crits.
+        - [ ] Implement **Chapter Boss Interrupt Zones** (Option C).
         - [ ] Implement "Failure" state (Reset to wave 9 on boss loss).
     - [ ] **Narrative & Audiobook Integration**
-        - [ ] Integrate Eleven Reader for real-time scene audio streaming.
-        - [ ] Implement strict 1x playback gate for narrative progression.
-        - [ ] Build synced text overlay (paragraph-by-paragraph).
-        - [ ] Implement narrative image-overlay system for copy protection.
+        - [ ] Integrate Eleven Reader for real-time scene audio streaming (Pause sync enabled).
+        - [ ] Implement **Dual-Condition Gate:** 1x playback + required wave completion.
+        - [ ] Build synced text overlay (paragraph-by-paragraph) using **Pre-rendered PNGs**.
+        - [ ] Implement **Extended Waves** logic if combat finishes before audio.
     - [ ] **In-Session Progression**
-        - [ ] Build session gold system (earning from kills, resetting on exit).
-        - [ ] Implement Hero Upgrades (Click Damage, Auto-DPS scaling).
+        - [ ] Build session gold system (earning from kills, persisting across chapter).
+        - [ ] Implement **Skill Scaling:** Idle base level + session gold buy-in/leveling.
+        - [ ] Implement **Dark Ritual** chapter-wide persistence.
     - [ ] **Victory & Meta-Rewards**
         - [ ] Convert session gold/performance into permanent Elysium Essence.
-        - [ ] Implement first-time clear bonuses and chapter XP tracking.
+        - [ ] Implement "Continue vs. Return to Hub" post-completion flow.
+...
+- [ ] **Graphics Design**
+  - [ ] Generation of actual characters, icons, and other pieces (based on descriptions of the book)
+  - [ ] **PNG Text Asset Generator:** Build tool to convert book scene text into copy-protected PNG image overlays for Story Mode.
+---
 
-- [ ] **2.3 — Loop C: Idle Training (Passive Progression)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
-    - [ ] Formulate detailed development/design plan for 2.3.
     - [ ] Implement "One-at-a-time" skill training logic and XP accumulation.
     - [ ] Build the Offline Progression handler (Login delta calculation).
 
@@ -75,9 +79,11 @@
   - [ ] Research Eleven Reader API for streaming background audio. (Would like them to advance, need to have access to that part of the book before they can proceed - e.g. on free eleven readers account, so they'd have to buy the book - get stuck in early tutorial lands or something).
   - [ ] Research Eleven SUNO API for streaming background audio.
   - [ ] Generate new sound effect. Generate new background music. Generate Eleven Reader snipping (for the part of the chatper/book).
+  - [ ] **Audio/Text Sync Editor:** Build interface to map chapter audio timestamps to PNG text assets.
 - [ ] **Class and Skill Design**
   - [ ] Design the classes and systems based off of components from the book. Expand the existing choices to match aesthetic of the book.
 - [ ] **Graphics Design**
   - [ ] Generation of actual characters, icons, and other pieces (based on descriptions of the book)
+  - [ ] Creation of PNG generator for text overlays for the book (text security).
 ---
 
