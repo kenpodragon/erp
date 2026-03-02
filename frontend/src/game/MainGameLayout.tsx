@@ -37,7 +37,7 @@ interface MainGameLayoutProps {
 }
 
 const GameContent: React.FC<MainGameLayoutProps> = (props) => {
-  const { state } = useGame();
+  const { state, exitScene } = useGame();
   // Align IDs with Sidebar.tsx: map, skills, home, shop, chat, board
   const [activeTab, setActiveTab] = useState<string>('map');
 
@@ -76,6 +76,23 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
 
       {/* Hide bottom banner during active story scenes for more focus */}
       {!state.activeSceneId && <BottomAnimatedBanner character={character} />}
+
+      {/* Global Connectivity Overlay */}
+      {state.isOffline && (
+        <div className="connectivity-overlay">
+          <div className="connectivity-modal">
+            <div className="connectivity-spinner"></div>
+            <h2>CONNECTION LOST</h2>
+            <p>The Tower is flickering. Attempting to reconnect...</p>
+            <div className="connectivity-actions">
+              <button onClick={() => window.location.reload()}>RETRY NOW</button>
+              {state.activeSceneId && (
+                <button className="exit-btn" onClick={() => exitScene()}>EXIT TO HUB</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

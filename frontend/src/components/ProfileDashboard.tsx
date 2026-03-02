@@ -103,15 +103,8 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
   return (
     <div className="profile-container">
 
-      {/* ── Top bar: audio toggle + logout ────────────────────────────── */}
+      {/* ── Top bar: logout ────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-        <button
-          onClick={() => setShowAudioModal(true)}
-          title="Audio Settings"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem', lineHeight: 1, padding: '0.2rem' }}
-        >
-          🔊
-        </button>
         <button
           onClick={onLogout}
           style={{ background: '#3a0000', color: '#ff8888', border: '1px solid #7a0000', borderRadius: '4px', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.85rem' }}
@@ -119,27 +112,6 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
           Logout
         </button>
       </div>
-
-      {/* ── Audio settings modal ───────────────────────────────────────── */}
-      {showAudioModal && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowAudioModal(false); }}
-        >
-          <div style={{ background: '#1a1a1a', border: '1px solid #444', borderRadius: '8px', padding: '1.5rem', width: '100%', maxWidth: '380px', position: 'relative', boxShadow: '0 8px 32px rgba(0,0,0,0.8)' }}>
-            <button
-              onClick={() => setShowAudioModal(false)}
-              style={{ position: 'absolute', top: '0.6rem', right: '0.75rem', background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 }}
-              aria-label="Close audio settings"
-            >
-              ×
-            </button>
-            {player.settings && (
-              <AudioSettings settings={player.settings} onUpdate={() => { handleAudioUpdate(); }} />
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── Avatar picker modal ────────────────────────────────────────── */}
       {showAvatarModal && (

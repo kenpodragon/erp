@@ -128,14 +128,53 @@
 
 .story-exit-btn {
   position: fixed;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: rgba(139, 0, 0, 0.3);
-  color: #ff4444;
-  border: 1px solid #8b0000;
-  padding: 4px 12px;
-  font-size: 10px;
+  bottom: 4rem; /* Above audio player */
+  right: 1.5rem;
+  background: rgba(139, 0, 0, 0.6);
+  color: #ffffff;
+  border: 2px solid #8b0000;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
   z-index: 200;
-  border-radius: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+}
+
+.story-exit-btn:hover {
+  background: #8b0000;
+  box-shadow: 0 0 15px rgba(139, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.story-debug-controls {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+}
+
+.story-debug-controls:hover {
+  opacity: 1.0;
+}
+
+.debug-btn {
+  background: #333;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 2px 8px;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.debug-btn:hover {
+  background: #444;
+  color: #fff;
 }

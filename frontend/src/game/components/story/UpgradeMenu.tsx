@@ -43,19 +43,20 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
   const MILESTONE_START = Number(gameConfigs['milestone_start'] ?? 200);
 
   // Maintain local level state, but sync from session props
-  const [clickLvl, setClickLvl] = useState(session.clickUpgradeLevel);
-  const [autoLvl, setAutoLvl] = useState(session.autoUpgradeLevel);
+  const [clickLvl, setClickLvl] = useState(isNaN(session.clickUpgradeLevel) ? 1 : session.clickUpgradeLevel);
+  const [autoLvl, setAutoLvl] = useState(isNaN(session.autoUpgradeLevel) ? 1 : session.autoUpgradeLevel);
 
   useEffect(() => {
-    setClickLvl(session.clickUpgradeLevel);
-    setAutoLvl(session.autoUpgradeLevel);
+    if (!isNaN(session.clickUpgradeLevel)) setClickLvl(session.clickUpgradeLevel);
+    if (!isNaN(session.autoUpgradeLevel)) setAutoLvl(session.autoUpgradeLevel);
   }, [session.clickUpgradeLevel, session.autoUpgradeLevel]);
 
   const handleUpgrade = useCallback(async (trackType: 'click_dmg' | 'auto_dps', currentLevel: number, baseCost: number) => {
-    let n = qty === 'MAX' ? maxAffordable(baseCost, currentLevel, session.sessionGold, COST_SCALING) : qty;
-    if (n < 1) return;
+    const safeLevel = isNaN(currentLevel) ? 1 : currentLevel;
+    let n = qty === 'MAX' ? maxAffordable(baseCost, safeLevel, session.sessionGold, COST_SCALING) : qty;
+    if (n < 1 || isNaN(n)) return;
 
-    const cost = upgradeCost(baseCost, currentLevel, n, COST_SCALING);
+    const cost = upgradeCost(baseCost, safeLevel, n, COST_SCALING);
     if (session.sessionGold < cost) return;
 
     try {
@@ -67,12 +68,13 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
       if (res.ok) {
         const data = await res.json();
         // Server returns new aggregate multipliers and levels
+        // Use current session values as fallbacks to prevent NaN if keys are missing
         updateStorySession({
-          sessionGold: data.session_gold,
-          clickDmgMultiplier: data.click_dmg_multiplier,
-          autoDpsMultiplier: data.auto_dps_multiplier,
-          clickUpgradeLevel: data.click_upgrade_level,
-          autoUpgradeLevel: data.auto_upgrade_level,
+          sessionGold: data.session_gold ?? session.sessionGold,
+          clickDmgMultiplier: data.click_dmg_multiplier ?? session.clickDmgMultiplier,
+          autoDpsMultiplier: data.auto_dps_multiplier ?? session.autoDpsMultiplier,
+          clickUpgradeLevel: data.click_upgrade_level ?? session.clickUpgradeLevel,
+          autoUpgradeLevel: data.auto_upgrade_level ?? session.autoUpgradeLevel,
         });
       }
     } catch (err) {
@@ -96,6 +98,15 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
       baseCost: BASE_DPS_COST,
     }
   ];
+
+  if (isNaN(clickLvl) || isNaN(autoLvl)) {
+    return (
+      <div className="upgrade-menu upgrade-menu--error">
+        <p>Data corruption detected.</p>
+        <button onClick={() => window.location.reload()}>Fix and Refresh</button>
+      </div>
+    );
+  }
 
   return (
     <div className="upgrade-menu">

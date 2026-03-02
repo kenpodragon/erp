@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { apiEvents } from '../api';
 
 // ── Active skill buff (tracks client-side state for hotbar display) ──────────
+// ... (rest of file remains same, adding listeners in GameProvider)
 export interface ActiveBuff {
   skillId: number;
   skillName: string;
@@ -44,6 +46,7 @@ interface GameState {
   // Story Mode session (null when not in a session)
   storySession: StorySession | null;
   activeBuffs: ActiveBuff[];
+  isOffline: boolean;
 }
 
 type SessionPatch = Partial<StorySession> | ((prev: StorySession) => Partial<StorySession>);
@@ -56,6 +59,7 @@ interface GameContextType {
   enterScene: (sceneId: string) => void;
   exitScene: () => void;
   setVisualChapter: (chapterId: number) => void;
+  setOffline: (offline: boolean) => void;
   // Story Mode
   setStorySession: (session: StorySession) => void;
   updateStorySession: (patch: SessionPatch) => void;
@@ -78,6 +82,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     activeVisualChapterId: 1,
     storySession: null,
     activeBuffs: [],
+    isOffline: false,
   });
 
   useEffect(() => {
@@ -99,6 +104,19 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const handleOffline = () => setState(prev => ({ ...prev, isOffline: true }));
+    const handleOnline = () => setState(prev => ({ ...prev, isOffline: false }));
+
+    apiEvents.addEventListener('api-offline', handleOffline);
+    apiEvents.addEventListener('api-online', handleOnline);
+
+    return () => {
+      apiEvents.removeEventListener('api-offline', handleOffline);
+      apiEvents.removeEventListener('api-online', handleOnline);
+    };
+  }, []);
+
   const updateEssence = (amount: number) =>
     setState(prev => ({ ...prev, essence: prev.essence + amount }));
 
@@ -116,6 +134,9 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
 
   const setVisualChapter = (chapterId: number) =>
     setState(prev => ({ ...prev, activeVisualChapterId: chapterId }));
+
+  const setOffline = (offline: boolean) =>
+    setState(prev => ({ ...prev, isOffline: offline }));
 
   const setStorySession = (session: StorySession) =>
     setState(prev => ({ ...prev, storySession: session }));

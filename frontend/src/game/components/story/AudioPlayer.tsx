@@ -90,16 +90,19 @@ const AudioPlayer: React.FC<Props> = ({ chapterId = 1 }) => {
     setCurrentTime(val);
   };
 
-  const cycleTrack = (dir: 1 | -1) => {
+  // Handle track src changes
+  useEffect(() => {
     const el = audioRef.current;
-    const nextIdx = (trackIdx + dir + TRACKS.length) % TRACKS.length;
-    setTrackIdx(nextIdx);
-    if (el) {
-      // In production, might map to: /music/chapter_${chapterId}/${TRACKS[nextIdx].key}.mp3
-      el.src = TRACKS[nextIdx].src;
-      el.load();
-      if (playing) el.play().catch(() => {});
+    if (!el) return;
+    el.src = TRACKS[trackIdx].src;
+    el.load();
+    if (playing) {
+      el.play().catch(() => {});
     }
+  }, [trackIdx]);
+
+  const cycleTrack = (dir: 1 | -1) => {
+    setTrackIdx(prev => (prev + dir + TRACKS.length) % TRACKS.length);
   };
 
   const formatTime = (sec: number) => {

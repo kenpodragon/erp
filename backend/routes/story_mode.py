@@ -648,12 +648,13 @@ async def purchase_upgrade(
     all_upgrades = session.exec(
         select(SessionUpgrade).where(SessionUpgrade.session_id == session_id)
     ).all()
-    click_mult, auto_mult = _calc_multipliers(session, all_upgrades)
+    click_mult, auto_mult, click_lvl, auto_lvl = _calc_multipliers(session, all_upgrades)
 
     return {
         "upgrade_type": body.upgrade_type,
         "target_id": body.target_id,
-        "new_level": upgrade.level,
+        "click_upgrade_level": click_lvl,
+        "auto_upgrade_level": auto_lvl,
         "click_dmg_multiplier": round(click_mult, 4),
         "auto_dps_multiplier": round(auto_mult, 4),
         "cost_paid": round(total_cost, 2),

@@ -209,6 +209,17 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
     updateStorySession({ currentZone: newZone, currentWave: 0 });
   }, [updateStorySession]);
 
+  const handleResetLevel = useCallback(async () => {
+    if (!storySession) return;
+    if (!window.confirm("DEBUG: Reset current session to start? (No essence/gold lost)")) return;
+    updateStorySession({ currentZone: 1, currentWave: 0 });
+    try {
+      await api.post(`/api/game/story/session/${storySession.sessionId}/tick`, {
+        clicks: 0, elapsed_ms: 100, zone: 1, wave: 0, gold_delta: 0, waves_completed_delta: 0
+      });
+    } catch {}
+  }, [storySession, updateStorySession]);
+
   const handleExit = async () => {
     await flushTick();
     exitScene();
@@ -258,6 +269,10 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
             textScale={player?.settings?.game_text_scale || 1.0}
             extraWavesMode={farmMode}
           />
+          
+          <div className="story-debug-controls">
+            <button className="debug-btn" onClick={handleResetLevel}>RESET LEVEL (DEBUG)</button>
+          </div>
         </div>
 
         {/* 3. Right Column: Hero Dashboard */}
@@ -271,7 +286,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
 
       <AudioPlayer chapterId={storySession.chapterId} />
 
-      <button className="story-exit-btn" onClick={handleExit} title="Save and Exit">EXIT</button>
+      <button className="story-exit-btn" onClick={handleExit} title="Save and Exit">EXIT SCENE</button>
 
       {showSummary && (
         <PostBattleSummary

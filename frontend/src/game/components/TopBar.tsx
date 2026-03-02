@@ -16,10 +16,19 @@ interface Character {
 }
 
 interface Player {
+  id: number;
   alias: string | null;
   google_display_name: string | null;
   google_avatar_url: string | null;
   avatar_preset_key: string | null;
+  settings?: {
+    ui_scale: number;
+    game_text_scale: number;
+    narration_wpm: number;
+    narration_font_size: number;
+    music_volume: number;
+    sfx_volume: number;
+  };
 }
 
 interface TopBarProps {
@@ -47,6 +56,7 @@ const CLASS_TO_PRESET: Record<string, string> = {
 
 const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
   const { state } = useGame();
+  const [showSettings, setShowSettings] = React.useState(false);
   
   // Calculate the intended URL
   const targetUrl = useMemo(() => {
@@ -58,7 +68,7 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
     }
     
     if (player?.avatar_preset_key) {
-      return `/assets/avatars/preset_${player.avatar_preset_key}.png`;
+      return `/assets/avatars/preset_${player?.avatar_preset_key}.png`;
     }
     return player?.google_avatar_url || FALLBACK_AVATAR;
   }, [player, character]);
@@ -82,6 +92,24 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
     if (imgSrc !== FALLBACK_AVATAR) {
       failedUrls.add(imgSrc);
       setImgSrc(FALLBACK_AVATAR);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const updates = {
+      ui_scale: parseFloat(formData.get('ui_scale') as string),
+      game_text_scale: parseFloat(formData.get('game_text_scale') as string),
+      narration_wpm: parseInt(formData.get('narration_wpm') as string),
+      narration_font_size: parseInt(formData.get('narration_font_size') as string),
+    };
+    
+    try {
+      await api.post('/api/players/me/settings', updates);
+      window.location.reload(); // Hard refresh to apply UI scale changes globally
+    } catch (err) {
+      console.error("Failed to save settings", err);
     }
   };
 
@@ -118,8 +146,42 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
       </div>
 
       <div className="top-bar-right">
-        <button className="settings-btn" title="Settings">⚙️</button>
+        <button className="settings-btn" title="Settings" onClick={() => setShowSettings(true)}>⚙️</button>
       </div>
+
+      {showSettings && (
+        <div className="settings-modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="settings-modal" onClick={e => e.stopPropagation()}>
+            <h3>Game Settings</h3>
+            <form onSubmit={handleSaveSettings}>
+              <div className="settings-group">
+                <label>UI Scale: 
+                  <input type="range" name="ui_scale" min="0.5" max="1.5" step="0.05" defaultValue={player?.settings?.ui_scale || 1.0} />
+                </label>
+              </div>
+              <div className="settings-group">
+                <label>Combat Text Scale: 
+                  <input type="range" name="game_text_scale" min="0.5" max="2.0" step="0.1" defaultValue={player?.settings?.game_text_scale || 1.0} />
+                </label>
+              </div>
+              <div className="settings-group">
+                <label>Narration WPM: 
+                  <input type="number" name="narration_wpm" min="50" max="1000" defaultValue={player?.settings?.narration_wpm || 200} />
+                </label>
+              </div>
+              <div className="settings-group">
+                <label>Narration Font Size: 
+                  <input type="number" name="narration_font_size" min="10" max="32" defaultValue={player?.settings?.narration_font_size || 14} />
+                </label>
+              </div>
+              <div className="settings-actions">
+                <button type="button" onClick={() => setShowSettings(false)}>Cancel</button>
+                <button type="submit" className="save-btn">Save & Apply</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

@@ -14,6 +14,9 @@ import { auth } from './firebase'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
+// Simple event target for global API events (like offline status)
+export const apiEvents = new EventTarget();
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const user = auth?.currentUser
   if (!user) return {}
@@ -29,35 +32,44 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 async function request(path: string, options: RequestInit = {}): Promise<Response> {
   const authHeaders = await getAuthHeaders()
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders,
-      ...options.headers,
-    },
-  })
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders,
+        ...options.headers,
+      },
+    })
 
-  // On 401, try one silent token refresh and retry
-  if (response.status === 401 && auth?.currentUser) {
-    try {
-      const freshToken = await auth.currentUser.getIdToken(true)
-      const retryResponse = await fetch(`${BASE_URL}${path}`, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${freshToken}`,
-          ...options.headers,
-        },
-      })
-      return retryResponse
-    } catch {
-      // Refresh failed — return original 401
-      return response
+    // If we get here, the server at least responded
+    apiEvents.dispatchEvent(new CustomEvent('api-online'));
+
+    // On 401, try one silent token refresh and retry
+    if (response.status === 401 && auth?.currentUser) {
+      try {
+        const freshToken = await auth.currentUser.getIdToken(true)
+        const retryResponse = await fetch(`${BASE_URL}${path}`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${freshToken}`,
+            ...options.headers,
+          },
+        })
+        return retryResponse
+      } catch {
+        // Refresh failed — return original 401
+        return response
+      }
     }
-  }
 
-  return response
+    return response
+  } catch (err) {
+    // Network error (ECONNREFUSED, timeout, etc.)
+    apiEvents.dispatchEvent(new CustomEvent('api-offline'));
+    throw err;
+  }
 }
 
 export const api = {

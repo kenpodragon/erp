@@ -87,5 +87,87 @@
 .settings-btn:hover, .exit-btn:hover {
   background-color: #222;
   border-color: #444;
-  transform: scale(1.05);
+  transform: scale(1.05) rotate(15deg);
+}
+
+/* Settings Modal */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.settings-modal {
+  background: #1a1a2e;
+  border: 2px solid #3a3a5e;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  color: #eee;
+}
+
+.settings-modal h3 {
+  margin-top: 0;
+  color: #daa520;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-group {
+  margin-bottom: 1.25rem;
+}
+
+.settings-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.settings-group input[type="range"] {
+  width: 100%;
+}
+
+.settings-group input[type="number"] {
+  background: #0a0a1a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.settings-actions button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #444;
+  background: #333;
+  color: #eee;
+}
+
+.settings-actions .save-btn {
+  background: #b8860b;
+  border-color: #daa520;
+  color: #000;
+  font-weight: bold;
+}
+
+.settings-actions .save-btn:hover {
+  background: #daa520;
 }

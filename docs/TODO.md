@@ -94,16 +94,30 @@
         - [x] **Mobile Touch Polish:** Added touch-action manipulation.
         - [x] **Post-Scene Summary VFX:** Animated count-up and reward reveal.
         - [x] **Player settings in DB:** All player configuration settings (UI scale, font size, etc.) are stored in the DB.
-        - [ ] Words scroller is broken
+    - [ ] **2.2.8 — BUGS AND FIXES** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*    
+        - [x] The gameplay loop in the center is broken. No mobs. No screen. No clicking. Now it's showing up just right at the top left corner of the canvas (everythning else is blank but looks like it's still there) (CombatStage.tsx)
+        - [x] Words scroller is broken (If I'm in farm mode or have already completed a stage, all the text should already be there. During the initial play through the text should scroll as needed.)        
+        - [x] I need a debug button for now (reset level).
         - [ ] Some enemies are "undefined" the names are in the entity table they should still appear (just their stats and image should be the placeholder)
         - [ ] Sometimes on the gold flyout, the coins get stuck before dissappearing.
         - [ ] 10 mobs per wave. Make sure there is always a mobs left per wave. At the end of the wave you fight a mini-boss. (not sure where ZONE came from)
         - [ ] Mobs need to be scaling by level (I'm at some wave 30 and the mobs still only have 10 hp)
-        - [ ] When the server restarts, I get bounced back to profile. It should gracefully (no backend connectivity, and keep retrying - using a ramp so it's not pinging forever. Gameplay should pause if no connectivty). Then when it comes back I shouldn't have the whole page refreshed (I should stway where I was, eitehr on the map, in the tower, etc...)
+        - [x] When the server restarts, I get bounced back to profile. It should gracefully (no backend connectivity, and keep retrying - using a ramp so it's not pinging forever. Gameplay should pause if no connectivty). Then when it comes back I shouldn't have the whole page refreshed (I should stway where I was, eitehr on the map, in the tower, etc...)
         - [ ] In farm mode I shoudl still be able to read the story again.
         - [ ] The settings gear does nothing - it should pop up the settings (UI Scale, sound, etc...)
-        - [ ] When I  (select other tracks) through new music it stops the music. Should keep playing.
-        - [ ] Exit Button is ontop of the logout button.
+        - [x] Remove the sound settings (speaker icon) from the Profile page, this is only needed in the StoryMode
+        - [x] When I  (select other tracks) through new music it stops the music. Should keep playing.
+        - [x] Exit Button is ontop of the logout button.
+        - [ ] Responsive layout. Right now the upgrade bits are at the side of the screen. But if I shrink the screen to small, they should show up at the bottom.
+        - [ ] Resetting level (debug) is not resetting upgrade levels back to 0 (in story game upgrades). It's also not resetting my gold.
+        - [ ] When the level starts I should see the first block of text right away.
+        - [ ] Game settings isn't doing anything (opens, lets me change values, but doesn't save apply)
+        - [ ] There should be a scroll bar on the nav text on the side. Scroll all the way down so the most recent block is right at the top (all the others are above up, but I need to scroll up to get back to). Should be some fade transition and scroll when the new block appears (appears at the bottom, then floats back up as it scrolls things so it's at the top of the scroll area).
+        - [ ] If the frontend server gets restarted the whole page refreshes. It should rember my state and page I was on (store this in session or something it remembvers my login, so it should remember where I was). So when it does reload, it brings me back to exactly where I was (right now on refresh I always go back to profile).
+        - [ ] Auto progress button does nothing (doesn't toggle on or off). When it toggles on, i just keep fighting more mobs. Auto Progress means I fight the miniboss at the end and move to the next wave.
+        - [ ] Let's move the WPM slider onto the display interface (under the text). So folks can adjust accordingly.
+        - [ ] Tests back on these things.
+        - [ ] Need some thing over the text so folks can't just copy and paste it.        
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`)*
     - [ ] **Skill Implementation**
@@ -111,6 +125,7 @@
         - [ ] Build the Offline Progression handler (Login delta calculation).
     - [ ] **Visuals**
         - [ ] Implement Melvor Idle-style progress bars and skill category list.
+        - [ ] Clicker game to help accumulate XP for the skill (reuse Loop B stuff).
 
 - [ ] **2.4 — Character & Progression Systems, Classes, and Skills** *(Ref: `docs/recs/2.4_CHARACTER_PROGRESSION.md`)*
     - [ ] Design and implement core stats (Str/Agi/Int) logic.

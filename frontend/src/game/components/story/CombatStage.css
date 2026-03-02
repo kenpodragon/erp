@@ -13,5 +13,4 @@
 
 .combat-stage-wrap canvas {
   display: block;
-  /* PixiJS owns canvas dimensions — no CSS override or distortion occurs */
 }
