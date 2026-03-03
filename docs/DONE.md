@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-01*
+*Updated: 2026-03-03*
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
