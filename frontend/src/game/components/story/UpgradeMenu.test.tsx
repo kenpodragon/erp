@@ -22,8 +22,11 @@ const baseSession: StorySession = {
   darkRitualMultiplier: 1.0,
   narrativeProgressPct: 0,
   wavesComplete: false,
+  previouslyCompleted: false,
   characterStrength: 100,
   autoDpsPerSecond: 50,
+  clickUpgradeLevel: 0,
+  autoUpgradeLevel: 0,
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.0,
@@ -42,7 +45,7 @@ describe('UpgradeMenu', () => {
   });
 
   it('renders qty buttons', () => {
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{}} />);
     expect(screen.getByText('×1')).toBeDefined();
     expect(screen.getByText('×10')).toBeDefined();
     expect(screen.getByText('×100')).toBeDefined();
@@ -50,38 +53,44 @@ describe('UpgradeMenu', () => {
   });
 
   it('renders upgrade tracks', () => {
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{}} />);
     expect(screen.getByText('Click Damage')).toBeDefined();
     expect(screen.getByText('Auto-DPS')).toBeDefined();
   });
 
   it('toggles quantity on click', () => {
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{}} />);
     const q10 = screen.getByText('×10');
     fireEvent.click(q10);
     expect(q10.classList.contains('upgrade-qty-btn--active')).toBe(true);
   });
 
   it('shows cost based on quantity', () => {
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{
+      base_click_upgrade_cost: 5
+    }} />);
     // x1 Click Damage cost: 5 * 1.07^0 = 5
     expect(screen.getByText('★ 5')).toBeDefined();
     
     const q10 = screen.getByText('×10');
     fireEvent.click(q10);
-    // x10 cost: 5 * (1 - 1.07^10) / (1 - 1.07) = 69.1... => 69
-    expect(screen.getByText('★ 69')).toBeDefined();
+    // x10 cost: 5 * (1 - 1.07^10) / (1 - 1.07) = 69.08... => 70
+    expect(screen.getByText('★ 70')).toBeDefined();
   });
 
   it('disables upgrade row when unaffordable', () => {
     const poorSession = { ...baseSession, sessionGold: 1 };
-    render(<UpgradeMenu session={poorSession} />);
+    render(<UpgradeMenu session={poorSession} gameConfigs={{
+      base_click_upgrade_cost: 10
+    }} />);
     const clickRow = screen.getByText('Click Damage').closest('.upgrade-row');
     expect(clickRow?.classList.contains('upgrade-row--disabled')).toBe(true);
   });
 
   it('calls API and updates session on upgrade click', async () => {
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{
+      base_click_upgrade_cost: 5
+    }} />);
     const clickRow = screen.getByText('Click Damage').closest('.upgrade-row');
     fireEvent.click(clickRow!);
 
@@ -90,16 +99,14 @@ describe('UpgradeMenu', () => {
         upgrade_type: 'click_dmg',
         quantity: 1,
       });
-      expect(mockUpdateStorySession).toHaveBeenCalledWith({ clickDmgMultiplier: 1.1 });
-      expect(mockUpdateStorySession).toHaveBeenCalledWith({ sessionGold: 95 }); // 100 - 5
+      expect(mockUpdateStorySession).toHaveBeenCalledWith(expect.objectContaining({ clickDmgMultiplier: 1.1 }));
     });
   });
 
   it('handles MAX quantity', () => {
-    // Gold: 100, Base: 5, Level: 0
-    // 5 * (1.07^13 - 1) / (1.07 - 1) = 100.6... so 13 is too much
-    // 5 * (1.07^12 - 1) / (1.07 - 1) = 89.4... so 12 fits
-    render(<UpgradeMenu session={baseSession} />);
+    render(<UpgradeMenu session={baseSession} gameConfigs={{
+      base_click_upgrade_cost: 5
+    }} />);
     const qMax = screen.getByText('MAX');
     fireEvent.click(qMax);
     

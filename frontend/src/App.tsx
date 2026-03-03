@@ -456,7 +456,8 @@ function App() {
                 onCharacterCreated={(c) => {
                   setCharacter(c);
                   verifyUserWithBackend();
-                }} 
+                }}
+                onPlayerUpdate={verifyUserWithBackend}
               />
             ) : (
               <Navigate to="/" replace />

@@ -26,8 +26,11 @@ const baseSession: StorySession = {
   darkRitualMultiplier: 1.0,
   narrativeProgressPct: 0,
   wavesComplete: false,
+  previouslyCompleted: false,
   characterStrength: 100,
   autoDpsPerSecond: 50,
+  clickUpgradeLevel: 0,
+  autoUpgradeLevel: 0,
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.0,
@@ -62,9 +65,11 @@ describe('SkillsHotbar', () => {
 
     expect(api.post).toHaveBeenCalledWith('/api/game/story/session/test-session/upgrade', {
       upgrade_type: 'skill_unlock',
-      skill_id: 1001,
+      target_id: 1001,
+      quantity: 1
     });
-    expect(mockUpdateStorySession).toHaveBeenCalledWith({ sessionGold: 950 });
+    // Clickstorm default cost is 100
+    expect(mockUpdateStorySession).toHaveBeenCalledWith({ sessionGold: 900 });
     expect(clickstorm?.classList.contains('skill-slot--locked')).toBe(false);
   });
 

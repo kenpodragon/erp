@@ -25,9 +25,35 @@
   overflow: hidden;
 }
 
+/* Responsive override */
+@media (max-width: 1100px) {
+  .story-main {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .narrative-col {
+    width: 100% !important;
+    height: 400px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #1a1a3a;
+  }
+  .story-center {
+    height: 500px !important;
+    flex-shrink: 0;
+    min-width: 0 !important;
+  }
+  .story-right-panel {
+    width: 100% !important;
+    height: auto !important;
+    border-left: none !important;
+    border-top: 1px solid #1a1a3a;
+    overflow-y: visible !important;
+  }
+}
+
 /* 1. Left Column: Narrative */
 .narrative-col {
-  width: 300px;
+  width: 320px;
   flex-shrink: 0;
   height: 100%;
   border-right: 1px solid #1a1a3a;
@@ -149,20 +175,83 @@
   transform: translateY(-2px);
 }
 
-.story-debug-controls {
+.story-controls-bar {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   display: flex;
-  gap: 0.5rem;
-  opacity: 0.3;
-  transition: opacity 0.3s;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
 }
 
-.story-debug-controls:hover {
-  opacity: 1.0;
+.auto-prog-btn {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #444444;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  min-width: 180px;
+  text-transform: uppercase;
+}
+
+.auto-prog-btn--on {
+  color: #00ff88;
+  border-color: #008844;
+  background: rgba(0, 40, 20, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+}
+
+.auto-prog-btn--on:hover {
+  background: rgba(0, 60, 30, 0.6);
+  color: #ffffff;
+}
+
+.auto-prog-btn--off {
+  color: #ff4444;
+  border-color: #8b0000;
+  background: rgba(40, 0, 0, 0.5);
+}
+
+.auto-prog-btn--off:hover {
+  background: rgba(60, 0, 0, 0.6);
+  color: #ffffff;
+}
+
+.debug-toggle-btn {
+  background: rgba(0, 0, 0, 0.7);
+  color: #888888;
+  border: 1px solid #444444;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  text-transform: uppercase;
+}
+
+.debug-toggle-btn.active {
+  color: #ff00ff;
+  border-color: #aa00aa;
+  background: rgba(60, 0, 60, 0.5);
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+}
+
+.debug-toggle-btn:hover {
+  background: rgba(139, 0, 139, 0.5);
+  color: #ffffff;
 }
 
 .debug-btn {

@@ -14,15 +14,15 @@ interface Props {
 }
 
 const HeroStats: React.FC<Props> = ({ session }) => {
-  const baseClick = session.characterStrength + calculateUpgradeDamage(session.clickUpgradeLevel);
+  const baseClick = (session.characterStrength || 0) + (session.clickUpgradeLevel || 0);
   const clickDmg = baseClick
-    * session.clickDmgMultiplier
-    * session.darkRitualMultiplier;
+    * (session.clickDmgMultiplier || 1)
+    * (session.darkRitualMultiplier || 1);
 
-  const baseAuto = session.autoDpsPerSecond + calculateUpgradeDamage(session.autoUpgradeLevel);
+  const baseAuto = (session.autoDpsPerSecond || 0) + (session.autoUpgradeLevel || 0);
   const autoDps = baseAuto
-    * session.autoDpsMultiplier
-    * session.darkRitualMultiplier;
+    * (session.autoDpsMultiplier || 1)
+    * (session.darkRitualMultiplier || 1);
 
   const rows: { label: string; value: string; highlight?: boolean }[] = [
     { label: 'Click Dmg',  value: formatNumber(clickDmg) },

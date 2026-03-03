@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
 import { 
-  TextStyle, Assets, Texture, TilingSprite,
+  TextStyle,
   Container, Graphics, Text
 } from 'pixi.js';
 import { api } from '../../../api';
@@ -14,7 +14,7 @@ import ParallaxBackground from './ParallaxBackground';
 import './CombatStage.css';
 
 // Register for v8 JSX
-extend({ Container, Graphics, Text, TilingSprite });
+extend({ Container, Graphics, Text });
 
 const MONSTERS_PER_ZONE_DEFAULT = 10;
 const BOSS_ZONE_INTERVAL_DEFAULT = 5;
@@ -33,6 +33,7 @@ interface Enemy {
   isBoss: boolean;
   isPrimal: boolean;
   isFallback: boolean;
+  role?: string;
 }
 
 interface DamageNumber {
@@ -43,15 +44,6 @@ interface DamageNumber {
   type: 'normal' | 'crit' | 'auto' | 'burst';
   alpha: number;
   vy: number;
-}
-
-interface CoinParticle {
-  id: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  alpha: number;
 }
 
 interface DeathParticle {
@@ -82,6 +74,9 @@ interface Props {
   onZoneAdvance: (newZone: number) => void;
   textScale?: number;
   extraWavesMode?: boolean; 
+  autoProgress: boolean;
+  onAutoProgressToggle: (val: boolean) => void;
+  debugSuperClick?: boolean;
 }
 
 interface InnerProps extends Props {
@@ -98,7 +93,8 @@ const CombatContent: React.FC<InnerProps> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onZoneAdvance,
   width, height, enemyPool, waveCount,
   setWaveCount, requiredWaves, extraWavesMode, onWavesComplete,
-  clickHandlerRef, textScale = 1.0,
+  clickHandlerRef, textScale = 1.0, autoProgress, onAutoProgressToggle,
+  debugSuperClick = false
 }) => {
   const MONSTERS_PER_ZONE = Number(gameConfigs['monsters_per_zone'] ?? MONSTERS_PER_ZONE_DEFAULT);
   const BOSS_ZONE_INTERVAL = Number(gameConfigs['boss_zone_interval'] ?? BOSS_ZONE_INTERVAL_DEFAULT);
@@ -108,21 +104,20 @@ const CombatContent: React.FC<InnerProps> = ({
   const AUTO_DPS_TICK_MS = Number(gameConfigs['auto_dps_tick_ms'] ?? AUTO_DPS_TICK_MS_DEFAULT);
 
   const [enemy, setEnemy] = useState<Enemy | null>(null);
+  const [isFightingBoss, setIsFightingBoss] = useState(false);
   const [dmgNumbers, setDmgNumbers] = useState<DamageNumber[]>([]);
-  const [coins, setCoins] = useState<CoinParticle[]>([]);
   const [deathParticles, setDeathParticles] = useState<DeathParticle[]>([]);
   const [shockwaves, setShockwaves] = useState<Shockwave[]>([]);
   const [shake, setShake] = useState(0);
   const [recoil, setRecoil] = useState(0);
   const [hitFlash, setHitFlash] = useState(false);
-  const [enrageTimer, setEnrageTimer] = useState(0);
+  const [enrageTimer, setEnrageTimer] = useState(BOSS_ENRAGE_SECONDS);
   const [time, setTime] = useState(0);
   const [cps, setCps] = useState(0);
-  const [autoProgress, setAutoProgress] = useState(true);
   
-  const clickTimesRef = useRef<number[]>([]);
   const autoTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const enrageRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clickTimesRef = useRef<number[]>([]);
 
   const scalingFactor = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
   const critMult = Number(gameConfigs['crit_multiplier'] ?? 2.0);
@@ -131,57 +126,88 @@ const CombatContent: React.FC<InnerProps> = ({
   const triggerRecoil = useCallback(() => { setRecoil(1); setTimeout(() => setRecoil(0), 150); }, []);
   const triggerHitFlash = useCallback(() => { setHitFlash(true); setTimeout(() => setHitFlash(false), 80); }, []);
 
-  const spawnEnemy = useCallback((pool: Enemy[], zone: number, waveNum: number) => {
-    const monsterIndex = waveNum % (MONSTERS_PER_ZONE + 1);
-    const isMiniBoss = monsterIndex === MONSTERS_PER_ZONE; 
+  const spawnEnemy = useCallback((pool: Enemy[], zone: number, isBoss: boolean) => {
     const isBossZone = zone % BOSS_ZONE_INTERVAL === 0;
-    const isBossWave = isMiniBoss && isBossZone;
+    const isBossWave = isBoss && isBossZone;
     const isPrimal = isBossWave && Math.random() < PRIMAL_CHANCE;
     
-    const totalLevel = (zone - 1) * (MONSTERS_PER_ZONE + 1) + monsterIndex + 1;
-    const hp = zoneHp(totalLevel, scalingFactor);
-    const gold = zoneGold(totalLevel) * (isBossWave ? 10 : isMiniBoss ? 3 : 1) * (isPrimal ? 3 : 1);
+    // Normal mobs in Zone X all have Level (X-1)*10 + 1 scaling.
+    // Boss has Level (X-1)*10 + 10 scaling.
+    const enemyLevel = isBoss ? (zone * 10) : ((zone - 1) * 10 + 1);
+    const hp = zoneHp(enemyLevel, scalingFactor);
+    const gold = zoneGold(enemyLevel) * (isBossWave ? 10 : isBoss ? 3 : 1) * (isPrimal ? 3 : 1);
 
-    if (pool.length > 0) {
+    if (pool && pool.length > 0) {
       let poolToUse = pool;
-      if (isBossWave) poolToUse = pool.filter(e => e.role === 'boss' || e.isBoss);
-      else if (isMiniBoss) poolToUse = pool.filter(e => e.role === 'mini_boss');
-      if (poolToUse.length === 0) poolToUse = pool;
+      if (isBossWave) poolToUse = pool.filter(e => e && (e.isBoss || e.role === 'boss'));
+      else if (isBoss) poolToUse = pool.filter(e => e && e.role === 'mini_boss');
+      else poolToUse = pool.filter(e => !e.isBoss && e.role !== 'boss' && e.role !== 'mini_boss');
+      
+      if (!poolToUse || poolToUse.length === 0) poolToUse = pool;
 
       const template = poolToUse[Math.floor(Math.random() * poolToUse.length)];
-      setEnemy({
-        ...template,
-        name: template.name || template.canonical_name || 'UNKNOWN ENTITY',
-        maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBossWave || isMiniBoss, isPrimal, isFallback: false
-      });
+      if (!template) {
+        setEnemy({
+          entityId: null,
+          name: isBossWave ? 'BOSS' : isBoss ? 'MINI BOSS' : 'SHADOW',
+          spriteKey: null, maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBoss, isPrimal, isFallback: true
+        });
+      } else {
+        setEnemy({
+          ...template,
+          name: template.name || (template as any).canonical_name || 'UNKNOWN ENTITY',
+          maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBoss, isPrimal, isFallback: false
+        });
+      }
     } else {
       setEnemy({
         entityId: null,
-        name: isBossWave ? (isPrimal ? 'PRIMAL WRAITH' : 'SHADOW BOSS') : isMiniBoss ? 'MINI BOSS' : 'SHADOW WRAITH',
-        spriteKey: null, maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBossWave || isMiniBoss, isPrimal, isFallback: true
+        name: isBossWave ? (isPrimal ? 'PRIMAL WRAITH' : 'SHADOW BOSS') : isBoss ? 'MINI BOSS' : 'SHADOW WRAITH',
+        spriteKey: null, maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBoss, isPrimal, isFallback: true
       });
     }
-    if (isBossWave || isMiniBoss) setEnrageTimer(BOSS_ENRAGE_SECONDS);
-  }, [scalingFactor, MONSTERS_PER_ZONE, BOSS_ZONE_INTERVAL, PRIMAL_CHANCE, BOSS_ENRAGE_SECONDS]);
+    if (isBoss) setEnrageTimer(BOSS_ENRAGE_SECONDS);
+  }, [scalingFactor, BOSS_ZONE_INTERVAL, PRIMAL_CHANCE, BOSS_ENRAGE_SECONDS]);
 
   const advanceWave = useCallback(() => {
     setWaveCount(prev => {
-      const next = prev + 1;
-      const monsterIndex = next % (MONSTERS_PER_ZONE + 1);
-      const isZoneEnd = monsterIndex === 0;
-      if (next === requiredWaves && !extraWavesMode) onWavesComplete();
-      if (isZoneEnd) {
-        if (autoProgress) onZoneAdvance(session.currentZone + 1);
-        else {
-          setTimeout(() => spawnEnemy(enemyPool, session.currentZone, 0), 600);
-          return 0; 
+      if (isFightingBoss) {
+        // Just killed the boss
+        setIsFightingBoss(false);
+        const wasRequiredZone = session.currentZone >= requiredWaves;
+        if (wasRequiredZone && !extraWavesMode) {
+          onWavesComplete();
+        }
+        
+        onZoneAdvance(session.currentZone + 1);
+        return 0; 
+      } else {
+        const next = prev + 1;
+        if (next < MONSTERS_PER_ZONE) {
+          // Progress to next normal mob
+          setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
+          return next;
+        } else {
+          // Just finished 10 mobs
+          if (autoProgress) {
+            setIsFightingBoss(true);
+            setTimeout(() => spawnEnemy(enemyPool, session.currentZone, true), 600);
+            return MONSTERS_PER_ZONE;
+          } else {
+            // "Ready" state - keep waveCount at 10, spawn another normal mob for farming
+            setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
+            return MONSTERS_PER_ZONE;
+          }
         }
       }
-      const currentZoneForSpawn = isZoneEnd ? session.currentZone + 1 : session.currentZone;
-      setTimeout(() => spawnEnemy(enemyPool, currentZoneForSpawn, next), 600);
-      return next;
     });
-  }, [requiredWaves, extraWavesMode, enemyPool, spawnEnemy, onWavesComplete, onZoneAdvance, autoProgress, session.currentZone, MONSTERS_PER_ZONE]);
+  }, [isFightingBoss, session.currentZone, requiredWaves, extraWavesMode, onWavesComplete, autoProgress, onZoneAdvance, enemyPool, spawnEnemy, MONSTERS_PER_ZONE]);
+
+  const handleChallengeBoss = useCallback(() => {
+    if (isFightingBoss) return;
+    setIsFightingBoss(true);
+    spawnEnemy(enemyPool, session.currentZone, true);
+  }, [enemyPool, session.currentZone, spawnEnemy, isFightingBoss]);
 
   const applyDamage = useCallback((damage: number, type: 'normal' | 'crit' | 'auto' | 'burst', clickX?: number, clickY?: number) => {
     const enemyX = width * 0.5;
@@ -194,10 +220,8 @@ const CombatContent: React.FC<InnerProps> = ({
       if (!prev) return prev;
       const newHp = Math.max(0, prev.currentHp - damage);
       if (newHp <= 0) {
-        const goldEarned = prev.baseGold * session.goldDropMultiplier;
+        const goldEarned = (prev.baseGold || 0) * session.goldDropMultiplier;
         onGoldEarned(goldEarned);
-        const count = Math.min(8, Math.max(2, Math.floor(Math.log10(goldEarned + 1))));
-        setCoins(old => [...old.slice(-20), ...Array.from({ length: count }, (_, i) => ({ id: `c_${Date.now()}_${i}`, x: enemyX, y: enemyY, vx: (Math.random() - 0.5) * 4, vy: -3 - Math.random() * 3, alpha: 1.0 }))]);
         setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : 0x444466 }))]);
         advanceWave();
         return null;
@@ -209,21 +233,51 @@ const CombatContent: React.FC<InnerProps> = ({
     if (type === 'crit') triggerHitFlash();
   }, [width, height, session.goldDropMultiplier, onGoldEarned, advanceWave, triggerShake, triggerRecoil, triggerHitFlash]);
 
-  useEffect(() => { spawnEnemy(enemyPool, session.currentZone, waveCount); }, [enemyPool.length, session.currentZone, spawnEnemy]);
+  useEffect(() => { 
+    if (session.currentWave >= MONSTERS_PER_ZONE) {
+      setWaveCount(MONSTERS_PER_ZONE);
+      setIsFightingBoss(false);
+      spawnEnemy(enemyPool, session.currentZone, false); 
+    } else {
+      setWaveCount(session.currentWave);
+      setIsFightingBoss(false);
+      spawnEnemy(enemyPool, session.currentZone, false); 
+    }
+  }, [session.currentZone, enemyPool.length, spawnEnemy]);
+
+  // Handle auto-progress being toggled ON while in "Ready" state
+  useEffect(() => {
+    if (autoProgress && waveCount === MONSTERS_PER_ZONE && !isFightingBoss) {
+      handleChallengeBoss();
+    }
+  }, [autoProgress, waveCount, isFightingBoss, handleChallengeBoss]);
 
   useEffect(() => {
     autoTickRef.current = setInterval(() => {
-      const dps = (session.autoDpsPerSecond + session.autoUpgradeLevel) * session.autoDpsMultiplier * session.darkRitualMultiplier;
+      const dps = ((session.autoDpsPerSecond || 0) + (session.autoUpgradeLevel || 0)) * (session.autoDpsMultiplier || 1) * (session.darkRitualMultiplier || 1);
       if (dps > 0) applyDamage(dps * (AUTO_DPS_TICK_MS / 1000), 'auto');
     }, AUTO_DPS_TICK_MS);
     return () => { if (autoTickRef.current) clearInterval(autoTickRef.current); };
-  }, [session.autoDpsPerSecond, session.autoUpgradeLevel, session.autoDpsMultiplier, session.darkRitualMultiplier, applyDamage]);
+  }, [session.autoDpsPerSecond, session.autoUpgradeLevel, session.autoDpsMultiplier, session.darkRitualMultiplier, applyDamage, AUTO_DPS_TICK_MS]);
 
   useEffect(() => {
     if (!enemy?.isBoss) return;
-    enrageRef.current = setInterval(() => setEnrageTimer(prev => prev > 0 ? prev - 1 : 0), 1000);
+    enrageRef.current = setInterval(() => {
+      setEnrageTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(enrageRef.current!);
+          onAutoProgressToggle(false);
+          setIsFightingBoss(false);
+          setWaveCount(MONSTERS_PER_ZONE); // Back to "Ready" state
+          setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
+          setEnemy(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     return () => { if (enrageRef.current) clearInterval(enrageRef.current); };
-  }, [enemy?.isBoss]);
+  }, [enemy?.isBoss, onAutoProgressToggle, enemyPool, session.currentZone, spawnEnemy, MONSTERS_PER_ZONE]);
 
   const handleClick = useCallback((ox: number, oy: number) => {
     if (!enemy) return;
@@ -234,10 +288,17 @@ const CombatContent: React.FC<InnerProps> = ({
     setCps(clickTimesRef.current.length);
     setShockwaves(prev => [...prev.slice(-5), { id: `sw_${Date.now()}_${Math.random()}`, x: ox, y: oy, alpha: 0.6, radius: 5 }]);
     const isCrit = Math.random() < CRIT_CHANCE;
-    const baseClick = session.characterStrength + session.clickUpgradeLevel;
-    const damage = (isCrit ? critMult : 1) * baseClick * session.clickDmgMultiplier * session.darkRitualMultiplier;
+    
+    let damage = 0;
+    if (debugSuperClick) {
+      damage = enemy.currentHp;
+    } else {
+      const baseClick = (session.characterStrength || 0) + (session.clickUpgradeLevel || 0);
+      damage = (isCrit ? critMult : 1) * baseClick * (session.clickDmgMultiplier || 1) * (session.darkRitualMultiplier || 1);
+    }
+    
     applyDamage(damage, isCrit ? 'crit' : 'normal', ox, oy);
-  }, [enemy, session, critMult, applyDamage, onEnemyClick, CRIT_CHANCE]);
+  }, [enemy, session, critMult, applyDamage, onEnemyClick, CRIT_CHANCE, debugSuperClick]);
 
   useEffect(() => { clickHandlerRef.current = handleClick; return () => { clickHandlerRef.current = null; }; }, [handleClick, clickHandlerRef]);
 
@@ -249,11 +310,6 @@ const CombatContent: React.FC<InnerProps> = ({
     const realCps = clickTimesRef.current.length;
     if (cps > realCps) setCps(prev => Math.max(realCps, prev - 0.1 * dt));
     setDmgNumbers(prev => prev.map(d => ({ ...d, y: d.y + d.vy * dt, alpha: d.alpha - 0.015 * dt })).filter(d => d.alpha > 0));
-    setCoins(prev => prev.map(c => {
-      const dx = 40 - c.x, dy = 20 - c.y, dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 10) return { ...c, alpha: 0 };
-      return { ...c, x: c.x + (dx / dist) * 14 * dt, y: c.y + (dy / dist) * 14 * dt, alpha: 1.0 };
-    }).filter(c => c.alpha > 0));
     setDeathParticles(prev => prev.map(p => ({ ...p, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vx: p.vx * 0.96, vy: p.vy * 0.96, alpha: p.alpha - 0.03 * dt })).filter(p => p.alpha > 0));
     setShockwaves(prev => prev.map(s => ({ ...s, radius: s.radius + 4 * dt, alpha: s.alpha - 0.05 * dt })).filter(s => s.alpha > 0));
   });
@@ -267,6 +323,13 @@ const CombatContent: React.FC<InnerProps> = ({
   const hpColor = hpPct > 0.5 ? 0x00cc44 : hpPct > 0.25 ? 0xffaa00 : 0xcc0000;
   const breathe = Math.sin(time) * 0.03, idleY = Math.cos(time * 0.7) * 3;
   const shakeX = shake ? (Math.random() - 0.5) * 6 : 0, shakeY = (shake ? (Math.random() - 0.5) * 4 : 0) + idleY;
+
+  const monstersCount = Math.min(waveCount + 1, MONSTERS_PER_ZONE);
+  const statusText = isFightingBoss 
+    ? `Wave ${session.currentZone}/${requiredWaves} | CHALLENGE: MINI-BOSS`
+    : waveCount < MONSTERS_PER_ZONE
+      ? `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersCount}/${MONSTERS_PER_ZONE}` 
+      : `Wave ${session.currentZone}/${requiredWaves} | BOSS READY`;
 
   return (
     <pixiContainer sortableChildren={true}>
@@ -295,24 +358,39 @@ const CombatContent: React.FC<InnerProps> = ({
         </pixiContainer>
       )}
 
+      {/* Challenge Button Overlay */}
+      {!isFightingBoss && waveCount === MONSTERS_PER_ZONE && (
+        <pixiContainer 
+          x={width * 0.5} y={height * 0.25} zIndex={50} 
+          eventMode="static" cursor="pointer" 
+          onclick={handleChallengeBoss}
+          onpointerdown={handleChallengeBoss}
+        >
+           <pixiGraphics draw={g => {
+             g.clear().rect(-80, -20, 160, 40).fill({ color: 0x8b0000, alpha: 0.8 }).stroke({ width: 2, color: 0xffd700 });
+           }} />
+           <pixiText text="CHALLENGE BOSS" anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 14 * textScale, fill: '#ffffff', fontWeight: 'bold' })} />
+        </pixiContainer>
+      )}
+
       {/* VFX Layers */}
       <pixiContainer zIndex={18}>{deathParticles.map(p => <pixiGraphics key={p.id} x={p.x} y={p.y} alpha={p.alpha} draw={g => g.clear().rect(-p.size/2, -p.size/2, p.size, p.size).fill({ color: p.color })} />)}</pixiContainer>
       <pixiContainer zIndex={25}>{shockwaves.map(sw => <pixiGraphics key={sw.id} x={sw.x} y={sw.y} alpha={sw.alpha} draw={g => g.clear().circle(0, 0, sw.radius).stroke({ width: 2, color: 0xffffff })} />)}</pixiContainer>
       
       {/* UI Elements */}
-      {enemy && <pixiText text={`${enemy.name}\n${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY - 150} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 11 * textScale, fill: enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center' })} />}
+      {enemy && <pixiText text={`${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center', fontWeight: 'bold' })} />}
       <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : '#ffffff', stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
-      <pixiContainer zIndex={15}>{coins.map(c => <pixiGraphics key={c.id} x={c.x} y={c.y} alpha={c.alpha} draw={g => g.clear().circle(0, 0, 4).fill({ color: 0xffd700 })} />)}</pixiContainer>
-      <pixiText text={extraWavesMode ? `Zone ${session.currentZone} | Total Waves: ${waveCount + 1}` : `Zone ${session.currentZone} | Monsters: ${MONSTERS_PER_ZONE + 1 - (waveCount % (MONSTERS_PER_ZONE + 1))} left`} x={8} y={8} zIndex={5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#666688' })} />
+      
+      <pixiText text={statusText} x={8} y={8} zIndex={5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#666688' })} />
     </pixiContainer>
   );
 };
 
 const CombatStage: React.FC<Props> = (props) => {
   const [enemyPool, setEnemyPool] = useState<Enemy[]>([]);
-  const [waveCount, setWaveCount] = useState(0);
+  const [waveCount, setWaveCount] = useState(props.session.currentWave >= MONSTERS_PER_ZONE_DEFAULT ? MONSTERS_PER_ZONE_DEFAULT : props.session.currentWave);
   const [dims, setDims] = useState({ w: 0, h: 0 });
-  const [requiredWaves, setRequiredWaves] = useState(10);
+  const [requiredWaves, setRequiredWaves] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const clickHandlerRef = useRef<((ox: number, oy: number) => void) | null>(null);
 
@@ -329,7 +407,8 @@ const CombatStage: React.FC<Props> = (props) => {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.total_estimated_seconds) {
-          setRequiredWaves(Math.max(10, Math.ceil(data.total_estimated_seconds / waveDuration)));
+          const waves = Math.max(1, Math.ceil(data.total_estimated_seconds / (waveDuration * 1.1)));
+          setRequiredWaves(waves);
         }
       })
       .catch(() => {});

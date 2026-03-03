@@ -34,6 +34,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `017` | Story Beats Audio Columns | Added `audio_path VARCHAR(255) DEFAULT NULL` and `audio_duration_seconds INTEGER NOT NULL DEFAULT 0` to `story_beats`. Syncs DB with ORM model; hooks for future per-beat audio narration and WPM-gating fallback. |
 | `018` | Player Settings Polish | Added `narration_font_size`, `narration_block_height`, `ui_scale`, and `game_text_scale` to `player_settings`. Added `first_clear_multiplier` to `game_configs`. |
 | `019` | Game Configs Expansion | Moved hardcoded combat/upgrade constants (`monsters_per_zone`, `boss_zone_interval`, `crit_chance`, `auto_dps_tick_ms`, `gcd_ms`, `upgrade_cost_scaling`, `cd_reduction_per_level`, `max_cd_reduction`, `base_click_upgrade_cost`, `base_auto_dps_upgrade_cost`, `base_skill_unlock_cost`, `base_skill_level_upgrade_cost`, `milestone_interval`, `milestone_start`, `click_dmg_mult_per_level`, `auto_dps_mult_per_level`) to `game_configs`. |
+| `020` | Fix Meta Progression Timestamp | Renamed `last_updated_at` to `updated_at` in `player_meta_progression` to align with the shared `update_timestamp_column` trigger. |
 
 ---
 

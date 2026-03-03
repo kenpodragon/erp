@@ -3,8 +3,8 @@
  *
  * Displays:
  *  - Gold earned this session (animated count-up)
- *  - Essence earned (delayed reveal)
- *  - Waves defeated count
+ *  - Elysium Essence earned (delayed reveal)
+ *  - Zones Cleared count
  *  - Two choices: Continue (Farm Mode) or Return to Hub
  */
 import React, { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ import './PostBattleSummary.css';
 interface SummaryStats {
   session_gold: number;
   essence_earned: number;
-  waves_defeated: number;
+  current_zone: number;
   dark_ritual_multiplier: number;
 }
 
@@ -44,7 +44,7 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
           setStats({
             session_gold: goldVal,
             essence_earned: data.essence_earned ?? Math.floor(session.sessionGold * 0.01),
-            waves_defeated: data.current_wave ?? 0,
+            current_zone: data.current_zone ?? session.currentZone,
             dark_ritual_multiplier: data.dark_ritual_multiplier ?? session.darkRitualMultiplier,
           });
           
@@ -69,11 +69,11 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
     };
 
     fetchSummary();
-  }, [session.sessionId]);
+  }, [session.sessionId, session.sessionGold, session.currentZone, session.darkRitualMultiplier]);
 
   const displayGold = stats?.session_gold ?? session.sessionGold;
   const displayEssence = stats?.essence_earned ?? Math.floor(session.sessionGold * 0.01);
-  const displayWaves = stats?.waves_defeated ?? 0;
+  const displayZones = stats?.current_zone ?? session.currentZone;
   const displayDR = stats?.dark_ritual_multiplier ?? session.darkRitualMultiplier;
 
   return (
@@ -95,15 +95,15 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
             </div>
 
             <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
-              <span className="post-battle-stat-label">Essence Earned</span>
+              <span className="post-battle-stat-label">Elysium Essence</span>
               <span className="post-battle-stat-value post-battle-stat-value--essence">
                 ◆ {formatNumber(displayEssence)}
               </span>
             </div>
 
             <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
-              <span className="post-battle-stat-label">Waves Defeated</span>
-              <span className="post-battle-stat-value">{displayWaves}</span>
+              <span className="post-battle-stat-label">Zones Cleared</span>
+              <span className="post-battle-stat-value">{displayZones}</span>
             </div>
 
             {displayDR > 1.0 && showRewards && (

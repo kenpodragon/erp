@@ -132,7 +132,7 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
         const isMilestone = nextLevel >= MILESTONE_START && (nextLevel % MILESTONE_INTERVAL === 0);
         
         const currentDmg = calculateUpgradeDamage(track.level);
-        const unitLabel = track.type === 'click_dmg' ? 'damage per click' : 'damage per second';
+        const unitLabel = track.type === 'click_dmg' ? 'click damage bonus' : 'auto-DPS bonus';
 
         return (
           <div
@@ -144,7 +144,7 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
               <div className="upgrade-short">{track.shortLabel}</div>
               <div className="upgrade-info">
                 <div className="upgrade-name">{track.label}</div>
-                <div className="upgrade-level">Level {track.level} — {currentDmg} {unitLabel}</div>
+                <div className="upgrade-level">Level {track.level} — +{currentDmg} {unitLabel}</div>
                 {isMilestone && (
                   <div className="upgrade-milestone">BIG BONUS!</div>
                 )}

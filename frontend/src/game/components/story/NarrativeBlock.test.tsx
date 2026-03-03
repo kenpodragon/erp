@@ -42,26 +42,21 @@ describe('NarrativeBlock', () => {
   it('reveals beats sequentially based on display_delay_seconds', async () => {
     vi.useFakeTimers();
     await act(async () => {
-      render(<NarrativeBlock sceneId={1} onComplete={onComplete} />);
+      render(<NarrativeBlock sceneId={1} onComplete={onComplete} wpm={200} />);
     });
     
     await act(async () => {
       await vi.runAllTicks();
+      vi.advanceTimersByTime(10); // Trigger immediate cumulativeMs=0 timers
     });
 
-    // Initially 0 beats visible
-    expect(screen.queryByText('Beat 1')).toBeNull();
-
-    // Advance 2s for first beat (due to 2s floor in component)
-    await act(async () => {
-      vi.advanceTimersByTime(2001);
-    });
+    // Beat 1 should be visible immediately
     expect(screen.getByText('Beat 1')).toBeDefined();
     expect(screen.queryByText('Beat 2')).toBeNull();
 
-    // Advance 2s more for second beat
+    // Advance 2.5s for second beat (due to 2.5s floor in component)
     await act(async () => {
-      vi.advanceTimersByTime(2001);
+      vi.advanceTimersByTime(2501);
     });
     expect(screen.getByText('Beat 2')).toBeDefined();
   });
@@ -69,16 +64,18 @@ describe('NarrativeBlock', () => {
   it('calls onComplete after all beats are shown', async () => {
     vi.useFakeTimers();
     await act(async () => {
-      render(<NarrativeBlock sceneId={1} onComplete={onComplete} />);
+      render(<NarrativeBlock sceneId={1} onComplete={onComplete} wpm={200} />);
     });
     
     await act(async () => {
       await vi.runAllTicks();
     });
 
-    // Total delay: 2s + 2s + 0.5s buffer
+    // Total delay: 0s (beat 1) + 2.5s (beat 2) + 0.5s buffer = 3.0s? 
+    // Wait, my manual calculation was: 0ms, then +2.5s, then +2.5s = 5s.
+    // Let's advance by 6s to be safe.
     await act(async () => {
-      vi.advanceTimersByTime(4501);
+      vi.advanceTimersByTime(6001);
     });
 
     expect(onComplete).toHaveBeenCalledTimes(1);

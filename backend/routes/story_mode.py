@@ -27,7 +27,7 @@ from db import get_session
 from auth import get_current_player
 from models import (
     PlayerCharacter, PlayerProgress, PlayerEssence,
-    Scene, StoryBeat, Entity, EntityGameplayData,
+    Scene, Chapter, Book, StoryBeat, Entity, EntityGameplayData,
     Skill, PlayerSettings,
 )
 from models.story_mode import (
@@ -71,12 +71,15 @@ def _get_config_int(session: Session, key: str, default: int) -> int:
 
 def _calc_zone_hp(zone: int, scaling: float) -> float:
     """HP = 10 × (scaling^(zone-1) + zone - 1)"""
+    if scaling <= 1.0:
+        scaling = 1.15
     return 10.0 * (math.pow(scaling, zone - 1) + zone - 1)
 
 
 def _calc_zone_gold(zone: int) -> float:
-    """Base gold per monster kill at zone. Scales with zone."""
-    return zone * 5.0
+    """Base gold per monster kill at zone. Exponential scaling."""
+    scaling = 1.1
+    return 5.0 * (math.pow(scaling, zone - 1) + zone - 1)
 
 
 def _log_audit(session: Session, audit_type: str, entity_type: str,
@@ -402,12 +405,33 @@ async def start_session(
 
     chapter_id = scene.chapter_id
 
+    # If the user is starting a scene they ALREADY completed, we should probably 
+    # force a fresh start (Zone 1, Wave 1) instead of resuming an old farming session.
+    progress = session.exec(
+        select(PlayerProgress).where(PlayerProgress.character_id == char.id)
+    ).first()
+
+    previously_completed = False
+    if progress:
+        if scene.chapter.chapter_number < progress.chapter_number:
+            previously_completed = True
+        elif scene.chapter.chapter_number == progress.chapter_number and scene.scene_number < progress.scene_number:
+            previously_completed = True
+
     active_session = session.exec(
         select(PlayerStorySession)
         .where(PlayerStorySession.player_id == player.id)
         .where(PlayerStorySession.scene_id == body.scene_id)
         .where(PlayerStorySession.is_active == True)
     ).first()
+
+    if active_session and previously_completed:
+        # User finished this scene before, but has an active stale session. 
+        # Close it and force new start.
+        active_session.is_active = False
+        session.add(active_session)
+        session.commit()
+        active_session = None
 
     if active_session:
         new_session = active_session
@@ -458,17 +482,6 @@ async def start_session(
 
     auto_dps = _calc_auto_dps(session, char.id)
     strength = char.strength or (char.character_class.base_strength if char.character_class else DEFAULT_CLICK_STRENGTH)
-
-    progress = session.exec(
-        select(PlayerProgress).where(PlayerProgress.character_id == char.id)
-    ).first()
-
-    previously_completed = False
-    if progress:
-        if scene.chapter.chapter_number < progress.chapter_number:
-            previously_completed = True
-        elif scene.chapter.chapter_number == progress.chapter_number and scene.scene_number < progress.scene_number:
-            previously_completed = True
 
     # Get current multipliers and levels for resume/start
     all_upgrades = session.exec(
@@ -570,6 +583,11 @@ async def combat_tick(
     story_session.session_gold += awarded_gold
     story_session.current_zone = body.zone
     story_session.current_wave = body.wave
+    
+    # Check if this tick included a required zone completion
+    if body.waves_completed_delta > 0:
+        story_session.required_waves_finished = True
+
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
     session.commit()
@@ -744,7 +762,7 @@ async def complete_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     char = _get_character(session, player.id)
-    bosses_defeated = story_session.current_zone // 5
+    bosses_defeated = story_session.current_zone // 1
 
     progress = session.exec(
         select(PlayerProgress).where(PlayerProgress.character_id == char.id)
@@ -755,9 +773,29 @@ async def complete_session(
     first_clear_bonus = 1.0
     scene = session.get(Scene, story_session.scene_id)
     if scene and progress:
-        chapter_num = scene.chapter.chapter_number if scene.chapter else 1
-        if chapter_num >= progress.chapter_number and scene.scene_number >= progress.scene_number:
-            first_clear_bonus = first_clear_mult
+        # Check if they are currently on THIS level or a LATER one
+        if scene.chapter.chapter_number > progress.chapter_number:
+             first_clear_bonus = first_clear_mult
+        elif scene.chapter.chapter_number == progress.chapter_number and scene.scene_number >= progress.scene_number:
+             first_clear_bonus = first_clear_mult
+
+    # Calculate required waves (formerly zones) based on narrative total time
+    wpm = _get_config_int(session, "default_player_wpm", 200)
+    if player:
+        setts = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
+        if setts and setts.narration_wpm:
+            wpm = setts.narration_wpm
+            
+    beats = session.exec(select(StoryBeat).where(StoryBeat.scene_id == story_session.scene_id)).all()
+    total_words = sum(len((b.raw_text or b.summary or "").split()) for b in beats)
+    total_est_s = (total_words / max(wpm, 1)) * 60.0
+    wave_dur = _get_config_float(session, "wave_duration_seconds", 30.0)
+    
+    # Scene 1 is always 1 wave for onboarding speed. Others calculated.
+    if scene and scene.scene_number == 1 and scene.chapter.chapter_number == 1:
+        required_waves = 1
+    else:
+        required_waves = max(1, math.ceil(total_est_s / (wave_dur * 1.1)))
 
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
@@ -769,27 +807,58 @@ async def complete_session(
         )
     meta.elysium_essence += essence_earned
     meta.total_essence_earned += essence_earned
-    meta.last_updated_at = datetime.now(timezone.utc)
+    meta.updated_at = datetime.now(timezone.utc)
     session.add(meta)
 
-    both_complete = (story_session.required_waves_finished and
+    # Narrative AND minimum waves must be cleared
+    both_complete = (story_session.current_zone >= required_waves and
                      story_session.narrative_progress_pct >= 100.0)
+    
     if both_complete and progress and scene:
+        # Check if this was the current 'active' progress level
         if (progress.book_number == scene.chapter.book.book_number and
             progress.chapter_number == scene.chapter.chapter_number and
             progress.scene_number == scene.scene_number):
             
-            progress.scene_number += 1
-            progress.beat_number = 1
+            # 1. Try finding next scene in current chapter
+            next_scene = session.exec(
+                select(Scene)
+                .where(Scene.chapter_id == scene.chapter_id)
+                .where(Scene.scene_number > scene.scene_number)
+                .order_by(Scene.scene_number.asc())
+            ).first()
+
+            if next_scene:
+                progress.scene_number = next_scene.scene_number
+            else:
+                # 2. Try finding next chapter in current book
+                next_chapter = session.exec(
+                    select(Chapter)
+                    .where(Chapter.book_id == scene.chapter.book_id)
+                    .where(Chapter.chapter_number > scene.chapter.chapter_number)
+                    .order_by(Chapter.chapter_number.asc())
+                ).first()
+
+                if next_chapter:
+                    progress.chapter_number = next_chapter.chapter_number
+                    progress.scene_number = 1 # Start at first scene of new chapter
+                else:
+                    # 3. Try finding next book
+                    next_book = session.exec(
+                        select(Book)
+                        .where(Book.book_number > scene.chapter.book.book_number)
+                        .order_by(Book.book_number.asc())
+                    ).first()
+
+                    if next_book:
+                        progress.book_number = next_book.book_number
+                        progress.chapter_number = 1
+                        progress.scene_number = 1
+                    else:
+                        # End of all content! (For now, stay on last level or just don't increment)
+                        pass
             
-            if progress.scene_number > 4:
-                progress.scene_number = 1
-                progress.chapter_number += 1
-                
-            if progress.chapter_number > 4:
-                progress.chapter_number = 1
-                progress.book_number += 1
-                
+            progress.beat_number = 1
             progress.updated_at = datetime.now(timezone.utc)
             session.add(progress)
 

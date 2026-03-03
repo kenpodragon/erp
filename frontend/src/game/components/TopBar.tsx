@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './TopBar.css';
+import { api } from '../../api';
 import { useGame } from '../GameContext';
+import './TopBar.css';
 
 interface Character {
   id: number;
@@ -34,6 +35,7 @@ interface Player {
 interface TopBarProps {
   player: Player | null;
   character: Character | null;
+  onPlayerUpdate: () => void;
 }
 
 const FALLBACK_AVATAR = 'https://via.placeholder.com/32/000000/b8860b?text=ERP';
@@ -54,10 +56,29 @@ const CLASS_TO_PRESET: Record<string, string> = {
   class_warrior:  'warrior',
 };
 
-const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
+const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) => {
   const { state } = useGame();
-  const [showSettings, setShowSettings] = React.useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   
+  // Local state for sliders during editing
+  const [localSettings, setLocalSettings] = useState({
+    ui_scale: player?.settings?.ui_scale || 1.0,
+    game_text_scale: player?.settings?.game_text_scale || 1.0,
+    narration_wpm: player?.settings?.narration_wpm || 200,
+    narration_font_size: player?.settings?.narration_font_size || 14
+  });
+
+  useEffect(() => {
+    if (player?.settings) {
+      setLocalSettings({
+        ui_scale: player.settings.ui_scale,
+        game_text_scale: player.settings.game_text_scale,
+        narration_wpm: player.settings.narration_wpm,
+        narration_font_size: player.settings.narration_font_size
+      });
+    }
+  }, [player?.settings]);
+
   // Calculate the intended URL
   const targetUrl = useMemo(() => {
     const charClass = character?.class || character?.character_class;
@@ -74,11 +95,11 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
   }, [player, character]);
 
   // Persistent state for the current valid image source
-  const [imgSrc, setImgSrc] = React.useState(targetUrl);
-  const [failedUrls] = React.useState<Set<string>>(new Set());
+  const [imgSrc, setImgSrc] = useState(targetUrl);
+  const [failedUrls] = useState<Set<string>>(new Set());
 
   // Only update imgSrc if the targetUrl is new and hasn't failed before
-  React.useEffect(() => {
+  useEffect(() => {
     if (targetUrl !== imgSrc) {
       if (failedUrls.has(targetUrl)) {
         setImgSrc(FALLBACK_AVATAR);
@@ -97,20 +118,21 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
 
   const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const updates = {
-      ui_scale: parseFloat(formData.get('ui_scale') as string),
-      game_text_scale: parseFloat(formData.get('game_text_scale') as string),
-      narration_wpm: parseInt(formData.get('narration_wpm') as string),
-      narration_font_size: parseInt(formData.get('narration_font_size') as string),
-    };
-    
     try {
-      await api.post('/api/players/me/settings', updates);
-      window.location.reload(); // Hard refresh to apply UI scale changes globally
+      await api.patch('/api/players/me/settings', localSettings);
+      setShowSettings(false);
+      onPlayerUpdate(); // Refresh parent state to apply globally
     } catch (err) {
       console.error("Failed to save settings", err);
     }
+  };
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLocalSettings(prev => ({
+      ...prev,
+      [name]: name.includes('scale') ? parseFloat(value) : parseInt(value)
+    }));
   };
 
   return (
@@ -155,23 +177,23 @@ const TopBar: React.FC<TopBarProps> = ({ player, character }) => {
             <h3>Game Settings</h3>
             <form onSubmit={handleSaveSettings}>
               <div className="settings-group">
-                <label>UI Scale: 
-                  <input type="range" name="ui_scale" min="0.5" max="1.5" step="0.05" defaultValue={player?.settings?.ui_scale || 1.0} />
+                <label>UI Scale: {localSettings.ui_scale.toFixed(2)}x
+                  <input type="range" name="ui_scale" min="0.5" max="1.5" step="0.05" value={localSettings.ui_scale} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-group">
-                <label>Combat Text Scale: 
-                  <input type="range" name="game_text_scale" min="0.5" max="2.0" step="0.1" defaultValue={player?.settings?.game_text_scale || 1.0} />
+                <label>Combat Text Scale: {localSettings.game_text_scale.toFixed(1)}x
+                  <input type="range" name="game_text_scale" min="0.5" max="2.0" step="0.1" value={localSettings.game_text_scale} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-group">
-                <label>Narration WPM: 
-                  <input type="number" name="narration_wpm" min="50" max="1000" defaultValue={player?.settings?.narration_wpm || 200} />
+                <label>Narration WPM: {localSettings.narration_wpm}
+                  <input type="range" name="narration_wpm" min="50" max="600" step="10" value={localSettings.narration_wpm} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-group">
-                <label>Narration Font Size: 
-                  <input type="number" name="narration_font_size" min="10" max="32" defaultValue={player?.settings?.narration_font_size || 14} />
+                <label>Narration Font Size: {localSettings.narration_font_size}px
+                  <input type="range" name="narration_font_size" min="10" max="32" step="1" value={localSettings.narration_font_size} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-actions">

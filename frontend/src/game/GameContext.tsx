@@ -78,12 +78,20 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     essence: initialEssence || 0,
     gold: 0,
     activeTrainingId: null,
-    activeSceneId: null,
+    activeSceneId: localStorage.getItem('erp_active_scene_id'),
     activeVisualChapterId: 1,
     storySession: null,
     activeBuffs: [],
     isOffline: false,
   });
+
+  useEffect(() => {
+    if (state.activeSceneId) {
+      localStorage.setItem('erp_active_scene_id', state.activeSceneId);
+    } else {
+      localStorage.removeItem('erp_active_scene_id');
+    }
+  }, [state.activeSceneId]);
 
   useEffect(() => {
     if (initialEssence !== undefined) {

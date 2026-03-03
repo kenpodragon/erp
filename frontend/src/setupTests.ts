@@ -27,5 +27,6 @@ vi.mock('./api', () => ({
     get: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
-  }
+  },
+  apiEvents: new EventTarget(),
 }))

@@ -59,7 +59,7 @@ class PlayerMetaProgression(SQLModel, table=True):
     elysium_essence: float = Field(default=0)
     total_essence_earned: float = Field(default=0)
     spent_essence: float = Field(default=0)
-    last_updated_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
 
 
 class DevContentAudit(SQLModel, table=True):

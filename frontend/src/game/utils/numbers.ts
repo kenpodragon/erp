@@ -15,21 +15,25 @@ const SUFFIXES = [
 
 /** Standard human-readable large number formatting. */
 export function formatNumber(n: number): string {
-  if (n < 1000) return Math.floor(n).toString();
+  if (isNaN(n) || !isFinite(n)) return '0';
+  const absN = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
   
-  const tier = Math.floor(Math.log10(n) / 3);
-  if (tier === 0) return Math.floor(n).toString();
-
-  const suffix = SUFFIXES[tier] || `e${tier * 3}`;
+  if (absN < 1000) return sign + Math.floor(absN).toString();
+  
+  const tier = Math.floor(Math.log10(absN) / 3);
+  const suffix = SUFFIXES[tier] || ` e${tier * 3}`;
   const scale = Math.pow(10, tier * 3);
-  const scaled = n / scale;
+  const scaled = absN / scale;
 
-  return scaled.toFixed(2) + ' ' + suffix;
+  return sign + scaled.toFixed(2) + ' ' + suffix;
 }
 
 /** Gold specific formatting (no decimals if possible). */
 export function formatGold(n: number): string {
-  if (n < 10000) return Math.floor(n).toString();
+  if (isNaN(n) || !isFinite(n)) return '0';
+  const absN = Math.abs(n);
+  if (absN < 1000) return (n < 0 ? '-' : '') + Math.floor(absN).toString();
   return formatNumber(n);
 }
 
@@ -39,8 +43,9 @@ export function formatGold(n: number): string {
  */
 export function upgradeCost(base: number, currentLevel: number, count: number, scaling = 1.07): number {
   if (count <= 0) return 0;
+  // Use floating point for precision before ceiling
   const cost = base * Math.pow(scaling, currentLevel) * (Math.pow(scaling, count) - 1) / (scaling - 1);
-  return Math.ceil(cost);
+  return Math.ceil(cost - 0.0000001); // Small epsilon to avoid precision issues
 }
 
 /**
@@ -48,18 +53,23 @@ export function upgradeCost(base: number, currentLevel: number, count: number, s
  * Formula: floor( log_scaling( (Gold × (scaling - 1) / (base × scaling^level)) + 1 ) )
  */
 export function maxAffordable(base: number, currentLevel: number, gold: number, scaling = 1.07): number {
-  if (gold < base * Math.pow(scaling, currentLevel)) return 0;
+  if (gold <= 0) return 0;
+  const currentCost = base * Math.pow(scaling, currentLevel);
+  if (gold < currentCost) return 0;
+  
   const num = (gold * (scaling - 1)) / (base * Math.pow(scaling, currentLevel)) + 1;
-  return Math.floor(Math.log(num) / Math.log(scaling));
+  const res = Math.floor(Math.log(num) / Math.log(scaling) + 0.0000001);
+  return Math.max(0, res);
 }
 
 /** HP for a monster at a given zone. */
 export function zoneHp(zone: number, scalingFactor = 1.55): number {
+  if (isNaN(scalingFactor) || scalingFactor <= 1.0) scalingFactor = 1.15;
   return 10 * (Math.pow(scalingFactor, zone - 1) + zone - 1);
 }
 /** Gold per monster kill at a given zone. */
-export function zoneGold(zone: number): number {
-  return zone * 5;
+export function zoneGold(zone: number, scalingFactor = 1.1): number {
+  return 5 * (Math.pow(scalingFactor, zone - 1) + zone - 1);
 }
 
 /** 

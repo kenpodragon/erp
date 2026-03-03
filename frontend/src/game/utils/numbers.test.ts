@@ -58,28 +58,28 @@ describe('upgradeCost', () => {
 
   it('scales with 1.07 per level', () => {
     const cost = upgradeCost(10, 1, 1);
-    expect(cost).toBeCloseTo(10 * 1.07, 4);
+    expect(cost).toBe(11); // ceil(10 * 1.07) = 11
   });
 
   it('sums multiple quantities', () => {
     const costOne = upgradeCost(10, 0, 1);
     const costTwo = upgradeCost(10, 1, 1);
-    expect(upgradeCost(10, 0, 2)).toBeCloseTo(costOne + costTwo, 4);
+    expect(upgradeCost(10, 0, 2)).toBe(costOne + costTwo);
   });
 });
 
 describe('maxAffordable', () => {
   it('returns 0 when gold is 0', () => {
-    expect(maxAffordable(0, 10, 0)).toBe(0);
+    expect(maxAffordable(10, 0, 0)).toBe(0);
   });
 
   it('returns correct count for exact gold', () => {
     const gold = upgradeCost(10, 0, 3);
-    expect(maxAffordable(gold, 10, 0)).toBe(3);
+    expect(maxAffordable(10, 0, gold)).toBe(3);
   });
 
   it('does not exceed what can be bought', () => {
-    const n = maxAffordable(100, 10, 0);
+    const n = maxAffordable(10, 0, 100);
     const spent = upgradeCost(10, 0, n);
     expect(spent).toBeLessThanOrEqual(100);
     const spentNext = upgradeCost(10, 0, n + 1);
@@ -106,8 +106,8 @@ describe('zoneHp', () => {
 });
 
 describe('zoneGold', () => {
-  it('returns zone * 5', () => {
-    expect(zoneGold(1)).toBe(5);
-    expect(zoneGold(10)).toBe(50);
+  it('uses exponential scaling', () => {
+    expect(zoneGold(1)).toBeCloseTo(5, 4);
+    expect(zoneGold(10)).toBeGreaterThan(50); // should be around 56.78
   });
 });

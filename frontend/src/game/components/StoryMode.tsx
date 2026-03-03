@@ -28,14 +28,16 @@ interface Player {
 
 interface StoryModeProps {
   player: Player | null;
+  onPlayerUpdate: () => void;
 }
 
-const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
+const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
   const { state, exitScene, setStorySession, updateStorySession } = useGame();
   const { activeSceneId, storySession } = state;
 
   const pendingClicks = useRef(0);
   const pendingGold = useRef(0);
+  const pendingWavesComplete = useRef(0);
   const lastTickAt = useRef(Date.now());
   const tickTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   
@@ -44,6 +46,9 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
   const [farmMode, setFarmMode] = React.useState(false);
   const [gameConfigs, setGameConfigs] = React.useState<Record<string, unknown>>({});
   const [forceOdometerUpdate, setForceOdometerUpdate] = React.useState(false);
+  const [autoProgress, setAutoProgress] = React.useState(true);
+  const [debugSuperClick, setDebugSuperClick] = React.useState(false);
+  const [userWpm, setUserWpm] = React.useState(200);
 
   // ── Session Initialisation ──────────────────────────────────────────────
   useEffect(() => {
@@ -82,6 +87,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
             goldDropMultiplier: sessionData.gold_drop_multiplier ?? 1,
           };
           setStorySession(session);
+          setUserWpm(player?.settings?.narration_wpm || 200);
           
           if (session.wavesComplete && (session.narrativeProgressPct >= 100 || session.previouslyCompleted)) {
             setFarmMode(true);
@@ -98,7 +104,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
     return () => {
       if (tickTimer.current) clearInterval(tickTimer.current);
     };
-  }, [activeSceneId]);
+  }, [activeSceneId, player]);
 
   // ── Batch Tick Loop ─────────────────────────────────────────────────────
   const flushTick = useCallback(async () => {
@@ -107,8 +113,11 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
     const elapsed = now - lastTickAt.current;
     const clicks = pendingClicks.current;
     const goldDelta = pendingGold.current;
+    const wavesCompletedDelta = pendingWavesComplete.current;
+
     pendingClicks.current = 0;
     pendingGold.current = 0;
+    pendingWavesComplete.current = 0;
     lastTickAt.current = now;
 
     try {
@@ -120,7 +129,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
           zone: storySession.currentZone,
           wave: storySession.currentWave,
           gold_delta: goldDelta,
-          waves_completed_delta: 0,
+          waves_completed_delta: wavesCompletedDelta,
         }
       );
       if (res.ok) {
@@ -178,8 +187,10 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
   const handleWavesComplete = useCallback(() => {
     if (farmMode) return;
     updateStorySession({ wavesComplete: true });
+    pendingWavesComplete.current = 1;
+    flushTick();
     checkDualCondition(storySession?.narrativeProgressPct === 100, true);
-  }, [storySession, updateStorySession, farmMode, checkDualCondition]);
+  }, [storySession, updateStorySession, farmMode, checkDualCondition, flushTick]);
 
   // ── Session Complete ────────────────────────────────────────────────────
   const handleComplete = useCallback(async (continueFarming: boolean) => {
@@ -192,12 +203,13 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
     try {
       const res = await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
       if (res.ok) {
+        onPlayerUpdate(); // Refresh global balance and next level
         exitScene();
       }
     } catch (err) {
       console.error('Failed to complete session', err);
     }
-  }, [storySession, exitScene]);
+  }, [storySession, exitScene, onPlayerUpdate]);
 
   // ── Gold Award from Kills ───────────────────────────────────────────────
   const handleGoldEarned = useCallback((amount: number) => {
@@ -211,18 +223,26 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
 
   const handleResetLevel = useCallback(async () => {
     if (!storySession) return;
-    if (!window.confirm("DEBUG: Reset current session to start? (No essence/gold lost)")) return;
-    updateStorySession({ currentZone: 1, currentWave: 0 });
+    if (!window.confirm("DEBUG: Full Reset? (Resets level, gold, and upgrades)")) return;
+    
     try {
-      await api.post(`/api/game/story/session/${storySession.sessionId}/tick`, {
-        clicks: 0, elapsed_ms: 100, zone: 1, wave: 0, gold_delta: 0, waves_completed_delta: 0
-      });
+      await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
+      window.location.reload();
     } catch {}
-  }, [storySession, updateStorySession]);
+  }, [storySession]);
+
+  const handleWpmChange = (newWpm: number) => {
+    setUserWpm(newWpm);
+    api.patch('/api/players/me/settings', { narration_wpm: newWpm }).catch(() => {});
+  };
 
   const handleExit = async () => {
     await flushTick();
-    exitScene();
+    if (farmMode) {
+      setShowSummary(true);
+    } else {
+      exitScene();
+    }
   };
 
   if (isLoading || !storySession) {
@@ -251,7 +271,8 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
           <NarrativeBlock
             sceneId={storySession.sceneId}
             onComplete={handleNarrativeComplete}
-            wpm={player?.settings?.narration_wpm || 200}
+            wpm={userWpm}
+            onWpmChange={handleWpmChange}
             fontSize={player?.settings?.narration_font_size || 14}
             disabled={farmMode}
           />
@@ -268,10 +289,26 @@ const StoryMode: React.FC<StoryModeProps> = ({ player }) => {
             onZoneAdvance={handleZoneAdvance}
             textScale={player?.settings?.game_text_scale || 1.0}
             extraWavesMode={farmMode}
+            autoProgress={autoProgress}
+            onAutoProgressToggle={setAutoProgress}
+            debugSuperClick={debugSuperClick}
           />
           
-          <div className="story-debug-controls">
-            <button className="debug-btn" onClick={handleResetLevel}>RESET LEVEL (DEBUG)</button>
+          <div className="story-controls-bar">
+            <button 
+              className={`auto-prog-btn ${autoProgress ? 'auto-prog-btn--on' : 'auto-prog-btn--off'}`}
+              onClick={() => setAutoProgress(!autoProgress)}
+            >
+              AUTO PROGRESS: {autoProgress ? 'ON' : 'OFF'}
+            </button>
+            <button 
+              className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
+              onClick={() => setDebugSuperClick(!debugSuperClick)}
+              title="One-click kills (Debug Only)"
+            >
+              SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
+            </button>
+            <button className="debug-btn" onClick={handleResetLevel}>RESET SESSION (DEBUG)</button>
           </div>
         </div>
 

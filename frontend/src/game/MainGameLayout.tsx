@@ -34,6 +34,7 @@ interface MainGameLayoutProps {
   player: Player | null;
   character: any;
   onCharacterUpdate?: () => void;
+  onPlayerUpdate: () => void;
 }
 
 const GameContent: React.FC<MainGameLayoutProps> = (props) => {
@@ -41,13 +42,14 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
   // Align IDs with Sidebar.tsx: map, skills, home, shop, chat, board
   const [activeTab, setActiveTab] = useState<string>('map');
 
-  const { player, character } = props;
+  const { player, character, onPlayerUpdate } = props;
 
   return (
     <div className={`game-layout ${state.activeSceneId ? 'game-layout--story-active' : ''}`}>
       <TopBar 
         player={player}
         character={character}
+        onPlayerUpdate={onPlayerUpdate}
       />
 
       <div className="game-body">

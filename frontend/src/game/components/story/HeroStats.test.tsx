@@ -4,7 +4,7 @@ import HeroStats from './HeroStats';
 import type { StorySession } from '../../GameContext';
 
 const baseSession: StorySession = {
-  sessionId: 'test-session',
+  sessionId: 'test',
   sceneId: 1,
   chapterId: 1,
   currentZone: 1,
@@ -13,8 +13,11 @@ const baseSession: StorySession = {
   darkRitualMultiplier: 1.0,
   narrativeProgressPct: 0,
   wavesComplete: false,
-  characterStrength: 100,
-  autoDpsPerSecond: 50,
+  previouslyCompleted: false,
+  characterStrength: 10,
+  autoDpsPerSecond: 10,
+  clickUpgradeLevel: 0,
+  autoUpgradeLevel: 0,
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.5,
@@ -53,9 +56,9 @@ describe('HeroStats', () => {
   });
 
   it('calculates click damage with all multipliers', () => {
-    const session = { ...baseSession, characterStrength: 10, clickDmgMultiplier: 2, darkRitualMultiplier: 1 };
+    // 10 strength + 10 level = 20 base. 20 * 2 mult = 40.
+    const session = { ...baseSession, characterStrength: 10, clickUpgradeLevel: 10, clickDmgMultiplier: 2, darkRitualMultiplier: 1 };
     render(<HeroStats session={session} />);
-    // 10 * 2 * 1 = 20
-    expect(screen.getByText('20')).toBeDefined();
+    expect(screen.getByText('40')).toBeDefined();
   });
 });

@@ -2,7 +2,7 @@
  * GoldOdometer — Animated digit-flip gold counter.
  *
  * Shows the current session gold with a roll animation when the value
- * increases, and coin pop/fly VFX via short CSS keyframes.
+ * increases, and a floating +XXX delta text.
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { formatGold } from '../../utils/numbers';
@@ -13,42 +13,36 @@ interface Props {
   forceUpdate?: boolean;
 }
 
-interface CoinPop {
-  id: number;
-  left: string;
-}
-
-let _coinId = 0;
-
 const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate }) => {
   const prevGold = useRef(gold);
   const [displayStr, setDisplayStr] = useState(formatGold(gold));
   const [rolling, setRolling] = useState(false);
-  const [coins, setCoins] = useState<CoinPop[]>([]);
+  const [delta, setDelta] = useState<number>(0);
+  const [showDelta, setShowDelta] = useState(false);
+  const deltaTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (gold === prevGold.current) return;
-    const gained = gold > prevGold.current;
-    prevGold.current = gold;
-    setDisplayStr(formatGold(gold));
-
-    // Normal gain with VFX
-    if (gained && !forceUpdate) {
+    const diff = gold - prevGold.current;
+    
+    if (diff > 0 && !forceUpdate) {
+      setDelta(prev => prev + diff);
+      setShowDelta(true);
       setRolling(true);
       setTimeout(() => setRolling(false), 300);
 
-      // Spawn 1-2 coin pops
-      const newCoins: CoinPop[] = Array.from({ length: Math.min(2, Math.ceil(Math.random() * 2)) }, () => ({
-        id: ++_coinId,
-        left: `${30 + Math.random() * 40}%`,
-      }));
-      setCoins(prev => [...prev, ...newCoins]);
-      setTimeout(() => {
-        setCoins(prev => prev.filter(c => !newCoins.find(n => n.id === c.id)));
-      }, 700);
+      if (deltaTimeout.current) clearTimeout(deltaTimeout.current);
+      deltaTimeout.current = setTimeout(() => {
+        setShowDelta(false);
+        setDelta(0);
+      }, 1500);
+    } else {
+      setDelta(0);
+      setShowDelta(false);
     }
-    
-    // Jump without VFX if forceUpdate is true (or if gold decreased)
+
+    prevGold.current = gold;
+    setDisplayStr(formatGold(gold));
   }, [gold, forceUpdate]);
 
   return (
@@ -58,12 +52,11 @@ const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate }) => {
         {displayStr}
       </span>
 
-      {/* Coin pop VFX */}
-      {coins.map(c => (
-        <span key={c.id} className="gold-coin-pop" style={{ left: c.left }}>
-          +&#9733;
+      {showDelta && delta > 0 && (
+        <span className="gold-delta-flyout">
+          +{formatGold(delta)}
         </span>
-      ))}
+      )}
     </div>
   );
 };

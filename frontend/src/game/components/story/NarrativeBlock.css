@@ -16,6 +16,21 @@
 .narrative-block::-webkit-scrollbar-track { background: #06060e; }
 .narrative-block::-webkit-scrollbar-thumb { background: #8b0000; border-radius: 2px; }
 
+.no-select {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.narrative-protection-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: transparent;
+  z-index: 5;
+  pointer-events: none;
+}
+
 .narrative-block.loading {
   align-items: center;
   justify-content: center;
@@ -88,9 +103,37 @@
   padding-top: 0.5rem;
   border-top: 1px solid #1a1a2e;
   text-transform: uppercase;
+  margin-bottom: 2rem;
 }
 
-.narrative-col-inner {
+.narrative-controls {
+  padding: 0.75rem;
+  background: #0d0d1a;
+  border-top: 1px solid #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wpm-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.wpm-slider-wrap label {
+  font-size: 0.65rem;
+  color: #666688;
+  text-transform: uppercase;
+}
+
+.wpm-slider-wrap input {
+  accent-color: #8b0000;
+  cursor: pointer;
+}
+
+.narrative-reread-btn {
+
   height: 100%;
   display: flex;
   flex-direction: column;

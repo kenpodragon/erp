@@ -24,36 +24,46 @@ interface Props {
   sceneId: number;
   onComplete: () => void;
   wpm: number;
+  onWpmChange?: (newWpm: number) => void;
   fontSize?: number;
   disabled?: boolean;
 }
 
-const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, fontSize = 14, disabled = false }) => {
+const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpmChange, fontSize = 14, disabled = false }) => {
   const [beats, setBeats] = useState<Beat[]>([]);
   const [visibleCount, setVisibleCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isReReading, setIsReReading] = useState(false);
   
+  // Local slider state
+  const [localWpm, setLocalWpm] = useState(wpm);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const startNarrativeReveal = (beatsData: Beat[]) => {
+  useEffect(() => {
+    setLocalWpm(wpm);
+  }, [wpm]);
+
+  const startNarrativeReveal = (beatsData: Beat[], startFromIdx = 0) => {
     completedRef.current = false;
-    setVisibleCount(0);
+    setVisibleCount(startFromIdx);
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
 
     let cumulativeMs = 0;
     beatsData.forEach((beat, idx) => {
-      let delayMs = (beat.word_count / wpm) * 60 * 1000;
-      if (delayMs < 2000) delayMs = 2000;
-      cumulativeMs += delayMs;
-      
+      if (idx < startFromIdx) return;
+
       const t = setTimeout(() => {
-        setVisibleCount(prev => Math.max(prev, idx + 1));
+        setVisibleCount(idx + 1);
       }, cumulativeMs);
       timersRef.current.push(t);
+
+      let delayMs = (beat.word_count / Math.max(wpm, 50)) * 60 * 1000;
+      if (delayMs < 500) delayMs = 500;
+      cumulativeMs += delayMs;
     });
 
     const finalT = setTimeout(() => {
@@ -84,7 +94,6 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, fontS
             startNarrativeReveal(data.beats);
           }
         } else {
-          // Fallback if no narrative exists
           const fallback = [{
             id: 0, beat_number: 1, sort_order: 1,
             text: "No narrative discovered for this sector of the Tower...",
@@ -105,17 +114,30 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, fontS
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  }, [sceneId, disabled]); // Removed onComplete to avoid infinite loops if it changes
+  }, [sceneId, disabled, wpm]); // Re-run if WPM changes
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollRef.current && visibleCount > 0) {
+      const container = scrollRef.current;
+      const lastChild = container.lastElementChild as HTMLElement;
+      if (lastChild && lastChild.classList.contains('narrative-paragraph')) {
+        const targetScroll = lastChild.offsetTop - 20;
+        container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      }
     }
   }, [visibleCount]);
 
   const handleReRead = () => {
     setIsReReading(true);
     startNarrativeReveal(beats);
+  };
+
+  const handleWpmSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalWpm(Number(e.target.value));
+  };
+
+  const handleWpmSliderMouseUp = () => {
+    onWpmChange?.(localWpm);
   };
 
   if (loading) {
@@ -131,9 +153,10 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, fontS
   return (
     <aside className="narrative-col-inner" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div 
-        className="narrative-block" 
+        className="narrative-block no-select" 
         ref={scrollRef}
       >
+        <div className="narrative-protection-overlay" />
         {beats.slice(0, showAll ? beats.length : visibleCount).map((beat, idx) => {
           const isCurrent = idx === (showAll ? beats.length - 1 : visibleCount - 1);
           return (
@@ -168,11 +191,23 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, fontS
         )}
       </div>
       
-      {disabled && !isReReading && (
-        <button className="narrative-reread-btn" onClick={handleReRead}>
-          📖 Re-read Story
-        </button>
-      )}
+      <div className="narrative-controls">
+        <div className="wpm-slider-wrap">
+          <label>WPM: {localWpm}</label>
+          <input 
+            type="range" min="50" max="600" step="10" 
+            value={localWpm} 
+            onChange={handleWpmSliderChange}
+            onMouseUp={handleWpmSliderMouseUp}
+          />
+        </div>
+
+        {disabled && !isReReading && (
+          <button className="narrative-reread-btn" onClick={handleReRead}>
+            📖 Re-read Story
+          </button>
+        )}
+      </div>
     </aside>
   );
 };
