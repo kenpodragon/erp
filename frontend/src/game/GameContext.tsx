@@ -69,8 +69,8 @@ type SessionPatch = Partial<StorySession> | ((prev: StorySession) => Partial<Sto
 
 interface GameContextType {
   state: GameState;
-  updateEssence: (amount: number) => void;
-  updateGold: (amount: number) => void;
+  setEssence: (amount: number) => void;
+  setGold: (amount: number) => void;
   startTraining: (skillId: string) => void;
   enterScene: (sceneId: string) => void;
   exitScene: () => void;
@@ -102,18 +102,18 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
   });
 
   useEffect(() => {
+    if (initialEssence !== undefined) {
+      setState(prev => ({ ...prev, essence: initialEssence }));
+    }
+  }, [initialEssence]);
+
+  useEffect(() => {
     if (state.activeSceneId) {
       localStorage.setItem('erp_active_scene_id', state.activeSceneId);
     } else {
       localStorage.removeItem('erp_active_scene_id');
     }
   }, [state.activeSceneId]);
-
-  useEffect(() => {
-    if (initialEssence !== undefined) {
-      setState(prev => ({ ...prev, essence: initialEssence }));
-    }
-  }, [initialEssence]);
 
   // Prune expired buffs every second
   useEffect(() => {
@@ -141,11 +141,11 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     };
   }, []);
 
-  const updateEssence = (amount: number) =>
-    setState(prev => ({ ...prev, essence: prev.essence + amount }));
+  const setEssence = (amount: number) =>
+    setState(prev => ({ ...prev, essence: amount }));
 
-  const updateGold = (amount: number) =>
-    setState(prev => ({ ...prev, gold: prev.gold + amount }));
+  const setGold = (amount: number) =>
+    setState(prev => ({ ...prev, gold: amount }));
 
   const startTraining = (skillId: string) =>
     setState(prev => ({ ...prev, activeTrainingId: skillId }));
@@ -194,8 +194,8 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     <GameContext.Provider
       value={{
         state,
-        updateEssence,
-        updateGold,
+        setEssence,
+        setGold,
         startTraining,
         enterScene,
         exitScene,

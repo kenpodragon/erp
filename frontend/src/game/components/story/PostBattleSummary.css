@@ -92,6 +92,10 @@
   color: #aa66ff;
 }
 
+.post-battle-stat-value--elysium {
+  color: #ffd700;
+}
+
 .post-battle-stat-value--ritual {
   color: #cc4400;
 }

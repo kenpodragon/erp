@@ -10,6 +10,12 @@
   flex-wrap: wrap;
 }
 
+.story-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .story-header-breadcrumb {
   display: flex;
   align-items: center;

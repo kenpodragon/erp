@@ -6,12 +6,8 @@ import NarrativeBlock from './story/NarrativeBlock';
 import CombatStage from './story/CombatStage';
 import BossStage from './story/BossStage';
 import NarrativeReveal from './story/NarrativeReveal';
-import AudioPlayer from './story/AudioPlayer';
-import HeroStats from './story/HeroStats';
-import GoldOdometer from './story/GoldOdometer';
-import SkillsHotbar from './story/SkillsHotbar';
-import UpgradeMenu from './story/UpgradeMenu';
 import PostBattleSummary from './story/PostBattleSummary';
+import StoryModeDashboard from './story/StoryModeDashboard';
 import type { StorySession } from '../GameContext';
 import './StoryMode.css';
 
@@ -34,7 +30,7 @@ interface StoryModeProps {
 }
 
 const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
-  const { state, exitScene, setStorySession, updateStorySession } = useGame();
+  const { state, exitScene, setStorySession, updateStorySession, setEssence, setGold } = useGame();
   const { activeSceneId, storySession } = state;
 
   const pendingClicks = useRef(0);
@@ -102,7 +98,11 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
           setStorySession(session);
           setUserWpm(player?.settings?.narration_wpm || 200);
 
-          if (session.wavesComplete && (session.narrativeProgressPct >= 100 || session.previouslyCompleted)) {
+          // If it was already completed, we can start in farmMode ONLY if 
+          // we don't want the user to go through the 'Scene Complete' flow again.
+          // BUT the user wants the popup to show even on replays.
+          // So we only set farmMode if it's a resume of an ALREADY farming session.
+          if (session.wavesComplete && session.narrativeProgressPct >= 100 && !session.isReplay) {
             setFarmMode(true);
           }
         } else {
@@ -188,12 +188,12 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
   useEffect(() => {
     if (!storySession || farmMode || showSummary) return;
     
-    const narrativeDone = storySession.narrativeProgressPct >= 100;
+    // On replays, narrative is technically already "done" for the sake of the completion gate.
+    const narrativeDone = storySession.narrativeProgressPct >= 100 || storySession.previouslyCompleted;
     const wavesDone = storySession.wavesComplete;
     
-    // Only show the summary automatically if it's NOT previously completed
-    // and both conditions are met.
-    if (!storySession.previouslyCompleted && narrativeDone && wavesDone) {
+    // Show the summary automatically once both conditions are met.
+    if (narrativeDone && wavesDone) {
       setShowSummary(true);
     }
   }, [storySession?.narrativeProgressPct, storySession?.wavesComplete, storySession?.previouslyCompleted, farmMode, showSummary, storySession]);
@@ -225,13 +225,17 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
     try {
       const res = await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
       if (res.ok) {
+        const data = await res.json();
+        if (data.total_character_essence !== undefined) {
+          setEssence(data.total_character_essence);
+        }
         onPlayerUpdate(); // Refresh global balance and next level
         exitScene();
       }
     } catch (err) {
       console.error('Failed to complete session', err);
     }
-  }, [storySession, exitScene, onPlayerUpdate]);
+  }, [storySession, exitScene, onPlayerUpdate, setEssence]);
 
   // ── Boss Defeated ───────────────────────────────────────────────────────
   const handleBossDefeated = useCallback(async (success: boolean) => {
@@ -249,6 +253,9 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
       const res = await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
       if (res.ok) {
         const data = await res.json();
+        if (data.total_character_essence !== undefined) {
+          setEssence(data.total_character_essence);
+        }
         onPlayerUpdate();
         if (data.transition_lore_text) {
           setNarrativeReveal({
@@ -264,7 +271,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
       console.error('Failed to complete boss session', err);
       exitScene();
     }
-  }, [storySession, exitScene, onPlayerUpdate]);
+  }, [storySession, exitScene, onPlayerUpdate, setEssence]);
 
   // ── Gold Award from Kills ───────────────────────────────────────────────
   const handleGoldEarned = useCallback((amount: number) => {
@@ -298,6 +305,12 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
     } else {
       exitScene();
     }
+  };
+
+  const handleSettingsUpdate = (newSettings: any) => {
+    api.patch('/api/players/me/settings', newSettings).then(() => {
+      onPlayerUpdate();
+    });
   };
 
   if (isLoading || !storySession) {
@@ -396,7 +409,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             onWavesComplete={handleWavesComplete}
             onZoneAdvance={handleZoneAdvance}
             textScale={player?.settings?.game_text_scale || 1.0}
-            extraWavesMode={farmMode}
+            extraWavesMode={farmMode || (storySession.wavesComplete && storySession.narrativeProgressPct < 100)}
             autoProgress={autoProgress}
             onAutoProgressToggle={setAutoProgress}
             debugSuperClick={debugSuperClick}
@@ -420,19 +433,18 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             <button className="debug-btn" onClick={handleResetLevel}>RESET SESSION (DEBUG)</button>
           </div>
         </div>
-
-        {/* 3. Right Column: Hero Dashboard */}
-        <div className="story-right-panel">
-          <GoldOdometer gold={storySession.sessionGold} forceUpdate={forceOdometerUpdate} />
-          <HeroStats session={storySession} />
-          <UpgradeMenu session={storySession} gameConfigs={gameConfigs} />
-          <SkillsHotbar session={storySession} gameConfigs={gameConfigs} />
-        </div>
       </div>
 
-      <AudioPlayer chapterId={storySession.chapterId} />
-
       <button className="story-exit-btn" onClick={handleExit} title="Save and Exit">EXIT SCENE</button>
+
+      <StoryModeDashboard 
+        session={storySession}
+        gameConfigs={gameConfigs}
+        onPlayerUpdate={onPlayerUpdate}
+        uiScale={player?.settings?.ui_scale || 1.0}
+        gameTextScale={player?.settings?.game_text_scale || 1.0}
+        onSettingsChange={handleSettingsUpdate}
+      />
 
       {showSummary && (
         <PostBattleSummary

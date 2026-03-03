@@ -137,7 +137,7 @@ async def list_characters(
     session: Session = Depends(get_session)
 ):
     """
-    List the authenticated player's characters with class info.
+    List the authenticated player's characters with class, progress, and essence info.
     FR-4.9
     """
     player = token.get("player")
@@ -148,7 +148,15 @@ async def list_characters(
     result = []
     for char in characters:
         char_class = session.get(CharacterClass, char.class_id)
-        result.append({**jsonable_encoder(char), "class": jsonable_encoder(char_class) if char_class else None})
+        progress = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == char.id)).first()
+        essence = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == char.id)).first()
+        
+        result.append({
+            **jsonable_encoder(char), 
+            "class": jsonable_encoder(char_class) if char_class else None,
+            "progress": jsonable_encoder(progress) if progress else None,
+            "essence": jsonable_encoder(essence) if essence else None
+        })
     return result
 
 

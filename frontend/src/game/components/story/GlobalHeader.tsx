@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../api';
 import type { ActiveBuff } from '../../GameContext';
+import AudioPlayerCompact from './AudioPlayerCompact';
 import './GlobalHeader.css';
 
 interface Props {
@@ -31,10 +32,13 @@ const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplie
 
   return (
     <header className="story-global-header">
-      <div className="story-header-breadcrumb">
-        <span className="breadcrumb-chapter">{chapterLabel}</span>
-        <span className="breadcrumb-sep">|</span>
-        <span className="breadcrumb-scene">{sceneLabel}</span>
+      <div className="story-header-left">
+        <div className="story-header-breadcrumb">
+          <span className="breadcrumb-chapter">{chapterLabel}</span>
+          <span className="breadcrumb-sep">|</span>
+          <span className="breadcrumb-scene">{sceneLabel}</span>
+        </div>
+        <AudioPlayerCompact chapterId={chapterId} />
       </div>
 
       {/* Active buff tray */}

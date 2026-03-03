@@ -654,6 +654,17 @@ async def get_session_state(
 
     click_mult, auto_mult, click_lvl, auto_lvl = _calc_multipliers(session, upgrades)
 
+    # --- NEW: Gold to Essence Conversion ---
+    base_rate = _get_config_float(session, "gold_to_essence_base_rate", 1000.0)
+    growth_factor = _get_config_float(session, "gold_to_essence_growth_factor", 1.07)
+    effective_rate = base_rate * math.pow(growth_factor, max(0, story_session.current_zone - 1))
+    converted_essence = story_session.session_gold / max(effective_rate, 1.0)
+    
+    # Calculate legacy essence_earned
+    first_clear_bonus = 2.0 if not previously_completed else 1.0
+    bosses_defeated = story_session.current_zone // 10
+    essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
+
     return {
         **story_session.model_dump(),
         "upgrades": [u.model_dump() for u in upgrades],
@@ -662,6 +673,8 @@ async def get_session_state(
         "auto_dps_multiplier": round(auto_mult, 4),
         "click_upgrade_level": click_lvl,
         "auto_upgrade_level": auto_lvl,
+        "essence_earned": round(essence_earned, 2),
+        "converted_essence": round(converted_essence, 2),
     }
 
 
@@ -960,8 +973,20 @@ async def complete_session(
     wave_dur = _get_config_float(session, "wave_duration_seconds", 30.0)
     required_waves = max(1, math.ceil(total_est_s / (wave_dur * 1.1)))
 
+    # --- NEW: Gold to Essence Conversion ---
+    # Formula: Essence = session_gold / (base_rate * growth_factor^(zone - 1))
+    base_rate = _get_config_float(session, "gold_to_essence_base_rate", 1000.0)
+    growth_factor = _get_config_float(session, "gold_to_essence_growth_factor", 1.07)
+    
+    # Calculate effective conversion rate for the current zone
+    # If Zone 1, rate is just base_rate.
+    effective_rate = base_rate * math.pow(growth_factor, max(0, story_session.current_zone - 1))
+    converted_essence = story_session.session_gold / max(effective_rate, 1.0)
+    
+    # Existing essence_earned (legacy meta-progression logic)
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
+    # Update PlayerMetaProgression (Elysium Essence)
     meta = session.get(PlayerMetaProgression, player.id)
     if not meta:
         meta = PlayerMetaProgression(
@@ -972,6 +997,23 @@ async def complete_session(
     meta.total_essence_earned += essence_earned
     meta.updated_at = datetime.now(timezone.utc)
     session.add(meta)
+
+    # Update PlayerEssence (Character-specific for Idle Training)
+    char_essence = session.exec(
+        select(PlayerEssence).where(PlayerEssence.character_id == char.id)
+    ).first()
+    if not char_essence:
+        char_essence = PlayerEssence(
+            player_id=player.id,
+            character_id=char.id,
+            current_balance=0.0,
+            passive_rate=0.0,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+    char_essence.current_balance += converted_essence
+    char_essence.updated_at = datetime.now(timezone.utc)
+    session.add(char_essence)
 
     # Narrative AND minimum waves must be cleared
     both_complete = (story_session.current_zone >= required_waves and
@@ -1034,12 +1076,14 @@ async def complete_session(
         "session_id": session_id,
         "is_boss_session": False,
         "essence_earned": round(essence_earned, 2),
+        "converted_essence": round(converted_essence, 2),
         "first_clear_bonus": first_clear_bonus,
         "bosses_defeated": bosses_defeated,
         "highest_zone": story_session.current_zone,
         "session_gold": round(story_session.session_gold, 2),
         "progress_advanced": both_complete,
         "total_essence": round(meta.elysium_essence, 2),
+        "total_character_essence": round(char_essence.current_balance, 2),
     }
 
 

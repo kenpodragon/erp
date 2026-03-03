@@ -11,7 +11,7 @@ This document describes the technical architecture of the Elysium Rising mmorPg 
 
 ### Frontend (Player UI)
 - **Framework:** React (Vite)
-- **2D Engine:** PixiJS (via `@pixi/react`) - High-performance WebGL rendering for combat and overworld animations.
+- **2D Engine:** PixiJS (v8, via `@pixi/react`) - High-performance WebGL rendering for combat and overworld animations.
 - **Styling:** Vanilla CSS (preferred)
 - **Responsibility:** Core gameplay (incremental clicker), audio integration, and player profile management.
 

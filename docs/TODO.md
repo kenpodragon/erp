@@ -5,19 +5,15 @@
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
 - [x] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*        
-    - [ ] **2.2.10 — Additional Tweaks**
-        - [ ] After the StoryMode regular battles the gold you earn should be converted into non-premium currency (ether or whatever it's called) - so can use that to spend on the Idle Training pieces. (It's not a 1 to 1 conversion we need to set up a DB configurable conversion number initially something like 1,000 to one, but as levels start getting higher and harder, that rate should also shift - so you only earn etherium at a normalized rate - e.g. rushing hard levels won't increase the rate you earn (TOO MUCH, it will, but not overly powerful - want some gameplay required in order to earn it and pay for the idle training unlocks)).
-        - [ ] Responsive layout. The bottom window is overlayed too much over the clickable area. Can we make that into an up arrow scroll up? So it hides (collapses down to a single line showing essence earned), skill hotkeys. Click the up arrow and it folds up back so you canaccess the bits. Otherwise the lower half ot the screen is the clicker.
-        - [ ] Need a visible scroll bar/scroll indicator for the narration so you can scroll up and down (and see how far you are).
-        - [ ] As the text appears, the scroll will scroll down so that the top of the newest text is at the top of the scroll window (automatic scrolling).
-        - [ ] Move the font size slider out next to the WPM slider. 
-        - [ ] Combat text and UI scaling settings (test and validate - need to make sure they make sense and ramp appropriately) - maybe for debugging let me set numerical values and I'll find which is large enough for the upper limit and low enough for the lower limit, then use those as the ranges for the scroll mechanic (with the middle being the normal setting/default).
+    - [x] **2.2.10 — Additional Tweaks**
+        - [ ] Combat text and UI scaling settings (test and validate - need to make sure they make sense and ramp appropriately) - maybe for debugging let me set numerical values and I'll find which is large enough for the upper limit and low enough for the lower limit, then use those as the ranges for the scroll mechanic (with the middle being the normal setting/default). Broken. 
+        - [ ] Boss story (locks story progression, right now when I complete a chapter, it's enabling BOTH the boss and next chapter first story. Need to make sure that the progression occurs as expected).
 
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
     - [ ] **DB Migrations**
-        - [ ] Apply migration 021: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds.
-        - [ ] Apply migration 022: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
+        - [ ] Create and apply db migration: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
+        - [ ] Create and apply db migration: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
         - [ ] Identify and set `unlock_scene_id` FK values for Magic, Lore, and Precision skills (query scenes table for gate beats).
         - [ ] Update `db/data_dictionary.md` for all 2.3 schema changes.
     - [ ] **Backend**

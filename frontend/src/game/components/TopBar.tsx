@@ -153,15 +153,11 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
       </div>
       
       <div className="top-bar-center currencies">
-        <div className="currency-item gold">
-          <span className="icon">💰</span>
-          <span className="value">{state.gold.toLocaleString()}</span>
-        </div>
-        <div className="currency-item essence">
+        <div className="currency-item essence" title="ELYSIUM ESSENCE: Permanent resource earned from clearing stages. Used for character progression and Idle Training.">
           <span className="icon">✨</span>
           <span className="value">{state.essence.toLocaleString()}</span>
         </div>
-        <div className="currency-item shards">
+        <div className="currency-item shards" title="SHARDS: Rare premium crystals used for special unlocks and cosmetics.">
           <span className="icon">💎</span>
           <span className="value">10</span>
         </div>

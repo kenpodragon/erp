@@ -119,9 +119,12 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
   useEffect(() => {
     if (scrollRef.current && visibleCount > 0) {
       const container = scrollRef.current;
-      const lastChild = container.lastElementChild as HTMLElement;
-      if (lastChild && lastChild.classList.contains('narrative-paragraph')) {
-        const targetScroll = lastChild.offsetTop - 20;
+      const paragraphs = container.querySelectorAll('.narrative-paragraph');
+      const lastChild = paragraphs[visibleCount - 1] as HTMLElement;
+      
+      if (lastChild) {
+        // Auto-scroll so the TOP of the newest text is at the TOP of the scroll window
+        const targetScroll = lastChild.offsetTop - container.offsetTop;
         container.scrollTo({ top: targetScroll, behavior: 'smooth' });
       }
     }
@@ -138,6 +141,11 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
 
   const handleWpmSliderMouseUp = () => {
     onWpmChange?.(localWpm);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = Number(e.target.value);
+    api.patch('/api/players/me/settings', { narration_font_size: newSize });
   };
 
   if (loading) {
@@ -192,14 +200,25 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
       </div>
       
       <div className="narrative-controls">
-        <div className="wpm-slider-wrap">
-          <label>WPM: {localWpm}</label>
-          <input 
-            type="range" min="50" max="600" step="10" 
-            value={localWpm} 
-            onChange={handleWpmSliderChange}
-            onMouseUp={handleWpmSliderMouseUp}
-          />
+        <div className="narrative-sliders-row">
+          <div className="wpm-slider-wrap">
+            <label>WPM: {localWpm}</label>
+            <input 
+              type="range" min="50" max="600" step="10" 
+              value={localWpm} 
+              onChange={handleWpmSliderChange}
+              onMouseUp={handleWpmSliderMouseUp}
+            />
+          </div>
+
+          <div className="wpm-slider-wrap">
+            <label>FONT SIZE: {fontSize}px</label>
+            <input 
+              type="range" min="8" max="32" step="1" 
+              defaultValue={fontSize}
+              onChange={handleFontSizeChange}
+            />
+          </div>
         </div>
 
         {disabled && !isReReading && (

@@ -9,6 +9,7 @@
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   overflow: hidden;
+  padding-bottom: 40px; /* Space for collapsed dashboard handle */
 }
 
 /* Header */

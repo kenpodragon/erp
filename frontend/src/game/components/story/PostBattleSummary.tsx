@@ -16,6 +16,8 @@ import './PostBattleSummary.css';
 interface SummaryStats {
   session_gold: number;
   essence_earned: number;
+  converted_essence: number;
+  total_character_essence: number;
   current_zone: number;
   dark_ritual_multiplier: number;
 }
@@ -44,6 +46,8 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
           setStats({
             session_gold: goldVal,
             essence_earned: data.essence_earned ?? Math.floor(session.sessionGold * 0.01),
+            converted_essence: data.converted_essence ?? 0,
+            total_character_essence: data.total_character_essence ?? 0,
             current_zone: data.current_zone ?? session.currentZone,
             dark_ritual_multiplier: data.dark_ritual_multiplier ?? session.darkRitualMultiplier,
           });
@@ -73,6 +77,7 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
 
   const displayGold = stats?.session_gold ?? session.sessionGold;
   const displayEssence = stats?.essence_earned ?? Math.floor(session.sessionGold * 0.01);
+  const displayConverted = stats?.converted_essence ?? 0;
   const displayZones = stats?.current_zone ?? session.currentZone;
   const displayDR = stats?.dark_ritual_multiplier ?? session.darkRitualMultiplier;
 
@@ -95,9 +100,16 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
             </div>
 
             <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
-              <span className="post-battle-stat-label">Elysium Essence</span>
+              <span className="post-battle-stat-label">Converted Essence</span>
               <span className="post-battle-stat-value post-battle-stat-value--essence">
-                ◆ {formatNumber(displayEssence)}
+                ◆ {formatNumber(displayConverted)}
+              </span>
+            </div>
+
+            <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
+              <span className="post-battle-stat-label">Elysium Essence</span>
+              <span className="post-battle-stat-value post-battle-stat-value--elysium">
+                ◈ {formatNumber(displayEssence)}
               </span>
             </div>
 

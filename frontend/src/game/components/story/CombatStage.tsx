@@ -132,9 +132,10 @@ const CombatContent: React.FC<InnerProps> = ({
     const isBossWave = isBoss && isBossZone;
     const isPrimal = isBossWave && Math.random() < PRIMAL_CHANCE;
     
-    // Normal mobs in Zone X all have Level (X-1)*10 + 1 scaling.
-    // Boss has Level (X-1)*10 + 10 scaling.
-    const enemyLevel = isBoss ? (zone * 10) : ((zone - 1) * 10 + 1);
+    // Scaling: Level is just the zone number. 
+    // Bosses are slightly stronger (Zone + 1) to make them 'final' for that zone.
+    const enemyLevel = isBoss ? (zone + 1) : zone;
+    
     const hp = zoneHp(enemyLevel, scalingFactor);
     const gold = zoneGold(enemyLevel) * (isBossWave ? 10 : isBoss ? 3 : 1) * (isPrimal ? 3 : 1);
 
@@ -176,6 +177,7 @@ const CombatContent: React.FC<InnerProps> = ({
 
   const advanceWave = useCallback(() => {
     setWaveCount(prev => {
+      const next = prev + 1;
       if (isFightingBoss) {
         // Just killed the boss
         setIsFightingBoss(false);
@@ -187,7 +189,6 @@ const CombatContent: React.FC<InnerProps> = ({
         onZoneAdvance(session.currentZone + 1);
         return 0; 
       } else {
-        const next = prev + 1;
         if (next < MONSTERS_PER_ZONE) {
           // Progress to next normal mob
           setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
@@ -211,8 +212,8 @@ const CombatContent: React.FC<InnerProps> = ({
   const handleChallengeBoss = useCallback(() => {
     if (isFightingBoss) return;
     setIsFightingBoss(true);
-    spawnEnemy(enemyPool, session.currentZone, true);
-  }, [enemyPool, session.currentZone, spawnEnemy, isFightingBoss]);
+    spawnEnemy(enemyPool, session.currentZone, true, MONSTERS_PER_ZONE);
+  }, [enemyPool, session.currentZone, spawnEnemy, isFightingBoss, MONSTERS_PER_ZONE]);
 
   const applyDamage = useCallback((damage: number, type: 'normal' | 'crit' | 'auto' | 'burst', clickX?: number, clickY?: number) => {
     const enemyX = width * 0.5;
@@ -242,13 +243,13 @@ const CombatContent: React.FC<InnerProps> = ({
     if (session.currentWave >= MONSTERS_PER_ZONE) {
       setWaveCount(MONSTERS_PER_ZONE);
       setIsFightingBoss(false);
-      spawnEnemy(enemyPool, session.currentZone, false); 
+      spawnEnemy(enemyPool, session.currentZone, false, MONSTERS_PER_ZONE); 
     } else {
       setWaveCount(session.currentWave);
       setIsFightingBoss(false);
-      spawnEnemy(enemyPool, session.currentZone, false); 
+      spawnEnemy(enemyPool, session.currentZone, false, session.currentWave); 
     }
-  }, [session.currentZone, enemyPool.length, spawnEnemy]);
+  }, [session.currentZone, enemyPool.length, spawnEnemy, MONSTERS_PER_ZONE]);
 
   // Handle auto-progress being toggled ON while in "Ready" state
   useEffect(() => {
@@ -329,22 +330,29 @@ const CombatContent: React.FC<InnerProps> = ({
   const breathe = Math.sin(time) * 0.03, idleY = Math.cos(time * 0.7) * 3;
   const shakeX = shake ? (Math.random() - 0.5) * 6 : 0, shakeY = (shake ? (Math.random() - 0.5) * 4 : 0) + idleY;
 
-  const monstersCount = Math.min(waveCount + 1, MONSTERS_PER_ZONE);
+  const totalWaveDisplay = ((session.currentZone - 1) * MONSTERS_PER_ZONE) + waveCount + 1;
+  const monstersInZone = Math.min(waveCount + 1, MONSTERS_PER_ZONE);
   let statusText = "";
   
   if (isFightingBoss) {
-    statusText = `Wave ${session.currentZone}/${requiredWaves} | CHALLENGE: MINI-BOSS`;
-  } else if (session.currentZone > requiredWaves) {
-    // We are past required waves
-    if (narrativeProgressPct < 100) {
-      statusText = "Waiting for you to finish reading the story... (Extra enemies appear!)";
+    const modeLabel = extraWavesMode ? `FARMING Wave ${session.currentZone}` : `Wave ${session.currentZone}/${requiredWaves}`;
+    statusText = `${modeLabel} | CHALLENGE: MINI-BOSS`;
+  } else if (extraWavesMode) {
+    // Check if we are farming because of narrative delay or explicit farm mode
+    const isNarrativeDelay = session.wavesComplete && !session.previouslyCompleted && narrativeProgressPct < 100;
+    
+    if (isNarrativeDelay) {
+      statusText = `More mobs appear! You must finish the story before clearing this level. | Mob ${monstersInZone}/${MONSTERS_PER_ZONE}`;
     } else {
-      statusText = "SCENE COMPLETE — Check rewards below";
+      statusText = `FARMING WAVE ${session.currentZone} | Mob ${monstersInZone}/${MONSTERS_PER_ZONE} | Monsters scaling up...`;
     }
-  } else if (waveCount < MONSTERS_PER_ZONE) {
-    statusText = `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersCount}/${MONSTERS_PER_ZONE}`;
-  } else {
+  } else if (session.currentZone > requiredWaves || (session.wavesComplete && session.narrativeProgressPct >= 100)) {
+    // Scene is complete but user hasn't clicked claim/farm yet
+    statusText = "SCENE COMPLETE — Check rewards below";
+  } else if (waveCount >= MONSTERS_PER_ZONE) {
     statusText = `Wave ${session.currentZone}/${requiredWaves} | BOSS READY`;
+  } else {
+    statusText = `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersInZone}/${MONSTERS_PER_ZONE}`;
   }
 
   return (
@@ -379,7 +387,7 @@ const CombatContent: React.FC<InnerProps> = ({
         <pixiContainer 
           x={width * 0.5} y={height * 0.25} zIndex={50} 
           eventMode="static" cursor="pointer" 
-          onclick={handleChallengeBoss}
+          onpointertap={handleChallengeBoss}
           onpointerdown={handleChallengeBoss}
         >
            <pixiGraphics draw={g => {
