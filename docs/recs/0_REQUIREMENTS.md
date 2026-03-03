@@ -151,6 +151,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
+- [ ] **Dev Content Audit table** viewer and editor to help manage and update assets that have missing data. Ability to clear them from the log (don't need duplicates). Ties into the Gameplay data editor.
 
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.

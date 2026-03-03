@@ -60,7 +60,10 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
 
         <main className="game-main-content">
           {state.activeSceneId ? (
-            <StoryMode player={player} />
+            <StoryMode 
+              player={player} 
+              onPlayerUpdate={onPlayerUpdate} 
+            />
           ) : (
             <>
               {activeTab === 'map' && <OverworldMap />}

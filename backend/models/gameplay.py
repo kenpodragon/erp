@@ -33,6 +33,7 @@ class Entity(SQLModel, table=True):
     entity_type: str = Field(max_length=50, nullable=False)
     is_generated: bool = Field(default=False)
     base_description: Optional[str] = Field(default=None)
+    first_appearance_scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

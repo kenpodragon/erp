@@ -139,9 +139,13 @@ const CombatContent: React.FC<InnerProps> = ({
 
     if (pool && pool.length > 0) {
       let poolToUse = pool;
-      if (isBossWave) poolToUse = pool.filter(e => e && (e.isBoss || e.role === 'boss'));
-      else if (isBoss) poolToUse = pool.filter(e => e && e.role === 'mini_boss');
-      else poolToUse = pool.filter(e => !e.isBoss && e.role !== 'boss' && e.role !== 'mini_boss');
+      // Handle both hyphenated (DB) and underscored (Code) roles
+      const isBossRole = (r?: string) => r === 'boss' || r === 'big-boss';
+      const isMiniBossRole = (r?: string) => r === 'mini_boss' || r === 'mini-boss';
+
+      if (isBossWave) poolToUse = pool.filter(e => e && (e.isBoss || isBossRole(e.role)));
+      else if (isBoss) poolToUse = pool.filter(e => e && isMiniBossRole(e.role));
+      else poolToUse = pool.filter(e => !e.isBoss && !isBossRole(e.role) && !isMiniBossRole(e.role));
       
       if (!poolToUse || poolToUse.length === 0) poolToUse = pool;
 

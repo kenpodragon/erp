@@ -16,12 +16,13 @@ Endpoints:
 import logging
 import uuid
 import math
+import random
 from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 
 from db import get_session
 from auth import get_current_player
@@ -241,6 +242,7 @@ async def get_scene_narrative(
 ):
     """
     Return story beats for the scene, annotated with word counts and display delays.
+    total_estimated_seconds is pulled from SceneGameplayData if available.
     """
     scene = session.get(Scene, scene_id)
     if not scene:
@@ -279,7 +281,12 @@ async def get_scene_narrative(
         })
 
     total_words = sum(b["word_count"] for b in result)
-    total_estimated_seconds = round((total_words / max(wpm, 1)) * 60.0, 1)
+    # Reverted to word-count based duration.
+    # Force 1 wave for Chapter 1 Scene 1 of Book 1.
+    if scene.scene_number == 1 and scene.chapter.chapter_number == 1 and scene.chapter.book.book_number == 1:
+        total_estimated_seconds = 10.0
+    else:
+        total_estimated_seconds = round((total_words / max(wpm, 1)) * 60.0, 1)
 
     return {
         "scene_id": scene_id,
@@ -300,82 +307,68 @@ async def get_scene_enemies(
     session: Session = Depends(get_session),
 ):
     """
-    Return enemies for the scene, with fallback stat injection.
+    Return 10 random enemies for the scene, pulling from the current scene or earlier.
+    Excludes boss/mini_boss entities.
     """
     scaling = _get_config_float(session, "hp_scaling_factor", DEFAULT_HP_SCALING)
     z_hp = _calc_zone_hp(zone, scaling)
     z_gold = _calc_zone_gold(zone)
 
-    appearances = session.exec(
-        select(EntitySceneAppearance)
-        .where(EntitySceneAppearance.scene_id == scene_id)
-        .where(EntitySceneAppearance.is_present == True)
-    ).all()
+    # 1. Fetch current scene hierarchy
+    current_scene = session.get(Scene, scene_id)
+    if not current_scene:
+        raise HTTPException(status_code=404, detail="Scene not found")
+    
+    current_chapter = current_scene.chapter
+    current_book = current_chapter.book
 
-    enemy_appearances = [
-        a for a in appearances
-        if a.role in ("enemy", "boss", "mini_boss", None)
-    ]
+    # 2. Find all scenes at or before this one
+    earlier_scenes_query = (
+        select(Scene.id)
+        .join(Chapter, Scene.chapter_id == Chapter.id)
+        .join(Book, Chapter.book_id == Book.id)
+        .where(
+            (Book.book_number < current_book.book_number) |
+            ((Book.book_number == current_book.book_number) & (Chapter.chapter_number < current_chapter.chapter_number)) |
+            ((Book.book_number == current_book.book_number) & (Chapter.chapter_number == current_chapter.chapter_number) & (Scene.scene_number <= current_scene.scene_number))
+        )
+    )
+    earlier_scene_ids = session.exec(earlier_scenes_query).all()
 
+    # 3. Find eligible entities from those scenes
+    # We look at entities whose first_appearance is in these scenes OR they have an appearance record.
+    # Requirement: "anything not marked as boss or miniboss"
+    # We exclude any entity that is EVER marked as a boss or mini_boss.
+    boss_roles = ["boss", "mini_boss", "big-boss", "mini-boss"]
+    boss_entity_ids_subquery = (
+        select(EntitySceneAppearance.entity_id)
+        .where(col(EntitySceneAppearance.role).in_(boss_roles))
+    )
+
+    eligible_entities_query = (
+        select(Entity)
+        .where(
+            (col(Entity.first_appearance_scene_id).in_(earlier_scene_ids)) |
+            (col(Entity.id).in_(
+                select(EntitySceneAppearance.entity_id)
+                .where(col(EntitySceneAppearance.scene_id).in_(earlier_scene_ids))
+                .where(col(EntitySceneAppearance.role).notin_(boss_roles))
+            ))
+        )
+        .where(col(Entity.id).notin_(boss_entity_ids_subquery))
+    )
+    
+    final_eligible = session.exec(eligible_entities_query).all()
+
+    # 5. Pick 10 random entities (allowing repeats)
     results = []
-    for appearance in enemy_appearances:
-        entity = session.get(Entity, appearance.entity_id)
-        if not entity or entity.entity_type not in ("enemy", "unknown", None):
-            continue
-
-        gd = session.exec(
-            select(EntityGameplayData)
-            .where(EntityGameplayData.entity_id == entity.id)
-        ).first()
-
-        is_fallback = False
-        if gd is None:
-            _log_audit(session, "missing_stat", "enemy", entity.id,
-                       entity.canonical_name, "entity_gameplay_data", scene_id, zone)
-            hp = z_hp
-            gold = z_gold
-            sprite_key = None
-            is_fallback = True
-        else:
-            hp = float(gd.base_hp) if gd.base_hp else None
-            gold = float(gd.base_gold) if gd.base_gold else None
-            sprite_key = gd.sprite_key
-
-            if not hp:
-                _log_audit(session, "missing_stat", "enemy", entity.id,
-                           entity.canonical_name, "base_hp", scene_id, zone)
-                hp = z_hp
-                is_fallback = True
-
-            if not gold:
-                _log_audit(session, "missing_stat", "enemy", entity.id,
-                           entity.canonical_name, "base_gold", scene_id, zone)
-                gold = z_gold
-                is_fallback = True
-
-            if not sprite_key:
-                _log_audit(session, "missing_sprite", "enemy", entity.id,
-                           entity.canonical_name, "sprite_key", scene_id, zone)
-
-        results.append({
-            "entity_id": entity.id,
-            "canonical_name": entity.canonical_name,
-            "role": appearance.role or "enemy",
-            "sprite_key": sprite_key,
-            "base_hp": round(hp, 2),
-            "base_gold": round(gold, 2),
-            "is_boss": appearance.role in ("boss", "mini_boss"),
-            "is_fallback": is_fallback,
-            "description": entity.base_description,
-        })
-
-    session.commit()
-
-    if not results:
+    if not final_eligible:
+        # Fallback if no entities found
         _log_audit(session, "missing_entity", "scene", None,
                    f"scene_{scene_id}", "enemies", scene_id, zone)
         session.commit()
-        results = [{
+        
+        fallback_enemy = {
             "entity_id": None,
             "canonical_name": "Shadow Wraith",
             "role": "enemy",
@@ -385,7 +378,57 @@ async def get_scene_enemies(
             "is_boss": False,
             "is_fallback": True,
             "description": "A formless shadow that haunts the Tower.",
-        }]
+        }
+        results = [fallback_enemy] * 10
+    else:
+        chosen_entities = random.choices(final_eligible, k=10)
+        for entity in chosen_entities:
+            gd = session.exec(
+                select(EntityGameplayData)
+                .where(EntityGameplayData.entity_id == entity.id)
+            ).first()
+
+            is_fallback = False
+            if gd is None:
+                _log_audit(session, "missing_stat", "enemy", entity.id,
+                           entity.canonical_name, "entity_gameplay_data", scene_id, zone)
+                hp = z_hp
+                gold = z_gold
+                sprite_key = None
+                is_fallback = True
+            else:
+                hp = float(gd.base_hp) if gd.base_hp else None
+                gold = float(gd.base_gold) if gd.base_gold else None
+                sprite_key = gd.sprite_key
+
+                if not hp:
+                    _log_audit(session, "missing_stat", "enemy", entity.id,
+                               entity.canonical_name, "base_hp", scene_id, zone)
+                    hp = z_hp
+                    is_fallback = True
+
+                if not gold:
+                    _log_audit(session, "missing_stat", "enemy", entity.id,
+                               entity.canonical_name, "base_gold", scene_id, zone)
+                    gold = z_gold
+                    is_fallback = True
+
+                if not sprite_key:
+                    _log_audit(session, "missing_sprite", "enemy", entity.id,
+                               entity.canonical_name, "sprite_key", scene_id, zone)
+
+            results.append({
+                "entity_id": entity.id,
+                "canonical_name": entity.canonical_name,
+                "role": "enemy",
+                "sprite_key": sprite_key,
+                "base_hp": round(hp, 2),
+                "base_gold": round(gold, 2),
+                "is_boss": False,
+                "is_fallback": is_fallback,
+                "description": entity.base_description,
+            })
+        session.commit()
 
     return {"scene_id": scene_id, "zone": zone, "enemies": results}
 
@@ -786,16 +829,16 @@ async def complete_session(
         if setts and setts.narration_wpm:
             wpm = setts.narration_wpm
             
-    beats = session.exec(select(StoryBeat).where(StoryBeat.scene_id == story_session.scene_id)).all()
-    total_words = sum(len((b.raw_text or b.summary or "").split()) for b in beats)
-    total_est_s = (total_words / max(wpm, 1)) * 60.0
-    wave_dur = _get_config_float(session, "wave_duration_seconds", 30.0)
-    
-    # Scene 1 is always 1 wave for onboarding speed. Others calculated.
-    if scene and scene.scene_number == 1 and scene.chapter.chapter_number == 1:
-        required_waves = 1
+    # Force 1 wave for Chapter 1 Scene 1 of Book 1.
+    if scene and scene.scene_number == 1 and scene.chapter.chapter_number == 1 and scene.chapter.book.book_number == 1:
+        total_est_s = 10.0
     else:
-        required_waves = max(1, math.ceil(total_est_s / (wave_dur * 1.1)))
+        beats = session.exec(select(StoryBeat).where(StoryBeat.scene_id == story_session.scene_id)).all()
+        total_words = sum(len((b.raw_text or b.summary or "").split()) for b in beats)
+        total_est_s = (total_words / max(wpm, 1)) * 60.0
+        
+    wave_dur = _get_config_float(session, "wave_duration_seconds", 30.0)
+    required_waves = max(1, math.ceil(total_est_s / (wave_dur * 1.1)))
 
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
