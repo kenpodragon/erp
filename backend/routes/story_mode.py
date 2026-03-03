@@ -599,6 +599,18 @@ async def start_session(
     ).all()
     click_mult, auto_mult, click_lvl, auto_lvl = _calc_multipliers(session, all_upgrades)
 
+    # --- NEW: Fetch boss name for display ---
+    boss_name = "Guardian"
+    if is_boss_session:
+        boss_entity = session.exec(
+            select(Entity)
+            .join(EntitySceneAppearance, Entity.id == EntitySceneAppearance.entity_id)
+            .where(EntitySceneAppearance.scene_id == body.scene_id)
+            .where(col(EntitySceneAppearance.role).in_(["boss", "big-boss", "big_boss"]))
+        ).first()
+        if boss_entity:
+            boss_name = boss_entity.canonical_name
+
     return {
         "session_id": new_session.id,
         "scene_id": new_session.scene_id,
@@ -619,6 +631,7 @@ async def start_session(
         # Boss session fields
         "is_boss_session": is_boss_session,
         "boss_type": scene.scene_type if is_boss_session else None,
+        "boss_name": boss_name,
         "boss_config": boss_config if is_boss_session else None,
         "is_replay": is_replay,
     }
@@ -921,6 +934,38 @@ async def complete_session(
             )
             session.add(completion)
 
+            # --- NEW: Advance progress after boss defeat ---
+            if progress and scene:
+                # 1. Try finding next chapter in current book
+                next_chapter = session.exec(
+                    select(Chapter)
+                    .where(Chapter.book_id == scene.chapter.book_id)
+                    .where(Chapter.chapter_number > scene.chapter.chapter_number)
+                    .order_by(Chapter.chapter_number.asc())
+                ).first()
+
+                if next_chapter:
+                    progress.chapter_number = next_chapter.chapter_number
+                    progress.scene_number = 1
+                else:
+                    # 2. Try finding next book
+                    next_book = session.exec(
+                        select(Book)
+                        .where(Book.book_number > scene.chapter.book.book_number)
+                        .order_by(Book.book_number.asc())
+                    ).first()
+
+                    if next_book:
+                        progress.book_number = next_book.book_number
+                        progress.chapter_number = 1
+                        progress.scene_number = 1
+                    else:
+                        pass # end of all content
+                
+                progress.beat_number = 1
+                progress.updated_at = datetime.now(timezone.utc)
+                session.add(progress)
+
         # Fetch transition lore text from chapter or book
         transition_lore_text = None
         if scene:
@@ -1025,12 +1070,11 @@ async def complete_session(
             progress.chapter_number == scene.chapter.chapter_number and
             progress.scene_number == scene.scene_number):
 
-            # 1. Try finding next scene in current chapter (skip boss scenes)
+            # 1. Try finding next scene in current chapter (including boss scenes)
             next_scene = session.exec(
                 select(Scene)
                 .where(Scene.chapter_id == scene.chapter_id)
                 .where(Scene.scene_number > scene.scene_number)
-                .where(Scene.scene_type == 'normal')
                 .order_by(Scene.scene_number.asc())
             ).first()
 
@@ -1038,6 +1082,7 @@ async def complete_session(
                 progress.scene_number = next_scene.scene_number
             else:
                 # 2. Try finding next chapter in current book
+                # (Only happens if NO more scenes, including bosses, exist in the current chapter)
                 next_chapter = session.exec(
                     select(Chapter)
                     .where(Chapter.book_id == scene.chapter.book_id)

@@ -48,6 +48,7 @@ export interface StorySession {
   // Boss session fields
   isBossSession: boolean;
   bossType: 'chapter_boss' | 'book_boss' | null;
+  bossName?: string;
   bossConfig: BossConfig | null;
   isReplay: boolean;
 }

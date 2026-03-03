@@ -73,6 +73,7 @@ interface Props {
 interface InnerProps {
   bossHp: number;
   bossMaxHp: number;
+  bossName: string;
   damageNumbers: DamageNumber[];
   shake: number;
   textScale: number;
@@ -81,7 +82,7 @@ interface InnerProps {
 }
 
 const BossContent: React.FC<InnerProps> = ({
-  bossHp, bossMaxHp, damageNumbers, shake, textScale, width, height,
+  bossHp, bossMaxHp, bossName, damageNumbers, shake, textScale, width, height,
 }) => {
   const shakeX = shake > 0 ? (Math.random() - 0.5) * shake * 6 : 0;
   const shakeY = shake > 0 ? (Math.random() - 0.5) * shake * 4 : 0;
@@ -133,7 +134,7 @@ const BossContent: React.FC<InnerProps> = ({
 
       {/* "BOSS" label */}
       <pixiText
-        text="☠ BOSS"
+        text={`☠ ${bossName.toUpperCase()}`}
         style={new TextStyle({ fill: '#ff4444', fontSize: 14 * textScale, fontWeight: 'bold', fontFamily: 'monospace' })}
         x={BOSS_X}
         y={BOSS_Y + BOSS_RADIUS + 12}
@@ -166,6 +167,7 @@ const BossStage: React.FC<Props> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onBossDefeated,
   textScale = 1.0, debugSuperClick = false,
 }) => {
+  const { bossName = 'Guardian' } = session;
   const cfg: BossConfig = session.bossConfig ?? {
     timer_seconds: 120,
     hp_multiplier: 8,
@@ -413,7 +415,7 @@ const BossStage: React.FC<Props> = ({
 
     const iv: ActiveInterrupt = {
       type,
-      timeLeft: cfg.interrupt_window_seconds,
+      timeLeft: type === 'click_burst' ? 4 : cfg.interrupt_window_seconds,
       progress: 0,
       whackIndex: 0,
     };
@@ -458,6 +460,7 @@ const BossStage: React.FC<Props> = ({
         <BossContent
           bossHp={bossHp}
           bossMaxHp={bossMaxHp}
+          bossName={bossName}
           damageNumbers={damageNums}
           shake={shake}
           textScale={textScale}

@@ -72,8 +72,10 @@ async def get_game_map(
 
         book_total_scenes = 0
         book_completed_scenes = 0
-        all_book_normal_mastered = True  # track for book boss unlock
+        all_book_normal_mastered = True
+        all_book_chapter_bosses_mastered = True
         chapter_list = []
+        book_boss_scene = None
 
         for chapter in chapters:
             all_scenes = session.exec(
@@ -82,13 +84,18 @@ async def get_game_map(
                 .order_by(Scene.sort_order.asc())
             ).all()
 
-            # Split normal vs boss scenes
+            # Split normal vs chapter_boss vs book_boss scenes
             normal_scenes = [s for s in all_scenes if s.scene_type == 'normal']
-            boss_scenes   = [s for s in all_scenes if s.scene_type in ('chapter_boss', 'book_boss')]
+            chapter_bosses = [s for s in all_scenes if s.scene_type == 'chapter_boss']
+            book_bosses    = [s for s in all_scenes if s.scene_type == 'book_boss']
+
+            # Capture book boss if it exists in this chapter (usually the last chapter)
+            if book_bosses:
+                book_boss_scene = book_bosses[0]
 
             scene_list = []
             chapter_completed_count = 0
-            all_chapter_normal_mastered = True  # track for chapter boss unlock
+            all_chapter_normal_mastered = True
 
             for scene in normal_scenes:
                 book_total_scenes += 1
@@ -122,16 +129,23 @@ async def get_game_map(
             if not all_chapter_normal_mastered:
                 all_book_normal_mastered = False
 
-            # Append boss nodes at end of scene list
-            for boss_scene in boss_scenes:
+            # Append chapter boss nodes at end of scene list
+            for boss_scene in chapter_bosses:
                 if boss_scene.id in completed_boss_scene_ids:
                     boss_status = "mastered"
-                elif boss_scene.scene_type == 'chapter_boss' and all_chapter_normal_mastered:
-                    boss_status = "available"
-                elif boss_scene.scene_type == 'book_boss' and all_book_normal_mastered:
-                    boss_status = "available"
+                elif all_chapter_normal_mastered:
+                    # Current chapter is finished, check if we are on this chapter or past it
+                    if book.book_number < p_book or chapter.chapter_number < p_chapter:
+                        boss_status = "mastered" # should be in completed_boss_scene_ids but fallback
+                    elif book.book_number == p_book and chapter.chapter_number == p_chapter:
+                        boss_status = "available"
+                    else:
+                        boss_status = "locked"
                 else:
                     boss_status = "locked"
+
+                if boss_status != "mastered":
+                    all_book_chapter_bosses_mastered = False
 
                 scene_list.append({
                     **boss_scene.model_dump(),
@@ -148,6 +162,23 @@ async def get_game_map(
                 "scenes": scene_list,
             })
 
+        # Process book boss if found
+        book_boss_data = None
+        if book_boss_scene:
+            if book_boss_scene.id in completed_boss_scene_ids:
+                bb_status = "mastered"
+            elif all_book_normal_mastered and all_book_chapter_bosses_mastered:
+                bb_status = "available"
+            else:
+                bb_status = "locked"
+            
+            book_boss_data = {
+                **book_boss_scene.model_dump(),
+                "status": bb_status,
+                "summary": book_boss_scene.summary,
+                "gameplay_data": None,
+            }
+
         book_progress = round((book_completed_scenes / book_total_scenes) * 100) if book_total_scenes else 0
 
         book_status = "available" if book.book_number <= p_book else "locked"
@@ -159,6 +190,7 @@ async def get_game_map(
             "status": book_status,
             "progress": book_progress,
             "chapters": chapter_list,
+            "book_boss": book_boss_data,
         })
     return result
 

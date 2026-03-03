@@ -114,6 +114,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
             goldDropMultiplier: sessionData.gold_drop_multiplier ?? 1,
             isBossSession: sessionData.is_boss_session ?? false,
             bossType: sessionData.boss_type ?? null,
+            bossName: sessionData.boss_name ?? 'Guardian',
             bossConfig: sessionData.boss_config ?? null,
             isReplay: sessionData.is_replay ?? false,
           };

@@ -511,3 +511,37 @@
   font-size: 0.5rem;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Book Boss Row (Standalone)                                                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.book-boss-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4rem 0 6rem 0;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.book-boss-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 2.5rem;
+  background: radial-gradient(circle at center, rgba(30, 10, 0, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 140, 0, 0.05);
+}
+
+.book-boss-divider {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(218, 165, 32, 0.3), transparent);
+}
+
+.scene-node--book-boss.scene-node--boss {
+  min-width: 160px;
+}
+
+

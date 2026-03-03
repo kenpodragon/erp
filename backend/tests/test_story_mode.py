@@ -351,7 +351,8 @@ class TestSessionComplete:
                                             game_configs, session: Session):
         sid_resp = full_client.post("/api/game/story/session/start",
                                     json={"scene_id": test_scene.id})
-        sid = sid_resp.json()["session_id"]
+        sid_str = sid_resp.json()["session_id"]
+        sid = __import__('uuid').UUID(sid_str)
         full_client.post(f"/api/game/story/session/{sid}/complete")
 
         db_session = session.get(PlayerStorySession, sid)
@@ -438,7 +439,8 @@ class TestBossSession:
             json={"scene_id": boss_scene.id},
         )
         assert resp.status_code == 200
-        sid = resp.json()["session_id"]
+        sid_str = resp.json()["session_id"]
+        sid = __import__('uuid').UUID(sid_str)
         upgrades = session.exec(
             __import__('sqlmodel').select(SessionUpgrade)
             .where(SessionUpgrade.session_id == sid)
@@ -531,6 +533,79 @@ class TestBossSession:
         ).all()
         assert len(completions) == 1
 
+
+# ---------------------------------------------------------------------------
+# Tests: Progression Lock (Boss must be cleared)
+# ---------------------------------------------------------------------------
+
+class TestProgressionLock:
+    def test_normal_scene_complete_does_not_advance_chapter_if_boss_exists(
+        self, full_client, test_scene, boss_scene, session: Session, test_character
+    ):
+        # 1. Start with player at Chapter 1 Scene 1
+        progress = PlayerProgress(
+            player_id=test_character.player_id,
+            character_id=test_character.id,
+            book_number=1,
+            chapter_number=1,
+            scene_number=1,
+            beat_number=1,
+            updated_at=datetime.now(timezone.utc),
+        )
+        session.add(progress)
+        session.commit()
+
+        # 2. Complete Scene 1
+        sid_resp = full_client.post("/api/game/story/session/start",
+                                    json={"scene_id": test_scene.id})
+        sid = sid_resp.json()["session_id"]
+        
+        # Mock completions (zone + narrative)
+        full_client.post(f"/api/game/story/session/{sid}/narrative", json={"progress_pct": 100})
+        full_client.post(f"/api/game/story/session/{sid}/tick", json={
+            "clicks": 1, "elapsed_ms": 100, "zone": 10, "wave": 1,
+            "gold_delta": 0, "waves_completed_delta": 1,
+        })
+        
+        full_client.post(f"/api/game/story/session/{sid}/complete")
+
+        # 3. Verify progress advanced to boss_scene.scene_number, NOT chapter 2
+        session.refresh(progress)
+        assert progress.chapter_number == 1
+        assert progress.scene_number == boss_scene.scene_number
+
+    def test_boss_clear_advances_chapter(
+        self, full_client, boss_scene, session: Session, test_character, test_book
+    ):
+        # 1. Set progress to boss scene
+        progress = PlayerProgress(
+            player_id=test_character.player_id,
+            character_id=test_character.id,
+            book_number=1,
+            chapter_number=1,
+            scene_number=boss_scene.scene_number,
+            beat_number=1,
+            updated_at=datetime.now(timezone.utc),
+        )
+        session.add(progress)
+        
+        # Add a next chapter to advance to
+        next_ch = Chapter(book_id=test_book.id, chapter_number=2, title="Chapter 2",
+                          sort_order=2, created_at=datetime.now(timezone.utc))
+        session.add(next_ch)
+        session.commit()
+
+        # 2. Start and complete boss session
+        sid_resp = full_client.post("/api/game/story/session/start",
+                                    json={"scene_id": boss_scene.id})
+        sid = sid_resp.json()["session_id"]
+        
+        full_client.post(f"/api/game/story/session/{sid}/complete")
+
+        # 3. Verify progress advanced to Chapter 2
+        session.refresh(progress)
+        assert progress.chapter_number == 2
+        assert progress.scene_number == 1
 
 # ---------------------------------------------------------------------------
 # Tests: Transition Endpoints

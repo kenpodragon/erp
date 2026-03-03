@@ -4,12 +4,6 @@
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-- [x] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*        
-    - [x] **2.2.10 — Additional Tweaks**       
-        - [ ] Boss story (doesn't lock story progression, right now when I complete a chapter, it's enabling BOTH the boss and next chapter first story. Need to make sure that the progression occurs as expected).
-        - [ ] Chapter boss needs to have a name (should be the chatper boss from that chatper). Also the click fast doesn't give enough time (the rest of the displays are ok timing). 
-
-
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
     - [ ] **DB Migrations**
         - [ ] Create and apply db migration: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
@@ -23,7 +17,7 @@
         - [ ] Implement Magic skill hotbar gate enforcement in Story Mode session API.
         - [ ] Implement skill unlock detection on scene completion event.
         - [ ] Write `backend/tests/test_idle_training.py` — all backend tests.
-    - [ ] **Frontend (Skills Tab)**
+    - [ ] **Frontend (Skills Tab)**2
         - [ ] Build terminal-aesthetic Skills screen layout (dark bg, phosphor green, monospace, ASCII bars).
         - [ ] Implement Panel 1: All Skills overview (compact status for all 4 skills).
         - [ ] Implement Panel 2: Skill Detail (level/XP bar, action status, Essence bar, controls).

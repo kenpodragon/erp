@@ -44,6 +44,7 @@ interface BookData {
   status?: 'locked' | 'available' | 'completed';
   progress?: number;
   chapters: Chapter[];
+  book_boss?: Scene | null;
 }
 
 const OverworldMap: React.FC = () => {
@@ -195,6 +196,42 @@ const OverworldMap: React.FC = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Book Boss Row — Separate from chapters */}
+              {book.book_boss && (
+                <div className="book-boss-row">
+                  <div className="book-boss-divider" />
+                  <div className="book-boss-container">
+                    <div
+                      className={[
+                        'scene-node',
+                        'scene-node--boss',
+                        'scene-node--book-boss',
+                        book.book_boss.status || 'locked',
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => {
+                        if (book.book_boss && book.book_boss.status !== 'locked') {
+                          setSelectedScene(book.book_boss);
+                          setSelectedChapterTitle(book.title);
+                          setVisualChapter(book.id * 10); // arbitrary unique chapter id for book boss
+                        }
+                      }}
+                      title="Book Boss — Final trial of the current chronicle"
+                    >
+                      <div className="node-circle">
+                        <span className="boss-star-icon">{book.book_boss.status === 'mastered' ? '★' : '☆'}</span>
+                        {book.book_boss.status === 'available' && <span className="boss-available-pulse" />}
+                      </div>
+                      <div className="scene-label-container">
+                        <span className="boss-node-label">FINAL BOOK BOSS</span>
+                        <span className="scene-name">{book.book_boss.title || 'The Guardian'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="book-boss-divider" />
+                </div>
+              )}
+
               {book.status === 'locked' && (
                 <div className="locked-book-placeholder">
                   Complete the previous book to unlock.
