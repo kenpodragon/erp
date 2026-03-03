@@ -413,3 +413,101 @@
     font-size: 0.65rem;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Boss Star Nodes                                                              */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.scene-node--boss .node-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #1a0a00;
+  border: 2px solid #7c3f00;
+}
+
+.scene-node--boss.available .node-circle {
+  border-color: #daa520;
+  box-shadow: 0 0 12px rgba(218, 165, 32, 0.5), 0 0 24px rgba(218, 165, 32, 0.2);
+  background: #2a1800;
+}
+
+.scene-node--boss.mastered .node-circle {
+  border-color: #5a8a5a;
+  background: #0a1a0a;
+  box-shadow: none;
+}
+
+.scene-node--boss.locked .node-circle {
+  opacity: 0.4;
+  border-color: #444;
+}
+
+.boss-star-icon {
+  font-size: 22px;
+  color: #daa520;
+  text-shadow: 0 0 8px rgba(218, 165, 32, 0.7);
+  line-height: 1;
+}
+
+.scene-node--boss.mastered .boss-star-icon {
+  color: #6abf6a;
+  text-shadow: none;
+}
+
+.scene-node--boss.locked .boss-star-icon {
+  color: #555;
+  text-shadow: none;
+}
+
+.boss-available-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(218, 165, 32, 0.5);
+  animation: boss-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes boss-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.6; }
+  50%       { transform: scale(1.18); opacity: 0.0; }
+}
+
+.boss-node-label {
+  font-family: monospace;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: #daa520;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.scene-node--boss.locked .boss-node-label {
+  color: #666;
+}
+
+.scene-node--boss.mastered .boss-node-label {
+  color: #6abf6a;
+}
+
+/* Book boss is slightly larger and more dramatic */
+.scene-node--book-boss .node-circle {
+  width: 58px;
+  height: 58px;
+}
+
+.scene-node--book-boss .boss-star-icon {
+  font-size: 26px;
+}
+
+.scene-node--book-boss.available .node-circle {
+  border-color: #ff8c00;
+  box-shadow: 0 0 16px rgba(255, 140, 0, 0.5), 0 0 32px rgba(255, 140, 0, 0.2);
+  background: #1f0d00;
+}
+
+.scene-node--book-boss .boss-node-label {
+  color: #ff8c00;
+  font-size: 0.5rem;
+}
+

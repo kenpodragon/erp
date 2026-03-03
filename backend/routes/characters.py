@@ -9,7 +9,7 @@ from sqlmodel import Session, select, text
 
 from db import get_session
 from auth import get_current_player
-from models import PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence
+from models import PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence, BossCompletion
 from utils import is_profane
 from events import log_activity_event
 
@@ -169,6 +169,13 @@ async def delete_character(
     character = session.get(PlayerCharacter, character_id)
     if not character or character.player_id != player.id:
         raise HTTPException(status_code=404, detail="Character not found")
+
+    # Clear boss completions keyed by player_id (not cascaded by character FK)
+    boss_completions = session.exec(
+        select(BossCompletion).where(BossCompletion.player_id == player.id)
+    ).all()
+    for bc in boss_completions:
+        session.delete(bc)
 
     session.delete(character)
     session.commit()

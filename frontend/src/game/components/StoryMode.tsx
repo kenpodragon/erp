@@ -4,6 +4,8 @@ import { api } from '../../api';
 import GlobalHeader from './story/GlobalHeader';
 import NarrativeBlock from './story/NarrativeBlock';
 import CombatStage from './story/CombatStage';
+import BossStage from './story/BossStage';
+import NarrativeReveal from './story/NarrativeReveal';
 import AudioPlayer from './story/AudioPlayer';
 import HeroStats from './story/HeroStats';
 import GoldOdometer from './story/GoldOdometer';
@@ -49,6 +51,13 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
   const [autoProgress, setAutoProgress] = React.useState(true);
   const [debugSuperClick, setDebugSuperClick] = React.useState(false);
   const [userWpm, setUserWpm] = React.useState(200);
+  // Boss session state
+  const [narrativeReveal, setNarrativeReveal] = React.useState<{
+    text: string;
+    bossType: 'chapter_boss' | 'book_boss';
+    chapterTitle?: string;
+    unlocks: string[];
+  } | null>(null);
 
   // ── Session Initialisation ──────────────────────────────────────────────
   useEffect(() => {
@@ -85,16 +94,26 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             clickDmgMultiplier: sessionData.click_dmg_multiplier ?? 1,
             autoDpsMultiplier: sessionData.auto_dps_multiplier ?? 1,
             goldDropMultiplier: sessionData.gold_drop_multiplier ?? 1,
+            isBossSession: sessionData.is_boss_session ?? false,
+            bossType: sessionData.boss_type ?? null,
+            bossConfig: sessionData.boss_config ?? null,
+            isReplay: sessionData.is_replay ?? false,
           };
           setStorySession(session);
           setUserWpm(player?.settings?.narration_wpm || 200);
-          
+
           if (session.wavesComplete && (session.narrativeProgressPct >= 100 || session.previouslyCompleted)) {
             setFarmMode(true);
           }
+        } else {
+          // Session start failed (e.g. stale localStorage scene from a deleted character).
+          // Exit cleanly back to the overworld so the user isn't stuck.
+          console.warn('StoryMode: session start returned', sessionRes.status, '— returning to overworld');
+          exitScene();
         }
       } catch (err) {
         console.error('StoryMode: failed to start session', err);
+        exitScene();
       } finally {
         setIsLoading(false);
       }
@@ -211,6 +230,39 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
     }
   }, [storySession, exitScene, onPlayerUpdate]);
 
+  // ── Boss Defeated ───────────────────────────────────────────────────────
+  const handleBossDefeated = useCallback(async (success: boolean) => {
+    if (!storySession) return;
+    if (!success) {
+      // Timer expired — return to overworld silently
+      try {
+        await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
+      } catch { /* non-fatal */ }
+      exitScene();
+      return;
+    }
+    // Boss killed — complete session and show narrative reveal
+    try {
+      const res = await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
+      if (res.ok) {
+        const data = await res.json();
+        onPlayerUpdate();
+        if (data.transition_lore_text) {
+          setNarrativeReveal({
+            text: data.transition_lore_text,
+            bossType: data.boss_type,
+            unlocks: data.unlocks ?? [],
+          });
+        } else {
+          exitScene();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to complete boss session', err);
+      exitScene();
+    }
+  }, [storySession, exitScene, onPlayerUpdate]);
+
   // ── Gold Award from Kills ───────────────────────────────────────────────
   const handleGoldEarned = useCallback((amount: number) => {
     pendingGold.current += amount;
@@ -256,6 +308,59 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
 
   const bothComplete = (storySession.narrativeProgressPct >= 100 || storySession.previouslyCompleted) && storySession.wavesComplete;
 
+  // ── Boss Mode Layout ────────────────────────────────────────────────────
+  if (storySession.isBossSession) {
+    return (
+      <div className="story-mode story-mode--boss">
+        <GlobalHeader
+          chapterId={storySession.chapterId}
+          sceneId={storySession.sceneId}
+          darkRitualMultiplier={storySession.darkRitualMultiplier}
+          activeBuffs={state.activeBuffs}
+        />
+
+        <div className="boss-mode-wrapper">
+          {storySession.isReplay && (
+            <div className="boss-replay-badge">REPLAY — No rewards on re-clear</div>
+          )}
+          <BossStage
+            session={storySession}
+            gameConfigs={gameConfigs}
+            onEnemyClick={handleEnemyClick}
+            onGoldEarned={handleGoldEarned}
+            onBossDefeated={handleBossDefeated}
+            textScale={player?.settings?.game_text_scale || 1.0}
+            debugSuperClick={debugSuperClick}
+          />
+          <div className="story-controls-bar">
+            <button
+              className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
+              onClick={() => setDebugSuperClick(!debugSuperClick)}
+              title="One-click kills (Debug Only)"
+            >
+              SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+
+        <button className="story-exit-btn" onClick={handleExit} title="Retreat">RETREAT</button>
+
+        {narrativeReveal && (
+          <NarrativeReveal
+            loreText={narrativeReveal.text}
+            bossType={narrativeReveal.bossType}
+            unlocks={narrativeReveal.unlocks}
+            onContinue={() => {
+              setNarrativeReveal(null);
+              exitScene();
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // ── Normal Mode Layout ──────────────────────────────────────────────────
   return (
     <div className="story-mode">
       <GlobalHeader
@@ -293,15 +398,15 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             onAutoProgressToggle={setAutoProgress}
             debugSuperClick={debugSuperClick}
           />
-          
+
           <div className="story-controls-bar">
-            <button 
+            <button
               className={`auto-prog-btn ${autoProgress ? 'auto-prog-btn--on' : 'auto-prog-btn--off'}`}
               onClick={() => setAutoProgress(!autoProgress)}
             >
               AUTO PROGRESS: {autoProgress ? 'ON' : 'OFF'}
             </button>
-            <button 
+            <button
               className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
               onClick={() => setDebugSuperClick(!debugSuperClick)}
               title="One-click kills (Debug Only)"

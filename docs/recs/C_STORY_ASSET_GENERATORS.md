@@ -73,3 +73,13 @@ A comprehensive pipeline that translates narrative text and extracted entities i
     - [ ] **Iconography:** Generate 2D icons for all items, skills, and artifacts using AI (Stable Diffusion/DALL-E) based on narrative descriptions.
     - [ ] **Entity Sprites:** Generate high-fidelity sprites for newly discovered enemies or bosses mentioned in the lore.
 - [ ] **6.5 Automated DB Population:** Batch-update the database with the generated metadata and asset paths for immediate use in-game.
+
+---
+
+## 7. Boss Transition Lore Text Generator
+Generates the flavor recap text shown after defeating chapter/book boss nodes in the `NarrativeReveal` cinematic screen.
+
+- [ ] **7.1 Source Input:** For each chapter and book, summarize the key `story_beats` from the DB (entity appearances, emotions, key events) into a source briefing.
+- [ ] **7.2 GPT Generation:** Use GPT with the chapter/book `story_beats` summary as input to generate `transition_lore_text` — a congratulatory flavor recap displayed in the post-boss cinematic. Should be 3–6 sentences, immersive, narrative tone matching the book's voice.
+- [ ] **7.3 DB Population:** `UPDATE chapters SET transition_lore_text = '...' WHERE chapter_number = N;` and `UPDATE books SET transition_lore_text = '...' WHERE book_number = N;`. Placeholder seeds exist for chapters 1-2 and book 1 (migration 021); all remaining chapters/books need real content.
+- [ ] **7.4 Review:** Content must be reviewed for lore accuracy against `docs/lore/` guides before merging to production.

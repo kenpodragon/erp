@@ -1,0 +1,499 @@
+/**
+ * BossStage — Boss interstitial combat engine.
+ *
+ * Replaces CombatStage for chapter_boss / book_boss scenes.
+ * Features:
+ *  - Single large boss entity with high HP (hp_multiplier × zone baseline)
+ *  - Countdown timer (replenished on successful interrupts)
+ *  - Three random interrupt challenge types (one at a time):
+ *      click_burst   — fill a progress bar by clicking fast
+ *      target_zone   — click a glowing circle appearing at random position
+ *      whack_sequence — click 3 sequential pop-up zones before they disappear
+ *  - Auto-DPS tick (same logic as CombatStage)
+ *  - No upgrade menu / no wave system
+ */
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Application, extend, useTick } from '@pixi/react';
+import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import type { StorySession, BossConfig } from '../../GameContext';
+import { zoneHp, formatNumber } from '../../utils/numbers';
+import './BossStage.css';
+
+extend({ Container, Graphics, Text });
+
+const AUTO_DPS_TICK_MS = 500;
+const CANVAS_WIDTH  = 600;
+const CANVAS_HEIGHT = 380;
+
+// Boss entity centered on canvas
+const BOSS_X = CANVAS_WIDTH / 2;
+const BOSS_Y = CANVAS_HEIGHT / 2 - 20;
+const BOSS_RADIUS = 60;
+const CLICK_HITBOX = BOSS_RADIUS + 20;
+
+interface DamageNumber {
+  id: string;
+  x: number;
+  y: number;
+  value: string;
+  alpha: number;
+  vy: number;
+  isCrit: boolean;
+}
+
+type InterruptType = 'click_burst' | 'target_zone' | 'whack_sequence';
+
+interface TargetZone {
+  x: number;
+  y: number;
+  radius: number;
+  hit: boolean;
+}
+
+interface ActiveInterrupt {
+  type: InterruptType;
+  timeLeft: number;    // countdown in seconds
+  progress: number;    // 0–100 for click_burst
+  targetZone?: TargetZone;
+  whackZones?: TargetZone[];
+  whackIndex: number;  // which whack zone is currently active
+}
+
+interface Props {
+  session: StorySession;
+  gameConfigs: Record<string, unknown>;
+  onEnemyClick: () => void;
+  onGoldEarned: (amount: number) => void;
+  onBossDefeated: (success: boolean) => void;
+  textScale?: number;
+  debugSuperClick?: boolean;
+}
+
+// ── Inner PixiJS component ──────────────────────────────────────────────────
+interface InnerProps {
+  bossHp: number;
+  bossMaxHp: number;
+  damageNumbers: DamageNumber[];
+  shake: number;
+  textScale: number;
+  width: number;
+  height: number;
+}
+
+const BossContent: React.FC<InnerProps> = ({
+  bossHp, bossMaxHp, damageNumbers, shake, textScale, width, height,
+}) => {
+  const shakeX = shake > 0 ? (Math.random() - 0.5) * shake * 6 : 0;
+  const shakeY = shake > 0 ? (Math.random() - 0.5) * shake * 4 : 0;
+  const hpPct = Math.max(0, bossHp / bossMaxHp);
+  const hpColor = hpPct > 0.5 ? 0xe53e3e : hpPct > 0.25 ? 0xed8936 : 0xfc3d3d;
+
+  useTick(() => { /* trigger re-render each frame for shake */ });
+
+  return (
+    <pixiContainer x={shakeX} y={shakeY}>
+      {/* Boss body */}
+      <pixiGraphics
+        draw={(g: Graphics) => {
+          g.clear();
+          // Outer glow ring
+          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS + 10);
+          g.fill({ color: 0x550000, alpha: 0.3 });
+          // Boss silhouette
+          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS);
+          g.fill({ color: 0x1a0000 });
+          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS);
+          g.stroke({ color: 0xcc0000, width: 3, alpha: 0.9 });
+        }}
+      />
+
+      {/* Boss HP bar (above boss) */}
+      <pixiGraphics
+        draw={(g: Graphics) => {
+          g.clear();
+          const barW = 200; const barH = 14;
+          const bx = BOSS_X - barW / 2; const by = BOSS_Y - BOSS_RADIUS - 36;
+          g.roundRect(bx, by, barW, barH, 4);
+          g.fill({ color: 0x330000 });
+          g.roundRect(bx, by, barW * hpPct, barH, 4);
+          g.fill({ color: hpColor });
+          g.roundRect(bx, by, barW, barH, 4);
+          g.stroke({ color: 0x660000, width: 1 });
+        }}
+      />
+
+      {/* HP text */}
+      <pixiText
+        text={`${formatNumber(bossHp)} / ${formatNumber(bossMaxHp)}`}
+        style={new TextStyle({ fill: '#ffaaaa', fontSize: 10 * textScale, fontFamily: 'monospace' })}
+        x={BOSS_X}
+        y={BOSS_Y - BOSS_RADIUS - 50}
+        anchor={0.5}
+      />
+
+      {/* "BOSS" label */}
+      <pixiText
+        text="☠ BOSS"
+        style={new TextStyle({ fill: '#ff4444', fontSize: 14 * textScale, fontWeight: 'bold', fontFamily: 'monospace' })}
+        x={BOSS_X}
+        y={BOSS_Y + BOSS_RADIUS + 12}
+        anchor={0.5}
+      />
+
+      {/* Floating damage numbers */}
+      {damageNumbers.map(dn => (
+        <pixiText
+          key={dn.id}
+          text={dn.value}
+          style={new TextStyle({
+            fill: dn.isCrit ? '#ffff00' : '#ff8888',
+            fontSize: (dn.isCrit ? 18 : 13) * textScale,
+            fontWeight: 'bold',
+            fontFamily: 'monospace',
+          })}
+          x={dn.x}
+          y={dn.y}
+          alpha={dn.alpha}
+          anchor={0.5}
+        />
+      ))}
+    </pixiContainer>
+  );
+};
+
+// ── Main BossStage component ────────────────────────────────────────────────
+const BossStage: React.FC<Props> = ({
+  session, gameConfigs, onEnemyClick, onGoldEarned, onBossDefeated,
+  textScale = 1.0, debugSuperClick = false,
+}) => {
+  const cfg: BossConfig = session.bossConfig ?? {
+    timer_seconds: 120,
+    hp_multiplier: 8,
+    interrupt_interval_min: 10,
+    interrupt_interval_max: 25,
+    interrupt_window_seconds: 5,
+    interrupt_refill_seconds: 15,
+    interrupt_clicks_required: 20,
+  };
+
+  const CRIT_CHANCE = Number(gameConfigs['crit_chance'] ?? 0.02);
+  const CRIT_MULT   = Number(gameConfigs['crit_multiplier'] ?? 2.0);
+  const HP_SCALING  = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
+
+  // Calculate boss max HP: zone-1 baseline × multiplier
+  const baseHp = zoneHp(1, HP_SCALING) * cfg.hp_multiplier;
+
+  const [bossHp, setBossHp]     = useState(baseHp);
+  const [bossMaxHp]             = useState(baseHp);
+  const [timerLeft, setTimerLeft]   = useState(cfg.timer_seconds);
+  const [damageNums, setDamageNums] = useState<DamageNumber[]>([]);
+  const [shake, setShake]           = useState(0);
+  const [interrupt, setInterrupt]   = useState<ActiveInterrupt | null>(null);
+  const [interruptSuccess, setInterruptSuccess] = useState<boolean | null>(null);
+
+  const bossHpRef         = useRef(baseHp);
+  const timerRef          = useRef(cfg.timer_seconds);
+  const defeatedRef        = useRef(false);
+  const nextInterruptRef  = useRef(
+    cfg.interrupt_interval_min +
+    Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min)
+  );
+  const interruptActiveRef = useRef(false);
+  const interruptRef       = useRef<ActiveInterrupt | null>(null);
+
+  // Sync refs
+  useEffect(() => { interruptRef.current = interrupt; }, [interrupt]);
+
+  // ── Click damage calculation ─────────────────────────────────────────────
+  const calcClickDmg = useCallback(() => {
+    const base = (session.characterStrength ?? 10);
+    const isCrit = Math.random() < CRIT_CHANCE;
+    const dmg = isCrit ? base * CRIT_MULT : base;
+    return { dmg, isCrit };
+  }, [session.characterStrength, CRIT_CHANCE, CRIT_MULT]);
+
+  // ── Apply damage to boss ─────────────────────────────────────────────────
+  const dealDamage = useCallback((dmg: number, isCrit: boolean, ox: number, oy: number) => {
+    if (defeatedRef.current) return;
+    const newHp = Math.max(0, bossHpRef.current - dmg);
+    bossHpRef.current = newHp;
+    setBossHp(newHp);
+
+    // Floating damage number
+    const id = `${Date.now()}-${Math.random()}`;
+    setDamageNums(prev => [...prev.slice(-15), {
+      id, x: ox + (Math.random() - 0.5) * 40, y: oy - 20,
+      value: isCrit ? `⚡${formatNumber(dmg)}` : formatNumber(dmg),
+      alpha: 1, vy: -1.5, isCrit,
+    }]);
+
+    if (isCrit) setShake(3);
+
+    if (newHp <= 0 && !defeatedRef.current) {
+      defeatedRef.current = true;
+      onBossDefeated(true);
+    }
+  }, [onBossDefeated]);
+
+  // ── Canvas click handler ─────────────────────────────────────────────────
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (defeatedRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // Handle interrupt click
+    const iv = interruptRef.current;
+    if (iv) {
+      if (iv.type === 'target_zone' && iv.targetZone) {
+        const tz = iv.targetZone;
+        const dist = Math.hypot(mx - tz.x, my - tz.y);
+        if (dist <= tz.radius) {
+          handleInterruptSuccess();
+          return;
+        }
+      }
+      if (iv.type === 'whack_sequence' && iv.whackZones) {
+        const activeZone = iv.whackZones[iv.whackIndex];
+        if (activeZone && !activeZone.hit) {
+          const dist = Math.hypot(mx - activeZone.x, my - activeZone.y);
+          if (dist <= activeZone.radius) {
+            const next = iv.whackIndex + 1;
+            if (next >= iv.whackZones.length) {
+              handleInterruptSuccess();
+            } else {
+              setInterrupt(prev => prev ? { ...prev, whackIndex: next } : prev);
+            }
+            return;
+          }
+        }
+      }
+    }
+
+    // click_burst: clicking anywhere on boss counts
+    if (iv?.type === 'click_burst') {
+      const distBoss = Math.hypot(mx - BOSS_X, my - BOSS_Y);
+      if (distBoss <= CLICK_HITBOX) {
+        const increment = 100 / cfg.interrupt_clicks_required;
+        const newProg = Math.min(100, (iv.progress || 0) + increment);
+        if (newProg >= 100) {
+          handleInterruptSuccess();
+        } else {
+          setInterrupt(prev => prev ? { ...prev, progress: newProg } : prev);
+        }
+      }
+    }
+
+    // Normal click damage on boss body
+    const distBoss = Math.hypot(mx - BOSS_X, my - BOSS_Y);
+    if (distBoss <= CLICK_HITBOX) {
+      onEnemyClick();
+      const { dmg, isCrit } = debugSuperClick
+        ? { dmg: bossMaxHp * 0.5, isCrit: true }
+        : calcClickDmg();
+      dealDamage(dmg, isCrit, mx, my);
+    }
+  }, [calcClickDmg, dealDamage, cfg.interrupt_clicks_required, onEnemyClick, bossMaxHp, debugSuperClick]);
+
+  const handleInterruptSuccess = useCallback(() => {
+    setInterrupt(null);
+    interruptActiveRef.current = false;
+    setInterruptSuccess(true);
+    // Refill timer
+    timerRef.current = Math.min(cfg.timer_seconds, timerRef.current + cfg.interrupt_refill_seconds);
+    setTimerLeft(timerRef.current);
+    // Reset next interrupt countdown
+    nextInterruptRef.current =
+      cfg.interrupt_interval_min +
+      Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min);
+    setTimeout(() => setInterruptSuccess(null), 1200);
+  }, [cfg]);
+
+  // ── Main game loop ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (defeatedRef.current) return;
+
+    // Auto-DPS tick
+    const dpsInterval = setInterval(() => {
+      if (defeatedRef.current) return;
+      const autoDps = session.autoDpsPerSecond ?? 0;
+      if (autoDps > 0) {
+        const tickDmg = autoDps * (AUTO_DPS_TICK_MS / 1000);
+        const isCrit = Math.random() < CRIT_CHANCE * 0.5;
+        dealDamage(tickDmg * (isCrit ? CRIT_MULT : 1), isCrit,
+          BOSS_X + (Math.random() - 0.5) * 60, BOSS_Y);
+      }
+    }, AUTO_DPS_TICK_MS);
+
+    // Timer countdown (1s ticks)
+    const timerInterval = setInterval(() => {
+      if (defeatedRef.current) return;
+      timerRef.current -= 1;
+      setTimerLeft(timerRef.current);
+
+      // Interrupt window countdown
+      if (interruptActiveRef.current) {
+        setInterrupt(prev => {
+          if (!prev) return prev;
+          const newTime = prev.timeLeft - 1;
+          if (newTime <= 0) {
+            interruptActiveRef.current = false;
+            // Reset next interrupt schedule
+            nextInterruptRef.current =
+              cfg.interrupt_interval_min +
+              Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min);
+            return null;
+          }
+          return { ...prev, timeLeft: newTime };
+        });
+      } else {
+        nextInterruptRef.current -= 1;
+        if (nextInterruptRef.current <= 0) {
+          spawnInterrupt();
+        }
+      }
+
+      if (timerRef.current <= 0 && !defeatedRef.current) {
+        defeatedRef.current = true;
+        onBossDefeated(false);
+      }
+    }, 1000);
+
+    // Damage number cleanup
+    const cleanupInterval = setInterval(() => {
+      setDamageNums(prev =>
+        prev
+          .map(d => ({ ...d, y: d.y + d.vy, alpha: d.alpha - 0.04 }))
+          .filter(d => d.alpha > 0)
+      );
+      setShake(prev => Math.max(0, prev - 1));
+    }, 50);
+
+    return () => {
+      clearInterval(dpsInterval);
+      clearInterval(timerInterval);
+      clearInterval(cleanupInterval);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const spawnInterrupt = () => {
+    const types: InterruptType[] = ['click_burst', 'target_zone', 'whack_sequence'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    interruptActiveRef.current = true;
+
+    const padding = 60;
+    const randX = () => padding + Math.random() * (CANVAS_WIDTH - padding * 2);
+    const randY = () => padding + Math.random() * (CANVAS_HEIGHT - padding * 2);
+
+    const iv: ActiveInterrupt = {
+      type,
+      timeLeft: cfg.interrupt_window_seconds,
+      progress: 0,
+      whackIndex: 0,
+    };
+
+    if (type === 'target_zone') {
+      iv.targetZone = { x: randX(), y: randY(), radius: 40, hit: false };
+    } else if (type === 'whack_sequence') {
+      iv.whackZones = [
+        { x: randX(), y: randY(), radius: 35, hit: false },
+        { x: randX(), y: randY(), radius: 35, hit: false },
+        { x: randX(), y: randY(), radius: 35, hit: false },
+      ];
+    }
+
+    setInterrupt(iv);
+  };
+
+  // Timer colour
+  const timerPct = timerLeft / cfg.timer_seconds;
+  const timerColor = timerPct > 0.5 ? '#22c55e' : timerPct > 0.25 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <div className="boss-stage" onClick={handleCanvasClick}>
+      {/* Timer bar */}
+      <div className="boss-timer-container">
+        <div
+          className="boss-timer-bar"
+          style={{ width: `${Math.max(0, timerPct * 100)}%`, background: timerColor }}
+        />
+        <span className="boss-timer-label" style={{ color: timerColor }}>
+          {Math.max(0, Math.ceil(timerLeft))}s
+        </span>
+      </div>
+
+      {/* PixiJS canvas */}
+      <Application
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        background={0x0a0005}
+        antialias
+      >
+        <BossContent
+          bossHp={bossHp}
+          bossMaxHp={bossMaxHp}
+          damageNumbers={damageNums}
+          shake={shake}
+          textScale={textScale}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+        />
+      </Application>
+
+      {/* Interrupt overlays (HTML for interactivity) */}
+      {interrupt && interrupt.type === 'click_burst' && (
+        <div className="interrupt-overlay interrupt-overlay--burst">
+          <div className="interrupt-title">⚡ CLICK FAST!</div>
+          <div className="interrupt-progress-track">
+            <div
+              className="interrupt-progress-fill"
+              style={{ width: `${interrupt.progress}%` }}
+            />
+          </div>
+          <div className="interrupt-timer">{Math.ceil(interrupt.timeLeft)}s</div>
+        </div>
+      )}
+
+      {interrupt && interrupt.type === 'target_zone' && interrupt.targetZone && (
+        <div
+          className="interrupt-target-zone"
+          style={{
+            left: interrupt.targetZone.x - interrupt.targetZone.radius,
+            top:  interrupt.targetZone.y - interrupt.targetZone.radius + 40, /* offset for timer bar */
+            width:  interrupt.targetZone.radius * 2,
+            height: interrupt.targetZone.radius * 2,
+          }}
+        >
+          <div className="interrupt-timer interrupt-timer--zone">{Math.ceil(interrupt.timeLeft)}s</div>
+        </div>
+      )}
+
+      {interrupt && interrupt.type === 'whack_sequence' && interrupt.whackZones && (
+        <>
+          {interrupt.whackZones.map((zone, i) => i === interrupt.whackIndex && (
+            <div
+              key={i}
+              className="interrupt-whack-zone"
+              style={{
+                left:   zone.x - zone.radius,
+                top:    zone.y - zone.radius + 40,
+                width:  zone.radius * 2,
+                height: zone.radius * 2,
+              }}
+            >
+              <span>{interrupt.whackIndex + 1}/3</span>
+            </div>
+          ))}
+          <div className="interrupt-timer interrupt-timer--whack">{Math.ceil(interrupt.timeLeft)}s</div>
+        </>
+      )}
+
+      {interruptSuccess && (
+        <div className="interrupt-success-flash">+{cfg.interrupt_refill_seconds}s REFILLED!</div>
+      )}
+    </div>
+  );
+};
+
+export default BossStage;

@@ -174,8 +174,8 @@ const ProfilePage = ({
         player={backendUser}
         character={character}
         onRefresh={verifyUserWithBackend}
-        onCharacterCreated={(c) => setCharacter(c)}
-        onCharacterDeleted={() => setCharacter(null)}
+        onCharacterCreated={(c) => { setCharacter(c); localStorage.removeItem('erp_active_scene_id'); }}
+        onCharacterDeleted={() => { setCharacter(null); localStorage.removeItem('erp_active_scene_id'); }}
         onLogout={handleLogout}
       />
     ) : backendError ? (
@@ -295,14 +295,16 @@ function App() {
     return () => unsubscribe()
   }, [verifyUserWithBackend])
 
-  // Auto-redirect: authenticated user on splash → /game (if character) or /profile
+  // Auto-redirect: after login, send to /game if character exists, else /profile.
+  // Only fires from "/" — never forcibly bounces the user away from /profile.
   useEffect(() => {
-    // Wait until both Firebase auth AND Backend verification are done
-    if (!authLoading && user && backendUser && location.pathname === '/' && !showOnboarding) {
-      if (character) {
-        navigate('/game', { replace: true })
-      } else {
-        navigate('/profile', { replace: true })
+    if (!authLoading && user && backendUser && !showOnboarding) {
+      if (location.pathname === '/') {
+        if (character) {
+          navigate('/game', { replace: true })
+        } else {
+          navigate('/profile', { replace: true })
+        }
       }
     }
   }, [authLoading, user, backendUser, character, location.pathname, navigate, showOnboarding])
@@ -424,7 +426,9 @@ function App() {
         <Routes>
           <Route path="/" element={
             isLoggedIn ? (
-              character ? <Navigate to="/game" replace /> : <Navigate to="/profile" replace />
+              backendUser
+                ? (character ? <Navigate to="/game" replace /> : <Navigate to="/profile" replace />)
+                : <SplashPage onLogin={handleLogin} />  // still loading — don't redirect on stale null
             ) : (
               <SplashPage onLogin={handleLogin} />
             )
@@ -449,19 +453,14 @@ function App() {
             />
           } />
           <Route path="/game/*" element={
-            isLoggedIn ? (
-              <MainGameLayout 
-                player={backendUser}
-                character={character} 
-                onCharacterCreated={(c) => {
-                  setCharacter(c);
-                  verifyUserWithBackend();
-                }}
-                onPlayerUpdate={verifyUserWithBackend}
-              />
-            ) : (
-              <Navigate to="/" replace />
-            )
+            !isLoggedIn ? <Navigate to="/" replace /> :
+            !backendUser ? null :
+            !character ? <Navigate to="/profile" replace /> :
+            <MainGameLayout
+              player={backendUser}
+              character={character}
+              onPlayerUpdate={verifyUserWithBackend}
+            />
           } />
         </Routes>
       </main>

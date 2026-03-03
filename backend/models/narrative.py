@@ -1,8 +1,10 @@
 """Narrative structure models (Books, Chapters, Scenes, StoryBeats, Locations)."""
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column
+from sqlalchemy.types import JSON
 
 
 class Book(SQLModel, table=True):
@@ -13,6 +15,7 @@ class Book(SQLModel, table=True):
     book_number: int = Field(unique=True, nullable=False)
     title: str = Field(max_length=255, nullable=False)
     source_file: str = Field(max_length=255, nullable=False)
+    transition_lore_text: Optional[str] = Field(default=None)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -31,6 +34,7 @@ class Chapter(SQLModel, table=True):
     raw_text: Optional[str] = Field(default=None)
     sort_order: int = Field(nullable=False)
     processing_status: str = Field(default="not_started")
+    transition_lore_text: Optional[str] = Field(default=None)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -63,6 +67,8 @@ class Scene(SQLModel, table=True):
     sort_order: int = Field(nullable=False)
     primary_location_id: Optional[int] = Field(default=None, foreign_key="locations.id")
     has_hard_break: bool = Field(default=False)
+    scene_type: str = Field(default='normal')
+    boss_config: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

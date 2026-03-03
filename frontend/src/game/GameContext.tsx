@@ -12,6 +12,17 @@ export interface ActiveBuff {
   cooldownEndsAt: number;
 }
 
+// ── Boss config received from session/start ──────────────────────────────────
+export interface BossConfig {
+  timer_seconds: number;
+  hp_multiplier: number;
+  interrupt_interval_min: number;
+  interrupt_interval_max: number;
+  interrupt_window_seconds: number;
+  interrupt_refill_seconds: number;
+  interrupt_clicks_required: number;
+}
+
 // ── Full story session state (mirrors server session + client combat state) ──
 export interface StorySession {
   sessionId: string;
@@ -34,6 +45,11 @@ export interface StorySession {
   clickDmgMultiplier: number;
   autoDpsMultiplier: number;
   goldDropMultiplier: number;
+  // Boss session fields
+  isBossSession: boolean;
+  bossType: 'chapter_boss' | 'book_boss' | null;
+  bossConfig: BossConfig | null;
+  isReplay: boolean;
 }
 
 // ── Overall game state ────────────────────────────────────────────────────────

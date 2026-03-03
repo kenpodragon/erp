@@ -91,6 +91,20 @@ class CharacterSkillLevel(SQLModel, table=True):
     updated_at: Optional[datetime] = Field(default=None)
 
 
+class BossCompletion(SQLModel, table=True):
+    """Maps to `boss_completions`. One record per player per boss scene (first-clear only)."""
+    __tablename__ = "boss_completions"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    player_id: int = Field(foreign_key="players.id", nullable=False)
+    scene_id: int = Field(foreign_key="scenes.id", nullable=False)
+    boss_type: str = Field(max_length=20, nullable=False)  # 'chapter_boss' | 'book_boss'
+    chapter_id: Optional[int] = Field(default=None, foreign_key="chapters.id")
+    book_id: Optional[int] = Field(default=None, foreign_key="books.id")
+    session_id: Optional[str] = Field(default=None)
+    completed_at: Optional[datetime] = Field(default=None)
+
+
 class EntitySceneAppearance(SQLModel, table=True):
     """Maps to `entity_scene_appearances`. Links entities to scenes with role metadata."""
     __tablename__ = "entity_scene_appearances"

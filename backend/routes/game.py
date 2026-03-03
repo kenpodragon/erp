@@ -12,7 +12,7 @@ from models import (
     CharacterClass, PlayerCharacter, PlayerProgress, PlayerEssence,
     Book, Chapter, Scene, StoryBeat, SceneGameplayData,
     Entity, EntityGameplayData, StatDefinition,
-    Artifact, PlayerCollection,
+    Artifact, PlayerCollection, BossCompletion,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ async def get_game_map(
 ):
     """
     Return the full book, chapter, and scene hierarchy with real player progress states.
+    Boss nodes (chapter_boss, book_boss) are appended at the end of their chapter's scene list.
     """
     player = token.get("player")
     if not player:
@@ -52,6 +53,13 @@ async def get_game_map(
     else:
         p_book, p_chapter, p_scene, p_beat = progress.book_number, progress.chapter_number, progress.scene_number, progress.beat_number
 
+    # Pre-load all boss completions for this player to avoid N+1 queries
+    completed_boss_scene_ids = set(
+        session.exec(
+            select(BossCompletion.scene_id).where(BossCompletion.player_id == player.id)
+        ).all()
+    )
+
     books = session.exec(select(Book).order_by(Book.book_number.asc())).all()
     result = []
 
@@ -64,22 +72,28 @@ async def get_game_map(
 
         book_total_scenes = 0
         book_completed_scenes = 0
+        all_book_normal_mastered = True  # track for book boss unlock
         chapter_list = []
 
         for chapter in chapters:
-            scenes = session.exec(
+            all_scenes = session.exec(
                 select(Scene)
                 .where(Scene.chapter_id == chapter.id)
                 .order_by(Scene.sort_order.asc())
             ).all()
 
+            # Split normal vs boss scenes
+            normal_scenes = [s for s in all_scenes if s.scene_type == 'normal']
+            boss_scenes   = [s for s in all_scenes if s.scene_type in ('chapter_boss', 'book_boss')]
+
             scene_list = []
             chapter_completed_count = 0
+            all_chapter_normal_mastered = True  # track for chapter boss unlock
 
-            for scene in scenes:
+            for scene in normal_scenes:
                 book_total_scenes += 1
-                
-                # Determine scene completion status
+
+                # Determine status based on linear player_progress
                 if book.book_number < p_book:
                     status = "mastered"
                 elif book.book_number == p_book and chapter.chapter_number < p_chapter:
@@ -87,32 +101,51 @@ async def get_game_map(
                 elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number < p_scene:
                     status = "mastered"
                 elif book.book_number == p_book and chapter.chapter_number == p_chapter and scene.scene_number == p_scene:
-                    # Current active scene
-                    if p_beat > 1:
-                        status = "in_progress"
-                    else:
-                        status = "available"
+                    status = "in_progress" if p_beat > 1 else "available"
                 else:
                     status = "locked"
 
-                if status in ["completed", "mastered"]:
+                if status == "mastered":
                     chapter_completed_count += 1
                     book_completed_scenes += 1
+                else:
+                    all_chapter_normal_mastered = False
 
                 gp_data = session.exec(select(SceneGameplayData).where(SceneGameplayData.scene_id == scene.id)).first()
                 scene_list.append({
                     **scene.model_dump(),
                     "status": status,
                     "summary": scene.summary,
-                    "gameplay_data": gp_data.model_dump() if gp_data else None
+                    "gameplay_data": gp_data.model_dump() if gp_data else None,
                 })
 
-            chapter_progress = round((chapter_completed_count / len(scenes)) * 100) if scenes else 0
+            if not all_chapter_normal_mastered:
+                all_book_normal_mastered = False
+
+            # Append boss nodes at end of scene list
+            for boss_scene in boss_scenes:
+                if boss_scene.id in completed_boss_scene_ids:
+                    boss_status = "mastered"
+                elif boss_scene.scene_type == 'chapter_boss' and all_chapter_normal_mastered:
+                    boss_status = "available"
+                elif boss_scene.scene_type == 'book_boss' and all_book_normal_mastered:
+                    boss_status = "available"
+                else:
+                    boss_status = "locked"
+
+                scene_list.append({
+                    **boss_scene.model_dump(),
+                    "status": boss_status,
+                    "summary": boss_scene.summary,
+                    "gameplay_data": None,
+                })
+
+            chapter_progress = round((chapter_completed_count / len(normal_scenes)) * 100) if normal_scenes else 0
 
             chapter_list.append({
                 **chapter.model_dump(),
                 "progress": chapter_progress,
-                "scenes": scene_list
+                "scenes": scene_list,
             })
 
         book_progress = round((book_completed_scenes / book_total_scenes) * 100) if book_total_scenes else 0
@@ -125,7 +158,7 @@ async def get_game_map(
             **book.model_dump(),
             "status": book_status,
             "progress": book_progress,
-            "chapters": chapter_list
+            "chapters": chapter_list,
         })
     return result
 

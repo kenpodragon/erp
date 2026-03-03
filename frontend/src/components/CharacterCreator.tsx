@@ -195,6 +195,9 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
     try {
       const res = await api.delete(`/api/players/me/characters/${existingCharacter.id}`);
       if (res.ok) {
+        setShowDeleteConfirm(false);
+        setDeleteNameInput('');
+        setDeleteError(null);
         onCharacterDeleted?.();
       } else {
         const err = await res.json();

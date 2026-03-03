@@ -138,3 +138,47 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* ── Boss variant ───────────────────────────────────────────────────────── */
+
+.chapter-info-panel--boss {
+  border-color: #7c3f00;
+}
+
+.panel-header--boss {
+  border-bottom-color: #7c3f00;
+  background: linear-gradient(to right, #1a0800, #1a1a1a);
+}
+
+.panel-header--boss h2 {
+  color: #daa520;
+}
+
+.boss-gate-warning {
+  background: #1a0800;
+  border: 1px solid #7c3f00;
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.8rem;
+  color: #f59e0b;
+  letter-spacing: 0.3px;
+}
+
+.value--boss {
+  color: #daa520;
+  font-weight: bold;
+}
+
+.lore-preview--boss {
+  border-left-color: #7c3f00;
+  color: #c9a96e;
+}
+
+.enter-scene-btn--boss {
+  background: linear-gradient(to bottom, #b8420a, #7c2d06);
+  border-color: #e05a1a;
+}
+
+.enter-scene-btn--boss:hover {
+  box-shadow: 0 4px 12px rgba(224, 90, 26, 0.4);
+}

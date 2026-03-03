@@ -357,3 +357,203 @@ class TestSessionComplete:
         db_session = session.get(PlayerStorySession, sid)
         assert db_session is not None
         assert db_session.is_active is False
+
+# ---------------------------------------------------------------------------
+# Fixtures for boss tests
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def boss_scene(session: Session, test_chapter: Chapter) -> Scene:
+    """A chapter_boss scene for test_chapter."""
+    sc = Scene(
+        chapter_id=test_chapter.id,
+        scene_number=9999,
+        title="Chapter Boss",
+        sort_order=9999,
+        scene_type='chapter_boss',
+        boss_config={
+            "timer_seconds": 60,
+            "hp_multiplier": 5,
+            "interrupt_interval_min": 10,
+            "interrupt_interval_max": 20,
+            "interrupt_window_seconds": 5,
+            "interrupt_refill_seconds": 10,
+            "interrupt_clicks_required": 10,
+        },
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    session.add(sc)
+    session.commit()
+    session.refresh(sc)
+    return sc
+
+
+@pytest.fixture
+def player_past_chapter1(session: Session, test_character, test_chapter):
+    """Advance player_progress past chapter 1 so boss gate is open."""
+    from models import PlayerProgress
+    progress = PlayerProgress(
+        player_id=test_character.player_id,
+        character_id=test_character.id,
+        book_number=1,
+        chapter_number=2,
+        scene_number=1,
+        beat_number=1,
+        updated_at=datetime.now(timezone.utc),
+    )
+    session.add(progress)
+    session.commit()
+    session.refresh(progress)
+    return progress
+
+
+# ---------------------------------------------------------------------------
+# Tests: Boss Session Start
+# ---------------------------------------------------------------------------
+
+class TestBossSession:
+    def test_boss_session_returns_boss_fields(
+        self, full_client, boss_scene, game_configs, player_past_chapter1
+    ):
+        resp = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["is_boss_session"] is True
+        assert data["boss_type"] == "chapter_boss"
+        assert data["boss_config"] is not None
+        assert data["session_gold"] == 0
+        assert data["is_replay"] is False
+
+    def test_boss_session_no_upgrades(
+        self, full_client, boss_scene, game_configs, player_past_chapter1,
+        session: Session
+    ):
+        from models.story_mode import SessionUpgrade
+        resp = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert resp.status_code == 200
+        sid = resp.json()["session_id"]
+        upgrades = session.exec(
+            __import__('sqlmodel').select(SessionUpgrade)
+            .where(SessionUpgrade.session_id == sid)
+        ).all()
+        assert len(upgrades) == 0
+
+    def test_boss_session_locked_without_progress(
+        self, full_client, boss_scene, game_configs
+    ):
+        """Boss gate: 403 if player hasn't cleared the chapter."""
+        resp = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert resp.status_code == 403
+
+    def test_boss_complete_creates_completion_record(
+        self, full_client, boss_scene, game_configs, player_past_chapter1,
+        session: Session
+    ):
+        from models.story_mode import BossCompletion
+        start = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert start.status_code == 200
+        sid = start.json()["session_id"]
+
+        resp = full_client.post(f"/api/game/story/session/{sid}/complete")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["is_boss_session"] is True
+        assert data["first_clear"] is True
+
+        # BossCompletion record must exist
+        from sqlmodel import select
+        completion = session.exec(
+            select(BossCompletion).where(BossCompletion.scene_id == boss_scene.id)
+        ).first()
+        assert completion is not None
+
+    def test_boss_complete_replay_no_duplicate(
+        self, full_client, boss_scene, game_configs, player_past_chapter1,
+        session: Session
+    ):
+        """Second completion returns first_clear=False and doesn't duplicate records."""
+        from sqlmodel import select
+        from models.story_mode import BossCompletion
+
+        # First clear
+        start1 = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert start1.status_code == 200
+        sid1 = start1.json()["session_id"]
+        full_client.post(f"/api/game/story/session/{sid1}/complete")
+
+        # Replay
+        start2 = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert start2.status_code == 200
+        assert start2.json()["is_replay"] is True
+
+        sid2 = start2.json()["session_id"]
+        resp2 = full_client.post(f"/api/game/story/session/{sid2}/complete")
+        assert resp2.status_code == 200
+        assert resp2.json()["first_clear"] is False
+
+        # Only one completion record
+        completions = session.exec(
+            select(BossCompletion).where(BossCompletion.scene_id == boss_scene.id)
+        ).all()
+        assert len(completions) == 1
+
+
+# ---------------------------------------------------------------------------
+# Tests: Transition Endpoints
+# ---------------------------------------------------------------------------
+
+class TestTransitionEndpoints:
+    def test_chapter_transition_returns_lore(
+        self, full_client, test_chapter, session: Session
+    ):
+        # Seed lore text
+        test_chapter.transition_lore_text = "You have passed the first trial."
+        session.add(test_chapter)
+        session.commit()
+
+        resp = full_client.get(f"/api/game/story/chapter/{test_chapter.id}/transition")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["chapter_id"] == test_chapter.id
+        assert data["transition_lore_text"] == "You have passed the first trial."
+        assert data["unlocks"] == []
+
+    def test_book_transition_returns_lore(
+        self, full_client, test_book, session: Session
+    ):
+        test_book.transition_lore_text = "The first book is complete."
+        session.add(test_book)
+        session.commit()
+
+        resp = full_client.get(f"/api/game/story/book/{test_book.id}/transition")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["book_id"] == test_book.id
+        assert data["transition_lore_text"] == "The first book is complete."
+
+    def test_chapter_transition_null_lore(
+        self, full_client, test_chapter
+    ):
+        resp = full_client.get(f"/api/game/story/chapter/{test_chapter.id}/transition")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["transition_lore_text"] is None

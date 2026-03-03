@@ -34,7 +34,7 @@ from models import (
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
     PlayerMetaProgression, DevContentAudit,
-    CharacterSkillLevel, EntitySceneAppearance,
+    CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
 )
 
 logger = logging.getLogger(__name__)
@@ -447,15 +447,69 @@ async def start_session(
         raise HTTPException(status_code=404, detail="Scene not found")
 
     chapter_id = scene.chapter_id
+    is_boss_session = scene.scene_type in ('chapter_boss', 'book_boss')
+    boss_config = scene.boss_config or {}
 
-    # If the user is starting a scene they ALREADY completed, we should probably 
-    # force a fresh start (Zone 1, Wave 1) instead of resuming an old farming session.
+    # ── Boss session gate: validate all normal scenes in chapter are mastered ─
+    # Uses the same logic as the map endpoint's all_chapter_normal_mastered check.
+    if is_boss_session:
+        progress_check = session.exec(
+            select(PlayerProgress).where(PlayerProgress.character_id == char.id)
+        ).first()
+
+        if not progress_check:
+            raise HTTPException(
+                status_code=403,
+                detail="All scenes in this chapter must be completed before challenging the boss."
+            )
+
+        p_book = progress_check.book_number
+        p_chapter = progress_check.chapter_number
+        p_scene = progress_check.scene_number
+
+        boss_chapter = scene.chapter
+        boss_book_num = boss_chapter.book.book_number
+        boss_chap_num = boss_chapter.chapter_number
+
+        if p_book > boss_book_num:
+            chapter_cleared = True
+        elif p_book == boss_book_num and p_chapter > boss_chap_num:
+            chapter_cleared = True
+        elif p_book == boss_book_num and p_chapter == boss_chap_num:
+            # Player is still in the same chapter — check if they're past all normal scenes
+            normal_scenes = session.exec(
+                select(Scene)
+                .where(Scene.chapter_id == chapter_id)
+                .where(Scene.scene_type == 'normal')
+            ).all()
+            max_normal_scene_num = max((ns.scene_number for ns in normal_scenes), default=0)
+            chapter_cleared = p_scene > max_normal_scene_num
+        else:
+            chapter_cleared = False
+
+        if not chapter_cleared:
+            raise HTTPException(
+                status_code=403,
+                detail="All scenes in this chapter must be completed before challenging the boss."
+            )
+
+    # ── Check boss replay (already completed) ───────────────────────────────
+    is_replay = False
+    if is_boss_session:
+        existing_completion = session.exec(
+            select(BossCompletion)
+            .where(BossCompletion.player_id == player.id)
+            .where(BossCompletion.scene_id == body.scene_id)
+        ).first()
+        is_replay = existing_completion is not None
+
+    # If the user is starting a scene they ALREADY completed, force a fresh start.
     progress = session.exec(
         select(PlayerProgress).where(PlayerProgress.character_id == char.id)
     ).first()
 
     previously_completed = False
-    if progress:
+    if progress and not is_boss_session:
         if scene.chapter.chapter_number < progress.chapter_number:
             previously_completed = True
         elif scene.chapter.chapter_number == progress.chapter_number and scene.scene_number < progress.scene_number:
@@ -468,26 +522,26 @@ async def start_session(
         .where(PlayerStorySession.is_active == True)
     ).first()
 
-    if active_session and previously_completed:
-        # User finished this scene before, but has an active stale session. 
-        # Close it and force new start.
+    if active_session and (previously_completed or is_boss_session):
+        # Force fresh start for completed scenes and all boss sessions (no resume for bosses)
         active_session.is_active = False
         session.add(active_session)
         session.commit()
         active_session = None
 
-    if active_session:
+    if active_session and not is_boss_session:
         new_session = active_session
     else:
         dark_ritual = 1.0
-        chapter_session = session.exec(
-            select(PlayerStorySession)
-            .where(PlayerStorySession.player_id == player.id)
-            .where(PlayerStorySession.chapter_id == chapter_id)
-            .where(PlayerStorySession.is_active == True)
-        ).first()
-        if chapter_session:
-            dark_ritual = chapter_session.dark_ritual_multiplier
+        if not is_boss_session:
+            chapter_session = session.exec(
+                select(PlayerStorySession)
+                .where(PlayerStorySession.player_id == player.id)
+                .where(PlayerStorySession.chapter_id == chapter_id)
+                .where(PlayerStorySession.is_active == True)
+            ).first()
+            if chapter_session:
+                dark_ritual = chapter_session.dark_ritual_multiplier
 
         new_session = PlayerStorySession(
             id=str(uuid.uuid4()),
@@ -498,7 +552,7 @@ async def start_session(
             current_wave=1,
             session_gold=0,
             dark_ritual_multiplier=dark_ritual,
-            narrative_progress_pct=0,
+            narrative_progress_pct=100 if is_boss_session else 0,  # no narrative in boss mode
             required_waves_finished=False,
             audio_finished=False,
             is_active=True,
@@ -506,19 +560,20 @@ async def start_session(
             updated_at=datetime.now(timezone.utc),
         )
         session.add(new_session)
-        
-        # Initialize Click Damage and Auto-DPS at Level 1 (user requirement)
-        for u_type in ["click_dmg", "auto_dps"]:
-            upg = SessionUpgrade(
-                id=str(uuid.uuid4()),
-                session_id=new_session.id,
-                upgrade_type=u_type,
-                target_id=None,
-                level=1,
-                total_cost_paid=0.0,
-                current_multiplier=1.0,
-            )
-            session.add(upg)
+
+        if not is_boss_session:
+            # Normal session: Initialize Click Damage and Auto-DPS at Level 1
+            for u_type in ["click_dmg", "auto_dps"]:
+                upg = SessionUpgrade(
+                    id=str(uuid.uuid4()),
+                    session_id=new_session.id,
+                    upgrade_type=u_type,
+                    target_id=None,
+                    level=1,
+                    total_cost_paid=0.0,
+                    current_multiplier=1.0,
+                )
+                session.add(upg)
 
         session.commit()
         session.refresh(new_session)
@@ -526,7 +581,6 @@ async def start_session(
     auto_dps = _calc_auto_dps(session, char.id)
     strength = char.strength or (char.character_class.base_strength if char.character_class else DEFAULT_CLICK_STRENGTH)
 
-    # Get current multipliers and levels for resume/start
     all_upgrades = session.exec(
         select(SessionUpgrade).where(SessionUpgrade.session_id == new_session.id)
     ).all()
@@ -549,6 +603,11 @@ async def start_session(
         "auto_dps_multiplier": round(auto_mult, 4),
         "click_upgrade_level": click_lvl,
         "auto_upgrade_level": auto_lvl,
+        # Boss session fields
+        "is_boss_session": is_boss_session,
+        "boss_type": scene.scene_type if is_boss_session else None,
+        "boss_config": boss_config if is_boss_session else None,
+        "is_replay": is_replay,
     }
 
 
@@ -811,10 +870,58 @@ async def complete_session(
         select(PlayerProgress).where(PlayerProgress.character_id == char.id)
     ).first()
 
-    first_clear_mult = _get_config_float(session, "first_clear_multiplier", 1.5)
-    
-    first_clear_bonus = 1.0
     scene = session.get(Scene, story_session.scene_id)
+    is_boss_session = scene and scene.scene_type in ('chapter_boss', 'book_boss')
+
+    # ── Boss session completion path ─────────────────────────────────────────
+    if is_boss_session:
+        # Only insert boss_completions on first clear
+        existing = session.exec(
+            select(BossCompletion)
+            .where(BossCompletion.player_id == player.id)
+            .where(BossCompletion.scene_id == story_session.scene_id)
+        ).first()
+        first_clear = existing is None
+
+        if first_clear:
+            completion = BossCompletion(
+                player_id=player.id,
+                scene_id=story_session.scene_id,
+                boss_type=scene.scene_type,
+                chapter_id=story_session.chapter_id,
+                book_id=scene.chapter.book_id if scene else None,
+                session_id=session_id,
+                completed_at=datetime.now(timezone.utc),
+            )
+            session.add(completion)
+
+        # Fetch transition lore text from chapter or book
+        transition_lore_text = None
+        if scene:
+            if scene.scene_type == 'book_boss':
+                transition_lore_text = scene.chapter.book.transition_lore_text
+            else:
+                transition_lore_text = scene.chapter.transition_lore_text
+
+        story_session.is_active = False
+        story_session.updated_at = datetime.now(timezone.utc)
+        session.add(story_session)
+        session.commit()
+
+        return {
+            "session_id": session_id,
+            "is_boss_session": True,
+            "boss_type": scene.scene_type,
+            "first_clear": first_clear,
+            "transition_lore_text": transition_lore_text,
+            "unlocks": [],
+            "session_gold": round(story_session.session_gold, 2),
+        }
+
+    # ── Normal session completion path ───────────────────────────────────────
+    first_clear_mult = _get_config_float(session, "first_clear_multiplier", 1.5)
+
+    first_clear_bonus = 1.0
     if scene and progress:
         # Check if they are currently on THIS level or a LATER one
         if scene.chapter.chapter_number > progress.chapter_number:
@@ -828,7 +935,7 @@ async def complete_session(
         setts = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
         if setts and setts.narration_wpm:
             wpm = setts.narration_wpm
-            
+
     # Force 1 wave for Chapter 1 Scene 1 of Book 1.
     if scene and scene.scene_number == 1 and scene.chapter.chapter_number == 1 and scene.chapter.book.book_number == 1:
         total_est_s = 10.0
@@ -836,7 +943,7 @@ async def complete_session(
         beats = session.exec(select(StoryBeat).where(StoryBeat.scene_id == story_session.scene_id)).all()
         total_words = sum(len((b.raw_text or b.summary or "").split()) for b in beats)
         total_est_s = (total_words / max(wpm, 1)) * 60.0
-        
+
     wave_dur = _get_config_float(session, "wave_duration_seconds", 30.0)
     required_waves = max(1, math.ceil(total_est_s / (wave_dur * 1.1)))
 
@@ -856,18 +963,19 @@ async def complete_session(
     # Narrative AND minimum waves must be cleared
     both_complete = (story_session.current_zone >= required_waves and
                      story_session.narrative_progress_pct >= 100.0)
-    
+
     if both_complete and progress and scene:
         # Check if this was the current 'active' progress level
         if (progress.book_number == scene.chapter.book.book_number and
             progress.chapter_number == scene.chapter.chapter_number and
             progress.scene_number == scene.scene_number):
-            
-            # 1. Try finding next scene in current chapter
+
+            # 1. Try finding next scene in current chapter (skip boss scenes)
             next_scene = session.exec(
                 select(Scene)
                 .where(Scene.chapter_id == scene.chapter_id)
                 .where(Scene.scene_number > scene.scene_number)
+                .where(Scene.scene_type == 'normal')
                 .order_by(Scene.scene_number.asc())
             ).first()
 
@@ -898,9 +1006,8 @@ async def complete_session(
                         progress.chapter_number = 1
                         progress.scene_number = 1
                     else:
-                        # End of all content! (For now, stay on last level or just don't increment)
-                        pass
-            
+                        pass  # End of all content
+
             progress.beat_number = 1
             progress.updated_at = datetime.now(timezone.utc)
             session.add(progress)
@@ -912,6 +1019,7 @@ async def complete_session(
 
     return {
         "session_id": session_id,
+        "is_boss_session": False,
         "essence_earned": round(essence_earned, 2),
         "first_clear_bonus": first_clear_bonus,
         "bosses_defeated": bosses_defeated,
@@ -919,4 +1027,44 @@ async def complete_session(
         "session_gold": round(story_session.session_gold, 2),
         "progress_advanced": both_complete,
         "total_essence": round(meta.elysium_essence, 2),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Boss Transition Lore Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/chapter/{chapter_id}/transition")
+async def get_chapter_transition(
+    chapter_id: int,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """Return transition lore text shown after clearing a chapter boss."""
+    chapter = session.get(Chapter, chapter_id)
+    if not chapter:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    return {
+        "chapter_id": chapter_id,
+        "chapter_title": chapter.title,
+        "transition_lore_text": chapter.transition_lore_text,
+        "unlocks": [],
+    }
+
+
+@router.get("/book/{book_id}/transition")
+async def get_book_transition(
+    book_id: int,
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """Return transition lore text shown after clearing a book boss."""
+    book = session.get(Book, book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return {
+        "book_id": book_id,
+        "book_title": book.title,
+        "transition_lore_text": book.transition_lore_text,
+        "unlocks": [],
     }

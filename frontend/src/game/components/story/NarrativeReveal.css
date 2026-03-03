@@ -1,0 +1,236 @@
+/* NarrativeReveal.css — Post-boss cinematic lore screen */
+
+.narrative-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  overflow: hidden;
+}
+
+.narrative-reveal--visible {
+  opacity: 1;
+}
+
+.narrative-reveal--book {
+  background: radial-gradient(ellipse at center, #05000f 0%, #000 60%);
+}
+
+/* ── Star particle background ──────────────────────────────────────────── */
+.narrative-reveal__stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.nr-star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: nr-twinkle linear infinite;
+}
+
+@keyframes nr-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50%       { opacity: 0.8; transform: scale(1.2); }
+}
+
+/* ── Content panel ─────────────────────────────────────────────────────── */
+.narrative-reveal__content {
+  position: relative;
+  max-width: 680px;
+  width: 90%;
+  text-align: center;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ── Title ─────────────────────────────────────────────────────────────── */
+.nr-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
+}
+
+.nr-title--in {
+  opacity: 1;
+  transform: none;
+}
+
+.nr-title h1 {
+  color: #daa520;
+  font-family: 'Georgia', serif;
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(218, 165, 32, 0.6), 0 0 40px rgba(218, 165, 32, 0.3);
+  margin: 0;
+}
+
+.nr-star-icon {
+  color: #daa520;
+  font-size: 24px;
+  text-shadow: 0 0 12px rgba(218, 165, 32, 0.8);
+  animation: nr-icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes nr-icon-pulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(218, 165, 32, 0.8); }
+  50%       { text-shadow: 0 0 24px rgba(255, 215, 0, 1); }
+}
+
+/* ── Subtitle ──────────────────────────────────────────────────────────── */
+.nr-subtitle {
+  color: #a0845a;
+  font-family: 'Georgia', serif;
+  font-size: 15px;
+  font-style: italic;
+  letter-spacing: 2px;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.6s;
+}
+
+.nr-subtitle--in {
+  opacity: 1;
+}
+
+/* ── Separator ─────────────────────────────────────────────────────────── */
+.nr-separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 80%;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.7s;
+}
+
+.nr-separator--in {
+  opacity: 1;
+}
+
+.nr-sep-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #5a4020, transparent);
+}
+
+.nr-sep-glyph {
+  color: #b8860b;
+  font-size: 14px;
+}
+
+/* ── Lore text scroll ──────────────────────────────────────────────────── */
+.nr-lore-scroll {
+  max-height: 280px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+  padding: 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #5a4020 transparent;
+}
+
+.nr-lore-scroll--in {
+  opacity: 1;
+  transform: none;
+}
+
+.nr-lore-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nr-lore-scroll::-webkit-scrollbar-thumb {
+  background: #5a4020;
+  border-radius: 2px;
+}
+
+.nr-lore-text {
+  color: #d4b896;
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  line-height: 1.8;
+  text-align: center;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Unlocks ───────────────────────────────────────────────────────────── */
+.nr-unlocks {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  text-align: center;
+}
+
+.nr-unlocks--in {
+  opacity: 1;
+  transform: none;
+}
+
+.nr-unlocks-title {
+  color: #60a5fa;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.nr-unlocks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nr-unlock-item {
+  color: #93c5fd;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.nr-unlock-icon {
+  color: #60a5fa;
+}
+
+/* ── Continue button ───────────────────────────────────────────────────── */
+.nr-continue-btn {
+  background: transparent;
+  border: 1px solid #daa520;
+  color: #daa520;
+  font-family: monospace;
+  font-size: 14px;
+  letter-spacing: 3px;
+  padding: 10px 28px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  animation: nr-btn-appear 0.5s ease-out;
+}
+
+.nr-continue-btn:hover {
+  background: rgba(218, 165, 32, 0.12);
+  box-shadow: 0 0 16px rgba(218, 165, 32, 0.4);
+  color: #ffd700;
+}
+
+@keyframes nr-btn-appear {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}

@@ -9,11 +9,20 @@ interface Scene {
   chapter_id: number;
   name: string;
   title?: string;
+  summary?: string;
   gameplay_data?: {
     required_time_seconds: number;
   } | null;
+  boss_config?: {
+    timer_seconds?: number;
+    hp_multiplier?: number;
+    interrupt_interval_min?: number;
+    interrupt_interval_max?: number;
+    interrupt_clicks_required?: number;
+  } | null;
   sort_order: number;
-  status?: 'locked' | 'available' | 'completed' | 'mastered';
+  status?: 'locked' | 'available' | 'completed' | 'mastered' | 'in_progress';
+  scene_type?: 'normal' | 'chapter_boss' | 'book_boss';
 }
 
 interface Chapter {
@@ -42,6 +51,7 @@ const OverworldMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
+  const [selectedChapterTitle, setSelectedChapterTitle] = useState<string | undefined>(undefined);
 
   const { enterScene, setVisualChapter } = useGame();
 
@@ -119,34 +129,68 @@ const OverworldMap: React.FC = () => {
                       </div>
                     </div>
                     <div className="scenes-horizontal">
-                      {chapter.scenes.map((scene, index) => (
-                        <React.Fragment key={scene.id}>
-                          <div 
-                            className={`scene-node ${scene.status || 'locked'}`}
-                            onClick={() => {
-                              if (scene.status !== 'locked') {
-                                setSelectedScene(scene);
-                                setVisualChapter(chapter.chapter_number);
-                              }
-                            }}
-                          >
-                            <div className="node-circle">
-                              {(scene.status === 'completed' || scene.status === 'mastered') && <span className="check">✓</span>}
-                              {scene.status === 'locked' && <span className="lock">🔒</span>}
-                              {scene.status === 'in_progress' && <span className="pulse-dot" />}
-                              {scene.status === 'mastered' && <div className="mastery-star">★</div>}
+                      {chapter.scenes.map((scene, index) => {
+                        const isBossNode = scene.scene_type === 'chapter_boss' || scene.scene_type === 'book_boss';
+                        const isBookBoss = scene.scene_type === 'book_boss';
+                        return (
+                          <React.Fragment key={scene.id}>
+                            {/* Connector before boss node */}
+                            {isBossNode && chapter.scenes.length > 1 && (
+                              <div className={`node-connector ${scene.status !== 'locked' ? 'active' : ''}`} />
+                            )}
+                            <div
+                              className={[
+                                'scene-node',
+                                scene.status || 'locked',
+                                isBossNode ? 'scene-node--boss' : '',
+                                isBookBoss ? 'scene-node--book-boss' : '',
+                              ].filter(Boolean).join(' ')}
+                              onClick={() => {
+                                if (scene.status !== 'locked') {
+                                  setSelectedScene(scene);
+                                  setSelectedChapterTitle(chapter.title || chapter.name);
+                                  setVisualChapter(chapter.chapter_number);
+                                }
+                              }}
+                              title={isBossNode ? (isBookBoss ? 'Book Boss — Clear to advance to the next book' : 'Chapter Boss — Clear to advance to the next chapter') : undefined}
+                            >
+                              <div className="node-circle">
+                                {isBossNode ? (
+                                  <>
+                                    <span className="boss-star-icon">{scene.status === 'mastered' ? '★' : '☆'}</span>
+                                    {scene.status === 'available' && <span className="boss-available-pulse" />}
+                                  </>
+                                ) : (
+                                  <>
+                                    {(scene.status === 'completed' || scene.status === 'mastered') && <span className="check">✓</span>}
+                                    {scene.status === 'locked' && <span className="lock">🔒</span>}
+                                    {scene.status === 'in_progress' && <span className="pulse-dot" />}
+                                    {scene.status === 'mastered' && <div className="mastery-star">★</div>}
+                                  </>
+                                )}
+                              </div>
+                              <div className="scene-label-container">
+                                {isBossNode ? (
+                                  <>
+                                    <span className="boss-node-label">{isBookBoss ? 'BOOK BOSS' : 'BOSS'}</span>
+                                    <span className="scene-name">{scene.title || (isBookBoss ? 'Book Boss' : 'Chapter Boss')}</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="chapter-prefix">{(chapter.title || chapter.name || '').split(':')[0] || `Chapter ${chapter.chapter_number}`}</span>
+                                    <span className="scene-number">{chapter.chapter_number}-{scene.sort_order}</span>
+                                    <span className="scene-name">{scene.title || scene.name}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div className="scene-label-container">
-                              <span className="chapter-prefix">{(chapter.title || chapter.name || '').split(':')[0] || `Chapter ${chapter.chapter_number}`}</span>
-                              <span className="scene-number">{chapter.chapter_number}-{scene.sort_order}</span>
-                              <span className="scene-name">{scene.title || scene.name}</span>
-                            </div>
-                          </div>
-                          {index < chapter.scenes.length - 1 && (
-                            <div className={`node-connector ${(chapter.scenes[index+1].status && chapter.scenes[index+1].status !== 'locked') ? 'active' : ''}`} />
-                          )}
-                        </React.Fragment>
-                      ))}
+                            {/* Standard connector between normal scenes */}
+                            {!isBossNode && index < chapter.scenes.length - 1 && !chapter.scenes[index + 1]?.scene_type?.includes('boss') && (
+                              <div className={`node-connector ${(chapter.scenes[index+1].status && chapter.scenes[index+1].status !== 'locked') ? 'active' : ''}`} />
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -163,12 +207,14 @@ const OverworldMap: React.FC = () => {
 ...
 
       {selectedScene && (
-        <ChapterInfoPanel 
-          scene={selectedScene} 
-          onClose={() => setSelectedScene(null)} 
+        <ChapterInfoPanel
+          scene={selectedScene}
+          chapterTitle={selectedChapterTitle}
+          onClose={() => { setSelectedScene(null); setSelectedChapterTitle(undefined); }}
           onEnter={(id) => {
             enterScene(id.toString());
             setSelectedScene(null);
+            setSelectedChapterTitle(undefined);
           }}
         />
       )}

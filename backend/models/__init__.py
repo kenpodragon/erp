@@ -21,7 +21,7 @@ from models.admin import (
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
     PlayerMetaProgression, DevContentAudit,
-    CharacterSkillLevel, EntitySceneAppearance,
+    CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
 )
 
 __all__ = [
@@ -36,5 +36,5 @@ __all__ = [
     "AdminWhitelistEmail", "AdminWhitelistIP",
     "GameConfig", "PlayerStorySession", "SessionUpgrade",
     "PlayerMetaProgression", "DevContentAudit",
-    "CharacterSkillLevel", "EntitySceneAppearance",
+    "CharacterSkillLevel", "EntitySceneAppearance", "BossCompletion",
 ]
