@@ -480,6 +480,21 @@ class TestBossSession:
         ).first()
         assert completion is not None
 
+    def test_boss_session_current_zone_scaling(
+        self, full_client, boss_scene, game_configs, player_past_chapter1,
+        test_chapter, test_book
+    ):
+        """Boss current_zone should be (Book-1)*100 + Chapter*10."""
+        # test_book has book_number=1, test_chapter has chapter_number=1
+        resp = full_client.post(
+            "/api/game/story/session/start",
+            json={"scene_id": boss_scene.id},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        # (1-1)*100 + 1*3 = 3
+        assert data["current_zone"] == 3
+
     def test_boss_complete_replay_no_duplicate(
         self, full_client, boss_scene, game_configs, player_past_chapter1,
         session: Session

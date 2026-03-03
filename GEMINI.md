@@ -7,7 +7,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 - **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
 - **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/tools`, and `/testing`.
 - **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md` and update `db/data_dictionary.md` accordingly.
-    - **Connection Mandate:** ALWAYS PULL database connection strings and credentials directly from `/backend/.env`. NEVER hardcode, log, or print these values. Make sure you create `.sql` files for any Non-programming data specific database operations for the underlying data (e.g. seeding new characters, INSERT/UPDATE/DELETE) so these can be tracked and maintained. 
+    - **Connection Mandate:** ALWAYS PULL database connection strings and credentials directly from `/backend/.env`. NEVER hardcode, log, or print these values. Make sure you create `.sql` files for any Non-programming data specific database operations for the underlying data (e.g. seeding new characters, INSERT/UPDATE/DELETE) so these can be tracked and maintained. `psql` is available, remember to use localhost as the local DB server.
 - **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
 
 ## 🤖 Agent Operating Procedures
@@ -18,7 +18,7 @@ You MUST strictly adhere to these instructions. This file takes precedence over 
 5. **Testing First:** Run `testing/run_tests.bat` (Win) or `testing/run_tests.sh` (Linux) before concluding a task.
 
 ## 🧪 Testing Commands
-- **Backend:** `pytest` in `/backend`
+- **Backend:** `pytest` in `/backend` (use `pyton -m pytest` since pytest isn't installed)
 - **Frontend/Admin:** `npm test` in respective directories.
 - **System-wide:** `testing/run_tests.bat` (Windows)
 

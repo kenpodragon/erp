@@ -185,13 +185,18 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
   }, [gameConfigs]);
 
   // ── Narrative Complete ──────────────────────────────────────────────────
-  const checkDualCondition = useCallback((narrativeDone: boolean, wavesDone: boolean) => {
-    if (farmMode) return;
-    const narrativeEffective = narrativeDone || storySession?.previouslyCompleted;
-    if (narrativeEffective && wavesDone) {
+  useEffect(() => {
+    if (!storySession || farmMode || showSummary) return;
+    
+    const narrativeDone = storySession.narrativeProgressPct >= 100;
+    const wavesDone = storySession.wavesComplete;
+    
+    // Only show the summary automatically if it's NOT previously completed
+    // and both conditions are met.
+    if (!storySession.previouslyCompleted && narrativeDone && wavesDone) {
       setShowSummary(true);
     }
-  }, [farmMode, storySession?.previouslyCompleted]);
+  }, [storySession?.narrativeProgressPct, storySession?.wavesComplete, storySession?.previouslyCompleted, farmMode, showSummary, storySession]);
 
   const handleNarrativeComplete = useCallback(async () => {
     if (!storySession || farmMode) return;
@@ -200,16 +205,14 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
       await api.post(`/api/game/story/session/${storySession.sessionId}/narrative`,
         { progress_pct: 100 });
     } catch { /* non-fatal */ }
-    checkDualCondition(true, storySession.wavesComplete);
-  }, [storySession, updateStorySession, farmMode, checkDualCondition]);
+  }, [storySession, updateStorySession, farmMode]);
 
   const handleWavesComplete = useCallback(() => {
     if (farmMode) return;
     updateStorySession({ wavesComplete: true });
     pendingWavesComplete.current = 1;
     flushTick();
-    checkDualCondition(storySession?.narrativeProgressPct === 100, true);
-  }, [storySession, updateStorySession, farmMode, checkDualCondition, flushTick]);
+  }, [updateStorySession, farmMode, flushTick]);
 
   // ── Session Complete ────────────────────────────────────────────────────
   const handleComplete = useCallback(async (continueFarming: boolean) => {
@@ -397,6 +400,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             autoProgress={autoProgress}
             onAutoProgressToggle={setAutoProgress}
             debugSuperClick={debugSuperClick}
+            narrativeProgressPct={storySession.narrativeProgressPct}
           />
 
           <div className="story-controls-bar">

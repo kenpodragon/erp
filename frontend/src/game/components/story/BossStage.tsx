@@ -169,10 +169,10 @@ const BossStage: React.FC<Props> = ({
   const cfg: BossConfig = session.bossConfig ?? {
     timer_seconds: 120,
     hp_multiplier: 8,
-    interrupt_interval_min: 10,
-    interrupt_interval_max: 25,
-    interrupt_window_seconds: 5,
-    interrupt_refill_seconds: 15,
+    interrupt_interval_min: 1200, // now in MS
+    interrupt_interval_max: 3000, // now in MS
+    interrupt_window_seconds: 2,
+    interrupt_refill_seconds: 3,
     interrupt_clicks_required: 20,
   };
 
@@ -180,8 +180,9 @@ const BossStage: React.FC<Props> = ({
   const CRIT_MULT   = Number(gameConfigs['crit_multiplier'] ?? 2.0);
   const HP_SCALING  = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
 
-  // Calculate boss max HP: zone-1 baseline × multiplier
-  const baseHp = zoneHp(1, HP_SCALING) * cfg.hp_multiplier;
+  // Calculate boss max HP: zone-relative baseline × multiplier
+  // Boss sessions use currentZone to represent the intended challenge level (e.g. Chapter 1 Boss = Level 10)
+  const baseHp = zoneHp(session.currentZone || 1, HP_SCALING) * cfg.hp_multiplier;
 
   const [bossHp, setBossHp]     = useState(baseHp);
   const [bossMaxHp]             = useState(baseHp);
@@ -195,22 +196,27 @@ const BossStage: React.FC<Props> = ({
   const timerRef          = useRef(cfg.timer_seconds);
   const defeatedRef        = useRef(false);
   const nextInterruptRef  = useRef(
-    cfg.interrupt_interval_min +
-    Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min)
+    cfg.interrupt_interval_min * 0.8 +
+    Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min) * 0.8
   );
   const interruptActiveRef = useRef(false);
   const interruptRef       = useRef<ActiveInterrupt | null>(null);
+  const msAccumulator      = useRef(0);
+
+  // Offset for Y coordinates because of the timer bar at the top
+  const CANVAS_OFFSET_Y = 40;
 
   // Sync refs
   useEffect(() => { interruptRef.current = interrupt; }, [interrupt]);
 
   // ── Click damage calculation ─────────────────────────────────────────────
   const calcClickDmg = useCallback(() => {
-    const base = (session.characterStrength ?? 10);
+    const base = (session.characterStrength ?? 10) + (session.clickUpgradeLevel ?? 0);
+    const multipliers = (session.clickDmgMultiplier ?? 1) * (session.darkRitualMultiplier ?? 1);
     const isCrit = Math.random() < CRIT_CHANCE;
-    const dmg = isCrit ? base * CRIT_MULT : base;
+    const dmg = (isCrit ? base * CRIT_MULT : base) * multipliers;
     return { dmg, isCrit };
-  }, [session.characterStrength, CRIT_CHANCE, CRIT_MULT]);
+  }, [session.characterStrength, session.clickUpgradeLevel, session.clickDmgMultiplier, session.darkRitualMultiplier, CRIT_CHANCE, CRIT_MULT]);
 
   // ── Apply damage to boss ─────────────────────────────────────────────────
   const dealDamage = useCallback((dmg: number, isCrit: boolean, ox: number, oy: number) => {
@@ -241,13 +247,16 @@ const BossStage: React.FC<Props> = ({
     const rect = e.currentTarget.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
+    
+    // Y relative to canvas
+    const cy = my - CANVAS_OFFSET_Y;
 
     // Handle interrupt click
     const iv = interruptRef.current;
     if (iv) {
       if (iv.type === 'target_zone' && iv.targetZone) {
         const tz = iv.targetZone;
-        const dist = Math.hypot(mx - tz.x, my - tz.y);
+        const dist = Math.hypot(mx - tz.x, cy - tz.y);
         if (dist <= tz.radius) {
           handleInterruptSuccess();
           return;
@@ -256,7 +265,7 @@ const BossStage: React.FC<Props> = ({
       if (iv.type === 'whack_sequence' && iv.whackZones) {
         const activeZone = iv.whackZones[iv.whackIndex];
         if (activeZone && !activeZone.hit) {
-          const dist = Math.hypot(mx - activeZone.x, my - activeZone.y);
+          const dist = Math.hypot(mx - activeZone.x, cy - activeZone.y);
           if (dist <= activeZone.radius) {
             const next = iv.whackIndex + 1;
             if (next >= iv.whackZones.length) {
@@ -270,28 +279,25 @@ const BossStage: React.FC<Props> = ({
       }
     }
 
-    // click_burst: clicking anywhere on boss counts
+    // click_burst: clicking anywhere on canvas counts during burst
     if (iv?.type === 'click_burst') {
-      const distBoss = Math.hypot(mx - BOSS_X, my - BOSS_Y);
-      if (distBoss <= CLICK_HITBOX) {
-        const increment = 100 / cfg.interrupt_clicks_required;
-        const newProg = Math.min(100, (iv.progress || 0) + increment);
-        if (newProg >= 100) {
-          handleInterruptSuccess();
-        } else {
-          setInterrupt(prev => prev ? { ...prev, progress: newProg } : prev);
-        }
+      const increment = 100 / cfg.interrupt_clicks_required;
+      const newProg = Math.min(100, (iv.progress || 0) + increment);
+      if (newProg >= 100) {
+        handleInterruptSuccess();
+      } else {
+        setInterrupt(prev => prev ? { ...prev, progress: newProg } : prev);
       }
     }
 
     // Normal click damage on boss body
-    const distBoss = Math.hypot(mx - BOSS_X, my - BOSS_Y);
+    const distBoss = Math.hypot(mx - BOSS_X, cy - BOSS_Y);
     if (distBoss <= CLICK_HITBOX) {
       onEnemyClick();
       const { dmg, isCrit } = debugSuperClick
         ? { dmg: bossMaxHp * 0.5, isCrit: true }
         : calcClickDmg();
-      dealDamage(dmg, isCrit, mx, my);
+      dealDamage(dmg, isCrit, mx, cy);
     }
   }, [calcClickDmg, dealDamage, cfg.interrupt_clicks_required, onEnemyClick, bossMaxHp, debugSuperClick]);
 
@@ -304,8 +310,8 @@ const BossStage: React.FC<Props> = ({
     setTimerLeft(timerRef.current);
     // Reset next interrupt countdown
     nextInterruptRef.current =
-      cfg.interrupt_interval_min +
-      Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min);
+      cfg.interrupt_interval_min * 0.8 +
+      Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min) * 0.8;
     setTimeout(() => setInterruptSuccess(null), 1200);
   }, [cfg]);
 
@@ -316,7 +322,15 @@ const BossStage: React.FC<Props> = ({
     // Auto-DPS tick
     const dpsInterval = setInterval(() => {
       if (defeatedRef.current) return;
-      const autoDps = session.autoDpsPerSecond ?? 0;
+      const baseDps = (session.autoDpsPerSecond || 0) + (session.autoUpgradeLevel || 0);
+      const multipliers = (session.autoDpsMultiplier || 1) * (session.darkRitualMultiplier || 1);
+      let autoDps = baseDps * multipliers;
+
+      // Baseline damage if 0, so health always "ticks away" slowly
+      if (autoDps <= 0) {
+        autoDps = (session.characterStrength || 10) * 0.1;
+      }
+
       if (autoDps > 0) {
         const tickDmg = autoDps * (AUTO_DPS_TICK_MS / 1000);
         const isCrit = Math.random() < CRIT_CHANCE * 0.5;
@@ -325,39 +339,50 @@ const BossStage: React.FC<Props> = ({
       }
     }, AUTO_DPS_TICK_MS);
 
-    // Timer countdown (1s ticks)
+    // Timer and Interrupt loop (100ms ticks)
     const timerInterval = setInterval(() => {
       if (defeatedRef.current) return;
-      timerRef.current -= 1;
-      setTimerLeft(timerRef.current);
+      
+      const TICK_MS = 100;
+      msAccumulator.current += TICK_MS;
+      
+      // Main seconds timer
+      if (msAccumulator.current >= 1000) {
+        msAccumulator.current -= 1000;
+        timerRef.current -= 1;
+        setTimerLeft(timerRef.current);
 
-      // Interrupt window countdown
-      if (interruptActiveRef.current) {
-        setInterrupt(prev => {
-          if (!prev) return prev;
-          const newTime = prev.timeLeft - 1;
-          if (newTime <= 0) {
-            interruptActiveRef.current = false;
-            // Reset next interrupt schedule
-            nextInterruptRef.current =
-              cfg.interrupt_interval_min +
-              Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min);
-            return null;
-          }
-          return { ...prev, timeLeft: newTime };
-        });
-      } else {
-        nextInterruptRef.current -= 1;
+        // Interrupt window countdown (1s precision)
+        if (interruptActiveRef.current) {
+          setInterrupt(prev => {
+            if (!prev) return prev;
+            const newTime = prev.timeLeft - 1;
+            if (newTime <= 0) {
+              interruptActiveRef.current = false;
+              // Reset next interrupt schedule
+              nextInterruptRef.current =
+                cfg.interrupt_interval_min +
+                Math.random() * (cfg.interrupt_interval_max - cfg.interrupt_interval_min);
+              return null;
+            }
+            return { ...prev, timeLeft: newTime };
+          });
+        }
+        
+        if (timerRef.current <= 0 && !defeatedRef.current) {
+          defeatedRef.current = true;
+          onBossDefeated(false);
+        }
+      }
+
+      // Interrupt spawning check (MS precision)
+      if (!interruptActiveRef.current) {
+        nextInterruptRef.current -= TICK_MS;
         if (nextInterruptRef.current <= 0) {
           spawnInterrupt();
         }
       }
-
-      if (timerRef.current <= 0 && !defeatedRef.current) {
-        defeatedRef.current = true;
-        onBossDefeated(false);
-      }
-    }, 1000);
+    }, 100);
 
     // Damage number cleanup
     const cleanupInterval = setInterval(() => {

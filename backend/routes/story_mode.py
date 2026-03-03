@@ -449,6 +449,10 @@ async def start_session(
     chapter_id = scene.chapter_id
     is_boss_session = scene.scene_type in ('chapter_boss', 'book_boss')
     boss_config = scene.boss_config or {}
+    
+    # Global override for refill time as requested
+    if is_boss_session and boss_config:
+        boss_config["interrupt_refill_seconds"] = 3
 
     # ── Boss session gate: validate all normal scenes in chapter are mastered ─
     # Uses the same logic as the map endpoint's all_chapter_normal_mastered check.
@@ -533,6 +537,15 @@ async def start_session(
         new_session = active_session
     else:
         dark_ritual = 1.0
+        # Calculate effective zone for scaling (Chapter X Boss ≈ Level X*10)
+        eff_zone = 1
+        if is_boss_session:
+            b_num = scene.chapter.book.book_number
+            c_num = scene.chapter.chapter_number
+            eff_zone = (b_num - 1) * 100 + c_num * 3
+            if scene.scene_type == 'book_boss':
+                eff_zone += 2 # slight boost for book bosses
+
         if not is_boss_session:
             chapter_session = session.exec(
                 select(PlayerStorySession)
@@ -548,7 +561,7 @@ async def start_session(
             player_id=player.id,
             scene_id=body.scene_id,
             chapter_id=chapter_id,
-            current_zone=1,
+            current_zone=eff_zone,
             current_wave=1,
             session_gold=0,
             dark_ritual_multiplier=dark_ritual,

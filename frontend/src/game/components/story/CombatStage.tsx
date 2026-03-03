@@ -77,6 +77,7 @@ interface Props {
   autoProgress: boolean;
   onAutoProgressToggle: (val: boolean) => void;
   debugSuperClick?: boolean;
+  narrativeProgressPct: number;
 }
 
 interface InnerProps extends Props {
@@ -329,11 +330,22 @@ const CombatContent: React.FC<InnerProps> = ({
   const shakeX = shake ? (Math.random() - 0.5) * 6 : 0, shakeY = (shake ? (Math.random() - 0.5) * 4 : 0) + idleY;
 
   const monstersCount = Math.min(waveCount + 1, MONSTERS_PER_ZONE);
-  const statusText = isFightingBoss 
-    ? `Wave ${session.currentZone}/${requiredWaves} | CHALLENGE: MINI-BOSS`
-    : waveCount < MONSTERS_PER_ZONE
-      ? `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersCount}/${MONSTERS_PER_ZONE}` 
-      : `Wave ${session.currentZone}/${requiredWaves} | BOSS READY`;
+  let statusText = "";
+  
+  if (isFightingBoss) {
+    statusText = `Wave ${session.currentZone}/${requiredWaves} | CHALLENGE: MINI-BOSS`;
+  } else if (session.currentZone > requiredWaves) {
+    // We are past required waves
+    if (narrativeProgressPct < 100) {
+      statusText = "Waiting for you to finish reading the story... (Extra enemies appear!)";
+    } else {
+      statusText = "SCENE COMPLETE — Check rewards below";
+    }
+  } else if (waveCount < MONSTERS_PER_ZONE) {
+    statusText = `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersCount}/${MONSTERS_PER_ZONE}`;
+  } else {
+    statusText = `Wave ${session.currentZone}/${requiredWaves} | BOSS READY`;
+  }
 
   return (
     <pixiContainer sortableChildren={true}>

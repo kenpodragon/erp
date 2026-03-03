@@ -15,8 +15,8 @@ ALTER TABLE scenes ADD COLUMN IF NOT EXISTS boss_config JSONB DEFAULT NULL;
   -- {
   --   "timer_seconds": int,          -- countdown timer duration
   --   "hp_multiplier": float,        -- boss HP relative to zone-scaled baseline
-  --   "interrupt_interval_min": int, -- min seconds between interrupt challenges
-  --   "interrupt_interval_max": int, -- max seconds between interrupt challenges
+  --   "interrupt_interval_min": int, -- min milliseconds between interrupt challenges
+  --   "interrupt_interval_max": int, -- max milliseconds between interrupt challenges
   --   "interrupt_window_seconds": int, -- window to complete challenge
   --   "interrupt_refill_seconds": int, -- timer refill on successful interrupt
   --   "interrupt_clicks_required": int -- clicks needed for click_burst mechanic
@@ -60,10 +60,10 @@ SELECT
     jsonb_build_object(
         'timer_seconds',             120,
         'hp_multiplier',             8,
-        'interrupt_interval_min',    10,
-        'interrupt_interval_max',    25,
-        'interrupt_window_seconds',  5,
-        'interrupt_refill_seconds',  15,
+        'interrupt_interval_min',    1200,
+        'interrupt_interval_max',    3000,
+        'interrupt_window_seconds',  2,
+        'interrupt_refill_seconds',  3,
         'interrupt_clicks_required', 20
     )
 FROM chapters c
@@ -87,10 +87,10 @@ SELECT DISTINCT ON (c.book_id)
     jsonb_build_object(
         'timer_seconds',             180,
         'hp_multiplier',             20,
-        'interrupt_interval_min',    8,
-        'interrupt_interval_max',    20,
-        'interrupt_window_seconds',  4,
-        'interrupt_refill_seconds',  20,
+        'interrupt_interval_min',    1000,
+        'interrupt_interval_max',    2500,
+        'interrupt_window_seconds',  2,
+        'interrupt_refill_seconds',  3,
         'interrupt_clicks_required', 30
     )
 FROM chapters c
