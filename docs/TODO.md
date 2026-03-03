@@ -6,8 +6,8 @@
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
     - [ ] **DB Migrations**
-        - [ ] Create and apply db migration: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
-        - [ ] Create and apply db migration: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
+        - [ ] Create and apply new db migration file: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
+        - [ ] Create and apply new db migration file: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
         - [ ] Identify and set `unlock_scene_id` FK values for Magic, Lore, and Precision skills (query scenes table for gate beats).
         - [ ] Update `db/data_dictionary.md` for all 2.3 schema changes.
     - [ ] **Backend**
