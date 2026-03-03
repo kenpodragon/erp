@@ -19,7 +19,11 @@ export function formatNumber(n: number): string {
   const absN = Math.abs(n);
   const sign = n < 0 ? '-' : '';
   
-  if (absN < 1000) return sign + Math.floor(absN).toString();
+  if (absN < 1000) {
+    // Show 2 decimals if < 1, otherwise whole number
+    if (absN > 0 && absN < 1) return sign + absN.toFixed(2);
+    return sign + Math.floor(absN).toString();
+  }
   
   const tier = Math.floor(Math.log10(absN) / 3);
   const suffix = SUFFIXES[tier] || ` e${tier * 3}`;

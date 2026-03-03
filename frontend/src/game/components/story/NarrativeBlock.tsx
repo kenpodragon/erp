@@ -26,10 +26,11 @@ interface Props {
   wpm: number;
   onWpmChange?: (newWpm: number) => void;
   fontSize?: number;
+  onFontSizeChange?: (newSize: number) => void;
   disabled?: boolean;
 }
 
-const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpmChange, fontSize = 14, disabled = false }) => {
+const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpmChange, fontSize = 14, onFontSizeChange, disabled = false }) => {
   const [beats, setBeats] = useState<Beat[]>([]);
   const [visibleCount, setVisibleCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,7 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
   
   // Local slider state
   const [localWpm, setLocalWpm] = useState(wpm);
+  const [localFontSize, setLocalFontSize] = useState(fontSize);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef(false);
@@ -45,6 +47,10 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
   useEffect(() => {
     setLocalWpm(wpm);
   }, [wpm]);
+
+  useEffect(() => {
+    setLocalFontSize(fontSize);
+  }, [fontSize]);
 
   const startNarrativeReveal = (beatsData: Beat[], startFromIdx = 0) => {
     completedRef.current = false;
@@ -145,7 +151,8 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = Number(e.target.value);
-    api.patch('/api/players/me/settings', { narration_font_size: newSize });
+    setLocalFontSize(newSize);
+    onFontSizeChange?.(newSize);
   };
 
   if (loading) {
@@ -204,7 +211,7 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
           <div className="wpm-slider-wrap">
             <label>WPM: {localWpm}</label>
             <input 
-              type="range" min="50" max="600" step="10" 
+              type="range" min="150" max="600" step="10" 
               value={localWpm} 
               onChange={handleWpmSliderChange}
               onMouseUp={handleWpmSliderMouseUp}
@@ -212,10 +219,10 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
           </div>
 
           <div className="wpm-slider-wrap">
-            <label>FONT SIZE: {fontSize}px</label>
+            <label>FONT SIZE: {localFontSize}px</label>
             <input 
-              type="range" min="8" max="32" step="1" 
-              defaultValue={fontSize}
+              type="range" min="8" max="28" step="1" 
+              value={localFontSize}
               onChange={handleFontSizeChange}
             />
           </div>

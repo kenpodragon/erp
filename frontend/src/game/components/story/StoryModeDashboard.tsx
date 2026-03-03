@@ -60,20 +60,15 @@ const StoryModeDashboard: React.FC<Props> = ({
       </div>
 
       <div className="dashboard-content">
-        <div className="dashboard-top-row">
-           <GoldOdometer gold={session.sessionGold} />
-           <div className="dashboard-settings">
-             <div className="setting-item">
-               <label>UI SCALE: {uiScale.toFixed(1)}x</label>
-               <input type="range" min="0.5" max="2.0" step="0.1" value={uiScale} onChange={handleUiScaleChange} />
-             </div>
-             <div className="setting-item">
-               <label>TEXT SCALE: {gameTextScale.toFixed(1)}x</label>
-               <input type="range" min="0.5" max="2.5" step="0.1" value={gameTextScale} onChange={handleTextScaleChange} />
-             </div>
+      <div className="dashboard-top-row">
+         <GoldOdometer gold={session.sessionGold} />
+         <div className="dashboard-settings">
+           <div className="setting-item">
+             <label>TEXT SCALE: {gameTextScale.toFixed(1)}x</label>
+             <input type="range" min="1.0" max="5.0" step="0.1" value={gameTextScale} onChange={handleTextScaleChange} />
            </div>
-        </div>
-
+         </div>
+      </div>
         <div className="dashboard-main-grid">
            <div className="dashboard-col stats-col">
              <HeroStats session={session} />

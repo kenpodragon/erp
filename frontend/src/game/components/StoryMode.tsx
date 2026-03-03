@@ -27,9 +27,20 @@ interface Player {
 interface StoryModeProps {
   player: Player | null;
   onPlayerUpdate: () => void;
+  showSummaryExternal?: boolean;
+  onShowSummaryChange?: (val: boolean) => void;
+  externalFarmMode?: boolean;
+  onFarmModeChange?: (val: boolean) => void;
 }
 
-const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
+const StoryMode: React.FC<StoryModeProps> = ({ 
+  player, 
+  onPlayerUpdate,
+  showSummaryExternal = false,
+  onShowSummaryChange,
+  externalFarmMode = false,
+  onFarmModeChange
+}) => {
   const { state, exitScene, setStorySession, updateStorySession, setEssence, setGold } = useGame();
   const { activeSceneId, storySession } = state;
 
@@ -40,7 +51,6 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
   const tickTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const [isLoading, setIsLoading] = React.useState(true);
-  const [showSummary, setShowSummary] = React.useState(false);
   const [farmMode, setFarmMode] = React.useState(false);
   const [gameConfigs, setGameConfigs] = React.useState<Record<string, unknown>>({});
   const [forceOdometerUpdate, setForceOdometerUpdate] = React.useState(false);
@@ -54,6 +64,18 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
     chapterTitle?: string;
     unlocks: string[];
   } | null>(null);
+
+  // Sync farmMode with external if needed
+  useEffect(() => {
+    if (externalFarmMode !== farmMode) {
+      setFarmMode(externalFarmMode);
+    }
+  }, [externalFarmMode]);
+
+  const setShowSummary = (val: boolean) => {
+    onShowSummaryChange?.(val);
+  };
+  const showSummary = showSummaryExternal;
 
   // ── Session Initialisation ──────────────────────────────────────────────
   useEffect(() => {
@@ -295,7 +317,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
 
   const handleWpmChange = (newWpm: number) => {
     setUserWpm(newWpm);
-    api.patch('/api/players/me/settings', { narration_wpm: newWpm }).catch(() => {});
+    handleSettingsUpdate({ narration_wpm: newWpm });
   };
 
   const handleExit = async () => {
@@ -395,6 +417,7 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
             wpm={userWpm}
             onWpmChange={handleWpmChange}
             fontSize={player?.settings?.narration_font_size || 14}
+            onFontSizeChange={(newSize) => handleSettingsUpdate({ narration_font_size: newSize })}
             disabled={farmMode}
           />
         </div>
@@ -445,14 +468,6 @@ const StoryMode: React.FC<StoryModeProps> = ({ player, onPlayerUpdate }) => {
         gameTextScale={player?.settings?.game_text_scale || 1.0}
         onSettingsChange={handleSettingsUpdate}
       />
-
-      {showSummary && (
-        <PostBattleSummary
-          session={storySession}
-          onContinue={() => handleComplete(true)}
-          onReturnToHub={() => handleComplete(false)}
-        />
-      )}
 
       {/* Dual-condition gate indicator */}
       {bothComplete && !showSummary && !farmMode && (

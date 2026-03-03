@@ -107,13 +107,6 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
             </div>
 
             <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
-              <span className="post-battle-stat-label">Elysium Essence</span>
-              <span className="post-battle-stat-value post-battle-stat-value--elysium">
-                ◈ {formatNumber(displayEssence)}
-              </span>
-            </div>
-
-            <div className={`post-battle-stat ${showRewards ? 'post-battle-reward--show' : 'post-battle-reward--hide'}`}>
               <span className="post-battle-stat-label">Zones Cleared</span>
               <span className="post-battle-stat-value">{displayZones}</span>
             </div>

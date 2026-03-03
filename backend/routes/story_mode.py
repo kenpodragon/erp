@@ -557,7 +557,7 @@ async def start_session(
                 dark_ritual = chapter_session.dark_ritual_multiplier
 
         new_session = PlayerStorySession(
-            id=str(uuid.uuid4()),
+            id=uuid.uuid4(),
             player_id=player.id,
             scene_id=body.scene_id,
             chapter_id=chapter_id,
@@ -578,7 +578,7 @@ async def start_session(
             # Normal session: Initialize Click Damage and Auto-DPS at Level 1
             for u_type in ["click_dmg", "auto_dps"]:
                 upg = SessionUpgrade(
-                    id=str(uuid.uuid4()),
+                    id=uuid.uuid4(),
                     session_id=new_session.id,
                     upgrade_type=u_type,
                     target_id=None,
@@ -626,7 +626,7 @@ async def start_session(
 
 @router.get("/session/{session_id}")
 async def get_session_state(
-    session_id: str,
+    session_id: uuid.UUID,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -680,7 +680,7 @@ async def get_session_state(
 
 @router.post("/session/{session_id}/tick")
 async def combat_tick(
-    session_id: str,
+    session_id: uuid.UUID,
     body: TickRequest,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -732,7 +732,7 @@ async def combat_tick(
 
 @router.post("/session/{session_id}/upgrade")
 async def purchase_upgrade(
-    session_id: str,
+    session_id: uuid.UUID,
     body: UpgradeRequest,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -775,7 +775,7 @@ async def purchase_upgrade(
 
     if upgrade is None:
         upgrade = SessionUpgrade(
-            id=str(uuid.uuid4()),
+            id=uuid.uuid4(),
             session_id=session_id,
             upgrade_type=body.upgrade_type,
             target_id=body.target_id,
@@ -810,7 +810,7 @@ async def purchase_upgrade(
 
 @router.post("/session/{session_id}/skill")
 async def activate_skill(
-    session_id: str,
+    session_id: uuid.UUID,
     body: SkillActivateRequest,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -856,7 +856,7 @@ async def activate_skill(
 
 @router.post("/session/{session_id}/narrative")
 async def update_narrative_progress(
-    session_id: str,
+    session_id: uuid.UUID,
     body: NarrativeUpdateRequest,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -880,7 +880,7 @@ async def update_narrative_progress(
 
 @router.post("/session/{session_id}/complete")
 async def complete_session(
-    session_id: str,
+    session_id: uuid.UUID,
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):

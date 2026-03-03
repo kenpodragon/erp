@@ -224,8 +224,11 @@ async def update_settings(
     if not player:
         raise HTTPException(status_code=404, detail="Player profile not found")
 
+    logger.info("Updating settings for player %s: %s", player.id, update_data)
+
     settings = session.exec(select(PlayerSettings).where(PlayerSettings.player_id == player.id)).first()
     if not settings:
+        logger.info("Creating new settings for player %s", player.id)
         settings = PlayerSettings(player_id=player.id, updated_at=datetime.now(timezone.utc))
 
     if "audio_enabled" in update_data:
@@ -247,13 +250,13 @@ async def update_settings(
         settings.narration_speed = s
     if "narration_wpm" in update_data:
         w = update_data["narration_wpm"]
-        if not (50 <= w <= 500):
-            raise HTTPException(status_code=422, detail="narration_wpm must be between 50 and 500")
+        if not (150 <= w <= 600):
+            raise HTTPException(status_code=422, detail="narration_wpm must be between 150 and 600")
         settings.narration_wpm = w
     if "narration_font_size" in update_data:
         fs = update_data["narration_font_size"]
-        if not (8 <= fs <= 32):
-            raise HTTPException(status_code=422, detail="narration_font_size must be between 8 and 32")
+        if not (8 <= fs <= 28):
+            raise HTTPException(status_code=422, detail="narration_font_size must be between 8 and 28")
         settings.narration_font_size = fs
     if "narration_block_height" in update_data:
         bh = update_data["narration_block_height"]
@@ -262,18 +265,20 @@ async def update_settings(
         settings.narration_block_height = bh
     if "ui_scale" in update_data:
         us = update_data["ui_scale"]
-        if not (0.5 <= us <= 2.0):
-            raise HTTPException(status_code=422, detail="ui_scale must be between 0.5 and 2.0")
+        if not (0.5 <= us <= 3.0):
+            raise HTTPException(status_code=422, detail="ui_scale must be between 0.5 and 3.0")
         settings.ui_scale = us
     if "game_text_scale" in update_data:
         ts = update_data["game_text_scale"]
-        if not (0.5 <= ts <= 2.5):
-            raise HTTPException(status_code=422, detail="game_text_scale must be between 0.5 and 2.5")
+        if not (1.0 <= ts <= 5.0):
+            raise HTTPException(status_code=422, detail="game_text_scale must be between 1.0 and 5.0")
         settings.game_text_scale = ts
 
     settings.updated_at = datetime.now(timezone.utc)
     session.add(settings)
     session.commit()
     session.refresh(settings)
+
+    logger.info("Settings updated successfully for player %s", player.id)
 
     return settings

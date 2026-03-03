@@ -18,7 +18,7 @@ def test_gold_to_essence_conversion(client: TestClient, session: Session, player
     # 2. Create a dummy Story Session
     # Zone 3, 10,000 gold
     story_session = PlayerStorySession(
-        id="test-session-uuid",
+        id="550e8400-e29b-41d4-a716-446655440000",
         player_id=test_character.player_id,
         character_id=test_character.id,
         scene_id=1,

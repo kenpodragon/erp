@@ -240,15 +240,19 @@ const CombatContent: React.FC<InnerProps> = ({
   }, [width, height, session.goldDropMultiplier, onGoldEarned, advanceWave, triggerShake, triggerRecoil, triggerHitFlash]);
 
   useEffect(() => { 
-    if (session.currentWave >= MONSTERS_PER_ZONE) {
-      setWaveCount(MONSTERS_PER_ZONE);
-      setIsFightingBoss(false);
-      spawnEnemy(enemyPool, session.currentZone, false, MONSTERS_PER_ZONE); 
-    } else {
-      setWaveCount(session.currentWave);
-      setIsFightingBoss(false);
-      spawnEnemy(enemyPool, session.currentZone, false, session.currentWave); 
-    }
+    // Wrap in timeout to avoid "Cannot update a component while rendering a different component"
+    const timer = setTimeout(() => {
+      if (session.currentWave >= MONSTERS_PER_ZONE) {
+        setWaveCount(MONSTERS_PER_ZONE);
+        setIsFightingBoss(false);
+        spawnEnemy(enemyPool, session.currentZone, false, MONSTERS_PER_ZONE); 
+      } else {
+        setWaveCount(session.currentWave);
+        setIsFightingBoss(false);
+        spawnEnemy(enemyPool, session.currentZone, false, session.currentWave); 
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [session.currentZone, enemyPool.length, spawnEnemy, MONSTERS_PER_ZONE]);
 
   // Handle auto-progress being toggled ON while in "Ready" state

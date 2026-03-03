@@ -1,5 +1,6 @@
 """Story Mode (Loop B) models — sessions, upgrades, meta-progression, audit logging."""
 
+import uuid
 from datetime import datetime
 from typing import Optional, Any
 from sqlmodel import SQLModel, Field
@@ -21,7 +22,7 @@ class PlayerStorySession(SQLModel, table=True):
     """Maps to `player_story_sessions`. Tracks active Story Mode combat state."""
     __tablename__ = "player_story_sessions"
 
-    id: Optional[str] = Field(default=None, primary_key=True)  # UUID stored as str
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     player_id: int = Field(foreign_key="players.id", nullable=False)
     scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     chapter_id: Optional[int] = Field(default=None)
@@ -42,8 +43,8 @@ class SessionUpgrade(SQLModel, table=True):
     """Maps to `session_upgrades`. Temporary purchases made with session gold."""
     __tablename__ = "session_upgrades"
 
-    id: Optional[str] = Field(default=None, primary_key=True)  # UUID stored as str
-    session_id: Optional[str] = Field(default=None, foreign_key="player_story_sessions.id")
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    session_id: Optional[uuid.UUID] = Field(default=None, foreign_key="player_story_sessions.id")
     upgrade_type: str = Field(max_length=50, nullable=False)
     target_id: Optional[int] = Field(default=None)  # skill ID for skill upgrades
     level: int = Field(default=0)
@@ -101,8 +102,9 @@ class BossCompletion(SQLModel, table=True):
     boss_type: str = Field(max_length=20, nullable=False)  # 'chapter_boss' | 'book_boss'
     chapter_id: Optional[int] = Field(default=None, foreign_key="chapters.id")
     book_id: Optional[int] = Field(default=None, foreign_key="books.id")
-    session_id: Optional[str] = Field(default=None)
+    session_id: Optional[uuid.UUID] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
+
 
 
 class EntitySceneAppearance(SQLModel, table=True):

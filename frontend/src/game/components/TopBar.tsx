@@ -173,23 +173,18 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
             <h3>Game Settings</h3>
             <form onSubmit={handleSaveSettings}>
               <div className="settings-group">
-                <label>UI Scale: {localSettings.ui_scale.toFixed(2)}x
-                  <input type="range" name="ui_scale" min="0.5" max="1.5" step="0.05" value={localSettings.ui_scale} onChange={handleSliderChange} />
-                </label>
-              </div>
-              <div className="settings-group">
                 <label>Combat Text Scale: {localSettings.game_text_scale.toFixed(1)}x
-                  <input type="range" name="game_text_scale" min="0.5" max="2.0" step="0.1" value={localSettings.game_text_scale} onChange={handleSliderChange} />
+                  <input type="range" name="game_text_scale" min="1.0" max="5.0" step="0.1" value={localSettings.game_text_scale} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-group">
                 <label>Narration WPM: {localSettings.narration_wpm}
-                  <input type="range" name="narration_wpm" min="50" max="600" step="10" value={localSettings.narration_wpm} onChange={handleSliderChange} />
+                  <input type="range" name="narration_wpm" min="150" max="600" step="10" value={localSettings.narration_wpm} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-group">
                 <label>Narration Font Size: {localSettings.narration_font_size}px
-                  <input type="range" name="narration_font_size" min="10" max="32" step="1" value={localSettings.narration_font_size} onChange={handleSliderChange} />
+                  <input type="range" name="narration_font_size" min="8" max="28" step="1" value={localSettings.narration_font_size} onChange={handleSliderChange} />
                 </label>
               </div>
               <div className="settings-actions">

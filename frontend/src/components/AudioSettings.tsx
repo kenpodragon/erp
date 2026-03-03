@@ -110,7 +110,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
           <input 
             type="range" 
             min="50" 
-            max="500" 
+            max="1000" 
             step="10"
             value={localSettings.narration_wpm} 
             onChange={(e) => setLocalSettings(p => ({...p, narration_wpm: parseInt(e.target.value)}))}
@@ -125,7 +125,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
           <input 
             type="range" 
             min="8" 
-            max="32" 
+            max="64" 
             step="1"
             value={localSettings.narration_font_size} 
             onChange={(e) => setLocalSettings(p => ({...p, narration_font_size: parseInt(e.target.value)}))}
@@ -150,27 +150,12 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({ settings, onUpdate
       </div>
 
       <div className="form-group">
-        <label>UI Interface Scale ({localSettings.ui_scale}x)</label>
-        <div className="slider-group">
-          <input 
-            type="range" 
-            min="0.5" 
-            max="2.0" 
-            step="0.1"
-            value={localSettings.ui_scale} 
-            onChange={(e) => setLocalSettings(p => ({...p, ui_scale: parseFloat(e.target.value)}))}
-            onMouseUp={(e: React.MouseEvent<HTMLInputElement>) => updateSetting('ui_scale', parseFloat((e.target as HTMLInputElement).value))}
-          />
-        </div>
-      </div>
-
-      <div className="form-group">
         <label>Game Combat Text Scale ({localSettings.game_text_scale}x)</label>
         <div className="slider-group">
           <input 
             type="range" 
             min="0.5" 
-            max="2.5" 
+            max="3.0" 
             step="0.1"
             value={localSettings.game_text_scale} 
             onChange={(e) => setLocalSettings(p => ({...p, game_text_scale: parseFloat(e.target.value)}))}

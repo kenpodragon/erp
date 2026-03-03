@@ -5,9 +5,9 @@
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
 - [x] **2.2 — Loop B: Story Mode / Clicker Combat (Active Play)** *(Ref: `docs/recs/2.2_STORY_MODE.md`)*        
-    - [x] **2.2.10 — Additional Tweaks**
-        - [ ] Combat text and UI scaling settings (test and validate - need to make sure they make sense and ramp appropriately) - maybe for debugging let me set numerical values and I'll find which is large enough for the upper limit and low enough for the lower limit, then use those as the ranges for the scroll mechanic (with the middle being the normal setting/default). Broken. 
-        - [ ] Boss story (locks story progression, right now when I complete a chapter, it's enabling BOTH the boss and next chapter first story. Need to make sure that the progression occurs as expected).
+    - [x] **2.2.10 — Additional Tweaks**       
+        - [ ] Boss story (doesn't lock story progression, right now when I complete a chapter, it's enabling BOTH the boss and next chapter first story. Need to make sure that the progression occurs as expected).
+        - [ ] Chapter boss needs to have a name (should be the chatper boss from that chatper). Also the click fast doesn't give enough time (the rest of the displays are ok timing). 
 
 
 - [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*

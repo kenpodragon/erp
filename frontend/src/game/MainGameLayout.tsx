@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import OverworldMap from './components/OverworldMap';
 import BottomAnimatedBanner from './components/BottomAnimatedBanner';
 import StoryMode from './components/StoryMode';
+import PostBattleSummary from './components/story/PostBattleSummary';
 import { GameProvider, useGame } from './GameContext';
 
 interface Player {
@@ -38,11 +39,37 @@ interface MainGameLayoutProps {
 }
 
 const GameContent: React.FC<MainGameLayoutProps> = (props) => {
-  const { state, exitScene } = useGame();
+  const { state, exitScene, setStorySession, setEssence } = useGame();
   // Align IDs with Sidebar.tsx: map, skills, home, shop, chat, board
   const [activeTab, setActiveTab] = useState<string>('map');
+  const [summaryData, setSummaryData] = useState<{ show: boolean; farmMode: boolean }>({ show: false, farmMode: false });
 
   const { player, character, onPlayerUpdate } = props;
+
+  const handleCloseSummary = async (continueFarming: boolean) => {
+    if (!state.storySession) return;
+    setSummaryData({ show: false, farmMode: continueFarming });
+    
+    if (continueFarming) {
+      // In StoryMode.tsx, this will be picked up via props or state sync
+      return;
+    }
+
+    try {
+      const { api } = await import('../api');
+      const res = await api.post(`/api/game/story/session/${state.storySession.sessionId}/complete`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.total_character_essence !== undefined) {
+          setEssence(data.total_character_essence);
+        }
+        onPlayerUpdate();
+        exitScene();
+      }
+    } catch (err) {
+      console.error('Failed to complete session', err);
+    }
+  };
 
   return (
     <div className={`game-layout ${state.activeSceneId ? 'game-layout--story-active' : ''}`}>
@@ -62,7 +89,11 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
           {state.activeSceneId ? (
             <StoryMode 
               player={player} 
-              onPlayerUpdate={onPlayerUpdate} 
+              onPlayerUpdate={onPlayerUpdate}
+              showSummaryExternal={summaryData.show}
+              onShowSummaryChange={(val) => setSummaryData(prev => ({ ...prev, show: val }))}
+              externalFarmMode={summaryData.farmMode}
+              onFarmModeChange={(val) => setSummaryData(prev => ({ ...prev, farmMode: val }))}
             />
           ) : (
             <>
@@ -97,6 +128,15 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Global Summary Modal — Rendered at the root to avoid jumping */}
+      {summaryData.show && state.storySession && (
+        <PostBattleSummary
+          session={state.storySession}
+          onContinue={() => handleCloseSummary(true)}
+          onReturnToHub={() => handleCloseSummary(false)}
+        />
       )}
     </div>
   );
