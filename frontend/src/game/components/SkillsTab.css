@@ -1,0 +1,388 @@
+.skills-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: #00ff41; /* Phosphor Green */
+  font-family: 'Courier New', Courier, monospace;
+  background: #0a0a0a;
+  padding: 20px;
+  overflow: hidden;
+  border: 1px solid #004411;
+  position: relative;
+}
+
+.skills-tab-container::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+.skills-header {
+  border-bottom: 2px solid #00ff41;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skills-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+.essence-status {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.essence-bar-container {
+  width: 200px;
+  height: 10px;
+  border: 1px solid #004411;
+  margin-top: 5px;
+  position: relative;
+  background: #001100;
+}
+
+.essence-bar-fill {
+  height: 100%;
+  background: #00ff41;
+  transition: width 0.3s ease;
+}
+
+.skills-main-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Panel 1: Skill List */
+.skill-list-panel {
+  border-right: 1px solid #004411;
+  padding-right: 15px;
+  overflow-y: auto;
+}
+
+.skill-card {
+  padding: 10px;
+  border: 1px solid #004411;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(0, 20, 0, 0.3);
+  position: relative;
+}
+
+.skill-card:hover {
+  border-color: #00ff41;
+  background: rgba(0, 40, 0, 0.5);
+}
+
+.skill-card.active {
+  border: 1px solid #00ff41;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+  background: rgba(0, 60, 0, 0.6);
+}
+
+.skill-card.training::after {
+  content: "[TRAINING]";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 0.6rem;
+  background: #00ff41;
+  color: #000;
+  padding: 1px 3px;
+}
+
+.skill-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.skill-name {
+  font-weight: bold;
+}
+
+.skill-level {
+  font-size: 0.8rem;
+}
+
+.mini-xp-bar {
+  height: 4px;
+  background: #001100;
+  border: 1px solid #004411;
+}
+
+.mini-xp-fill {
+  height: 100%;
+  background: #00ff41;
+}
+
+/* Panel 2: Skill Detail */
+.skill-detail-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-header {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #004411;
+  background: rgba(0, 20, 0, 0.3);
+}
+
+.detail-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.detail-flavor-title {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  letter-spacing: 3px;
+  margin-bottom: 5px;
+}
+
+.detail-skill-name {
+  font-size: 2rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.detail-xp-info {
+  margin-bottom: 10px;
+}
+
+.large-xp-bar-container {
+  height: 24px;
+  border: 1px solid #00ff41;
+  background: #001100;
+  position: relative;
+  margin: 10px 0;
+}
+
+.large-xp-bar-fill {
+  height: 100%;
+  background: rgba(0, 255, 65, 0.8);
+  transition: width 0.5s ease-out;
+}
+
+.xp-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 3px;
+  font-size: 0.8rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+  z-index: 1;
+}
+
+/* Panel 3: Action Table */
+.action-table-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #004411;
+}
+
+.action-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.action-table th {
+  text-align: left;
+  padding: 10px;
+  background: #002200;
+  border-bottom: 1px solid #004411;
+  font-size: 0.8rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.action-row {
+  border-bottom: 1px solid #001100;
+  transition: background 0.2s;
+}
+
+.action-row:hover:not(.locked) {
+  background: rgba(0, 40, 0, 0.4);
+}
+
+.action-row.active {
+  background: rgba(0, 255, 65, 0.1);
+  border-left: 3px solid #00ff41;
+}
+
+.action-row.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-row td {
+  padding: 12px 10px;
+  font-size: 0.9rem;
+}
+
+.action-name-cell {
+  font-weight: bold;
+}
+
+.action-interval-cell, .action-xp-cell {
+  font-family: 'Courier New', monospace;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #00ff41;
+  color: #000;
+}
+
+.action-btn:disabled {
+  border-color: #004411;
+  color: #004411;
+  cursor: not-allowed;
+}
+
+.action-btn.stop-btn {
+  border-color: #ff3333;
+  color: #ff3333;
+}
+
+.action-btn.stop-btn:hover {
+  background: #ff3333;
+  color: #000;
+}
+
+/* Active Mode Button */
+.active-mode-button-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.active-mode-btn {
+  background: #00ff41;
+  color: #000;
+  border: none;
+  padding: 12px 30px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.active-mode-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+}
+
+.active-mode-btn:active {
+  transform: scale(0.98);
+}
+
+.active-mode-btn:disabled {
+  background: #004411;
+  color: #001100;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Offline Report Modal */
+.report-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Courier New', monospace;
+}
+
+.report-modal {
+  width: 600px;
+  max-width: 90%;
+  border: 2px solid #00ff41;
+  background: #050505;
+  padding: 30px;
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+}
+
+.report-header {
+  border-bottom: 1px solid #00ff41;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.report-body {
+  line-height: 1.6;
+}
+
+.report-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #002200;
+}
+
+.report-stat-label { opacity: 0.7; }
+.report-stat-value { font-weight: bold; }
+
+.report-footer {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.close-report-btn {
+  background: transparent;
+  border: 1px solid #00ff41;
+  color: #00ff41;
+  padding: 10px 40px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.close-report-btn:hover {
+  background: #00ff41;
+  color: #000;
+}
+
+.unlocked-action-tag {
+  color: #ffff00;
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}

@@ -39,6 +39,29 @@
   border-color: #aa8800;
 }
 
+.skill-slot--hard-locked {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  background: #000;
+  border-color: #440000 !important;
+}
+
+.skill-gate-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #440000;
+  color: #ff0000;
+  font-size: 8px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
 .skill-slot--ready {
   border-color: #6666cc;
   box-shadow: 0 0 6px rgba(100, 100, 255, 0.25);

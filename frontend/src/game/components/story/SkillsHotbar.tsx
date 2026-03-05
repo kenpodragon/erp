@@ -63,6 +63,13 @@ const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs }) => {
   const MAX_CD_REDUCTION = Number(gameConfigs['max_cd_reduction'] ?? 0.7);
   const BASE_UNLOCK_COST = Number(gameConfigs['base_skill_unlock_cost'] ?? 50.0);
 
+  // Magic gates as per 2.3 spec §7
+  const MAGIC_GATES: Record<string, number> = {
+    'Clickstorm': 5, 'Powersurge': 10, 'Lucky Strikes': 18,
+    'Metal Detect': 25, 'Golden Clicks': 35, 'Super Clicks': 45,
+    'Energize': 58, 'Reload': 72, 'Dark Ritual': 87
+  };
+
   const [skillStates, setSkillStates] = useState<Record<number, SkillState>>(() =>
     Object.fromEntries(HOTBAR_SKILLS.map(s => [s.id, { level: 0, unlocked: false, cdEndsAt: 0, buffEndsAt: 0 }]))
   );
@@ -88,6 +95,10 @@ const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs }) => {
 
   // ── Unlock skill (purchase with gold) ──────────────────────────────────
   const handleUnlock = useCallback(async (skill: SkillDef) => {
+    const magicLvl = session.idle_bonuses?.magic_lvl ?? 1;
+    const requiredMagic = MAGIC_GATES[skill.name];
+    if (requiredMagic && magicLvl < requiredMagic) return;
+
     const cost = getUnlockCost(skill);
     if (session.sessionGold < cost) return;
 
@@ -173,15 +184,23 @@ const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs }) => {
         const cdProgress = onCd ? Math.max(0, (state.cdEndsAt - now) / getEffectiveCd(skill, state.level)) : 0;
         const buffProgress = now < state.buffEndsAt ? Math.max(0, (state.buffEndsAt - now) / ((skill.benefits.duration_seconds || 1) * 1000)) : 0;
 
+        const magicLvl = session.idle_bonuses?.magic_lvl ?? 1;
+        const requiredMagic = MAGIC_GATES[skill.name];
+        const isMagicLocked = !state.unlocked && requiredMagic && magicLvl < requiredMagic;
+
         return (
           <div
             key={skill.id}
-            className={`skill-slot ${state.unlocked ? '' : 'skill-slot--locked'} ${onCd ? 'skill-slot--active' : ''} ${onGcd && state.unlocked && !onCd ? 'skill-slot--gcd' : ''}`}
+            className={`skill-slot ${state.unlocked ? '' : 'skill-slot--locked'} ${isMagicLocked ? 'skill-slot--hard-locked' : ''} ${onCd ? 'skill-slot--active' : ''} ${onGcd && state.unlocked && !onCd ? 'skill-slot--gcd' : ''}`}
             onClick={() => state.unlocked ? handleActivate(skill) : handleUnlock(skill)}
-            title={state.unlocked ? `${skill.name}: ${skill.description}` : `Unlock: ${getUnlockCost(skill)} gold`}
+            title={state.unlocked ? `${skill.name}: ${skill.description}` : isMagicLocked ? `Requires Magic Level ${requiredMagic}` : `Unlock: ${getUnlockCost(skill)} gold`}
           >
             <span className="skill-short">{skill.shortLabel}</span>
             <span className="skill-name">{skill.name}</span>
+
+            {isMagicLocked && (
+              <span className="skill-gate-label">MAG {requiredMagic}</span>
+            )}
 
             {state.unlocked && onCd && (
               <div className="skill-cd-overlay" style={{ height: `${cdProgress * 100}%` }} />

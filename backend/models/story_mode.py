@@ -88,6 +88,15 @@ class CharacterSkillLevel(SQLModel, table=True):
     skill_id: int = Field(foreign_key="skills.id", nullable=False)
     level: int = Field(default=1)
     current_xp: float = Field(default=0)
+    
+    # 2.3 Idle Training state
+    active_action_id: Optional[int] = Field(default=None, foreign_key="skill_actions.id")
+    action_started_at: Optional[datetime] = Field(default=None)
+    is_active_training: bool = Field(default=False)
+    is_in_active_mode: bool = Field(default=False)
+    active_mode_started_at: Optional[datetime] = Field(default=None)
+    last_offline_calc_at: Optional[datetime] = Field(default=None)
+    
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

@@ -486,3 +486,9 @@ backend/uploads/
 # Test SQLite databases (in-memory now, but ignore any file-based stragglers)
 backend/test*.db
 backend/*.db
+\
+# AI and Project Tooling
+.claude/
+.contextstream/
+.gemini/
+.github/\

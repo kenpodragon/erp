@@ -51,6 +51,18 @@ export interface StorySession {
   bossName?: string;
   bossConfig: BossConfig | null;
   isReplay: boolean;
+  idle_bonuses?: {
+    attack_lvl: number;
+    magic_lvl: number;
+    lore_lvl: number;
+    precision_lvl: number;
+    click_damage_floor: number;
+    auto_dps_multiplier: number;
+    gate_reduction_pct: number;
+    essence_multiplier: number;
+    crit_chance_bonus: number;
+    crit_multiplier_total: number;
+  };
 }
 
 // ── Overall game state ────────────────────────────────────────────────────────

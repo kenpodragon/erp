@@ -118,6 +118,37 @@ def _get_character(session: Session, player_id: int) -> PlayerCharacter:
     return char
 
 
+def _get_idle_training_bonuses(session: Session, character_id: int) -> dict:
+    """Calculate permanent bonuses from Idle Training levels."""
+    rows = session.exec(
+        select(CharacterSkillLevel).where(CharacterSkillLevel.character_id == character_id)
+    ).all()
+    
+    levels = {row.skill_id: row.level for row in rows}
+    
+    # We need the skill IDs for Attack, Magic, Lore, Precision
+    all_skills = session.exec(select(Skill)).all()
+    skill_map = {s.name: s.id for s in all_skills}
+    
+    attack_lvl = levels.get(skill_map.get('Attack'), 1)
+    magic_lvl = levels.get(skill_map.get('Magic'), 1)
+    lore_lvl = levels.get(skill_map.get('Lore'), 1)
+    precision_lvl = levels.get(skill_map.get('Precision'), 1)
+    
+    return {
+        'attack_lvl': attack_lvl,
+        'magic_lvl': magic_lvl,
+        'lore_lvl': lore_lvl,
+        'precision_lvl': precision_lvl,
+        'click_damage_floor': attack_lvl // 2,
+        'auto_dps_multiplier': 1.0 + (magic_lvl * 0.01),
+        'gate_reduction_pct': min(lore_lvl * 0.003, 0.25),
+        'essence_multiplier': 1.0 + (lore_lvl * 0.008),
+        'crit_chance_bonus': precision_lvl * 0.001,
+        'crit_multiplier_total': 2.0 + (precision_lvl * 0.01),
+    }
+
+
 def _calc_auto_dps(session: Session, character_id: int) -> float:
     """
     Sum auto_dps_base contributions from all character skill levels.
@@ -593,6 +624,8 @@ async def start_session(
 
     auto_dps = _calc_auto_dps(session, char.id)
     strength = char.strength or (char.character_class.base_strength if char.character_class else DEFAULT_CLICK_STRENGTH)
+    
+    idle_bonuses = _get_idle_training_bonuses(session, char.id)
 
     all_upgrades = session.exec(
         select(SessionUpgrade).where(SessionUpgrade.session_id == new_session.id)
@@ -628,6 +661,8 @@ async def start_session(
         "auto_dps_multiplier": round(auto_mult, 4),
         "click_upgrade_level": click_lvl,
         "auto_upgrade_level": auto_lvl,
+        # Idle Training Bonuses (Loop C)
+        "idle_bonuses": idle_bonuses,
         # Boss session fields
         "is_boss_session": is_boss_session,
         "boss_type": scene.scene_type if is_boss_session else None,
@@ -678,6 +713,8 @@ async def get_session_state(
     bosses_defeated = story_session.current_zone // 10
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
+    idle_bonuses = _get_idle_training_bonuses(session, char.id)
+
     return {
         **story_session.model_dump(),
         "upgrades": [u.model_dump() for u in upgrades],
@@ -688,6 +725,7 @@ async def get_session_state(
         "auto_upgrade_level": auto_lvl,
         "essence_earned": round(essence_earned, 2),
         "converted_essence": round(converted_essence, 2),
+        "idle_bonuses": idle_bonuses,
     }
 
 
@@ -765,6 +803,34 @@ async def purchase_upgrade(
 
     if body.upgrade_type not in UPGRADE_BASE_COSTS:
         raise HTTPException(status_code=400, detail=f"Unknown upgrade_type: {body.upgrade_type}")
+
+    # Enforce Magic level gates for hotbar skills
+    if body.upgrade_type == "skill_unlock" and body.target_id:
+        skill = session.get(Skill, body.target_id)
+        if skill and skill.category == "hotbar":
+            # Map of Magic level gates (hardcoded as per 2.3 spec §7)
+            # This could be moved to game_configs later.
+            magic_gates = {
+                "Clickstorm": 5, "Powersurge": 10, "Lucky Strikes": 18,
+                "Metal Detector": 25, "Golden Clicks": 35, "Super Clicks": 45,
+                "Energize": 58, "Reload": 72, "The Dark Ritual": 87
+            }
+            required_lvl = magic_gates.get(skill.name)
+            if required_lvl:
+                char = _get_character(session, player.id)
+                magic_skill = session.exec(select(Skill).where(Skill.name == "Magic")).first()
+                if magic_skill:
+                    char_skill = session.exec(
+                        select(CharacterSkillLevel)
+                        .where(CharacterSkillLevel.character_id == char.id)
+                        .where(CharacterSkillLevel.skill_id == magic_skill.id)
+                    ).first()
+                    current_magic_lvl = char_skill.level if char_skill else 1
+                    if current_magic_lvl < required_lvl:
+                        raise HTTPException(
+                            status_code=403, 
+                            detail=f"Magic level {required_lvl} required to unlock {skill.name}"
+                        )
 
     upgrade = session.exec(
         select(SessionUpgrade)
@@ -1031,6 +1097,12 @@ async def complete_session(
     # Existing essence_earned (legacy meta-progression logic)
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
+    # --- NEW: Apply Lore Essence Multiplier (Loop C) ---
+    idle_bonuses = _get_idle_training_bonuses(session, char.id)
+    essence_mult = idle_bonuses.get('essence_multiplier', 1.0)
+    essence_earned *= essence_mult
+    converted_essence *= essence_mult
+
     # Update PlayerMetaProgression (Elysium Essence)
     meta = session.get(PlayerMetaProgression, player.id)
     if not meta:
@@ -1063,6 +1135,14 @@ async def complete_session(
     # Narrative AND minimum waves must be cleared
     both_complete = (story_session.current_zone >= required_waves and
                      story_session.narrative_progress_pct >= 100.0)
+    
+    # --- NEW: Check for skill unlocks (Loop C) ---
+    unlocked_skills = []
+    if both_complete and scene:
+        newly_unlocked = session.exec(
+            select(Skill).where(Skill.unlock_scene_id == scene.id)
+        ).all()
+        unlocked_skills = [s.name for s in newly_unlocked]
 
     if both_complete and progress and scene:
         # Check if this was the current 'active' progress level
@@ -1129,6 +1209,8 @@ async def complete_session(
         "progress_advanced": both_complete,
         "total_essence": round(meta.elysium_essence, 2),
         "total_character_essence": round(char_essence.current_balance, 2),
+        "unlocked_skills": unlocked_skills,
+        "idle_bonuses": idle_bonuses,
     }
 
 

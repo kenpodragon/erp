@@ -36,6 +36,10 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `019` | Game Configs Expansion | Moved hardcoded combat/upgrade constants (`monsters_per_zone`, `boss_zone_interval`, `crit_chance`, `auto_dps_tick_ms`, `gcd_ms`, `upgrade_cost_scaling`, `cd_reduction_per_level`, `max_cd_reduction`, `base_click_upgrade_cost`, `base_auto_dps_upgrade_cost`, `base_skill_unlock_cost`, `base_skill_level_upgrade_cost`, `milestone_interval`, `milestone_start`, `click_dmg_mult_per_level`, `auto_dps_mult_per_level`) to `game_configs`. |
 | `020` | Fix Meta Progression Timestamp | Renamed `last_updated_at` to `updated_at` in `player_meta_progression` to align with the shared `update_timestamp_column` trigger. |
 | `021` | Boss Interstitials | Added `scene_type TEXT DEFAULT 'normal'` and `boss_config JSONB` to `scenes`. Added `transition_lore_text TEXT` to `chapters` and `books`. Created `boss_completions` table for tracking first-clear boss defeats (one per player per scene). Seeded one `chapter_boss` scene per chapter and one `book_boss` scene per book with tunable `boss_config`. Seeded placeholder `transition_lore_text` for chapters 1-2 and book 1. |
+| `023` | Gold Conversion | Added `gold_conversion_config` to `game_configs`. |
+| `024` | Idle Training Schema | Created `skill_actions`. Added idle training state to `character_skill_levels`. Added `unlock_scene_id` and flavor text to `skills`. Added 8 idle training `game_configs`. |
+| `025` | Idle Training Seeds | Seeded 34 sub-actions across Attack, Magic, Lore, and Precision. Configured narrative unlock gates. |
+| `026` | Add updated_at to skills | Added missing `updated_at` column to `skills` table to match ORM model. |
 
 ---
 
@@ -107,10 +111,11 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `player_story_sessions` | Active combat session state, including zone/wave/gold progress and `narrative_progress_pct` (WPM-based, 0–100). |
 | `session_upgrades` | Temporary upgrades (click_dmg, auto_dps, skill_unlock) purchased with gold during a Story Mode run. |
 | `player_meta_progression` | Permanent currency (Elysium Essence) earned from active play. |
-| `game_configs` | **Game-specific tuning** (scaling factors, caps, rates). Distinct from `server_config` (see §8). Managed via admin panel and seeded in migrations. |
+| `game_configs` | **Game-specific tuning** (scaling factors, caps, rates, idle training tuning). Distinct from `server_config` (see §8). Managed via admin panel and seeded in migrations. |
 | `scene_audio_sync` | Mapping of audio timestamps to text/PNG assets for future Eleven Reader integration (currently unused). |
-| `character_skill_levels` | Per-character skill XP and level, bridging Story Mode (auto-DPS calculation) and Idle Training (2.3). Defaults to level 1 if no record exists. |
+| `character_skill_levels` | Per-character skill XP and level, bridging Story Mode (auto-DPS calculation) and Idle Training (2.3). Tracks active idle training state (`is_active_training`, `active_action_id`, `last_offline_calc_at`). Defaults to level 1 if no record exists. |
 | `dev_content_audit` | Auto-logged entries for missing enemy sprites, stats, or entities detected during combat session start. Used by the content pipeline to prioritize missing assets. |
+| `skill_actions` | Catalog of trainable sub-actions within each idle skill. Includes level requirement, base interval, XP reward, and lore flavor text. |
 
 ### 8. Support & Administration
 

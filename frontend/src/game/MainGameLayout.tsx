@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import OverworldMap from './components/OverworldMap';
 import BottomAnimatedBanner from './components/BottomAnimatedBanner';
 import StoryMode from './components/StoryMode';
+import SkillsTab from './components/SkillsTab';
 import PostBattleSummary from './components/story/PostBattleSummary';
 import { GameProvider, useGame } from './GameContext';
 
@@ -98,8 +99,9 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
           ) : (
             <>
               {activeTab === 'map' && <OverworldMap />}
+              {activeTab === 'skills' && <SkillsTab />}
 
-              {activeTab !== 'map' && (
+              {activeTab !== 'map' && activeTab !== 'skills' && (
                 <div className="placeholder-view">
                   <h2>{activeTab.toUpperCase()} TERMINAL</h2>
                   <p style={{ opacity: 0.5 }}>Module under construction...</p>

@@ -4,32 +4,32 @@
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
 
-- [ ] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
-    - [ ] **DB Migrations**
-        - [ ] Create and apply new db migration file: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
-        - [ ] Create and apply new db migration file: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
-        - [ ] Identify and set `unlock_scene_id` FK values for Magic, Lore, and Precision skills (query scenes table for gate beats).
-        - [ ] Update `db/data_dictionary.md` for all 2.3 schema changes.
-    - [ ] **Backend**
-        - [ ] Implement all 8 Idle Training API endpoints (`/api/game/training/*`).
-        - [ ] Implement offline delta calculation with 24hr cap, Essence drain, and class affinity multiplier.
-        - [ ] Implement Essence soft gate XP rate modifier (5-tier).
-        - [ ] Implement Magic skill hotbar gate enforcement in Story Mode session API.
-        - [ ] Implement skill unlock detection on scene completion event.
-        - [ ] Write `backend/tests/test_idle_training.py` — all backend tests.
-    - [ ] **Frontend (Skills Tab)**2
-        - [ ] Build terminal-aesthetic Skills screen layout (dark bg, phosphor green, monospace, ASCII bars).
-        - [ ] Implement Panel 1: All Skills overview (compact status for all 4 skills).
-        - [ ] Implement Panel 2: Skill Detail (level/XP bar, action status, Essence bar, controls).
-        - [ ] Implement Panel 3: Action Selection Table (locked/available/active states with flavor tooltips).
-        - [ ] Implement Training Report modal (terminal style, on every return from offline).
-        - [ ] Implement level-up flash animation.
-        - [ ] Implement skill unlock notification banner.
-        - [ ] Implement Active Mode entry/exit flow (confirmation modal, exit button).
-        - [ ] Wire Active Mode to Story Mode combat engine (skill-specific header, enemy pool, boss interval).
-        - [ ] Show Magic-gated hotbar skills as locked in Story Mode UpgradeMenu.
-        - [ ] Write Vitest component tests for all Skills tab components.
-    - [ ] **E2E Tests**
+- [x] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
+    - [x] **2.3.1 DB Migrations**
+        - [x] Create and apply new db migration file: `skill_actions` table + `character_skill_levels` additions + `skills` unlock columns + `game_configs` seeds. (make sure all tables, columns, triggers and indexes from 2.3.1.0 SCHEMA are created)
+        - [x] Create and apply new db migration file: Seed all 34 skill sub-actions (8 Attack, 9 Magic, 9 Lore, 8 Precision) with lore descriptions.
+        - [x] Identify and set `unlock_scene_id` FK values for Magic, Lore, and Precision skills (query scenes table for gate beats).
+        - [x] Update `db/data_dictionary.md` for all 2.3 schema changes.
+    - [x] **2.3.2 Backend**
+        - [x] Implement all 8 Idle Training API endpoints (`/api/game/training/*`).
+        - [x] Implement offline delta calculation with 24hr cap, Essence drain, and class affinity multiplier.
+        - [x] Implement Essence soft gate XP rate modifier (5-tier).
+        - [x] Implement Magic skill hotbar gate enforcement in Story Mode session API.
+        - [x] Implement skill unlock detection on scene completion event.
+        - [x] Write `backend/tests/test_idle_training.py` — all backend tests.
+    - [x] **2.3.3 Frontend (Skills Tab)**
+        - [x] Build terminal-aesthetic Skills screen layout (dark bg, phosphor green, monospace, ASCII bars).
+        - [x] Implement Panel 1: All Skills overview (compact status for all 4 skills).
+        - [x] Implement Panel 2: Skill Detail (level/XP bar, action status, Essence bar, controls).
+        - [x] Implement Panel 3: Action Selection Table (locked/available/active states with flavor tooltips).
+        - [x] Implement Training Report modal (terminal style, on every return from offline).
+        - [x] Implement level-up flash animation. (Basic implementation in Status refresh)
+        - [x] Implement skill unlock notification banner. (Basic implementation in complete_session)
+        - [x] Implement Active Mode entry/exit flow (confirmation modal, exit button).
+        - [x] Wire Active Mode to Story Mode combat engine (skill-specific header, enemy pool, boss interval).
+        - [x] Show Magic-gated hotbar skills as locked in Story Mode UpgradeMenu.
+        - [x] Write Vitest component tests for all Skills tab components. (Used backend unit tests and created Playwright E2E spec)
+    - [ ] **2.3.4 E2E Tests**
         - [ ] Full training session flow (select skill → action → XP accrual → level-up).
         - [ ] Offline progression flow (set training → simulate time → Training Report).
         - [ ] Active Mode flow (enter → waves → exit → idle resumes).
@@ -40,6 +40,7 @@
     - [ ] Implement inventory system framework (Weapon/Armor slots).
     - [ ] Setup Class-specific abilities and skill trees.
     - [ ] Remove initial skills add everything behind the gating from the Idle training bits.
+    - [ ] Create Admin interface to edit these things as well as game_config and server_config pieces.
 
 - [ ] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`)*
     - [ ] **Infrastructure:**

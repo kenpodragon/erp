@@ -102,4 +102,29 @@ class Skill(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
     benefits_json: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     xp_curve_type: str = Field(default="standard", max_length=50)
+
+    # 2.3 Idle Training columns
+    unlock_scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
+    unlock_display_text: Optional[str] = Field(default=None)
+    idle_flavor_title: Optional[str] = Field(default=None, max_length=100)
+
     created_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
+
+
+class SkillAction(SQLModel, table=True):
+    """Maps to the `skill_actions` table. Individual trainable actions for a skill."""
+    __tablename__ = "skill_actions"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    skill_id: int = Field(foreign_key="skills.id", nullable=False)
+    name: str = Field(max_length=100, nullable=False)
+    display_name: str = Field(max_length=150, nullable=False)
+    lore_description: str = Field(nullable=False)
+    level_required: int = Field(default=1)
+    interval_ms: int = Field(default=3000)
+    xp_per_action: int = Field(default=10)
+    sort_order: int = Field(default=0)
+
+    created_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)

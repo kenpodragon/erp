@@ -11,7 +11,7 @@ from models.support import SupportTicket, SupportReply, SupportAttachment
 from models.narrative import Book, Chapter, Scene, StoryBeat, Location
 from models.gameplay import (
     SceneGameplayData, Entity, EntityGameplayData,
-    Skill, StatDefinition, BenefitEffectData,
+    Skill, SkillAction, StatDefinition, BenefitEffectData,
 )
 from models.inventory import InventoryItem, PlayerInventory, Artifact, PlayerCollection
 from models.admin import (
@@ -30,7 +30,7 @@ __all__ = [
     "SupportTicket", "SupportReply", "SupportAttachment",
     "Book", "Chapter", "Scene", "StoryBeat", "Location",
     "SceneGameplayData", "Entity", "EntityGameplayData",
-    "Skill", "StatDefinition", "BenefitEffectData",
+    "Skill", "SkillAction", "StatDefinition", "BenefitEffectData",
     "InventoryItem", "PlayerInventory", "Artifact", "PlayerCollection",
     "ServerConfig", "AdminAuditLog", "ActivityEvent",
     "AdminWhitelistEmail", "AdminWhitelistIP",
