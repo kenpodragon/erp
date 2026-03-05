@@ -9,7 +9,7 @@ from sqlmodel import Session, select, text
 
 from db import get_session
 from auth import get_current_player
-from models import PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence, BossCompletion
+from models import PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence, PlayerMetaProgression, BossCompletion
 from utils import is_profane
 from events import log_activity_event
 
@@ -111,11 +111,25 @@ async def create_character(
         updated_at=now,
     )
     session.add(essence)
+
+    # Initialize or fetch meta-progression
+    meta = session.get(PlayerMetaProgression, player.id)
+    if not meta:
+        meta = PlayerMetaProgression(
+            player_id=player.id,
+            elysium_essence=0,
+            total_essence_earned=0,
+            spent_essence=0,
+            updated_at=now
+        )
+        session.add(meta)
+
     session.commit()
     session.refresh(progress)
     session.refresh(essence)
     session.refresh(character)
     session.refresh(char_class)
+    if meta: session.refresh(meta)
 
     log_activity_event(request, player.id, "character_created", {
         "character_id": character.id,
@@ -128,6 +142,7 @@ async def create_character(
         "character": {**jsonable_encoder(character), "class": jsonable_encoder(char_class)},
         "progress": jsonable_encoder(progress),
         "essence": jsonable_encoder(essence),
+        "elysium_essence": meta.elysium_essence if meta else 0
     }
 
 
@@ -145,6 +160,7 @@ async def list_characters(
         raise HTTPException(status_code=404, detail="Player profile not found")
 
     characters = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()
+    
     result = []
     for char in characters:
         char_class = session.get(CharacterClass, char.class_id)

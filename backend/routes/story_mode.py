@@ -1103,19 +1103,21 @@ async def complete_session(
     essence_earned *= essence_mult
     converted_essence *= essence_mult
 
-    # Update PlayerMetaProgression (Elysium Essence)
+    # Update PlayerMetaProgression (Elysium Essence - Global pool)
     meta = session.get(PlayerMetaProgression, player.id)
     if not meta:
         meta = PlayerMetaProgression(
             player_id=player.id,
             elysium_essence=0, total_essence_earned=0, spent_essence=0,
         )
-    meta.elysium_essence += essence_earned
-    meta.total_essence_earned += essence_earned
+    
+    total_gained = essence_earned + converted_essence
+    meta.elysium_essence += total_gained
+    meta.total_essence_earned += total_gained
     meta.updated_at = datetime.now(timezone.utc)
     session.add(meta)
 
-    # Update PlayerEssence (Character-specific for Idle Training)
+    # Update PlayerEssence (Character-specific for Idle Training stability)
     char_essence = session.exec(
         select(PlayerEssence).where(PlayerEssence.character_id == char.id)
     ).first()
@@ -1128,7 +1130,7 @@ async def complete_session(
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc)
         )
-    char_essence.current_balance += converted_essence
+    char_essence.current_balance += total_gained
     char_essence.updated_at = datetime.now(timezone.utc)
     session.add(char_essence)
 
@@ -1212,8 +1214,6 @@ async def complete_session(
         "unlocked_skills": unlocked_skills,
         "idle_bonuses": idle_bonuses,
     }
-
-
 # ---------------------------------------------------------------------------
 # Boss Transition Lore Endpoints
 # ---------------------------------------------------------------------------

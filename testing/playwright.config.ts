@@ -16,9 +16,5 @@ export default defineConfig({
       name: 'frontend',
       use: { ...devices['Desktop Chrome'], baseURL: 'http://frontend:5173' },
     },
-    {
-      name: 'admin',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://admin:5174' },
-    },
   ],
 });

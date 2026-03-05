@@ -39,6 +39,8 @@ interface SkillStatus {
 interface TrainingStatusResponse {
   essence_pct: number;
   essence_balance: number;
+  essence_capacity: number;
+  essence_drain_per_minute: number;
   xp_rate_modifier: number;
   skills: SkillStatus[];
 }
@@ -60,6 +62,13 @@ interface OfflineReport {
   new_essence_pct: number;
   training_rate_status: number;
 }
+
+const SKILL_DESCRIPTIONS: Record<string, string> = {
+  'Attack': 'Increases base click damage floor.',
+  'Magic': 'Increases auto-DPS multiplier and gates hotbar skill unlocks.',
+  'Lore': 'Reduces narrative time gates and increases Essence gain.',
+  'Precision': 'Increases critical hit chance and multiplier.'
+};
 
 const SkillsTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -177,6 +186,23 @@ const SkillsTab: React.FC = () => {
   const selectedSkill = status.skills.find(s => s.skill_id === selectedSkillId);
   const trainingSkill = status.skills.find(s => s.is_active_training);
 
+  const getEssenceTooltip = () => {
+    if (!status) return '';
+    const balance = Math.floor(status.essence_balance);
+    const cap = status.essence_capacity;
+    const drain = status.essence_drain_per_minute;
+    
+    const totalMinutes = balance / drain;
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = Math.floor(totalMinutes % 60);
+    
+    let timeStr = 'EMPTY';
+    if (hours > 0) timeStr = `${hours}h ${mins}m`;
+    else if (mins > 0) timeStr = `${mins}m`;
+    
+    return `Balance: ${balance.toLocaleString()} / ${cap.toLocaleString()}\nEst. Time Remaining: ${timeStr}`;
+  };
+
   return (
     <div className="skills-tab-container">
       {/* Header with Essence status */}
@@ -185,7 +211,7 @@ const SkillsTab: React.FC = () => {
           <h1>SKILLS & CALIBRATION</h1>
           <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>USER: ASPOLIN // SUBSYSTEM: PROGRESSION_v2.3</div>
         </div>
-        <div className="essence-status">
+        <div className="essence-status" title={getEssenceTooltip()}>
           <div>ESSENCE STABILITY: {(status.essence_pct * 100).toFixed(1)}%</div>
           <div className="essence-bar-container">
             <div 
@@ -197,7 +223,7 @@ const SkillsTab: React.FC = () => {
             />
           </div>
           <div style={{ fontSize: '0.7rem', marginTop: '5px' }}>
-            XP RATE: {(status.xp_rate_modifier * 100).toFixed(0)}% (DRAIN: 1/min)
+            XP RATE: {(status.xp_rate_modifier * 100).toFixed(0)}% (DRAIN: {status.essence_drain_per_minute}/min)
           </div>
         </div>
       </div>
@@ -210,6 +236,7 @@ const SkillsTab: React.FC = () => {
               key={skill.skill_id}
               className={`skill-card ${selectedSkillId === skill.skill_id ? 'active' : ''} ${skill.is_active_training ? 'training' : ''} ${!skill.is_unlocked ? 'locked' : ''}`}
               onClick={() => skill.is_unlocked && setSelectedSkillId(skill.skill_id)}
+              title={!skill.is_unlocked ? skill.unlock_display_text || 'Locked' : ''}
             >
               <div className="skill-card-header">
                 <span className="skill-name">{skill.skill_name}</span>
@@ -238,6 +265,9 @@ const SkillsTab: React.FC = () => {
                   <div>
                     <div className="detail-flavor-title">{selectedSkill.flavor_title}</div>
                     <h2 className="detail-skill-name">{selectedSkill.skill_name}</h2>
+                    <div className="detail-skill-description" style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '2px', fontStyle: 'italic' }}>
+                      {SKILL_DESCRIPTIONS[selectedSkill.skill_name] || ''}
+                    </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '1.2rem' }}>LEVEL {selectedSkill.level}</div>
@@ -281,7 +311,11 @@ const SkillsTab: React.FC = () => {
                       const isActive = selectedSkill.active_action?.id === action.id;
                       
                       return (
-                        <tr key={action.id} className={`action-row ${isLocked ? 'locked' : ''} ${isActive ? 'active' : ''}`}>
+                        <tr 
+                          key={action.id} 
+                          className={`action-row ${isLocked ? 'locked' : ''} ${isActive ? 'active' : ''}`}
+                          title={isLocked ? `Requires ${selectedSkill.skill_name} level ${action.level_required}` : ''}
+                        >
                           <td className="action-name-cell">
                             {action.display_name}
                             <div style={{ fontSize: '0.65rem', fontWeight: 'normal', marginTop: '4px', opacity: 0.8 }}>

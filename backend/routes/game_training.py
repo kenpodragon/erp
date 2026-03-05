@@ -1,6 +1,6 @@
 import math
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ from db import get_session
 from auth import get_current_player
 from models import (
     PlayerCharacter, CharacterClass, Skill, SkillAction, 
-    CharacterSkillLevel, PlayerEssence, GameConfig
+    CharacterSkillLevel, PlayerEssence, GameConfig, PlayerMetaProgression
 )
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
@@ -91,14 +91,12 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
 
     # Essence calculation
     essence_rec = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == character.id)).first()
+    essence_cap = get_config_val(session, 'idle_essence_capacity', 1000)
+    
     if not essence_rec:
         essence_pct = 1.0
-        essence_cap = 1000 # Fallback
     else:
-        # Use a high default cap for the soft-gate calculation
-        # This can be moved to game_configs or character stats later
-        essence_cap = 10000 
-        essence_pct = essence_rec.current_balance / essence_cap if essence_cap > 0 else 0
+        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
 
     essence_rate = get_essence_xp_rate(session, essence_pct)
 
@@ -117,11 +115,14 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     drain_per_min = get_config_val(session, 'idle_essence_drain_per_minute', 1)
     essence_drained = int((capped_seconds / 60) * drain_per_min)
     if essence_rec:
+        # Drain from character balance
         essence_rec.current_balance = max(0, essence_rec.current_balance - essence_drained)
         session.add(essence_rec)
         
-        essence_pct = essence_rec.current_balance / essence_cap if essence_cap > 0 else 0
+        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
         new_essence_rate = get_essence_xp_rate(session, essence_pct)
+    else:
+        new_essence_rate = 1.0
 
     active_row.last_offline_calc_at = now
     session.add(active_row)
@@ -152,8 +153,8 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
         "new_actions_unlocked": new_actions,
         "essence_consumed": essence_drained,
         "remaining_essence": essence_rec.current_balance if essence_rec else 0,
-        "new_essence_pct": essence_pct if essence_rec else 1.0,
-        "training_rate_status": new_essence_rate if essence_rec else 1.0
+        "new_essence_pct": essence_pct,
+        "training_rate_status": new_essence_rate
     }
 
 # --- Schemas ---
@@ -179,19 +180,20 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
 
-    skills = session.exec(select(Skill)).all()
+    skills = session.exec(select(Skill).where(Skill.idle_flavor_title != None)).all()
     char_skills = session.exec(select(CharacterSkillLevel).where(CharacterSkillLevel.character_id == character.id)).all()
     char_skills_map = {cs.skill_id: cs for cs in char_skills}
 
     essence_rec = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == character.id)).first()
+    essence_cap = get_config_val(session, 'idle_essence_capacity', 1000)
+    drain_per_min = get_config_val(session, 'idle_essence_drain_per_minute', 1)
+
     if not essence_rec:
         essence_pct = 1.0
-        essence_cap = 1000 # Fallback
+        essence_balance = 0
     else:
-        # Use a high default cap for the soft-gate calculation
-        # This can be moved to game_configs or character stats later
-        essence_cap = 10000
-        essence_pct = (essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
+        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
+        essence_balance = essence_rec.current_balance
 
     xp_rate_modifier = get_essence_xp_rate(session, essence_pct)
 
@@ -252,7 +254,9 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
 
     return {
         "essence_pct": essence_pct,
-        "essence_balance": essence_rec.current_balance if essence_rec else 0,
+        "essence_balance": essence_balance,
+        "essence_capacity": essence_cap,
+        "essence_drain_per_minute": drain_per_min,
         "xp_rate_modifier": xp_rate_modifier,
         "skills": res
     }

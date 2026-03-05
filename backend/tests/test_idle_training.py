@@ -1,11 +1,11 @@
 import pytest
 from datetime import datetime, timezone, timedelta
 from sqlmodel import Session, select
-from models import Skill, SkillAction, CharacterSkillLevel, PlayerEssence, GameConfig, PlayerCharacter
+from models import Skill, SkillAction, CharacterSkillLevel, PlayerEssence, PlayerMetaProgression, GameConfig, PlayerCharacter
 
 def test_get_training_status_creates_rows(client, player_token, test_character, session: Session):
     # Setup skills
-    skill = Skill(name="Attack", category="combat")
+    skill = Skill(name="Attack", category="combat", idle_flavor_title="Combat Protocol")
     session.add(skill)
     session.commit()
 
@@ -22,7 +22,7 @@ def test_get_training_status_creates_rows(client, player_token, test_character, 
     assert char_skill.skill_id == skill.id
 
 def test_start_stop_training(client, player_token, test_character, session: Session):
-    skill = Skill(name="Attack", category="combat")
+    skill = Skill(name="Attack", category="combat", idle_flavor_title="Combat Protocol")
     session.add(skill)
     session.commit()
     
@@ -45,7 +45,7 @@ def test_start_stop_training(client, player_token, test_character, session: Sess
     assert char_skill.is_active_training is False
 
 def test_offline_calculation(client, player_token, test_character, session: Session):
-    skill = Skill(name="Attack", category="combat")
+    skill = Skill(name="Attack", category="combat", idle_flavor_title="Combat Protocol")
     session.add(skill)
     session.commit()
     
@@ -64,8 +64,8 @@ def test_offline_calculation(client, player_token, test_character, session: Sess
     )
     session.add(char_skill)
     
-    # Also need essence to avoid low rate
-    essence = PlayerEssence(character_id=test_character.id, player_id=test_character.player_id, current_balance=10000)
+    # Also need essence to avoid low rate (character-specific)
+    essence = PlayerEssence(player_id=test_character.player_id, character_id=test_character.id, current_balance=10000)
     session.add(essence)
     session.commit()
 
@@ -76,7 +76,7 @@ def test_offline_calculation(client, player_token, test_character, session: Sess
     assert data["has_report"] is True
     
     # 1 hour = 3600 seconds. Interval 1s = 3600 actions. 3600 * 10 XP = 36000 XP.
-    # At 100% essence (10000/10000), rate is 1.0.
+    # At 100% essence (10000/1000), rate is 1.0.
     assert data["report"]["actions_completed"] == 3600
     assert data["report"]["xp_earned"] == 36000
     
@@ -130,7 +130,7 @@ def test_magic_gate_enforcement(client, player_token, test_character, session: S
     assert resp.status_code == 200
 
 def test_essence_drain_and_rate(client, player_token, test_character, session: Session):
-    skill = Skill(name="Attack", category="combat")
+    skill = Skill(name="Attack", category="combat", idle_flavor_title="Combat Protocol")
     session.add(skill)
     session.commit()
     
@@ -138,8 +138,9 @@ def test_essence_drain_and_rate(client, player_token, test_character, session: S
     session.add(action)
     session.commit()
     
-    # Low essence (1%)
-    essence = PlayerEssence(character_id=test_character.id, player_id=test_character.player_id, current_balance=100)
+    # Low essence (1%) - Character-specific balance
+    # Default cap 1000. Balance 10 = 1%.
+    essence = PlayerEssence(player_id=test_character.player_id, character_id=test_character.id, current_balance=10)
     session.add(essence)
     
     char_skill = CharacterSkillLevel(
@@ -157,8 +158,8 @@ def test_essence_drain_and_rate(client, player_token, test_character, session: S
     data = resp.json()["report"]
     
     # 10 mins = 600 ticks. 600 * 100 XP = 60,000 base XP.
-    # At 1% essence (100/10000), rate is 0.25.
+    # At 1% essence (10/1000), rate is 0.25.
     # 60,000 * 0.25 = 15,000 XP.
     assert data["xp_earned"] == 15000
     assert data["essence_consumed"] == 10 # 1 per min
-    assert data["remaining_essence"] == 90
+    assert data["remaining_essence"] == 0

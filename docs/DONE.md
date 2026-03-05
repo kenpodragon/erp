@@ -19,7 +19,8 @@ This document tracks the completed development phases for the Elysium Rising mmo
  - [x] **2.2.6 — Frontend Tests** *(Ref: `docs/inst/TESTING.md`)*        
  - [x] **2.2.7 — Polish & Remaining Requirements** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*
  - [x] **2.2.8 — BUGS AND FIXES** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*   (backend/routes/story_mode.py and frontend/src/game/components/story/CombatStage.tsx)
- - [x] **2.2.9 — NARRATIVE INTERSTITIALS** (1.2 Option C)           
+ - [x] **2.2.9 — NARRATIVE INTERSTITIALS** (1.2 Option C)
+ - [x] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*           
 
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  

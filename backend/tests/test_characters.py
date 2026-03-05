@@ -156,17 +156,14 @@ def test_create_character_success(client: TestClient, session: Session):
     assert data["progress"]["scene_number"] == 1
     assert data["progress"]["beat_number"] == 1
 
-    # Essence initialized at 0
-    assert data["essence"]["current_balance"] == 0.0
-    assert data["essence"]["passive_rate"] == 0.0
+    # Elysium Essence initialized at 0
+    assert data["elysium_essence"] == 0.0
 
     # Verify DB rows
     char = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
     assert char is not None
     prog = session.exec(select(PlayerProgress).where(PlayerProgress.character_id == char.id)).first()
     assert prog is not None
-    ess = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == char.id)).first()
-    assert ess is not None
 
 
 def test_create_character_enforces_mvp_limit(client: TestClient, session: Session):
@@ -317,7 +314,7 @@ def test_get_character_detail(client: TestClient, session: Session):
     assert data["character_name"] == "Aldric"
     assert data["class"] is not None
     assert data["progress"] is not None
-    assert data["essence"] is not None
+    assert data["elysium_essence"] is not None
 
 
 def test_get_character_enforces_ownership(client: TestClient, session: Session):

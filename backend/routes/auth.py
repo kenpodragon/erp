@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 
 from db import get_session
 from auth import get_current_player
-from models import Player, PlayerSettings, PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence
+from models import Player, PlayerSettings, PlayerCharacter, CharacterClass, PlayerProgress, PlayerEssence, PlayerMetaProgression
 from events import log_activity_event
 
 logger = logging.getLogger(__name__)
@@ -63,6 +63,7 @@ async def login(request: Request, token: dict = Depends(get_current_player), ses
 
     # Fetch characters (if any), embedding class, progress, and essence data
     raw_characters = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).all()
+    
     characters = []
     for char in raw_characters:
         char_class = session.get(CharacterClass, char.class_id)
