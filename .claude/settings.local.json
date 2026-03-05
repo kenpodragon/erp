@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "contextstream"    
+  ],
+  "enableAllProjectMcpServers": true
+}

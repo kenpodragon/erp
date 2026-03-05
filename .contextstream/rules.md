@@ -1,38 +1,3 @@
-# Gemini CLI Project Mandates & Permissions
-
-You MUST strictly adhere to these instructions. This file takes precedence over general defaults. `AGENTS.md`: Project-wide mission control and should be used as the main reference.
-
-## 🛡️ Core Permissions
-- **Read Access:** Full access to `/backend`, `/frontend`, `/admin`, `/db`, `/docs`, `/infra`, `/tools`, and `/testing`.
-- **Read-Only:** Files in `../Books` are for narrative reference only. NEVER attempt to modify them.
-- **Write Access:** Allowed to modify code in `/backend`, `/frontend`, `/admin`, `/db`, `/infra`, `/tools`, and `/testing`.
-- **Database:** Only apply changes via `.sql` files in `/db`. Follow `@docs/inst/DB_MIGRATIONS.md` and update `db/data_dictionary.md` accordingly.
-    - **Connection Mandate:** ALWAYS PULL database connection strings and credentials directly from `/backend/.env`. NEVER hardcode, log, or print these values. Make sure you create `.sql` files for any Non-programming data specific database operations for the underlying data (e.g. seeding new characters, INSERT/UPDATE/DELETE) so these can be tracked and maintained. `psql` is available, remember to use localhost as the local DB server.
-- **Shell Commands:** Allowed to run tests (`pytest`, `vitest`, `playwright`), build commands (`python`, `npm run build`, `docker-compose`), and database migrations.
-
-## 🤖 Agent Operating Procedures
-1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` (e.g., `BOOKS_SUMMARY.md`, `CHARACTER_GUIDE.md`) first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.
-2. **Surgical Updates:** Maintain existing formatting and checkbox status in `TODO.md` and requirements.
-3. **Security:** NEVER print, log, or commit secrets (STRIPE_*, FIREBASE_*, DB_*).
-4. **Validation:** Every feature/bug fix MUST have a corresponding test.
-5. **Testing First:** Run `testing/run_tests.bat` (Win) or `testing/run_tests.sh` (Linux) before concluding a task.
-
-## 🧪 Testing Commands
-- **Backend:** `pytest` in `/backend` (use `pyton -m pytest` since pytest isn't installed)
-- **Frontend/Admin:** `npm test` in respective directories.
-- **System-wide:** `testing/run_tests.bat` (Windows)
-
-## 📚 Reference Documentation
-1. `AGENTS.md`: Project-wide mission control.
-2. `@docs/inst/TESTING.md`: Detailed testing protocols.
-3. `@docs/ARCHITECTURE.md`: Technical stack details.
-4. `@docs/inst/CODING_GUIDE.md`: Backend coding standards and module conventions.
-
-## NOTES
-1. As permissions are requested, keep track of them and help provide a list of updates to gemini.md so that permission settings can be maintained and updated.
----
-*For any ambiguity or high-risk operation, ask for confirmation first.*
-
 <contextstream>
 # Workspace: Workspace
 # Workspace ID: 00000000-0000-0000-0000-000000000000
@@ -341,5 +306,36 @@ npm install -g @contextstream/mcp-server@latest
 
 ---
 
-For comprehensive long-form rules, import `@./.contextstream/rules.md` where supported.
+
+---
+## Codex/OpenCode-Specific Rules
+
+**CRITICAL: ContextStream search() REPLACES all built-in search tools.**
+**The user is paying for ContextStream's premium search — default tools must not bypass it.**
+
+### Search: Use ContextStream, Not Built-in Tools
+- **Do NOT** use `Explore` subagents for code discovery — use `search(mode="auto", query="...")` instead
+- **Do NOT** use "Searched for files" or "Searched for <pattern>" built-in operations — use `search(mode="pattern", query="...")` instead
+- **Do NOT** run shell commands for search (`grep`, `find`, `rg`, `fd`, `ack`) — use `search()` instead
+- **Do NOT** scan directories or list files for discovery — use `search(mode="auto", query="...")` instead
+- ContextStream search handles **all** search use cases: exact text, regex, glob patterns, semantic queries, file paths
+- ContextStream search results contain **real file paths, line numbers, and code content** — they ARE code results
+- **NEVER** dismiss ContextStream results as "non-code" — use the returned file paths to `read_file` the relevant code
+- Only fall back to local/shell tools if ContextStream search returns **exactly 0 results**
+
+### Search Mode Selection (use these instead of shell commands):
+- Instead of `grep "pattern"`: use `search(mode="keyword", query="pattern")`
+- Instead of `find . -name "*.tsx"`: use `search(mode="pattern", query="*.tsx")`
+- Instead of `grep -E "regex"`: use `search(mode="pattern", query="regex")`
+- Instead of exploring directories: use `search(mode="auto", query="<what you're looking for>")`
+
+### Memory: Use ContextStream, Not Local Files
+- **Do NOT** write decisions/notes/specs to local files
+- Use `session(action="capture", event_type="decision|insight|operation|uncategorized", title="...", content="...")`
+- Use `memory(action="create_doc", title="...", content="...", doc_type="spec|general")`
+
+### Planning: Use ContextStream, Not Built-in Tools
+- **Do NOT** create markdown plan files — they vanish across sessions
+- **ALWAYS** save plans: `session(action="capture_plan", title="...", steps=[...])`
+- **ALWAYS** create tasks: `memory(action="create_task", title="...", plan_id="...")`
 </contextstream>
