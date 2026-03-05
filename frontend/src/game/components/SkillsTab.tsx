@@ -31,16 +31,18 @@ interface SkillStatus {
     display_name: string;
     interval_ms: number;
     xp_per_action: number;
+    level_required: number;
   } | null;
   is_unlocked: boolean;
   unlock_display_text: string | null;
+  affinity_multiplier: number;
 }
 
 interface TrainingStatusResponse {
   essence_pct: number;
   essence_balance: number;
   essence_capacity: number;
-  essence_drain_per_minute: number;
+  essence_drain_per_tick: number;
   xp_rate_modifier: number;
   skills: SkillStatus[];
 }
@@ -52,6 +54,7 @@ interface OfflineReport {
   action_name: string;
   actions_completed: number;
   xp_earned: number;
+  potential_xp: number;
   affinity_applied: boolean;
   old_level: number;
   new_level: number;
@@ -70,6 +73,13 @@ const SKILL_DESCRIPTIONS: Record<string, string> = {
   'Precision': 'Increases critical hit chance and multiplier.'
 };
 
+const formatDuration = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
 const SkillsTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<TrainingStatusResponse | null>(null);
@@ -78,6 +88,11 @@ const SkillsTab: React.FC = () => {
   const [report, setReport] = useState<OfflineReport | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
+  
+  // Per-tick animation states
+  const [tickProgress, setLocalTickProgress] = useState(0);
+  const [showTickXp, setShowTickXp] = useState<{ id: number, xp: number } | null>(null);
+  const [lastTickTime, setLastTickTime] = useState<number>(Date.now());
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -130,10 +145,82 @@ const SkillsTab: React.FC = () => {
     }
   }, [selectedSkillId, fetchActions]);
 
+  // Sync when leaving tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Trigger a background sync by just hitting the report endpoint (which applies calc)
+        api.get('/api/game/training/offline-report');
+      } else {
+        // On return, refresh everything
+        fetchStatus();
+        checkOfflineReport();
+        setLastTickTime(Date.now());
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchStatus, checkOfflineReport]);
+
+  // Tick simulation effect
+  useEffect(() => {
+    if (!status || showSimulator) return;
+    
+    const activeSkill = status.skills.find(s => s.is_active_training);
+    if (!activeSkill || !activeSkill.active_action) {
+      setLocalTickProgress(0);
+      return;
+    }
+
+    const intervalMs = activeSkill.active_action.interval_ms;
+    const updateRate = 50; // 20fps for smooth bar
+    
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const elapsed = now - lastTickTime;
+      
+      if (elapsed >= intervalMs) {
+        // Tick occurred!
+        setLastTickTime(now);
+        setLocalTickProgress(0);
+        
+        // Show +XP popup
+        const effectiveXp = activeSkill.active_action!.xp_per_action * status.xp_rate_modifier * activeSkill.affinity_multiplier;
+        setShowTickXp({ id: now, xp: effectiveXp });
+        setTimeout(() => setShowTickXp(null), 1000);
+        
+        // Increment XP locally for visual feedback
+        setStatus(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            skills: prev.skills.map(s => {
+              if (s.skill_id === activeSkill.skill_id) {
+                const newXp = s.current_xp + effectiveXp;
+                // If we crossed a level boundary, it's better to refetch status to get new targets
+                if (newXp >= s.next_level_xp) {
+                  setTimeout(fetchStatus, 100);
+                }
+                return { ...s, current_xp: newXp };
+              }
+              return s;
+            })
+          };
+        });
+      } else {
+        setLocalTickProgress((elapsed / intervalMs) * 100);
+      }
+    }, updateRate);
+
+    return () => clearInterval(timer);
+  }, [status, lastTickTime, showSimulator, fetchStatus]);
+
   const handleStartTraining = async (skillId: number, actionId: number) => {
     setIsSwitching(true);
     try {
       await api.post('/api/game/training/start', { skill_id: skillId, action_id: actionId });
+      setLastTickTime(Date.now()); // Reset tick timer
       await fetchStatus();
     } catch (err) {
       console.error('Failed to start training:', err);
@@ -171,6 +258,7 @@ const SkillsTab: React.FC = () => {
     try {
       await api.post('/api/game/training/active-mode/exit', { xp_earned: xpEarned });
       setShowSimulator(false);
+      setLastTickTime(Date.now()); // Reset tick timer
       await fetchStatus();
     } catch (err) {
       console.error('Failed to exit active mode:', err);
@@ -186,21 +274,43 @@ const SkillsTab: React.FC = () => {
   const selectedSkill = status.skills.find(s => s.skill_id === selectedSkillId);
   const trainingSkill = status.skills.find(s => s.is_active_training);
 
+  // Find highest unlocked action for base XP calculation in Active Mode
+  const highestUnlockedAction = [...actions]
+    .filter(a => selectedSkill && selectedSkill.level >= a.level_required)
+    .sort((a, b) => b.xp_per_action - a.xp_per_action)[0];
+  
+  const effectiveBaseXp = highestUnlockedAction && status 
+    ? (highestUnlockedAction.xp_per_action * status.xp_rate_modifier * (selectedSkill?.affinity_multiplier || 1.0))
+    : 1;
+
+  const potentialBaseXp = highestUnlockedAction
+    ? (highestUnlockedAction.xp_per_action * (selectedSkill?.affinity_multiplier || 1.0))
+    : 1;
+
+  const getTimeToEmpty = () => {
+    if (!status || status.essence_balance <= 0 || status.essence_drain_per_tick <= 0) return null;
+    
+    // Find active action to get interval
+    const activeSkill = status.skills.find(s => s.is_active_training);
+    if (!activeSkill || !activeSkill.active_action) return null;
+    
+    const ticksRemaining = status.essence_balance / status.essence_drain_per_tick;
+    const secondsRemaining = ticksRemaining * (activeSkill.active_action.interval_ms / 1000);
+    
+    const h = Math.floor(secondsRemaining / 3600);
+    const m = Math.floor((secondsRemaining % 3600) / 60);
+    
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
   const getEssenceTooltip = () => {
     if (!status) return '';
     const balance = Math.floor(status.essence_balance);
     const cap = status.essence_capacity;
-    const drain = status.essence_drain_per_minute;
+    const timeStr = getTimeToEmpty() || 'N/A';
     
-    const totalMinutes = balance / drain;
-    const hours = Math.floor(totalMinutes / 60);
-    const mins = Math.floor(totalMinutes % 60);
-    
-    let timeStr = 'EMPTY';
-    if (hours > 0) timeStr = `${hours}h ${mins}m`;
-    else if (mins > 0) timeStr = `${mins}m`;
-    
-    return `Balance: ${balance.toLocaleString()} / ${cap.toLocaleString()}\nEst. Time Remaining: ${timeStr}`;
+    return `Balance: ${balance.toLocaleString()} / ${cap.toLocaleString()}\nTime to Empty: ${timeStr}`;
   };
 
   return (
@@ -212,7 +322,12 @@ const SkillsTab: React.FC = () => {
           <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>USER: ASPOLIN // SUBSYSTEM: PROGRESSION_v2.3</div>
         </div>
         <div className="essence-status" title={getEssenceTooltip()}>
-          <div>ESSENCE STABILITY: {(status.essence_pct * 100).toFixed(1)}%</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
+            {status.essence_balance > 0 && (
+              <span style={{ fontSize: '0.7rem', color: '#ffaa00' }}>[ EMPTY IN: {getTimeToEmpty()} ]</span>
+            )}
+            <span>ESSENCE STABILITY: {(status.essence_pct * 100).toFixed(1)}%</span>
+          </div>
           <div className="essence-bar-container">
             <div 
               className="essence-bar-fill" 
@@ -223,7 +338,7 @@ const SkillsTab: React.FC = () => {
             />
           </div>
           <div style={{ fontSize: '0.7rem', marginTop: '5px' }}>
-            XP RATE: {(status.xp_rate_modifier * 100).toFixed(0)}% (DRAIN: {status.essence_drain_per_minute}/min)
+            XP RATE: {(status.xp_rate_modifier * 100).toFixed(0)}% (DRAIN: {status.essence_drain_per_tick} / tick)
           </div>
         </div>
       </div>
@@ -262,12 +377,26 @@ const SkillsTab: React.FC = () => {
             <>
               <div className="detail-header">
                 <div className="detail-title-row">
-                  <div>
+                  <div style={{ position: 'relative' }}>
                     <div className="detail-flavor-title">{selectedSkill.flavor_title}</div>
                     <h2 className="detail-skill-name">{selectedSkill.skill_name}</h2>
                     <div className="detail-skill-description" style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '2px', fontStyle: 'italic' }}>
                       {SKILL_DESCRIPTIONS[selectedSkill.skill_name] || ''}
                     </div>
+                    {/* +XP Tick Animation */}
+                    {selectedSkill.is_active_training && showTickXp && (
+                      <div className="tick-xp-popup" style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        right: '-60px',
+                        color: '#00ff41',
+                        fontWeight: 'bold',
+                        animation: 'tickUp 1s ease-out forwards',
+                        zIndex: 10
+                      }}>
+                        +{showTickXp.xp} XP
+                      </div>
+                    )}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '1.2rem' }}>LEVEL {selectedSkill.level}</div>
@@ -278,7 +407,7 @@ const SkillsTab: React.FC = () => {
                 <div className="detail-xp-info">
                   <div className="large-xp-bar-container">
                     <div className="xp-text">
-                      {Math.floor(selectedSkill.current_xp).toLocaleString()} / {selectedSkill.next_level_xp.toLocaleString()} XP
+                      {selectedSkill.current_xp.toFixed(1)} / {selectedSkill.next_level_xp.toLocaleString()} XP
                     </div>
                     <div 
                       className="large-xp-bar-fill" 
@@ -288,8 +417,13 @@ const SkillsTab: React.FC = () => {
                 </div>
 
                 {selectedSkill.is_active_training && selectedSkill.active_action && (
-                  <div style={{ fontSize: '0.8rem', color: '#00ff41', border: '1px solid #00ff41', padding: '5px', background: 'rgba(0,255,65,0.1)' }}>
-                    ACTIVE: {selectedSkill.active_action.display_name} ({(selectedSkill.active_action.interval_ms / 1000).toFixed(1)}s interval)
+                  <div className="active-action-status-bar">
+                    <div className="active-action-text">
+                      CALIBRATING: {selectedSkill.active_action.display_name} ({(selectedSkill.active_action.interval_ms / 1000).toFixed(1)}s interval)
+                    </div>
+                    <div className="tick-progress-container">
+                      <div className="tick-progress-fill" style={{ width: `${tickProgress}%` }} />
+                    </div>
                   </div>
                 )}
               </div>
@@ -308,8 +442,12 @@ const SkillsTab: React.FC = () => {
                   <tbody>
                     {actions.map(action => {
                       const isLocked = selectedSkill.level < action.level_required;
-                      const isActive = selectedSkill.active_action?.id === action.id;
+                      const isActive = selectedSkill.is_active_training && selectedSkill.active_action?.id === action.id;
                       
+                      // Calculate effective XP: base * stability_rate * affinity
+                      const effectiveXp = action.xp_per_action * status.xp_rate_modifier * selectedSkill.affinity_multiplier;
+                      const showAffinity = selectedSkill.affinity_multiplier > 1.0;
+
                       return (
                         <tr 
                           key={action.id} 
@@ -324,7 +462,13 @@ const SkillsTab: React.FC = () => {
                           </td>
                           <td style={{ textAlign: 'center' }}>{action.level_required}</td>
                           <td className="action-interval-cell">{(action.interval_ms / 1000).toFixed(1)}s</td>
-                          <td className="action-xp-cell">+{action.xp_per_action}</td>
+                          <td className="action-xp-cell">
+                            +{action.xp_per_action} 
+                            <span style={{ color: '#aaa', marginLeft: '4px', fontSize: '0.8em' }}>
+                              ({effectiveXp > 0 ? `+${effectiveXp.toFixed(1)}` : '0'})
+                            </span>
+                            {showAffinity && <span style={{ color: '#ffff00', fontSize: '0.7em', marginLeft: '4px' }}>★</span>}
+                          </td>
                           <td>
                             {isLocked ? (
                               <button className="action-btn" disabled>LOCKED</button>
@@ -352,6 +496,7 @@ const SkillsTab: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
               
               {/* Active Mode Button */}
               <div className="active-mode-button-container">
@@ -375,6 +520,8 @@ const SkillsTab: React.FC = () => {
       {showSimulator && selectedSkill && (
         <ActiveTrainingSimulator 
           skill={selectedSkill} 
+          effectiveBaseXp={effectiveBaseXp}
+          potentialBaseXp={potentialBaseXp}
           onExit={handleExitActiveMode} 
         />
       )}
@@ -389,7 +536,7 @@ const SkillsTab: React.FC = () => {
             <div className="report-body">
               <div className="report-stat-row">
                 <span className="report-stat-label">DURATION:</span>
-                <span className="report-stat-value">{(report.offline_duration_seconds / 3600).toFixed(1)} / {report.cap_hours}h</span>
+                <span className="report-stat-value">{formatDuration(report.offline_duration_seconds)} / {report.cap_hours}h</span>
               </div>
               <div className="report-stat-row">
                 <span className="report-stat-label">SKILL:</span>
@@ -405,7 +552,7 @@ const SkillsTab: React.FC = () => {
               </div>
               <div className="report-stat-row" style={{ color: '#00ff41', borderBottom: '1px solid #00ff41', marginTop: '10px' }}>
                 <span className="report-stat-label">TOTAL XP EARNED:</span>
-                <span className="report-stat-value">+{report.xp_earned.toLocaleString()} {report.affinity_applied && '(+25% AFFINITY)'}</span>
+                <span className="report-stat-value">+{report.xp_earned.toLocaleString()} (+{report.potential_xp.toLocaleString()})</span>
               </div>
               <div className="report-stat-row">
                 <span className="report-stat-label">LEVEL PROGRESS:</span>
@@ -426,7 +573,7 @@ const SkillsTab: React.FC = () => {
               )}
               <div className="report-stat-row" style={{ marginTop: '15px', borderTop: '1px solid #333' }}>
                 <span className="report-stat-label">ESSENCE CONSUMED:</span>
-                <span className="report-stat-value">-{report.essence_consumed}</span>
+                <span className="report-stat-value">-{report.essence_consumed.toFixed(2)}</span>
               </div>
             </div>
             <div className="report-footer">

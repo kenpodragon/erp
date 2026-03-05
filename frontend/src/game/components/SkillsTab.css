@@ -380,9 +380,52 @@
   color: #000;
 }
 
-.unlocked-action-tag {
-  color: #ffff00;
-  display: block;
-  font-size: 0.8rem;
-  margin-top: 5px;
+.active-action-status-bar {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.active-action-text {
+  font-size: 0.75rem;
+  color: #00ff41;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.tick-progress-container {
+  height: 4px;
+  background: rgba(0, 255, 65, 0.1);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.tick-progress-fill {
+  height: 100%;
+  background: #00ff41;
+  transition: width 0.05s linear;
+}
+
+.tick-xp-popup {
+  pointer-events: none;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  text-shadow: 0 0 5px #00ff41;
+}
+
+@keyframes tickUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+
+.action-xp-cell {
+  white-space: nowrap;
 }

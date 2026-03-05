@@ -3,23 +3,18 @@
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 **Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
- - [x] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*     
-    - [x] Debug and Testing
-    - [x] Requirements review and checkoff
-    - [x] Extra skills are appearing there beyond ATTACK (the 4 defined one). Fixed: Active/Combat skills are now filtered out from the Idle Training UI.
-    - [ ] Outstanding: Implement global "NEW SKILL UNLOCKED" banner notification in the frontend when story scenes are completed.
-    - [ ] Essence Stability (I have 6k essence and it says my stability is 0.1%) This should be updated with the real value (based on my available essence), and on hover or something show how much longer that's going to last or something (6,000 out of 1,000 - 100%)
 
 - [ ] **2.4 — Character & Progression Systems, Classes, and Skills** *(Ref: `docs/recs/2.4_CHARACTER_PROGRESSION.md`)*
+    - [ ] Read through these TODOs and the current 2.4 requirements, add in additional requirements into the reqwuiremnts from the TODO. Expand with details and clairifying quesitons.
     - [ ] Create and expand `2.4_CHARACTER_PROGRESSION.md`, discussion and expansion of the draft.
     - [ ] Create and expand `2.4_CHARACTER_PROGRESSION_DESIGN.md`, descussion and detailed formulas and details.
     - [ ] Create and expand the 2.4 Development Plan.
-    - [ ] Add dev into TODO, update 2.4 in TODO and begin tracking.
+    - [ ] Add dev plan into TODO, update 2.4 in TODO and begin tracking.
     - [ ] Design and implement core stats (Str/Agi/Int) logic.
     - [ ] Implement inventory system framework (Weapon/Armor slots).
     - [ ] Setup Class-specific abilities and skill trees.
     - [ ] Review how the idle skills behave in the story mode (including the active skills). Ensure there are appropriate in story unlock methods (gold first, raises based on chapter/story and level of the skill in the backend).
-    - [ ] Remove initial skills add everything behind the gating from the Idle training bits.
+    - [ ] The active skills up front in the main clicker should have pre-requisite levels of the other idle skills in the back. Plus, they should be able to be leveled up using idle training as well (need to design the actions for those). They can also have multiple pre-requisites (clkicker storm [level 10 Attack], active skill 2 [attack 25, clicker storm 10], etc...)
     - [ ] Create Admin interface to edit these things as well as game_config and server_config pieces.
 
 - [ ] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`)*

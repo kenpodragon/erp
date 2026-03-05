@@ -42,20 +42,21 @@ def get_config_val(session: Session, key: str, default: Any, val_type=float) -> 
         return default
 
 def get_essence_xp_rate(session: Session, essence_pct: float) -> float:
+    if essence_pct <= 0:
+        return 0.01 # 1% rate if empty
+        
     full = get_config_val(session, 'idle_essence_xp_full_threshold', 0.75)
     mid = get_config_val(session, 'idle_essence_xp_mid_threshold', 0.40)
     low = get_config_val(session, 'idle_essence_xp_low_threshold', 0.15)
     crit = get_config_val(session, 'idle_essence_xp_critical_threshold', 0.01)
-    floor_rate = get_config_val(session, 'idle_essence_xp_floor_rate', 0.10)
 
     if essence_pct >= full:  return 1.00
     if essence_pct >= mid:   return 0.75
     if essence_pct >= low:   return 0.50
     if essence_pct >= crit:  return 0.25
-    return floor_rate
+    return 0.10 # 10% rate floor if any essence exists
 
 def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional[dict]:
-    # Find the actively training skill
     active_row = session.exec(
         select(CharacterSkillLevel)
         .where(CharacterSkillLevel.character_id == character.id)
@@ -73,8 +74,8 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     last_calc = last_calc or now
     elapsed_seconds = (now - last_calc).total_seconds()
     
-    if elapsed_seconds < 60:
-        return None # Only report if at least 1 minute passed
+    if elapsed_seconds < 1:
+        return None 
         
     cap_hours = get_config_val(session, 'idle_offline_cap_hours', 24)
     capped_seconds = min(elapsed_seconds, cap_hours * 3600)
@@ -85,59 +86,66 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
 
     skill = session.exec(select(Skill).where(Skill.id == active_row.skill_id)).first()
     char_class = session.exec(select(CharacterClass).where(CharacterClass.id == character.class_id)).first()
-    
-    # Class affinity
     affinity_mult = 1.25 if (char_class and char_class.name == skill.name) else 1.0
 
-    # Essence calculation
     essence_rec = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == character.id)).first()
     essence_cap = get_config_val(session, 'idle_essence_capacity', 1000)
     
-    if not essence_rec:
-        essence_pct = 1.0
-    else:
-        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
-
-    essence_rate = get_essence_xp_rate(session, essence_pct)
-
-    # XP Calculation
+    current_essence = essence_rec.current_balance if essence_rec else 0.0
+    drain_per_tick = action.level_required
     actions_completed = int(capped_seconds / (action.interval_ms / 1000))
-    xp_earned = int(actions_completed * action.xp_per_action * essence_rate * affinity_mult)
+    
+    if actions_completed < 1:
+        return None
 
-    # Apply XP
+    # Granular Simulation of Drain Curve
+    ticks_remaining = actions_completed
+    total_xp_earned = 0.0
+    temp_essence = current_essence
+    
+    # 1. Ticks possible with essence
+    ticks_with_essence = int(temp_essence / drain_per_tick) if drain_per_tick > 0 else ticks_remaining
+    ticks_to_process_with_essence = min(ticks_remaining, ticks_with_essence)
+    ticks_at_empty = max(0, ticks_remaining - ticks_to_process_with_essence)
+    
+    # Process "Empty" Ticks first (1% rate)
+    total_xp_earned += ticks_at_empty * action.xp_per_action * 0.01 * affinity_mult
+    
+    # Process "Essence" Ticks in chunks to approximate threshold crossings
+    if ticks_to_process_with_essence > 0:
+        chunks = 10
+        ticks_per_chunk = ticks_to_process_with_essence // chunks
+        leftover = ticks_to_process_with_essence % chunks
+        
+        for _ in range(chunks):
+            pct = min(1.0, temp_essence / essence_cap) if essence_cap > 0 else 0
+            rate = get_essence_xp_rate(session, pct)
+            total_xp_earned += ticks_per_chunk * action.xp_per_action * rate * affinity_mult
+            temp_essence -= (ticks_per_chunk * drain_per_tick)
+            
+        if leftover > 0:
+            pct = min(1.0, temp_essence / essence_cap) if essence_cap > 0 else 0
+            rate = get_essence_xp_rate(session, pct)
+            total_xp_earned += leftover * action.xp_per_action * rate * affinity_mult
+            temp_essence -= (leftover * drain_per_tick)
+
+    xp_earned = total_xp_earned
+    potential_xp = float(actions_completed * action.xp_per_action * affinity_mult)
+
+    # Apply XP and Level
     old_level = active_row.level
     active_row.current_xp += xp_earned
     new_level = get_level_from_xp(active_row.current_xp)
     active_row.level = new_level
     levels_gained = new_level - old_level
 
-    # Essence Drain
-    drain_per_min = get_config_val(session, 'idle_essence_drain_per_minute', 1)
-    essence_drained = int((capped_seconds / 60) * drain_per_min)
     if essence_rec:
-        # Drain from character balance
-        essence_rec.current_balance = max(0, essence_rec.current_balance - essence_drained)
+        essence_rec.current_balance = max(0.0, temp_essence)
         session.add(essence_rec)
-        
-        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
-        new_essence_rate = get_essence_xp_rate(session, essence_pct)
-    else:
-        new_essence_rate = 1.0
 
     active_row.last_offline_calc_at = now
     session.add(active_row)
     session.commit()
-
-    # Find newly unlocked actions
-    new_actions = []
-    if levels_gained > 0:
-        unlocked = session.exec(
-            select(SkillAction)
-            .where(SkillAction.skill_id == skill.id)
-            .where(SkillAction.level_required > old_level)
-            .where(SkillAction.level_required <= new_level)
-        ).all()
-        new_actions = [a.display_name for a in unlocked]
 
     return {
         "offline_duration_seconds": capped_seconds,
@@ -145,16 +153,15 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
         "skill_name": skill.name,
         "action_name": action.display_name,
         "actions_completed": actions_completed,
-        "xp_earned": xp_earned,
+        "xp_earned": round(xp_earned, 2),
+        "potential_xp": round(potential_xp, 2),
         "affinity_applied": affinity_mult > 1.0,
         "old_level": old_level,
         "new_level": new_level,
         "levels_gained": levels_gained,
-        "new_actions_unlocked": new_actions,
-        "essence_consumed": essence_drained,
-        "remaining_essence": essence_rec.current_balance if essence_rec else 0,
-        "new_essence_pct": essence_pct,
-        "training_rate_status": new_essence_rate
+        "essence_consumed": round(current_essence - max(0.0, temp_essence), 2),
+        "remaining_essence": round(max(0.0, temp_essence), 2),
+        "new_actions_unlocked": [] # Placeholder for future logic
     }
 
 # --- Schemas ---
@@ -186,26 +193,24 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
 
     essence_rec = session.exec(select(PlayerEssence).where(PlayerEssence.character_id == character.id)).first()
     essence_cap = get_config_val(session, 'idle_essence_capacity', 1000)
-    drain_per_min = get_config_val(session, 'idle_essence_drain_per_minute', 1)
-
-    if not essence_rec:
-        essence_pct = 1.0
-        essence_balance = 0
-    else:
-        essence_pct = min(1.0, essence_rec.current_balance / essence_cap) if essence_cap > 0 else 0
-        essence_balance = essence_rec.current_balance
-
+    
+    essence_balance = essence_rec.current_balance if essence_rec else 0.0
+    essence_pct = min(1.0, essence_balance / essence_cap) if essence_cap > 0 else 0
     xp_rate_modifier = get_essence_xp_rate(session, essence_pct)
 
     res = []
+    char_class = session.exec(select(CharacterClass).where(CharacterClass.id == character.class_id)).first()
+    
+    active_drain = 0
     for skill in skills:
         cs = char_skills_map.get(skill.id)
         if not cs:
-            # Create default row
             cs = CharacterSkillLevel(character_id=character.id, skill_id=skill.id)
             session.add(cs)
             session.commit()
             session.refresh(cs)
+
+        affinity_mult = 1.25 if (char_class and char_class.name == skill.name) else 1.0
 
         action_data = None
         if cs.active_action_id:
@@ -217,11 +222,14 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
                     "display_name": action.display_name,
                     "interval_ms": action.interval_ms,
                     "xp_per_action": action.xp_per_action,
+                    "level_required": action.level_required
                 }
+                if cs.is_active_training:
+                    active_drain = action.level_required
 
         next_level_xp = get_xp_for_level(cs.level + 1) if cs.level < 99 else get_xp_for_level(99)
         
-        # Check unlock gate
+        # Simple unlock check
         is_unlocked = True
         if skill.unlock_scene_id:
             from models import PlayerProgress, Scene
@@ -229,8 +237,6 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
             if prog:
                 gate_scene = session.exec(select(Scene).where(Scene.id == skill.unlock_scene_id)).first()
                 if gate_scene:
-                    # Very rough check, assuming if player's book/chap/scene is >= gate, it's unlocked
-                    # A better check is the completed_scenes check.
                     is_unlocked = (prog.book_number > gate_scene.chapter.book_id) or \
                                   (prog.book_number == gate_scene.chapter.book_id and prog.chapter_number > gate_scene.chapter_id) or \
                                   (prog.book_number == gate_scene.chapter.book_id and prog.chapter_number == gate_scene.chapter_id and prog.scene_number > gate_scene.scene_number)
@@ -249,14 +255,15 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
             "action_started_at": cs.action_started_at,
             "active_action": action_data,
             "is_unlocked": is_unlocked,
-            "unlock_display_text": skill.unlock_display_text if not is_unlocked else None
+            "unlock_display_text": skill.unlock_display_text if not is_unlocked else None,
+            "affinity_multiplier": affinity_mult
         })
 
     return {
         "essence_pct": essence_pct,
         "essence_balance": essence_balance,
         "essence_capacity": essence_cap,
-        "essence_drain_per_minute": drain_per_min,
+        "essence_drain_per_tick": active_drain,
         "xp_rate_modifier": xp_rate_modifier,
         "skills": res
     }
@@ -278,18 +285,14 @@ def get_offline_report(token: dict = Depends(get_current_player), session: Sessi
 def start_training(req: StartTrainingRequest, token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     player = token.get("player")
     character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
-    
-    # Ensure offline calc runs first for any current training before stopping it
     apply_offline_calc(session, character)
     
-    # Stop all current training
     all_skills = session.exec(select(CharacterSkillLevel).where(CharacterSkillLevel.character_id == character.id)).all()
     for s in all_skills:
         s.is_active_training = False
         s.is_in_active_mode = False
         session.add(s)
 
-    # Start new training
     target = session.exec(
         select(CharacterSkillLevel)
         .where(CharacterSkillLevel.character_id == character.id)
@@ -313,7 +316,6 @@ def start_training(req: StartTrainingRequest, token: dict = Depends(get_current_
 def stop_training(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     player = token.get("player")
     character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
-    
     apply_offline_calc(session, character)
     
     all_skills = session.exec(select(CharacterSkillLevel).where(CharacterSkillLevel.character_id == character.id)).all()
@@ -321,7 +323,6 @@ def stop_training(token: dict = Depends(get_current_player), session: Session = 
         s.is_active_training = False
         s.is_in_active_mode = False
         session.add(s)
-        
     session.commit()
     return {"status": "success"}
 
@@ -330,7 +331,6 @@ def stop_training(token: dict = Depends(get_current_player), session: Session = 
 def switch_action(req: SwitchActionRequest, token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     player = token.get("player")
     character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
-    
     apply_offline_calc(session, character)
 
     target = session.exec(
@@ -345,7 +345,6 @@ def switch_action(req: SwitchActionRequest, token: dict = Depends(get_current_pl
     target.active_action_id = req.action_id
     target.action_started_at = datetime.now(timezone.utc)
     target.last_offline_calc_at = datetime.now(timezone.utc)
-    
     session.add(target)
     session.commit()
     return {"status": "success"}
@@ -355,8 +354,6 @@ def switch_action(req: SwitchActionRequest, token: dict = Depends(get_current_pl
 def enter_active_mode(token: dict = Depends(get_current_player), session: Session = Depends(get_session)):
     player = token.get("player")
     character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
-    
-    # Calculate offline right before pausing
     apply_offline_calc(session, character)
 
     active_row = session.exec(
@@ -366,14 +363,12 @@ def enter_active_mode(token: dict = Depends(get_current_player), session: Sessio
     ).first()
 
     if not active_row:
-        raise HTTPException(status_code=400, detail="No active training to enter mode for")
+        raise HTTPException(status_code=400, detail="No active training")
 
     active_row.is_in_active_mode = True
     active_row.active_mode_started_at = datetime.now(timezone.utc)
-    # Pause idle by not updating last_offline_calc_at during active mode
     session.add(active_row)
     session.commit()
-    
     return {"status": "success"}
 
 
@@ -391,15 +386,12 @@ def exit_active_mode(req: ExitActiveModeRequest, token: dict = Depends(get_curre
     if not active_row:
         raise HTTPException(status_code=400, detail="Not in active mode")
 
-    # Client reported XP (validated lightly in a real app)
     active_row.current_xp += req.xp_earned
     active_row.level = get_level_from_xp(active_row.current_xp)
-    
     active_row.is_in_active_mode = False
     active_row.active_mode_started_at = None
     active_row.action_started_at = datetime.now(timezone.utc)
-    active_row.last_offline_calc_at = datetime.now(timezone.utc) # resume idle from now
-    
+    active_row.last_offline_calc_at = datetime.now(timezone.utc)
     session.add(active_row)
     session.commit()
     return {"status": "success"}
