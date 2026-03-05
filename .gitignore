@@ -491,4 +491,6 @@ backend/*.db
 .claude/
 .contextstream/
 .gemini/
-.github/\
+.github/
+.mcp.json
+\
