@@ -204,6 +204,9 @@ The primary goal of ERP is to provide an immersive environment where players **r
 ### 99.3 Prestige (NG+)
 - [ ] **NG+ System:** Scaled difficulty, palette swaps, and exclusive prestige rewards.
 
+### 99.4 Multi-Instance Chat (Redis Pub/Sub)
+- [ ] **Cross-Instance Chat Sync:** If Cloud Run scales beyond a single instance, add Redis Pub/Sub (or equivalent) to synchronize in-memory chat buffers across instances so all connected players see all messages regardless of which instance they're connected to.
+
 ---
 
 ## TOOLING AND UTILITIES
