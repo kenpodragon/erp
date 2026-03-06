@@ -41,7 +41,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
   externalFarmMode = false,
   onFarmModeChange
 }) => {
-  const { state, exitScene, setStorySession, updateStorySession, setEssence, setGold } = useGame();
+  const { state, exitScene, setStorySession, updateStorySession, setEssence, setGold, playSFX } = useGame();
   const { activeSceneId, storySession } = state;
 
   const pendingClicks = useRef(0);
@@ -328,6 +328,14 @@ const StoryMode: React.FC<StoryModeProps> = ({
 
   const bothComplete = (storySession.narrativeProgressPct >= 100 || storySession.previouslyCompleted) && storySession.wavesComplete;
 
+  // Derive music state for MusicManager
+  const musicState: 'explore' | 'combat' | 'boss' | 'mystery' = (() => {
+    if (storySession.isBossSession) return 'boss';
+    if (showSummary || narrativeReveal) return 'mystery';
+    if (storySession.wavesComplete && !farmMode) return 'explore';
+    return 'combat';
+  })();
+
   // ── Boss Mode Layout ────────────────────────────────────────────────────
   if (storySession.isBossSession) {
     return (
@@ -337,6 +345,8 @@ const StoryMode: React.FC<StoryModeProps> = ({
           sceneId={storySession.sceneId}
           darkRitualMultiplier={storySession.darkRitualMultiplier}
           activeBuffs={state.activeBuffs}
+          musicState={musicState}
+          bossEntityId={null}
         />
 
         <div className="boss-mode-wrapper">
@@ -351,6 +361,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
             onBossDefeated={handleBossDefeated}
             textScale={player?.settings?.game_text_scale || 1.0}
             debugSuperClick={debugSuperClick}
+            playSFX={playSFX}
           />
           <div className="story-controls-bar">
             <button
@@ -388,6 +399,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
         sceneId={storySession.sceneId}
         darkRitualMultiplier={storySession.darkRitualMultiplier}
         activeBuffs={state.activeBuffs}
+        musicState={musicState}
       />
 
       <div className="story-main">
@@ -419,6 +431,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
             onAutoProgressToggle={setAutoProgress}
             debugSuperClick={debugSuperClick}
             narrativeProgressPct={storySession.narrativeProgressPct}
+            playSFX={playSFX}
           />
 
           <div className="story-controls-bar">

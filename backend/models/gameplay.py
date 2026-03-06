@@ -16,6 +16,7 @@ class SceneGameplayData(SQLModel, table=True):
     required_time_seconds: int = Field(default=0)
     background_sprite_key: Optional[str] = Field(default=None, max_length=100)
     is_boss_scene: bool = Field(default=False)
+    atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
 
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
@@ -52,6 +53,8 @@ class EntityGameplayData(SQLModel, table=True):
     base_gold: int = Field(default=0)
     appearance_rate: float = Field(default=1.0)
     stat_block: Optional[Any] = Field(default=None, sa_column=Column(JSON))
+    unique_boss_theme_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
+    death_sfx_key: Optional[str] = Field(default=None, max_length=100)
 
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
@@ -115,6 +118,7 @@ class Skill(SQLModel, table=True):
     is_class_exclusive: bool = Field(default=False)
     idle_level_scaling: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     effect_type: Optional[str] = Field(default=None, max_length=50)
+    activate_sfx_key: Optional[str] = Field(default=None, max_length=100)
 
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)

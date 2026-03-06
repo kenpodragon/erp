@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { apiEvents } from '../api';
+import { api, apiEvents } from '../api';
+import { loadAudioSettings, saveAudioSettingsLocal, type AudioSettings } from './components/AudioSettingsModal';
+import { getSFXEngine, destroySFXEngine, type SFXPlayOptions } from './SFXEngine';
+export type { AudioSettings };
 
 // ── Active skill buff (tracks client-side state for hotbar display) ──────────
 // ... (rest of file remains same, adding listeners in GameProvider)
@@ -76,6 +79,8 @@ interface GameState {
   storySession: StorySession | null;
   activeBuffs: ActiveBuff[];
   isOffline: boolean;
+  // Audio settings (2.5)
+  audioSettings: AudioSettings;
 }
 
 type SessionPatch = Partial<StorySession> | ((prev: StorySession) => Partial<StorySession>);
@@ -95,6 +100,9 @@ interface GameContextType {
   clearStorySession: () => void;
   addBuff: (buff: ActiveBuff) => void;
   removeBuff: (skillId: number) => void;
+  // Audio (2.5)
+  updateAudioSettings: (settings: AudioSettings) => void;
+  playSFX: (configKey: string, options?: SFXPlayOptions) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -112,6 +120,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     storySession: null,
     activeBuffs: [],
     isOffline: false,
+    audioSettings: loadAudioSettings(),
   });
 
   useEffect(() => {
@@ -203,6 +212,35 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
       activeBuffs: prev.activeBuffs.filter(b => b.skillId !== skillId),
     }));
 
+  const updateAudioSettings = useCallback((settings: AudioSettings) => {
+    setState(prev => ({ ...prev, audioSettings: settings }));
+    saveAudioSettingsLocal(settings);
+    getSFXEngine().updateSettings(settings);
+  }, []);
+
+  // Initialize SFXEngine: load configs from API + sync settings
+  const sfxInitRef = useRef(false);
+  useEffect(() => {
+    if (sfxInitRef.current) return;
+    sfxInitRef.current = true;
+    const engine = getSFXEngine();
+    engine.updateSettings(state.audioSettings);
+    api.get('/api/game/audio/sfx-configs')
+      .then(r => r.ok ? r.json() : null)
+      .then(configs => { if (configs) engine.loadConfigs(configs); })
+      .catch(() => {});
+    return () => { destroySFXEngine(); };
+  }, []);
+
+  // Keep SFX engine in sync with audio settings changes
+  useEffect(() => {
+    getSFXEngine().updateSettings(state.audioSettings);
+  }, [state.audioSettings]);
+
+  const playSFX = useCallback((configKey: string, options?: SFXPlayOptions) => {
+    getSFXEngine().play(configKey, options);
+  }, []);
+
   return (
     <GameContext.Provider
       value={{
@@ -218,6 +256,8 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
         clearStorySession,
         addBuff,
         removeBuff,
+        updateAudioSettings,
+        playSFX,
       }}
     >
       {children}

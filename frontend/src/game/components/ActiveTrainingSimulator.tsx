@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../api';
+import MusicManager from './story/MusicManager';
 import './ActiveTrainingSimulator.css';
 
 interface SkillStatus {
@@ -126,6 +127,7 @@ const ActiveTrainingSimulator: React.FC<Props> = ({ skill, effectiveBaseXp, pote
 
   return (
     <div className="training-simulator-overlay">
+      <MusicManager musicState="combat" sceneId={null} archetype="training_grounds" />
       <div className="scanline" />
       
       <div className="simulator-header">

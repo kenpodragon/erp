@@ -52,6 +52,8 @@ class PlayerSettings(SQLModel, table=True):
     audio_enabled: bool = Field(default=True)
     music_volume: int = Field(default=80)
     sfx_volume: int = Field(default=80)
+    master_volume: int = Field(default=80)
+    master_muted: bool = Field(default=False)
     narration_speed: float = Field(default=1.0)
     narration_wpm: int = Field(default=300)
     narration_font_size: int = Field(default=16)

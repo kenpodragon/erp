@@ -15,6 +15,7 @@ from models import (
     Entity, EntityGameplayData, SceneGameplayData, GameConfig, CharacterSkillLevel, PlayerMetaProgression,
     IdleSkillStatContribution, ClassStatAffinity, CharacterStat, PlayerSceneRecord, SkillPrerequisite,
     GearSlot, ItemPrefix, ItemQuality, ItemLoreTag, ItemTypeBase, ItemSuffix,
+    Atmosphere, AudioConfig,
 )
 from datetime import datetime, timezone
 

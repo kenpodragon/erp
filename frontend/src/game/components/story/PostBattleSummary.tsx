@@ -51,9 +51,10 @@ interface Props {
   session: StorySession;
   onContinue: () => void;
   onReturnToHub: (completeData?: any) => void;
+  playSFX?: (key: string, opts?: { pan?: number }) => void;
 }
 
-const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub }) => {
+const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub, playSFX }) => {
   const [stats, setStats] = useState<SummaryStats | null>(null);
   const [fetching, setFetching] = useState(true);
   const [countGold, setCountGold] = useState(0);
@@ -130,9 +131,13 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
           for (let i = 0; i < achs.length; i++) {
             await new Promise(r => setTimeout(r, 800));
             setCurrentAchIdx(i);
+            if (achs[i].met && achs[i].rolled) {
+              playSFX?.('sfx_item_drop');
+            }
           }
           await new Promise(r => setTimeout(r, 600));
           setDicePhase('done');
+          if (drops.length > 0) playSFX?.('sfx_achievement');
         } else {
           // No achievements configured — skip loot phase
           onReturnToHub(data);

@@ -74,6 +74,28 @@
   gap: 0.5rem;
 }
 
+.mute-toggle-btn {
+  background: none;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 0.4rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.mute-toggle-btn:hover {
+  background-color: #222;
+  border-color: #444;
+}
+
+.mute-toggle-btn.muted {
+  color: #666;
+  border-color: #555;
+}
+
 .settings-btn, .exit-btn {
   background: none;
   border: 1px solid #333;

@@ -34,6 +34,8 @@ from routes.game_training import router as game_training_router
 from routes.character_progression import router as character_progression_router
 from routes.inventory import router as inventory_router
 from routes.admin_game import router as admin_game_router
+from routes.admin_audio import router as admin_audio_router
+from routes.audio import router as audio_router
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +171,8 @@ app.include_router(game_training_router)
 app.include_router(character_progression_router)
 app.include_router(inventory_router)
 app.include_router(admin_game_router)
+app.include_router(admin_audio_router)
+app.include_router(audio_router)
 
 
 @app.get("/debug-routes")

@@ -243,6 +243,13 @@ async def update_settings(
         if not (0 <= v <= 100):
             raise HTTPException(status_code=422, detail="sfx_volume must be between 0 and 100")
         settings.sfx_volume = v
+    if "master_volume" in update_data:
+        v = update_data["master_volume"]
+        if not (0 <= v <= 100):
+            raise HTTPException(status_code=422, detail="master_volume must be between 0 and 100")
+        settings.master_volume = v
+    if "master_muted" in update_data:
+        settings.master_muted = bool(update_data["master_muted"])
     if "narration_speed" in update_data:
         s = update_data["narration_speed"]
         if not (0.5 <= s <= 2.0):

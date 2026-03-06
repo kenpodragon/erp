@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-05*
+*Updated: 2026-03-06*
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
@@ -27,6 +27,19 @@ This document tracks the completed development phases for the Elysium Rising mmo
    - [x] 2.4.2 — Dream Item System (migrations 034–035, 5-component item generator, rarity tiers, run achievement evaluator, inventory CRUD, PostBattleSummary loot, equip/swap UI)
    - [x] 2.4.3 — Admin Panel: Config Browser + Content Editor (admin CRUD for configs/stats/classes/skills/benefits/items, GameConfigs + ContentEditor frontend pages)
    - [x] 2.4.4 — Cross-Cutting / Final (data dictionary, E2E Playwright tests, doc pass)
+ - [x] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`, `docs/recs/2.5_AUDIO_MUSIC_SCHEMA.md`)*
+   - [x] 2.5.0 — Foundation: Audio Infrastructure & Settings (migration 039, atmospheres/audio_configs tables, SQLModel models, hierarchy resolution endpoint, SFX configs endpoint, player settings, AudioSettingsModal, MuteToggle)
+   - [x] 2.5.1 — Music System: MusicManager & Web Audio Synthesis (OscillatorNode chain renderer, 2s cross-fade, tab visibility handling, replaced AudioPlayer.tsx)
+   - [x] 2.5.2 — SFX System: SFXEngine & Game Integration (SFXEngine singleton, spatial panning, integrated into CombatStage/SkillsHotbar/PostBattleSummary/BossStage/UI)
+   - [x] 2.5.3 — Admin Panel & Content Tools (AtmosphereEditor, SFXConfigEditor, Web Audio preview, batch assignment, generate_8bit_music.py, generate_8bit_sfx.py, classify_atmospheres.py, 19 backend + 19 admin tests)
+   - [x] 2.5.4 — Polish, Idle Integration & Final QA (Idle Training music via archetype prop, migration 040: 52 music definitions + 5 boss themes + 6 extended SFX, data dictionary update, regression: 337 backend / 99 admin / 201 frontend passing)
+
+## Requirements Doc Audit (Post-2.5)
+- [x] **Full Requirements Audit & Code Verification** (all docs through 2.5)
+  - [x] Checked off ~100+ implemented items across `2.0_GAME_LOOP.md`, `2.2_STORY_MODE.md`, `2.3.1.0_IDLE_TRAINING_SCHEMA.md`, `2.4_CHARACTER_PROGRESSION.md`, `2.5_AUDIO_MUSIC.md`, `0_REQUIREMENTS.md`, `1_ONBOARDING_INIT_RECS.md`
+  - [x] Code-verified 15 flagged items via Explore agents — resolved 9 as implemented (Settings Gear partial, Battle Banner, Screen Shake, Offline Summary, Progression Mode, Test Criteria, Migration Checklist, Map Node States, Skill Unlock partial)
+  - [x] 8 genuinely incomplete items documented in TODO.md under "Incomplete Items from Completed Phases"
+  - [x] Moved completed 2.5 block from TODO.md to DONE.md
 
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  

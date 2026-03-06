@@ -67,6 +67,7 @@ interface Props {
   onBossDefeated: (success: boolean) => void;
   textScale?: number;
   debugSuperClick?: boolean;
+  playSFX?: (key: string, opts?: { pan?: number }) => void;
 }
 
 // ── Inner PixiJS component ──────────────────────────────────────────────────
@@ -165,7 +166,7 @@ const BossContent: React.FC<InnerProps> = ({
 // ── Main BossStage component ────────────────────────────────────────────────
 const BossStage: React.FC<Props> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onBossDefeated,
-  textScale = 1.0, debugSuperClick = false,
+  textScale = 1.0, debugSuperClick = false, playSFX,
 }) => {
   const { bossName = 'Guardian' } = session;
   const cfg: BossConfig = session.bossConfig ?? {
@@ -239,9 +240,10 @@ const BossStage: React.FC<Props> = ({
 
     if (newHp <= 0 && !defeatedRef.current) {
       defeatedRef.current = true;
+      playSFX?.('sfx_boss_defeat');
       onBossDefeated(true);
     }
-  }, [onBossDefeated]);
+  }, [onBossDefeated, playSFX]);
 
   // ── Canvas click handler ─────────────────────────────────────────────────
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -299,6 +301,7 @@ const BossStage: React.FC<Props> = ({
       const { dmg, isCrit } = debugSuperClick
         ? { dmg: bossMaxHp * 0.5, isCrit: true }
         : calcClickDmg();
+      playSFX?.(isCrit ? 'sfx_crit' : 'sfx_click', { pan: 0 });
       dealDamage(dmg, isCrit, mx, cy);
     }
   }, [calcClickDmg, dealDamage, cfg.interrupt_clicks_required, onEnemyClick, bossMaxHp, debugSuperClick]);

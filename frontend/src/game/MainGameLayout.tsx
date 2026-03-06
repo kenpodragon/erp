@@ -40,7 +40,7 @@ interface MainGameLayoutProps {
 }
 
 const GameContent: React.FC<MainGameLayoutProps> = (props) => {
-  const { state, exitScene, setStorySession, setEssence } = useGame();
+  const { state, exitScene, setStorySession, setEssence, playSFX } = useGame();
   // Align IDs with Sidebar.tsx: map, skills, home, shop, chat, board
   const [activeTab, setActiveTab] = useState<string>('map');
   const [summaryData, setSummaryData] = useState<{ show: boolean; farmMode: boolean }>({ show: false, farmMode: false });
@@ -127,6 +127,7 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
           session={state.storySession}
           onContinue={handleContinueFarming}
           onReturnToHub={handleReturnToHub}
+          playSFX={playSFX}
         />
       )}
     </div>

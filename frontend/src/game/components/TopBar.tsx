@@ -1,7 +1,12 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useGame } from '../GameContext';
+import AudioSettingsModal, {
+  loadAudioSettings,
+  saveAudioSettingsLocal,
+  type AudioSettings,
+} from './AudioSettingsModal';
 import './TopBar.css';
 
 interface Character {
@@ -57,9 +62,32 @@ const CLASS_TO_PRESET: Record<string, string> = {
 };
 
 const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) => {
-  const { state } = useGame();
+  const { state, playSFX } = useGame();
   const [showSettings, setShowSettings] = useState(false);
-  
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings);
+
+  // Sync server audio settings on login (server is source of truth)
+  useEffect(() => {
+    if (player?.settings) {
+      const serverSettings: AudioSettings = {
+        masterVolume: (player.settings as any).master_volume ?? audioSettings.masterVolume,
+        musicVolume: player.settings.music_volume ?? audioSettings.musicVolume,
+        sfxVolume: player.settings.sfx_volume ?? audioSettings.sfxVolume,
+        masterMuted: (player.settings as any).master_muted ?? audioSettings.masterMuted,
+      };
+      setAudioSettings(serverSettings);
+      saveAudioSettingsLocal(serverSettings);
+    }
+  }, [player?.settings]);
+
+  const handleMuteToggle = useCallback(() => {
+    const next = { ...audioSettings, masterMuted: !audioSettings.masterMuted };
+    setAudioSettings(next);
+    saveAudioSettingsLocal(next);
+    api.patch('/api/players/me/settings', { master_muted: next.masterMuted }).catch(() => {});
+  }, [audioSettings]);
+
   // Local state for sliders during editing
   const [localSettings, setLocalSettings] = useState({
     ui_scale: player?.settings?.ui_scale || 1.0,
@@ -164,7 +192,19 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
       </div>
 
       <div className="top-bar-right">
-        <button className="settings-btn" title="Settings" onClick={() => setShowSettings(true)}>⚙️</button>
+        <button
+          className={`mute-toggle-btn ${audioSettings.masterMuted ? 'muted' : ''}`}
+          title={audioSettings.masterMuted ? 'Unmute Audio' : 'Mute Audio'}
+          onClick={() => { playSFX('sfx_ui_click'); handleMuteToggle(); }}
+        >
+          {audioSettings.masterMuted ? '\u{1F507}' : '\u{1F50A}'}
+        </button>
+        <button className="settings-btn" title="Audio Settings" onClick={() => { playSFX('sfx_ui_click'); setShowAudioSettings(true); }}>
+          {'\u{1F3B5}'}
+        </button>
+        <button className="settings-btn" title="Game Settings" onClick={() => { playSFX('sfx_ui_click'); setShowSettings(true); }}>
+          {'\u2699\uFE0F'}
+        </button>
       </div>
 
       {showSettings && (
@@ -195,6 +235,13 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
           </div>
         </div>
       )}
+
+      <AudioSettingsModal
+        open={showAudioSettings}
+        onClose={() => setShowAudioSettings(false)}
+        settings={audioSettings}
+        onChange={setAudioSettings}
+      />
     </header>
   );
 };

@@ -74,11 +74,12 @@ interface Props {
   onWavesComplete: () => void;
   onZoneAdvance: (newZone: number) => void;
   textScale?: number;
-  extraWavesMode?: boolean; 
+  extraWavesMode?: boolean;
   autoProgress: boolean;
   onAutoProgressToggle: (val: boolean) => void;
   debugSuperClick?: boolean;
   narrativeProgressPct: number;
+  playSFX?: (key: string, opts?: { pan?: number }) => void;
 }
 
 interface InnerProps extends Props {
@@ -96,7 +97,7 @@ const CombatContent: React.FC<InnerProps> = ({
   width, height, enemyPool, waveCount,
   setWaveCount, requiredWaves, extraWavesMode, onWavesComplete,
   clickHandlerRef, textScale = 1.0, autoProgress, onAutoProgressToggle,
-  debugSuperClick = false
+  debugSuperClick = false, playSFX
 }) => {
   const classColors = useMemo(() => {
     const style = getComputedStyle(document.documentElement);
@@ -239,6 +240,7 @@ const CombatContent: React.FC<InnerProps> = ({
         const goldEarned = (prev.baseGold || 0) * session.goldDropMultiplier;
         onGoldEarned(goldEarned);
         setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : (classColors.particleTint ? hexToPixiTint(classColors.particleTint) : 0x444466) }))]);
+        playSFX?.('sfx_enemy_death', { pan: (enemyX / width) * 2 - 1 });
         advanceWave();
         return null;
       }
@@ -317,8 +319,10 @@ const CombatContent: React.FC<InnerProps> = ({
       damage = (isCrit ? critMult : 1) * baseClick * (session.clickDmgMultiplier || 1) * (session.darkRitualMultiplier || 1);
     }
     
+    const panValue = (ox / width) * 2 - 1;
+    playSFX?.(isCrit ? 'sfx_crit' : 'sfx_click', { pan: panValue });
     applyDamage(damage, isCrit ? 'crit' : 'normal', ox, oy);
-  }, [enemy, session, critMult, applyDamage, onEnemyClick, CRIT_CHANCE, debugSuperClick]);
+  }, [enemy, session, critMult, applyDamage, onEnemyClick, CRIT_CHANCE, debugSuperClick, playSFX, width]);
 
   useEffect(() => { clickHandlerRef.current = handleClick; return () => { clickHandlerRef.current = null; }; }, [handleClick, clickHandlerRef]);
 

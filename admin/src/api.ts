@@ -78,6 +78,12 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     }),
 
+  put: (path: string, body?: unknown) =>
+    request(path, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
   delete: (path: string) => request(path, { method: 'DELETE' }),
 
   /** For multipart uploads — no Content-Type header. */

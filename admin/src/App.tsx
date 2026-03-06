@@ -12,6 +12,8 @@ import AccessControl from './pages/AccessControl'
 import AuditLog from './pages/AuditLog'
 import GameConfigs from './pages/GameConfigs'
 import ContentEditor from './pages/ContentEditor'
+import AtmosphereEditor from './pages/AtmosphereEditor'
+import SFXConfigEditor from './pages/SFXConfigEditor'
 
 interface HealthData {
   status: string;
@@ -182,6 +184,7 @@ function App() {
             <NavLink to="/config" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Server Config</NavLink>
             <NavLink to="/game-configs" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
             <NavLink to="/content" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Content</NavLink>
+            <NavLink to="/atmospheres" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audio</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
             {me?.is_owner && (
               <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
@@ -208,6 +211,8 @@ function App() {
             <Route path="/config" element={<div className="admin-content"><ServerConfig /></div>} />
             <Route path="/game-configs" element={<div className="admin-content"><GameConfigs /></div>} />
             <Route path="/content" element={<div className="admin-content"><ContentEditor /></div>} />
+            <Route path="/atmospheres" element={<div className="admin-content"><AtmosphereEditor /></div>} />
+            <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />

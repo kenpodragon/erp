@@ -1,0 +1,83 @@
+.audio-settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.audio-settings-modal {
+  background: #1a1a2e;
+  border: 2px solid #3a3a5e;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  color: #eee;
+}
+
+.audio-settings-modal h3 {
+  margin-top: 0;
+  color: #daa520;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.audio-settings-group {
+  margin-bottom: 1.25rem;
+}
+
+.audio-settings-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.audio-label-text {
+  font-size: 0.9rem;
+}
+
+.audio-settings-group input[type="range"] {
+  width: 100%;
+  accent-color: #daa520;
+}
+
+.audio-mute-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.75rem !important;
+  cursor: pointer;
+}
+
+.audio-mute-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #daa520;
+  cursor: pointer;
+}
+
+.audio-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.audio-settings-actions button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #444;
+  background: #333;
+  color: #eee;
+}
+
+.audio-settings-actions button:hover {
+  background: #444;
+}

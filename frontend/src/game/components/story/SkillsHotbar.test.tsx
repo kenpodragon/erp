@@ -13,6 +13,7 @@ vi.mock('../../GameContext', () => ({
     updateStorySession: mockUpdateStorySession,
     addBuff: mockAddBuff,
     removeBuff: mockRemoveBuff,
+    playSFX: vi.fn(),
   })
 }));
 

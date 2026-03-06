@@ -52,10 +52,10 @@ Build the complete player-facing onboarding pipeline (Splash → Auth → Profil
 ### 2.2 Admin Authentication
 
 - [x] **FR-2.6:** Admin authentication uses the same Firebase Google SSO flow as the player frontend.
-- [ ] **FR-2.7:** **Backend-enforced access control:** The admin panel must send the Firebase ID Token to the backend. The backend validates: (a) the token is valid, (b) the email is in the `ADMIN_ALLOWED_EMAILS` list (server-side env var), and (c) the request IP is in the `ADMIN_ALLOWED_IPS` list (server-side env var).
-- [ ] **FR-2.8:** The existing client-side email/IP whitelist in `admin/src/App.tsx` should be **retained as a UX optimization** (fast rejection without a round-trip) but must **not be the sole enforcement mechanism**.
-- [ ] **FR-2.9:** If backend admin validation fails, return `403 Forbidden` with a generic "Access denied" message (do not reveal which check failed).
-- [ ] **FR-2.10:** All admin API routes must be under a `/api/admin/` prefix and require admin validation middleware.
+- [x] **FR-2.7:** **Backend-enforced access control:** The admin panel must send the Firebase ID Token to the backend. The backend validates: (a) the token is valid, (b) the email is in the `ADMIN_ALLOWED_EMAILS` list (server-side env var), and (c) the request IP is in the `ADMIN_ALLOWED_IPS` list (server-side env var).
+- [x] **FR-2.8:** The existing client-side email/IP whitelist in `admin/src/App.tsx` should be **retained as a UX optimization** (fast rejection without a round-trip) but must **not be the sole enforcement mechanism**.
+- [x] **FR-2.9:** If backend admin validation fails, return `403 Forbidden` with a generic "Access denied" message (do not reveal which check failed).
+- [x] **FR-2.10:** All admin API routes must be under a `/api/admin/` prefix and require admin validation middleware.
 
 ### 2.3 Backend Auth Middleware
 

@@ -22,6 +22,8 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `036` | Game Configs Categorize | Categorized uncategorized `game_configs` entries and inserted missing economy configs (`gold_to_essence_base_rate`, `gold_to_essence_growth_factor`). |
 | `037` | Content Expansion (2.4 CRUD) | Created `attack_types` (13 types), `entity_attack_types` junction, `type_base_attack_types` junction. Expanded `gear_slots` (3→16 MMORPG set). Expanded `benefit_effect_data` (13→60: 30 pos, 15 mixed, 15 neg). Expanded item components: prefixes (15→60), qualities (10→60), lore_tags (15→60), suffixes (15→60), type_bases (16→86, 5+ per slot). Added weapon→attack type mappings. Assigned entity attack types by entity_type. Updated `gear_slot_weights_combat/narrative` configs for 16 slots. |
 | `038` | Combat Entity Attack Types | Assigned lore-appropriate attack types to 4 combat entities: Sludge Stalker (1: melee), Ether Voidling (1: void), Rust Guardian (3: melee/construct/thermal), Cosmic Remnant (5: akashic/void/gravitic/psychic/corruption). Re-added 4 missing benefit effects (golden_click_pct, dark_ritual_multiplier, energize_multiplier, reload_pct). |
+| `039` | Audio & Music System | Created `atmospheres` and `audio_configs` tables. Added `atmosphere_id INTEGER FK atmospheres` to `books`, `chapters`, `scene_gameplay_data`. Added `unique_boss_theme_id INTEGER FK atmospheres` and `death_sfx_key VARCHAR(100)` to `entity_gameplay_data`. Added `activate_sfx_key VARCHAR(100)` to `skills`. Added `master_volume SMALLINT DEFAULT 80` and `master_muted BOOLEAN DEFAULT FALSE` to `player_settings`. Added `archetype_id INTEGER FK atmospheres` to `locations`. Data migration: `master_muted = NOT audio_enabled`. Seeded 13 atmosphere archetypes + 3 Training Grounds variations (16 rows), 11 SFX presets, 3 book-level atmosphere assignments. |
+| `040` | Seed Music Definitions & Extended SFX | Populated `music_definitions` JSONB on all 16 existing atmosphere rows (13 archetypes + 3 training variations). Each definition contains 4 states: explore, combat, boss, mystery with oscillator sequences, drum patterns, and effects. Added 5 unique boss theme atmospheres (Boss: Pallid Mask, Tower Guardian, Void Entity, Glitch Lord, Final Ascent) with `archetype = NULL`. Added 6 extended SFX presets: `sfx_player_hit` (combat), `sfx_dark_ritual` (combat), `sfx_ui_hover` (ui), `sfx_ui_error` (ui), `sfx_beat_reveal` (narrative), `sfx_gold` (progression). Total atmospheres: 21. Total audio_configs: 17. |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -33,11 +35,11 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `books` | Top-level container for the book series. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. |
-| `chapters` | Chapters within a book, containing raw text and processing status. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. |
+| `books` | Top-level container for the book series. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for book-wide audio fallback. |
+| `chapters` | Chapters within a book, containing raw text and processing status. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for chapter-level audio. |
 | `scenes` | Narrative nodes within chapters, linked to locations. Includes `scene_type` and `boss_config`. |
 | `story_beats` | The smallest narrative units within a scene. Includes `content_image_path`, `audio_path`, and `audio_duration_seconds`. |
-| `locations` | Master list of canonical locations within the Tower. |
+| `locations` | Master list of canonical locations within the Tower. **2.5:** Added `archetype_id INTEGER FK atmospheres` for atmosphere classification. |
 | `entities` | Master list of characters, enemies, and neutral figures from the lore. |
 | `entity_aliases` | Alternate names or titles for entities. |
 | `entity_scene_appearances` | Tracks which entities appear in which scenes and their roles. |
@@ -58,7 +60,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | Table | Description |
 | :--- | :--- |
 | `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. |
-| `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). |
+| `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. |
 | `character_classes` | Definitions for player classes (Engineer, Conduit, Drifter, Vessel). **2.4:** Added `visual_config JSONB` for class visual identity (colors, avatar, particles, PixiJS tints). |
 | `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). |
 
@@ -74,8 +76,8 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `scene_gameplay_data` | Gameplay-specific metadata for scenes (required time, background sprite). |
-| `entity_gameplay_data` | Gameplay-specific stats for entities (HP, gold, sprite key). |
+| `scene_gameplay_data` | Gameplay-specific metadata for scenes (required time, background sprite). **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for scene-level audio. |
+| `entity_gameplay_data` | Gameplay-specific stats for entities (HP, gold, sprite key). **2.5:** Added `unique_boss_theme_id INTEGER FK atmospheres` for boss music override and `death_sfx_key VARCHAR(100)` referencing `audio_configs.config_key`. |
 | `player_story_sessions` | Active combat session state (zone, wave, gold, progress). |
 | `session_upgrades` | Temporary upgrades purchased during a Story Mode run. |
 | `boss_completions` | Tracks unique boss kills per player for gating and rewards. |
@@ -96,7 +98,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | :--- | :--- |
 | `stat_definitions` | Definitions for core and dynamic character/enemy stats. |
 | `benefit_effect_data` | Metadata for skill and item effects (multipliers, additions). |
-| `skills` | Definitions for active and passive skills, including cooldowns, costs, and unlock gates. **2.4:** Added `display_name VARCHAR(100)`, `level_0_xp_requirement INTEGER`, `class_id INTEGER FK character_classes`, `is_class_exclusive BOOLEAN`, `idle_level_scaling JSONB`, `effect_type VARCHAR(50)`. |
+| `skills` | Definitions for active and passive skills, including cooldowns, costs, and unlock gates. **2.4:** Added `display_name VARCHAR(100)`, `level_0_xp_requirement INTEGER`, `class_id INTEGER FK character_classes`, `is_class_exclusive BOOLEAN`, `idle_level_scaling JSONB`, `effect_type VARCHAR(50)`. **2.5:** Added `activate_sfx_key VARCHAR(100)` referencing `audio_configs.config_key`. |
 | `skill_actions` | Catalog of trainable sub-actions within each idle skill (XP, interval, lore). |
 | `character_skill_levels` | Per-character skill XP and level. Tracks active idle training state. **2.4:** Added `max_session_level INTEGER DEFAULT 0`. |
 | `dev_content_audit` | Auto-logged entries for missing assets or stats detected during gameplay. |
@@ -161,6 +163,17 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 - **30 positive:** Original 13 + health_regen, shield_strength, dodge_chance, xp_bonus, cooldown_reduction, damage_resistance, movement_speed, attack_speed_bonus, lifesteal_pct, multi_hit_chance, essence_efficiency, idle_xp_bonus, wave_skip_chance, boss_damage_bonus, drop_quality_bonus, nano_repair_rate, akashic_insight.
 - **15 neutral/mixed:** phase_shift, overcharge, temporal_flux, resonance_feedback, nanite_swarm_aura, void_echo, dream_state, substrate_merge, entropy_field, quantum_uncertainty, parasitic_link, memory_blur, conduit_overflow, graviton_pulse, threshold_instability.
 - **15 negative:** corruption_spread, essence_leak, sight_obscured, temporal_stasis, void_sickness, nanite_malfunction, prison_weight, akashic_static, dream_collapse, construct_aggro, etheris_decay, red_hat_sabotage, demiurge_notice, reality_fracture, system_audit.
+
+### 12. Audio & Music System (2.5, Migration 039)
+
+| Table | Description |
+| :--- | :--- |
+| `atmospheres` | Themed Web Audio API synthesis definitions for procedural music. Columns: `id SERIAL PK`, `name VARCHAR(255) UNIQUE`, `archetype VARCHAR(100)` (one of 13 archetype names; NULL for unique boss themes), `description TEXT`, `music_definitions JSONB` (keys: explore, combat, boss, mystery — each contains oscillator configs, sequences, drum patterns), `generator_bpm INTEGER`, `generator_key VARCHAR(10)`, `generator_scale VARCHAR(50)`, `generator_complexity INTEGER` (1-10), `generator_seed INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **039:** Seeded with 13 archetypes + 3 Training Grounds variations = 16 rows. **040:** Populated all `music_definitions`, added 5 unique boss themes (archetype=NULL) = 21 total rows. |
+| `audio_configs` | Global SFX preset definitions for Web Audio API synthesis. Columns: `id SERIAL PK`, `config_key VARCHAR(100) UNIQUE` (e.g. 'sfx_click', 'sfx_crit'), `category VARCHAR(50)` ('combat', 'progression', 'ui', 'fanfare', 'narrative'), `display_name VARCHAR(100)`, `preset_definition JSONB` (oscillator/envelope params), `base_volume FLOAT` (0.0-1.0), `pitch_variation FLOAT` (max random shift), `spatial_enabled BOOLEAN` (stereo panning), `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **039:** Seeded with 11 core SFX presets. **040:** Added 6 extended SFX = 17 total presets. |
+
+**Atmosphere Resolution Hierarchy:** Boss Override (`entity_gameplay_data.unique_boss_theme_id`) > Scene (`scene_gameplay_data.atmosphere_id`) > Chapter (`chapters.atmosphere_id`) > Book (`books.atmosphere_id`) > Global Default (Mundane Dread, logged to `dev_content_audit`).
+
+**Volume Calculation:** `master_volume/100 * category_volume/100 * preset.base_volume`. If `master_muted = TRUE`, all output is 0.
 
 ---
 

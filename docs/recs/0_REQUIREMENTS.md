@@ -85,28 +85,31 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Manual Advancement:** Users can select only one skill at a time to train. The training rate is like Melvor Idle. However, users can also click into the skill itself and play clicker versions of the skill game to advance the training further. Gold earned during these sessions (enemies they encoutner come from the pool of any enemies they've unlocked up to that point in the books), gives a percentage boost (after exiting). So for example the idle level up time is 5 hours. If a user actively plays and earns gold/defeats levels - if they make it to level 500 in the manual mode, then 100% of the remaining time to level up would be gained (or something to that effect).
 
 ### 2.4 Character & Progression Systems, Classes, and Skills
-- [ ] **Detailed Requirements:** [2.4_CHARACTER_PROGRESSION.md](2.4_CHARACTER_PROGRESSION.md)
-- [ ] **Core Stats:** Strength, Agility, and Intelligence derived from the book's power system. Should be related to things found in the book.
-- [ ] **Inventory System:** Equipment slots (Weapon, Armor, Trinkets) with color-coded rarity tiers. Should be related to things found in the book.
-- [ ] **Dual Leveling:** 
-    - [ ] **Character XP:** Permanent growth via Idle Training and Story completion.
-    - [ ] **Chapter XP:** Progression tracking through the Tower's narrative.
-- [ ] **Prestige (NG+):** Higher difficulty loops with scaled enemies, palette swaps, and exclusive rewards.
-- [ ] **Classes:** Character classes have all different skills and abilities (base). Shoudl be related to components within the book.
-- [ ] **Skill System:** Skills need to be based off of skills found in the books. Skill names, effects, need to be designed to encompass the full story.
+- [x] **Detailed Requirements:** [2.4_CHARACTER_PROGRESSION.md](2.4_CHARACTER_PROGRESSION.md)
+- [x] **Core Stats:** Strength, Agility, and Intelligence derived from the book's power system. Should be related to things found in the book.
+- [x] **Inventory System:** Equipment slots (Weapon, Armor, Trinkets) with color-coded rarity tiers. Should be related to things found in the book.
+- [x] **Dual Leveling:** 
+    - [x] **Character XP:** Permanent growth via Idle Training and Story completion.
+    - [x] **Chapter XP:** Progression tracking through the Tower's narrative.
+- [x] **Prestige (NG+):** Higher difficulty loops with scaled enemies, palette swaps, and exclusive rewards.
+- [x] **Classes:** Character classes have all different skills and abilities (base). Shoudl be related to components within the book.
+- [x] **Skill System:** Skills need to be based off of skills found in the books. Skill names, effects, need to be designed to encompass the full story.
 
 ### 2.5 Audio & Music Integration
-- [ ] **Detailed Requirements:** [2.5_AUDIO_MUSIC.md](2.5_AUDIO_MUSIC.md)
-- [ ] **8-Bit Atmospheric Music:** 
-    - [ ] **Programmatic Synthesis:** Dynamic 8-bit music tracks that evolutionarily layer and increase in intensity as Zone levels scale.
-    - [ ] **Mood-Based Hierarchy:** Lookup system for atmospheres (Exploring, Combat, Boss, Mystery) with Scene -> Chapter -> Book inheritance.
-- [ ] **Procedural Sound Effects (SFX):** 
-    - [ ] **Tactile Feedback:** Procedurally generated blips, hits, and chimes for clicks, crits, enemy defeats, and UI interactions.
-    - [ ] **Spatial Audio:** 2D stereo panning mapped to Battle Banner entity positions (left-to-right).
-- [ ] **Administrative Audio Editor:** 
-    - [ ] **Assignment Panel:** Tab to map atmospheres and SFX keys to scenes, entities, and skills.
-    - [ ] **Asset Management:** Integrated player for previewing generated 8-bit tracks and SFX.
-- [ ] **WAV-to-MP3 Pipeline:** Automated utility script for mass conversion and reference updates to optimize bandwidth.
+- [x] **Detailed Requirements:** [2.5_AUDIO_MUSIC.md](2.5_AUDIO_MUSIC.md) | **Schema:** [2.5_AUDIO_MUSIC_SCHEMA.md](2.5_AUDIO_MUSIC_SCHEMA.md)
+- [x] **Web Audio API Synthesis:** Real-time 8-bit music generation in the browser from lightweight JSON definitions (~2-5 KB each). No large audio files shipped.
+- [x] **13 Atmosphere Archetypes:** Lore-derived thematic music profiles (Mundane Dread, Occult Sanctum, Liminal Purgatory, Body Horror Theatre, Ancient Sanctuary, Cosmic Archive, Tech Utopia, Alien Frontier, Void Abyss, Domestic Trauma, Glitch Reality, Conspiracy Bunker, Training Grounds) each with 4 music states (Explore, Combat, Boss, Mystery). Training Grounds has 3-5 randomized variations for Idle Training sessions.
+- [x] **Atmosphere Hierarchy:** Scene -> Chapter -> Book -> Global Default resolution with `dev_content_audit` logging on fallback.
+- [x] **Unique Boss Themes:** Named boss entities can override atmosphere with unique music definitions.
+- [x] **Procedural SFX (Web Audio API):** 11 core + 6 extended sound effects synthesized in real-time (clicks, crits, deaths, skills, level-ups, item drops, UI). JSON preset definitions stored in `audio_configs` table.
+- [x] **Spatial Audio (SFX only):** Stereo panning via `StereoPannerNode` mapped to entity X-position in PixiJS viewport.
+- [x] **MusicManager Component:** Replaces existing `AudioPlayer.tsx`. Auto-detects game state (explore/combat/boss/mystery) from StoryMode orchestrator props. 2s cross-fade on state transitions.
+- [x] **Audio Settings:** Master/Music/SFX volume sliders + global mute TopBar toggle. Persisted to `player_settings` + `localStorage`.
+- [x] **Admin Atmosphere Editor:** CRUD for atmospheres, JSON definition editor with in-browser Web Audio preview, batch assignment to chapters/books.
+- [x] **Admin SFX Editor:** Edit/preview SFX presets, assign to skills and entities.
+- [x] **Content Tools:** CLI generators for music definitions (`generate_8bit_music.py`), SFX presets (`generate_8bit_sfx.py`), and location-to-archetype classification (`classify_atmospheres.py`).
+- [x] **Music Contexts:** Story Mode (all phases), Boss battles, Idle Training active click. No music during passive idle or hub navigation.
+- [x] **Phases:** 2.5.0 Infrastructure, 2.5.1 MusicManager, 2.5.2 SFX System, 2.5.3 Admin & Tools, 2.5.4 Polish & QA.
 
 ### 2.6 Economy & Anti-Cheat
 - [ ] **Detailed Requirements:** [2.6_ECONOMY_ANTICHEAT.md](2.6_ECONOMY_ANTICHEAT.md)
@@ -115,11 +118,20 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [ ] **Behavioral Detection:** System must distinguish between human mouse movements/click patterns and automated macros/bots.
     - [ ] **Server Validation:** Real-time validation of click rates, damage calculations, and playback-based gating.
 
+### 2.7 Dual Economy & Inventory
+- [ ] **Elysium Essence:** Meta-currency earned from Story Mode, consumed by Training.
+- [ ] **Inventory System:** Slots for Weapons, Armor, and Trinkets (affects permanent stats).
+- [ ] **Artifacts & Collections:** Rare items earned from Chapter Mastery or boss drops.
+    - [ ] **Collection View:** Dedicated hub to inspect lore and bonuses of collected artifacts.
+    - [ ] **Admin Editor:** Interface to define new artifacts, rarity, and drop conditions.
+
 
 ## 3. Economy & Monetization (Stripe)
 - [ ] **Currency System:** 
     - [ ] In-game Gold (Earned).
     - [ ] Premium "Elysium Shards" (Purchased).
+        - [ ] Some way to poll stripe to match package reciepts, and then ensure that folks have that money in their account (in case of account reset)
+        - [ ] Some way to poll stripe on anything refunded or disputed, flag for potential ban (because of purchase problems), but also reduce any paid currency (can even make it go negative if they've already spent it).
 - [ ] **Subscriptions:** Monthly "Elysium Ascendant" plans for bonus XP/drops.
 - [ ] **Microtransactions:** Purchase of shards, cosmetics, and quality-of-life boosters.
 - [ ] **Donations:** One-time support options.
@@ -165,14 +177,6 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Game Content Management:** 
     - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
     - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
-
-### 2.7 Dual Economy & Inventory
-- [ ] **Elysium Essence:** Meta-currency earned from Story Mode, consumed by Training.
-- [ ] **Inventory System:** Slots for Weapons, Armor, and Trinkets (affects permanent stats).
-- [ ] **Artifacts & Collections:** Rare items earned from Chapter Mastery or boss drops.
-    - [ ] **Collection View:** Dedicated hub to inspect lore and bonuses of collected artifacts.
-    - [ ] **Admin Editor:** Interface to define new artifacts, rarity, and drop conditions.
-
 - [x] **Deployment:** Dockerized services on Google Cloud Run with automated Google Cloud Build CI/CD.
 - [x] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
 
@@ -219,8 +223,8 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ## C. Story Mode Asset Generators
 **Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
-- [ ] **8 Bit Music Generator:** [Handled in REC 2.5]
-- [ ] **Sound Effect Generator:** [Handled in REC 2.5]
+- [x] **8 Bit Music Generator:** Completed in REC 2.5 (`tools/generate_8bit_music.py`)
+- [x] **Sound Effect Generator:** Completed in REC 2.5 (`tools/generate_8bit_sfx.py`)
 - [ ] **Background image generator:** Lots more for all the different books
 - [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
 - [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...

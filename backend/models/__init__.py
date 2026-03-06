@@ -31,6 +31,7 @@ from models.character_progression import (
     PlayerSceneRecord, SkillPrerequisite,
 )
 from models.attack_types import AttackType, EntityAttackType, TypeBaseAttackType
+from models.audio import Atmosphere, AudioConfig
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -49,4 +50,5 @@ __all__ = [
     "IdleSkillStatContribution", "ClassStatAffinity", "CharacterStat",
     "PlayerSceneRecord", "SkillPrerequisite",
     "AttackType", "EntityAttackType", "TypeBaseAttackType",
+    "Atmosphere", "AudioConfig",
 ]

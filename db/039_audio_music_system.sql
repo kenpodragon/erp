@@ -1,25 +1,18 @@
-# DB Schema for REC 2.5: Audio & Music Integration
+-- Migration 039: Audio & Music System (REC 2.5)
+-- Creates atmospheres + audio_configs tables, adds FK columns, seeds archetypes + SFX presets.
 
-This document defines the database updates required to support the atmospheric audio system, Web Audio API synthesis definitions, and event-driven SFX.
+BEGIN;
 
----
-
-## 1. New Tables
-
-### 1.1 `atmospheres`
-
-Defines a themed set of Web Audio API synthesis definitions for different game states. Each row represents one atmosphere (either an archetype or a unique boss theme).
-
-```sql
+-- ============================================================
+-- 1. Create atmospheres table
+-- ============================================================
 CREATE TABLE IF NOT EXISTS atmospheres (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) UNIQUE NOT NULL,        -- e.g., "Mundane Dread", "Void Abyss"
-    archetype VARCHAR(100),                    -- one of the 12 archetype names (NULL for unique boss themes)
+    name VARCHAR(255) UNIQUE NOT NULL,
+    archetype VARCHAR(100),
     description TEXT,
 
     -- Web Audio API synthesis definitions (one per music state)
-    -- Each key contains oscillator configs, sequences, drum patterns, effects
-    -- See 2.5_AUDIO_MUSIC.md Section 4.1 for full schema
     music_definitions JSONB DEFAULT '{
         "explore": null,
         "combat": null,
@@ -31,39 +24,31 @@ CREATE TABLE IF NOT EXISTS atmospheres (
     generator_bpm INTEGER DEFAULT 120,
     generator_key VARCHAR(10) DEFAULT 'C',
     generator_scale VARCHAR(50) DEFAULT 'minor',
-    generator_complexity INTEGER DEFAULT 5,   -- 1-10 scale for layering density
-    generator_seed INTEGER,                    -- deterministic seed for reproduction
+    generator_complexity INTEGER DEFAULT 5,
+    generator_seed INTEGER,
 
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Auto-update trigger
 CREATE TRIGGER update_atmospheres_modtime
     BEFORE UPDATE ON atmospheres
     FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-```
 
-### 1.2 `audio_configs`
-
-Global SFX preset definitions. Each row defines one sound effect that game components trigger by `config_key`.
-
-```sql
+-- ============================================================
+-- 2. Create audio_configs table
+-- ============================================================
 CREATE TABLE IF NOT EXISTS audio_configs (
     id SERIAL PRIMARY KEY,
-    config_key VARCHAR(100) UNIQUE NOT NULL,   -- e.g., 'sfx_click', 'sfx_crit', 'sfx_level_up'
-    category VARCHAR(50) NOT NULL DEFAULT 'sfx', -- 'sfx', 'ui', 'fanfare'
-    display_name VARCHAR(100),                 -- Human-readable name for admin UI
+    config_key VARCHAR(100) UNIQUE NOT NULL,
+    category VARCHAR(50) NOT NULL DEFAULT 'sfx',
+    display_name VARCHAR(100),
 
-    -- Web Audio API synthesis preset (JSON)
-    -- For simple sounds: single object with oscillator/envelope params
-    -- For complex sounds (fanfares): array of objects played in sequence
-    -- See 2.5_AUDIO_MUSIC.md Section 3.4 for preset format
     preset_definition JSONB NOT NULL DEFAULT '{}',
 
-    base_volume FLOAT DEFAULT 1.0,             -- 0.0 - 1.0
-    pitch_variation FLOAT DEFAULT 0.0,         -- Max random pitch shift (0.0 = none, 0.1 = +/-10%)
-    spatial_enabled BOOLEAN DEFAULT FALSE,     -- Enable stereo panning based on entity X-coord
+    base_volume FLOAT DEFAULT 1.0,
+    pitch_variation FLOAT DEFAULT 0.0,
+    spatial_enabled BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -72,15 +57,10 @@ CREATE TABLE IF NOT EXISTS audio_configs (
 CREATE TRIGGER update_audio_configs_modtime
     BEFORE UPDATE ON audio_configs
     FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-```
 
----
-
-## 2. Table Updates (Atmosphere Hierarchy)
-
-### 2.1 `books`, `chapters`, `scene_gameplay_data` — Atmosphere FK
-
-```sql
+-- ============================================================
+-- 3. Add atmosphere FK to books, chapters, scene_gameplay_data
+-- ============================================================
 ALTER TABLE books
     ADD COLUMN IF NOT EXISTS atmosphere_id INTEGER REFERENCES atmospheres(id) ON DELETE SET NULL;
 
@@ -89,70 +69,57 @@ ALTER TABLE chapters
 
 ALTER TABLE scene_gameplay_data
     ADD COLUMN IF NOT EXISTS atmosphere_id INTEGER REFERENCES atmospheres(id) ON DELETE SET NULL;
-```
 
-### 2.2 `entity_gameplay_data` — Boss Theme & Death SFX
-
-```sql
--- Unique boss music (overrides scene/chapter/book atmosphere during boss encounters)
+-- ============================================================
+-- 4. Add boss theme + death SFX to entity_gameplay_data
+-- ============================================================
 ALTER TABLE entity_gameplay_data
     ADD COLUMN IF NOT EXISTS unique_boss_theme_id INTEGER REFERENCES atmospheres(id) ON DELETE SET NULL;
 
--- Death sound effect key (references audio_configs.config_key)
 ALTER TABLE entity_gameplay_data
     ADD COLUMN IF NOT EXISTS death_sfx_key VARCHAR(100);
-```
 
-### 2.3 `skills` — Activation SFX
-
-```sql
--- Sound effect played when this skill is activated
+-- ============================================================
+-- 5. Add activation SFX to skills
+-- ============================================================
 ALTER TABLE skills
     ADD COLUMN IF NOT EXISTS activate_sfx_key VARCHAR(100);
-```
 
-### 2.4 `player_settings` — Audio Columns
-
-The existing `player_settings` table already has `audio_enabled`, `music_volume` (0-100), and `sfx_volume` (0-100). Add:
-
-```sql
--- Master volume (0-100 scale, applied as multiplier to music and SFX)
+-- ============================================================
+-- 6. Add master volume + mute to player_settings
+-- ============================================================
 ALTER TABLE player_settings
-    ADD COLUMN IF NOT EXISTS master_volume SMALLINT DEFAULT 80
-    CHECK (master_volume BETWEEN 0 AND 100);
+    ADD COLUMN IF NOT EXISTS master_volume SMALLINT DEFAULT 80;
 
--- Master mute toggle (overrides all audio when TRUE)
 ALTER TABLE player_settings
     ADD COLUMN IF NOT EXISTS master_muted BOOLEAN DEFAULT FALSE;
-```
 
-**Column mapping to frontend `AudioSettings`:**
+-- Add check constraint separately (IF NOT EXISTS not supported for constraints in all PG versions)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'player_settings_master_volume_check'
+    ) THEN
+        ALTER TABLE player_settings
+            ADD CONSTRAINT player_settings_master_volume_check
+            CHECK (master_volume BETWEEN 0 AND 100);
+    END IF;
+END $$;
 
-| DB Column | Frontend Field | Notes |
-|-----------|---------------|-------|
-| `audio_enabled` | (deprecated) | Replaced by `master_muted`. Migration sets `master_muted = NOT audio_enabled`. |
-| `master_volume` | `masterVolume` | New. Stored as 0-100 int, frontend uses 0.0-1.0 float. |
-| `music_volume` | `musicVolume` | Existing. Same scale conversion. |
-| `sfx_volume` | `sfxVolume` | Existing. Same scale conversion. |
-| `master_muted` | `masterMuted` | New. Boolean toggle. |
-
-### 2.5 `locations` — Archetype Classification
-
-```sql
--- Links each location to a classified atmosphere archetype
+-- ============================================================
+-- 7. Add archetype FK to locations
+-- ============================================================
 ALTER TABLE locations
     ADD COLUMN IF NOT EXISTS archetype_id INTEGER REFERENCES atmospheres(id) ON DELETE SET NULL;
-```
 
-This column is populated by the `tools/classify_atmospheres.py` script which reads `base_atmosphere` (free-text) and maps it to one of the 12 atmosphere archetype rows.
+-- ============================================================
+-- 8. Data migration: map audio_enabled -> master_muted
+-- ============================================================
+UPDATE player_settings SET master_muted = NOT audio_enabled WHERE audio_enabled = FALSE AND master_muted = FALSE;
 
----
-
-## 3. Seed Data
-
-### 3.1 Atmosphere Archetypes (13 archetypes + 3 Training Grounds variations = 16 rows)
-
-```sql
+-- ============================================================
+-- 9. Seed atmosphere archetypes (13 + 3 Training Grounds variations = 16 rows)
+-- ============================================================
 INSERT INTO atmospheres (name, archetype, description, generator_bpm, generator_key, generator_scale, generator_complexity)
 VALUES
     ('Mundane Dread',       'mundane_dread',       'Etheris surface — uncanny normalcy, fluorescent hum, detuned dissonance',     100, 'C',  'major',      4),
@@ -164,25 +131,23 @@ VALUES
     ('Tech Utopia',         'tech_utopia',         'Clean sci-fi — pulse waves, major progressions, hopeful but sterile',         115, 'C',  'major',      5),
     ('Alien Frontier',      'alien_frontier',      'Beautiful but wrong — whole-tone scales, organic percussion, 3-beat feel',    100, 'D',  'whole_tone', 6),
     ('Void Abyss',          'void_abyss',          'Lovecraftian impossibility — sub-bass drones, noise, descending chromatics',  50,  'E',  'chromatic',  9),
-    ('Domestic Trauma',     'domestic_trauma',      'Distorted lullabies, irregular heartbeat, silence gaps',                      80,  'Am', 'minor',      4),
+    ('Domestic Trauma',     'domestic_trauma',     'Distorted lullabies, irregular heartbeat, silence gaps',                      80,  'Am', 'minor',      4),
     ('Glitch Reality',      'glitch_reality',      'Digital decay — bit-crushed melodies, stutter loops, pitch jumps',            130, 'C',  'chromatic',  7),
     ('Conspiracy Bunker',   'conspiracy_bunker',   'Paranoid arpeggios, staccato bass, radio-static interludes',                  95,  'Bm', 'minor',      5),
     ('Training Grounds',    'training_grounds',    'Disciplined repetition — steady pulse-wave grooves, metronomic percussion',  110, 'Am', 'minor',      5)
 ON CONFLICT (name) DO NOTHING;
 
--- Training Grounds variations (3-5 rows with different seeds, same archetype)
--- These are selected randomly per Idle Training active click session
+-- Training Grounds variations
 INSERT INTO atmospheres (name, archetype, description, generator_bpm, generator_key, generator_scale, generator_complexity, generator_seed)
 VALUES
     ('Training Grounds (Var 2)', 'training_grounds', 'Training variation — slightly different groove', 115, 'Em', 'minor', 5, 2001),
     ('Training Grounds (Var 3)', 'training_grounds', 'Training variation — uptempo pulse', 120, 'Dm', 'dorian', 6, 2002),
     ('Training Grounds (Var 4)', 'training_grounds', 'Training variation — heavy bass focus', 105, 'Am', 'minor', 4, 2003)
 ON CONFLICT (name) DO NOTHING;
-```
 
-### 3.2 Core SFX Presets (11 rows)
-
-```sql
+-- ============================================================
+-- 10. Seed core SFX presets (11 rows)
+-- ============================================================
 INSERT INTO audio_configs (config_key, category, display_name, preset_definition, base_volume, pitch_variation, spatial_enabled)
 VALUES
     ('sfx_click',            'combat',      'Player Click',        '{"oscillator_type":"square","frequency_start":660,"frequency_end":440,"duration_ms":80,"attack_ms":2,"decay_ms":30,"sustain_level":0.2,"release_ms":48,"noise_mix":0.05}', 0.6, 0.08, true),
@@ -197,67 +162,12 @@ VALUES
     ('sfx_boss_defeat',      'combat',      'Boss Defeat Fanfare', '[{"oscillator_type":"square","frequency_start":392,"frequency_end":392,"duration_ms":200},{"oscillator_type":"square","frequency_start":523,"frequency_end":523,"duration_ms":200},{"oscillator_type":"square","frequency_start":659,"frequency_end":659,"duration_ms":200},{"oscillator_type":"square","frequency_start":784,"frequency_end":784,"duration_ms":400},{"oscillator_type":"triangle","frequency_start":784,"frequency_end":784,"duration_ms":600,"attack_ms":10,"decay_ms":200,"sustain_level":0.4,"release_ms":390}]', 1.0, 0.0, false),
     ('sfx_chapter_complete', 'progression', 'Chapter Complete',    '[{"oscillator_type":"square","frequency_start":523,"frequency_end":523,"duration_ms":200},{"oscillator_type":"square","frequency_start":659,"frequency_end":659,"duration_ms":200},{"oscillator_type":"square","frequency_start":784,"frequency_end":784,"duration_ms":300},{"oscillator_type":"triangle","frequency_start":1047,"frequency_end":1047,"duration_ms":500,"attack_ms":10,"decay_ms":150,"sustain_level":0.5,"release_ms":340}]', 1.0, 0.0, false)
 ON CONFLICT (config_key) DO NOTHING;
-```
 
-### 3.3 Book-Level Atmosphere Assignment
+-- ============================================================
+-- 11. Seed book-level atmosphere assignments
+-- ============================================================
+UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'mundane_dread' LIMIT 1)   WHERE id = 1;
+UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'domestic_trauma' LIMIT 1)  WHERE id = 2;
+UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'cosmic_archive' LIMIT 1)   WHERE id = 3;
 
-```sql
--- Assign default atmospheres to all 3 books as baseline fallback
-UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'mundane_dread')       WHERE id = 1; -- Elysium Rising (Etheris-heavy)
-UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'domestic_trauma')     WHERE id = 2; -- Elysium Fallen (teen/abuse timeline)
-UPDATE books SET atmosphere_id = (SELECT id FROM atmospheres WHERE archetype = 'cosmic_archive')      WHERE id = 3; -- Escape from Elysium (Akashic/cosmic)
-```
-
----
-
-## 4. Migration File
-
-All changes above are consolidated into a single migration: `db/039_audio_music_system.sql`.
-
-**Migration order:**
-1. Create `atmospheres` table
-2. Create `audio_configs` table
-3. Alter `books`, `chapters`, `scene_gameplay_data` (add `atmosphere_id` FK)
-4. Alter `entity_gameplay_data` (add `unique_boss_theme_id`, `death_sfx_key`)
-5. Alter `skills` (add `activate_sfx_key`)
-6. Alter `player_settings` (add `master_volume`, `master_muted`)
-7. Alter `locations` (add `archetype_id` FK)
-8. Data migration: `UPDATE player_settings SET master_muted = NOT audio_enabled WHERE audio_enabled = FALSE;`
-9. Seed atmosphere archetypes (13 archetypes + 3 Training Grounds variations = 16 rows)
-10. Seed SFX presets (11 rows)
-11. Seed book-level atmosphere assignments (3 updates)
-
----
-
-## 5. Implementation Notes
-
-- **Web Audio API Synthesis:** The `MusicManager` frontend component reads `music_definitions` JSON from the `atmospheres` table and creates `OscillatorNode` chains. No audio files are served from the backend.
-- **SFX Synthesis:** The `SFXEngine` reads `preset_definition` JSON from `audio_configs` and synthesizes sounds in real-time. No audio files needed.
-- **Component-Level SFX:** Components call `SFXEngine.play('sfx_click', { pan: entityX / viewportWidth * 2 - 1 })`. The engine handles Web Audio node creation and teardown.
-- **Inheritance Resolution Order:**
-  1. `entity_gameplay_data.unique_boss_theme_id` (if boss encounter)
-  2. `scene_gameplay_data.atmosphere_id` (if present)
-  3. `chapters.atmosphere_id`
-  4. `books.atmosphere_id`
-  5. Global default (hardcoded "Mundane Dread" archetype ID, logs to `dev_content_audit`)
-- **Volume Calculation:** Effective volume = `master_volume/100 * category_volume/100 * preset.base_volume`. If `master_muted = TRUE`, all audio output is 0.
-- **`audio_enabled` Deprecation:** The existing `audio_enabled` column is retained for backward compatibility but functionally replaced by `master_muted`. The migration sets `master_muted = NOT audio_enabled` for existing rows.
-- **No file serving:** Unlike the current system (4 WAV files in `frontend/public/music/`), the new system serves only JSON definitions via API. The old WAV files can be deleted after `AudioPlayer.tsx` is removed in phase 2.5.1.
-
----
-
-## 6. Data Dictionary Updates Required
-
-After migration 039 is applied, update `db/data_dictionary.md` with:
-
-| Table | Section | Changes |
-|-------|---------|---------|
-| `atmospheres` | New section: "11. Audio & Music (2.5)" | Full table description |
-| `audio_configs` | New section: "11. Audio & Music (2.5)" | Full table description |
-| `books` | Section 1 | Add `atmosphere_id INTEGER FK atmospheres` |
-| `chapters` | Section 1 | Add `atmosphere_id INTEGER FK atmospheres` |
-| `scene_gameplay_data` | Section 5 | Add `atmosphere_id INTEGER FK atmospheres` |
-| `entity_gameplay_data` | Section 5 | Add `unique_boss_theme_id INTEGER FK atmospheres`, `death_sfx_key VARCHAR(100)` |
-| `skills` | Section 7 | Add `activate_sfx_key VARCHAR(100)` |
-| `player_settings` | Section 3 | Add `master_volume SMALLINT`, `master_muted BOOLEAN`. Note `audio_enabled` deprecation. |
-| `locations` | Section 1 | Add `archetype_id INTEGER FK atmospheres` |
+COMMIT;

@@ -53,7 +53,7 @@ interface Props {
 }
 
 const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs, classSkills = [] }) => {
-  const { updateStorySession, addBuff, removeBuff } = useGame();
+  const { updateStorySession, addBuff, removeBuff, playSFX } = useGame();
 
   // Driven by gameConfigs
   const GCD_MS = Number(gameConfigs['gcd_ms'] ?? 1000);
@@ -150,6 +150,7 @@ const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs, classSkills = [] 
       });
 
       if (res.ok) {
+        playSFX('sfx_skill_activate', { pan: -0.5 });
         const data = await res.json();
         const duration = (skill.benefits.duration_seconds || 30) * 1000;
         const cdMs = getEffectiveCd(skill, state.level);
@@ -208,6 +209,7 @@ const SkillsHotbar: React.FC<Props> = ({ session, gameConfigs, classSkills = [] 
       });
 
       if (res.ok) {
+        playSFX('sfx_skill_activate', { pan: -0.5 });
         const baseCd = 45; // Default class skill cooldown
         const cdMs = baseCd * (1 - Math.min(MAX_CD_REDUCTION, (state?.level || 0) * CD_REDUCTION_PER_LEVEL)) * 1000;
 

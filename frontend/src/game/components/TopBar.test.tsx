@@ -4,6 +4,15 @@ import TopBar from './TopBar';
 import { GameProvider } from '../GameContext';
 import { BrowserRouter } from 'react-router-dom';
 
+vi.mock('../../api', () => ({
+  api: {
+    get: vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) })),
+    post: vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })),
+    patch: vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })),
+  },
+  apiEvents: new EventTarget(),
+}));
+
 // Mock the useGame hook or wrap in GameProvider
 const renderTopBar = (props: any) => {
   return render(

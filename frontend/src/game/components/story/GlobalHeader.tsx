@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../api';
 import type { ActiveBuff } from '../../GameContext';
-import AudioPlayerCompact from './AudioPlayerCompact';
+import MusicManager from './MusicManager';
 import './GlobalHeader.css';
+
+type MusicState = 'explore' | 'combat' | 'boss' | 'mystery';
 
 interface Props {
   chapterId: number;
   sceneId: number;
   darkRitualMultiplier: number;
   activeBuffs: ActiveBuff[];
+  musicState: MusicState;
+  bossEntityId?: number | null;
 }
 
-const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplier, activeBuffs }) => {
+const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplier, activeBuffs, musicState, bossEntityId }) => {
   const [chapterLabel, setChapterLabel] = useState('...');
   const [sceneLabel, setSceneLabel] = useState('...');
 
@@ -38,7 +42,7 @@ const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplie
           <span className="breadcrumb-sep">|</span>
           <span className="breadcrumb-scene">{sceneLabel}</span>
         </div>
-        <AudioPlayerCompact chapterId={chapterId} />
+        <MusicManager musicState={musicState} sceneId={sceneId} bossEntityId={bossEntityId} />
       </div>
 
       {/* Active buff tray */}

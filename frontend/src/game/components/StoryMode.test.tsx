@@ -25,10 +25,13 @@ vi.mock('../GameContext', () => ({
         autoDpsPerSecond: 0,
       },
       activeBuffs: [],
+      audioSettings: { masterVolume: 80, musicVolume: 80, sfxVolume: 80, masterMuted: false },
     },
     exitScene: mockExitScene,
     setStorySession: mockSetStorySession,
     updateStorySession: mockUpdateStorySession,
+    setEssence: vi.fn(),
+    setGold: vi.fn(),
   })
 }));
 
@@ -36,7 +39,7 @@ vi.mock('../GameContext', () => ({
 vi.mock('./story/GlobalHeader', () => ({ default: () => <div data-testid="global-header" /> }));
 vi.mock('./story/NarrativeBlock', () => ({ default: () => <div data-testid="narrative-block" /> }));
 vi.mock('./story/CombatStage', () => ({ default: () => <div data-testid="combat-stage" /> }));
-vi.mock('./story/AudioPlayer', () => ({ default: () => <div data-testid="audio-player" /> }));
+vi.mock('./story/MusicManager', () => ({ default: () => <div data-testid="music-manager" /> }));
 vi.mock('./story/HeroStats', () => ({ default: () => <div data-testid="hero-stats" /> }));
 vi.mock('./story/GoldOdometer', () => ({ default: () => <div data-testid="gold-odometer" /> }));
 vi.mock('./story/SkillsHotbar', () => ({ default: () => <div data-testid="skills-hotbar" /> }));

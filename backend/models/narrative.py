@@ -18,6 +18,7 @@ class Book(SQLModel, table=True):
     transition_lore_text: Optional[str] = Field(default=None)
     recommended_level: Optional[int] = Field(default=None)
     min_level: Optional[int] = Field(default=None)
+    atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -39,6 +40,7 @@ class Chapter(SQLModel, table=True):
     transition_lore_text: Optional[str] = Field(default=None)
     recommended_level: Optional[int] = Field(default=None)
     min_level: Optional[int] = Field(default=None)
+    atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -54,6 +56,7 @@ class Location(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     canonical_name: str = Field(max_length=255, unique=True, nullable=False)
     description: Optional[str] = Field(default=None)
+    archetype_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
