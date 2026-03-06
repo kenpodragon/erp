@@ -30,6 +30,7 @@ from models.character_progression import (
     IdleSkillStatContribution, ClassStatAffinity, CharacterStat,
     PlayerSceneRecord, SkillPrerequisite,
 )
+from models.attack_types import AttackType, EntityAttackType, TypeBaseAttackType
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -47,4 +48,5 @@ __all__ = [
     "CharacterSkillLevel", "EntitySceneAppearance", "BossCompletion",
     "IdleSkillStatContribution", "ClassStatAffinity", "CharacterStat",
     "PlayerSceneRecord", "SkillPrerequisite",
+    "AttackType", "EntityAttackType", "TypeBaseAttackType",
 ]

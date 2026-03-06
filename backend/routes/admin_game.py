@@ -23,6 +23,9 @@ from models import (
     ItemLoreTag,
     ItemTypeBase,
     ItemSuffix,
+    AttackType,
+    EntityAttackType,
+    TypeBaseAttackType,
 )
 from models.character_progression import ClassStatAffinity, SkillPrerequisite
 from audit import write_audit_log
@@ -190,6 +193,36 @@ class ItemComponentUpdate(BaseModel):
     narrative_context: Optional[str] = None
     gear_slot_id: Optional[int] = None
     base_stat_range: Optional[Any] = None
+
+
+class AttackTypeCreate(BaseModel):
+    name: str
+    display_name: str
+    description: Optional[str] = None
+    is_physical: bool = False
+    lore_reference: Optional[str] = None
+
+
+class AttackTypeUpdate(BaseModel):
+    name: Optional[str] = None
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    is_physical: Optional[bool] = None
+    lore_reference: Optional[str] = None
+
+
+class GearSlotCreate(BaseModel):
+    name: str
+    display_name: str
+    description: Optional[str] = None
+    sort_order: int = 0
+
+
+class GearSlotUpdate(BaseModel):
+    name: Optional[str] = None
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    sort_order: Optional[int] = None
 
 
 # ---------------------------------------------------------------------------
@@ -1196,3 +1229,224 @@ async def list_avatar_options(
                 if f.lower().endswith((".png", ".jpg", ".svg")):
                     options.append({"path": prefix + f, "filename": f})
     return options
+
+
+# =========================================================================
+# 8. Attack Types CRUD
+# =========================================================================
+
+@router.get("/attack-types")
+async def list_attack_types(
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """List all attack types."""
+    rows = session.exec(select(AttackType).order_by(AttackType.name)).all()
+    return [_row_to_dict(r) for r in rows]
+
+
+@router.post("/attack-types", status_code=201)
+async def create_attack_type(
+    body: AttackTypeCreate,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Create a new attack type."""
+    now = datetime.now(timezone.utc)
+    at = AttackType(
+        name=body.name,
+        display_name=body.display_name,
+        description=body.description,
+        is_physical=body.is_physical,
+        lore_reference=body.lore_reference,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(at)
+    session.commit()
+    session.refresh(at)
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="attack_type_created",
+        target_type="attack_type",
+        target_id=str(at.id),
+        details={"name": at.name},
+        ip_address=get_client_ip(request),
+    )
+    return _row_to_dict(at)
+
+
+@router.patch("/attack-types/{attack_type_id}")
+async def update_attack_type(
+    attack_type_id: int,
+    body: AttackTypeUpdate,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Update an attack type."""
+    at = session.get(AttackType, attack_type_id)
+    if not at:
+        raise HTTPException(status_code=404, detail="Attack type not found")
+
+    changes: dict = {}
+    update_data = body.model_dump(exclude_unset=True)
+    for field, new_val in update_data.items():
+        old_val = getattr(at, field)
+        if old_val != new_val:
+            changes[field] = {"old": old_val, "new": new_val}
+            setattr(at, field, new_val)
+
+    if not changes:
+        raise HTTPException(status_code=422, detail="No fields changed")
+
+    at.updated_at = datetime.now(timezone.utc)
+    session.add(at)
+    session.commit()
+    session.refresh(at)
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="attack_type_updated",
+        target_type="attack_type",
+        target_id=str(attack_type_id),
+        details=changes,
+        ip_address=get_client_ip(request),
+    )
+    return _row_to_dict(at)
+
+
+@router.delete("/attack-types/{attack_type_id}")
+async def delete_attack_type(
+    attack_type_id: int,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Delete an attack type."""
+    at = session.get(AttackType, attack_type_id)
+    if not at:
+        raise HTTPException(status_code=404, detail="Attack type not found")
+
+    at_name = at.name
+    session.delete(at)
+    session.commit()
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="attack_type_deleted",
+        target_type="attack_type",
+        target_id=str(attack_type_id),
+        details={"name": at_name},
+        ip_address=get_client_ip(request),
+    )
+    return {"deleted": True, "id": attack_type_id}
+
+
+# =========================================================================
+# 9. Gear Slots CRUD
+# =========================================================================
+
+@router.post("/gear-slots", status_code=201)
+async def create_gear_slot(
+    body: GearSlotCreate,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Create a new gear slot."""
+    now = datetime.now(timezone.utc)
+    gs = GearSlot(
+        name=body.name,
+        display_name=body.display_name,
+        description=body.description,
+        sort_order=body.sort_order,
+        created_at=now,
+    )
+    session.add(gs)
+    session.commit()
+    session.refresh(gs)
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="gear_slot_created",
+        target_type="gear_slot",
+        target_id=str(gs.id),
+        details={"name": gs.name},
+        ip_address=get_client_ip(request),
+    )
+    return _row_to_dict(gs)
+
+
+@router.patch("/gear-slots/{slot_id}")
+async def update_gear_slot(
+    slot_id: int,
+    body: GearSlotUpdate,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Update a gear slot."""
+    gs = session.get(GearSlot, slot_id)
+    if not gs:
+        raise HTTPException(status_code=404, detail="Gear slot not found")
+
+    changes: dict = {}
+    update_data = body.model_dump(exclude_unset=True)
+    for field, new_val in update_data.items():
+        old_val = getattr(gs, field)
+        if old_val != new_val:
+            changes[field] = {"old": old_val, "new": new_val}
+            setattr(gs, field, new_val)
+
+    if not changes:
+        raise HTTPException(status_code=422, detail="No fields changed")
+
+    session.add(gs)
+    session.commit()
+    session.refresh(gs)
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="gear_slot_updated",
+        target_type="gear_slot",
+        target_id=str(slot_id),
+        details=changes,
+        ip_address=get_client_ip(request),
+    )
+    return _row_to_dict(gs)
+
+
+@router.delete("/gear-slots/{slot_id}")
+async def delete_gear_slot(
+    slot_id: int,
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """Delete a gear slot."""
+    gs = session.get(GearSlot, slot_id)
+    if not gs:
+        raise HTTPException(status_code=404, detail="Gear slot not found")
+
+    gs_name = gs.name
+    session.delete(gs)
+    session.commit()
+
+    write_audit_log(
+        session=session,
+        admin_email=token.get("email", "unknown"),
+        action="gear_slot_deleted",
+        target_type="gear_slot",
+        target_id=str(slot_id),
+        details={"name": gs_name},
+        ip_address=get_client_ip(request),
+    )
+    return {"deleted": True, "id": slot_id}

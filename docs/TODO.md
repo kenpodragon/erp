@@ -2,26 +2,21 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
-**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.
-    - [x] **2.4 fixes CONTENT CRUD**
-        - [ ] Create some more lore appropriate beneficial effects (and populate all with default magnitudes). 30 all positive effects. 15 are neutral or mixed. 15 are negative.
-        - [ ] For the item components (prefixes, qualities, lore tags, suffixes) - create so there are 30 positives, 15 mixed or neutral and 15 negative ones. Ensure that they have lore appropriate stats and/or benefical effects (can be more than one) along with appropriate weights (consider all as level 1 values).
-        - [ ] Create an attack type table in the db - melee, magic, ranged (think of 10 more like flying, etc...) these should be either generic, or lore appropriate (akashic). Add an editor to the Content tab to allow editing of these (addiing new ones)
-        - [ ] Create an equip slot location db table (populate with current equip slot locations). Update code so it dynamically calls this - so if there are 5 equip slot locations, then 5 slots would appear in the item inventory equiment slot. Create an editor slot for this in Content (name, and add more/remove). Create a common set of inventory slots from MMORPGs (helmet, neck, shoulders, chest, 2 fingers, 2 bracelets, 2 hands, legs, feet (any others I'm missing))
-        - [ ] In the item components, type bases, it should also include an item slot (where this can be equipped) (editable). Ensure there are at least 5 item types (lore appropriate) for each item slot. Add baseline stats and beneficial effects. For weapon types (also consider 2h so it needs to go in both hands). For weapon types, ensure there are at least 3 for each attack type (melee, ranged, magic). Remember that attack types can be multiple (one or more). Create several options of baseline weapons with multiple attack types (lore appropriate).
-        - [ ] Review the entities in the DB and assign (one attack type - lore appropriate to each entity. 2 or more to each miniboss and multiple to each big boss).
+**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.   
 
 - [ ] **2.5 — Audio & Music Integration** *(Ref: `docs/recs/2.5_AUDIO_MUSIC.md`)*
-    - [ ] **Infrastructure:**
-        - [ ] **Duration Utility:** Build a backend script to extract/update scene narrative durations (based on word counts or audio).
-        - [ ] **Asset Management:** Implement the `dev_content_audit` logger for missing audio/music, stat blocks, images, etc...
+    - [ ] **Infrastructure & Tooling:**
+        - [ ] **8-Bit Synthesis:** Expand `generate_placeholder_music.py` into a robust `MusicGenerator` with mood/intensity parameters.
+        - [ ] **SFX Generator:** Build a procedural utility for 8-bit hits, deaths, and UI chirps.
+        - [ ] **Compression:** Create the `WAV → MP3` batch utility and reference updater.
+        - [ ] **Asset Management:** Implement `dev_content_audit` flags for generic assets/missing audio.
     - [ ] **Frontend Components:**
-        - [ ] **Audio Player Embed:** Implement a standard audio player with Play, Pause, Restart, and Playback Speed (0.5x - 2.0x).
-        - [ ] **Suno Music Manager:** Build the looping background audio manager with cross-fade support.
-        - [ ] **WAV → MP3:** ffmpeg conversion of `/frontend/public/music/` tracks; update `AudioPlayer.tsx` src paths.
-    - [ ] **Experience:**
-        - [ ] **Spatial SFX:** Add tactile feedback for clicks, hits, and level-ups.
-        - [ ] **Advanced Narrative (ElevenLabs):** Research and prototype word-level timestamp sync for future implementation.
+        - [ ] **Music Manager:** Build the cross-fade (2s) background music manager with state detection (Explore/Combat/Boss).
+        - [ ] **Spatial Audio:** Implement Stereo Panning in PixiJS based on entity X-coordinates.
+        - [ ] **Audio Settings:** Unified modal for Master/Music/SFX volume + "Everything Mute" TopBar toggle.
+    - [ ] **Admin Panel:**
+        - [ ] **Atmosphere Editor:** New tab to create atmospheres and assign music states.
+        - [ ] **Asset Mapping:** Tools to assign SFX keys to Skills and Entities with built-in preview.
 
 - [ ] **2.6 — Economy & Anti-Cheat** *(Ref: `docs/recs/2.6_ECONOMY_ANTICHEAT.md`)*
     - [ ] Implement currency conversion (Session Gold -> Essence/Resources).

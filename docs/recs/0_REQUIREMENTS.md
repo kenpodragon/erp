@@ -63,11 +63,10 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ### 2.2 — Loop B: Story Mode / Clicker Combat (Active Play)
 - [x] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
-- [x] **The Reading & Listening Experience:** 
-    - [x] **Eleven Reader Integration:** Audio narration streams and syncs with pre-rendered PNG text overlays.
-    - [x] **Pause Sync:** Pausing the game automatically pauses the audiobook.
-    - [x] **Dual-Condition Completion:** Scene is only "complete" when both the audio finishes and required waves/bosses are defeated.
-    - [x] **Extended Waves:** If waves finish before audio, extra waves generate until audio is 100% complete.
+- [x] **The Reading Experience:** 
+    - [x] **Narrative Gating:** Progress is strictly tied to 1x playback duration (calculated) + wave completion.
+    - [x] **Dual-Condition Completion:** Scene is only "complete" when both the narrative reading finishes and required waves/bosses are defeated.
+    - [x] **Extended Waves:** If waves finish before narrative, extra waves generate until progress is 100% complete.
 - [x] **Combat Engine:** "Clicker Heroes-style" with exponential scaling and active skills.
     - [x] **Skill Scaling:** Base power from Idle Training levels; must be purchased and leveled with session gold each run.
     - [x] **Dark Ritual Persistence:** Multiplier persists across all scenes in a Chapter (resets per Book).
@@ -75,8 +74,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] **Mini-Bosses:** Scene-end encounters with enrage timers.
     - [x] **Primal Bosses:** 25% chance for Elysium Essence rewards on first defeat.
     - [x] **Chapter Bosses:** Features **Option C Interrupt Zones** during charge attacks.
-- [x] **Narrative Gating:** 
-    - [x] Strictly tied to 1x playback duration + wave completion.
+- [x] **Flow:** 
     - [x] After completion, users can **CONTINUE** to farm or **GO BACK** to the Hub, updating the map.
 
 ### 2.3 Loop C: Idle Training (Passive Progression)
@@ -99,12 +97,16 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ### 2.5 Audio & Music Integration
 - [ ] **Detailed Requirements:** [2.5_AUDIO_MUSIC.md](2.5_AUDIO_MUSIC.md)
-- [ ] **Audiobook Narration (Eleven Reader):** 
-    - [ ] Real-time streaming of audio books corresponding to the active chapter/scene.
-    - [ ] **Playback Tracking:** Server-side tracking of audio progress to enforce the narrative gate.
-    - [ ] **Replay Flexibility:** Once a segment has been completed at 1x speed, subsequent playthroughs allow for faster progression and optional audio.
-- [ ] **Dynamic Music:** SUNO-generated thematic playlists that rotate based on chapter mood.
-- [ ] **Tactile SFX:** Distinct sounds for clicks, crits, enemy defeats, and UI interactions.
+- [ ] **8-Bit Atmospheric Music:** 
+    - [ ] **Programmatic Synthesis:** Dynamic 8-bit music tracks that evolutionarily layer and increase in intensity as Zone levels scale.
+    - [ ] **Mood-Based Hierarchy:** Lookup system for atmospheres (Exploring, Combat, Boss, Mystery) with Scene -> Chapter -> Book inheritance.
+- [ ] **Procedural Sound Effects (SFX):** 
+    - [ ] **Tactile Feedback:** Procedurally generated blips, hits, and chimes for clicks, crits, enemy defeats, and UI interactions.
+    - [ ] **Spatial Audio:** 2D stereo panning mapped to Battle Banner entity positions (left-to-right).
+- [ ] **Administrative Audio Editor:** 
+    - [ ] **Assignment Panel:** Tab to map atmospheres and SFX keys to scenes, entities, and skills.
+    - [ ] **Asset Management:** Integrated player for previewing generated 8-bit tracks and SFX.
+- [ ] **WAV-to-MP3 Pipeline:** Automated utility script for mass conversion and reference updates to optimize bandwidth.
 
 ### 2.6 Economy & Anti-Cheat
 - [ ] **Detailed Requirements:** [2.6_ECONOMY_ANTICHEAT.md](2.6_ECONOMY_ANTICHEAT.md)
@@ -151,7 +153,11 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
-- [ ] **Dev Content Audit table** viewer and editor to help manage and update assets that have missing data. Ability to clear them from the log (don't need duplicates). Ties into the Gameplay data editor.
+- [ ] **Dev Content Audit table** viewer and editor to help manage and update assets that have missing data. Flag generic vs. specific assets.
+    - [ ] Flag missing `base_atmosphere` or music tracks.
+    - [ ] Flag entities using generic sprites or missing unique death sounds.
+    - [ ] Flag skills with missing SFX keys.
+    - [ ] Flag generic stat blocks not extracted from lore.
 
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
@@ -179,25 +185,20 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
 - [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
 
-## 99. Prestige (NG+)
+## 99. Deferred Features (Post-First-Release)
 
-> **Status: Deferred — Post-First-Release**
+### 99.1 Narrative Audio & Streaming (Eleven Reader)
+- [ ] **Eleven Reader Integration:** Real-time audiobook streaming and sync.
+- [ ] **Text-to-Speech (TTS):** Dynamic narration for extracted text.
+- [ ] **Word-Level Timestamp Sync:** Precision alignment for reading mode.
+- [ ] **Advanced Narrative Extraction:** Automated duration calculation based on raw audio files.
+- [ ] **Duration Utility:** Backend script to extract/update scene narrative durations based on audio files.
 
-NG+ is a designed feature that will not ship in the initial release. It is documented here to ensure schema and architecture decisions made in 2.4 do not block it.
+### 99.2 High-Fidelity Thematic Music (Suno)
+- [ ] **Suno Music Manager:** Build the looping background audio manager with cross-fade support for generated thematic tracks.
 
-### Core Concept
-After completing the full narrative (all books/chapters), players may enter a **New Game+ loop** on any completed chapter, starting the story again at higher difficulty.
-
-### Planned Mechanics
-- **Scaled Enemies:** Higher HP and damage multipliers on NG+ tier.
-- **Visual Swaps:** Palette-swapped enemy and environment sprites to signal NG+ status. Configurable via sprite key overrides in the DB — no additional assets required to launch.
-- **Exclusive Rewards:** Rare drops and prestige currency (working title: *Shard of Recursion*) earnable only at NG+ difficulty.
-- **Tier System:** NG+1, NG+2, etc. — each tier increases scaling further and unlocks additional palette variants.
-
-### Design Constraints
-- Prestige resets **session gold and upgrades only** — idle skill levels, character level, and inventory are permanent and carry forward.
-- Chapter-level NG+ scaling factors are stored in a `prestige_config` DB table (or extended `game_configs`) — fully admin-configurable.
-- The `player_progress` table must support a `prestige_tier` column (to be added in the NG+ migration, not now).
+### 99.3 Prestige (NG+)
+- [ ] **NG+ System:** Scaled difficulty, palette swaps, and exclusive prestige rewards.
 
 ---
 
@@ -218,8 +219,8 @@ After completing the full narrative (all books/chapters), players may enter a **
 
 ## C. Story Mode Asset Generators
 **Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
-- [ ] **8 Bit Music Generator** Generate a lot more tracks for the different books, the idle_skills (manual mode), boss battle music (unique per boss).
-- [ ] **Sound Effect Generator** Need to generate these.
-- [ ] **Background image generator** Lots more for all the different books
-- [ ] **DB Populator** Update DB With lore specific information and stat blocks for entities
-- [ ] **Sprite generator** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...
+- [ ] **8 Bit Music Generator:** [Handled in REC 2.5]
+- [ ] **Sound Effect Generator:** [Handled in REC 2.5]
+- [ ] **Background image generator:** Lots more for all the different books
+- [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
+- [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...

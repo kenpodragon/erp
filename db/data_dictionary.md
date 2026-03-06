@@ -19,6 +19,9 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `002` | Initial Data Consolidation | Consolidated all initial seed data, character classes, artifacts, skills, and configurations into a single initialization file. |
 | `034` | Dream Item System Schema | Created `gear_slots`, `item_prefixes`, `item_qualities`, `item_lore_tags`, `item_type_bases`, `item_suffixes` tables. Added dream item columns to `inventory_items`. Added `enforce_inventory_slot_cap` trigger on `player_inventory`. |
 | `035` | Dream Item System Seed Data | Seeded 3 gear slots, 15 prefixes, 10 qualities, 15 lore tags, 16 type bases (6 weapons, 5 armor, 5 trinkets), 15 suffixes. Added `game_configs` keys: `run_achievement_config`, `rarity_weight_book_1/2/3`, `gear_slot_weights_combat/narrative`. |
+| `036` | Game Configs Categorize | Categorized uncategorized `game_configs` entries and inserted missing economy configs (`gold_to_essence_base_rate`, `gold_to_essence_growth_factor`). |
+| `037` | Content Expansion (2.4 CRUD) | Created `attack_types` (13 types), `entity_attack_types` junction, `type_base_attack_types` junction. Expanded `gear_slots` (3→16 MMORPG set). Expanded `benefit_effect_data` (13→60: 30 pos, 15 mixed, 15 neg). Expanded item components: prefixes (15→60), qualities (10→60), lore_tags (15→60), suffixes (15→60), type_bases (16→86, 5+ per slot). Added weapon→attack type mappings. Assigned entity attack types by entity_type. Updated `gear_slot_weights_combat/narrative` configs for 16 slots. |
+| `038` | Combat Entity Attack Types | Assigned lore-appropriate attack types to 4 combat entities: Sludge Stalker (1: melee), Ether Voidling (1: void), Rust Guardian (3: melee/construct/thermal), Cosmic Remnant (5: akashic/void/gravitic/psychic/corruption). Re-added 4 missing benefit effects (golden_click_pct, dark_ritual_multiplier, energize_multiplier, reload_pct). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -126,12 +129,12 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `gear_slots` | Defines equippable gear slots (weapon, armor, trinket). Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`. |
-| `item_prefixes` | Adjective flavor components for procedural item names. Contributes stat bonuses. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `stat_bonuses JSONB` (e.g. `{"strength": 2, "agility": 1}`), `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **Trigger:** `trg_item_prefixes_updated_at` auto-sets `updated_at` on UPDATE. Seeded with 15 lore-themed prefixes (Solar, Void, Quantum, Elysian, Nanite, Spectral, Temporal, Corrupted, Prismatic, Fractured, Ancient, Resonant, Echo, Phase, Dark). |
-| `item_qualities` | Name-only flavor descriptors with no stat effect. Cosmetic/narrative component. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. Seeded with 10 qualities (Elder, Proto, Calibrated, Stabilized, Phase-Locked, Concentrated, Hyper-Dense, Crystalline, Primal, Formed). |
-| `item_lore_tags` | Middle lore-name component for item naming (Infinitron, Threshold, etc). Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `narrative_context TEXT`, `created_at TIMESTAMPTZ`. Seeded with 15 tags (Infinitron, Threshold, Dreamscape, Etheris, Akashic, Substrate, Conduit, Shepherd, Pointer, Aspolin, Red Hat, Genesis, Morgan, Lady A, Yaldabaoth). |
-| `item_type_bases` | Core item types per gear slot with stat ranges for procedural generation. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `gear_slot_id INTEGER FK gear_slots`, `base_stat_range JSONB` (e.g. `{"strength": [5,15], "agility": [2,8]}`), `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **Trigger:** `trg_item_type_bases_updated_at` auto-sets `updated_at` on UPDATE. Seeded with 16 types: Weapons (Blade, Emitter, Gauntlet, Staff, Resonance Fork, Pulse Cannon), Armor (Shielding, Conduit Weave, Nanite Plating, Drift Cloak, Barrier Lattice), Trinkets (Crystal, Module, Fragment, Sigil, Lens). |
-| `item_suffixes` | Suffix name components ("of the Ascendant") with stat bonuses. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(100)`, `stat_bonuses JSONB`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **Trigger:** `trg_item_suffixes_updated_at` auto-sets `updated_at` on UPDATE. Seeded with 15 suffixes (the Ascendant, the Vessel, the Construct, the First Key, the Accord, the Threshold, the Dark Ritual, the Void, Eternal Purpose, the Prison, the Dreamwalker, Silence, Recursion, the Shepherd's Eye, Lady A's Blessing). |
+| `gear_slots` | Defines equippable gear slots. **037:** Expanded from 3 (weapon, armor, trinket) to 16 MMORPG slots (head, neck, shoulders, chest, hands, wrist_1, wrist_2, finger_1, finger_2, legs, feet, main_hand, off_hand, back, trinket, waist). Renamed: weapon→main_hand, armor→chest. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`. |
+| `item_prefixes` | Adjective flavor components for procedural item names. Contributes stat bonuses. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `stat_bonuses JSONB` (e.g. `{"strength": 2, "agility": 1}`), `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **Trigger:** `trg_item_prefixes_updated_at` auto-sets `updated_at` on UPDATE. **037:** Expanded from 15 to 60 (30 positive, 15 neutral/mixed with negative stat tradeoffs, 15 negative). |
+| `item_qualities` | Name-only flavor descriptors with no stat effect. Cosmetic/narrative component. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. **037:** Expanded from 10 to 60 (30 positive, 15 neutral/mixed, 15 negative). |
+| `item_lore_tags` | Middle lore-name component for item naming. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `narrative_context TEXT`, `created_at TIMESTAMPTZ`. **037:** Expanded from 15 to 60 (30 positive, 15 neutral, 15 negative). |
+| `item_type_bases` | Core item types per gear slot with stat ranges for procedural generation. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(50)`, `gear_slot_id INTEGER FK gear_slots`, `base_stat_range JSONB`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **037:** Expanded from 16 to 86 types: 5+ per gear slot, 15 weapons (3+ per attack type), additional chest/trinket types. |
+| `item_suffixes` | Suffix name components ("of the Ascendant") with stat bonuses. Columns: `id SERIAL PK`, `code VARCHAR(8) UNIQUE`, `display_name VARCHAR(100)`, `stat_bonuses JSONB`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **037:** Expanded from 15 to 60 (30 positive, 15 neutral/mixed, 15 negative). |
 
 #### Dream Item `game_configs` Keys (seeded in 035)
 
@@ -141,8 +144,23 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `rarity_weight_book_1` | `drops` | Rarity distribution weights for Book 1 dream items: common 60, uncommon 25, rare 10, epic 4, cosmic 1. |
 | `rarity_weight_book_2` | `drops` | Rarity distribution weights for Book 2 dream items: common 50, uncommon 27, rare 14, epic 7, cosmic 2. |
 | `rarity_weight_book_3` | `drops` | Rarity distribution weights for Book 3 dream items: common 40, uncommon 28, rare 18, epic 10, cosmic 4. |
-| `gear_slot_weights_combat` | `drops` | Gear slot selection weights for combat scenes: weapon 50, armor 30, trinket 20. |
-| `gear_slot_weights_narrative` | `drops` | Gear slot selection weights for narrative scenes: weapon 30, armor 30, trinket 40. |
+| `gear_slot_weights_combat` | `drops` | Gear slot selection weights for combat scenes. **037:** Updated for 16 slots (main_hand 20, chest 10, head 8, legs 8, off_hand 10, etc.). |
+| `gear_slot_weights_narrative` | `drops` | Gear slot selection weights for narrative scenes. **037:** Updated for 16 slots (trinket 8, main_hand 10, head 8, etc.). |
+
+### 11. Attack Type System (2.4 Content CRUD, Migration 037)
+
+| Table | Description |
+| :--- | :--- |
+| `attack_types` | Combat attack type definitions. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `is_physical BOOLEAN DEFAULT FALSE`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 13 types: melee, ranged, akashic, aerial, psychic, nanite, phase, void, resonance, construct, thermal, gravitic, corruption. |
+| `entity_attack_types` | Many-to-many junction: entities to attack types. Columns: `id SERIAL PK`, `entity_id INTEGER FK entities ON DELETE CASCADE`, `attack_type_id INTEGER FK attack_types ON DELETE CASCADE`, `is_primary BOOLEAN DEFAULT FALSE`, `created_at TIMESTAMPTZ`. UNIQUE constraint on `(entity_id, attack_type_id)`. |
+| `type_base_attack_types` | Many-to-many junction: item type bases to attack types (for weapons). Columns: `id SERIAL PK`, `type_base_id INTEGER FK item_type_bases ON DELETE CASCADE`, `attack_type_id INTEGER FK attack_types ON DELETE CASCADE`, `created_at TIMESTAMPTZ`. UNIQUE constraint on `(type_base_id, attack_type_id)`. |
+
+### Benefit Effect Expansion (Migration 037)
+
+**037:** `benefit_effect_data` expanded from 13 to 60 entries:
+- **30 positive:** Original 13 + health_regen, shield_strength, dodge_chance, xp_bonus, cooldown_reduction, damage_resistance, movement_speed, attack_speed_bonus, lifesteal_pct, multi_hit_chance, essence_efficiency, idle_xp_bonus, wave_skip_chance, boss_damage_bonus, drop_quality_bonus, nano_repair_rate, akashic_insight.
+- **15 neutral/mixed:** phase_shift, overcharge, temporal_flux, resonance_feedback, nanite_swarm_aura, void_echo, dream_state, substrate_merge, entropy_field, quantum_uncertainty, parasitic_link, memory_blur, conduit_overflow, graviton_pulse, threshold_instability.
+- **15 negative:** corruption_spread, essence_leak, sight_obscured, temporal_stasis, void_sickness, nanite_malfunction, prison_weight, akashic_static, dream_collapse, construct_aggro, etheris_decay, red_hat_sabotage, demiurge_notice, reality_fracture, system_audit.
 
 ---
 
