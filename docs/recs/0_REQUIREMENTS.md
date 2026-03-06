@@ -62,29 +62,29 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **2D Rendering (PixiJS):** High-performance WebGL engine for combat animations, particle effects, and side-scrolling banners.
 
 ### 2.2 — Loop B: Story Mode / Clicker Combat (Active Play)
-- [ ] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
-- [ ] **The Reading & Listening Experience:** 
-    - [ ] **Eleven Reader Integration:** Audio narration streams and syncs with pre-rendered PNG text overlays.
-    - [ ] **Pause Sync:** Pausing the game automatically pauses the audiobook.
-    - [ ] **Dual-Condition Completion:** Scene is only "complete" when both the audio finishes and required waves/bosses are defeated.
-    - [ ] **Extended Waves:** If waves finish before audio, extra waves generate until audio is 100% complete.
-- [ ] **Combat Engine:** "Clicker Heroes-style" with exponential scaling and active skills.
-    - [ ] **Skill Scaling:** Base power from Idle Training levels; must be purchased and leveled with session gold each run.
-    - [ ] **Dark Ritual Persistence:** Multiplier persists across all scenes in a Chapter (resets per Book).
-- [ ] **Boss System:**
-    - [ ] **Mini-Bosses:** Scene-end encounters with enrage timers.
-    - [ ] **Primal Bosses:** 25% chance for Elysium Essence rewards on first defeat.
-    - [ ] **Chapter Bosses:** Features **Option C Interrupt Zones** during charge attacks.
-- [ ] **Narrative Gating:** 
-    - [ ] Strictly tied to 1x playback duration + wave completion.
-    - [ ] After completion, users can **CONTINUE** to farm or **GO BACK** to the Hub, updating the map.
+- [x] **Detailed Requirements:** [2.2_STORY_MODE.md](2.2_STORY_MODE.md)
+- [x] **The Reading & Listening Experience:** 
+    - [x] **Eleven Reader Integration:** Audio narration streams and syncs with pre-rendered PNG text overlays.
+    - [x] **Pause Sync:** Pausing the game automatically pauses the audiobook.
+    - [x] **Dual-Condition Completion:** Scene is only "complete" when both the audio finishes and required waves/bosses are defeated.
+    - [x] **Extended Waves:** If waves finish before audio, extra waves generate until audio is 100% complete.
+- [x] **Combat Engine:** "Clicker Heroes-style" with exponential scaling and active skills.
+    - [x] **Skill Scaling:** Base power from Idle Training levels; must be purchased and leveled with session gold each run.
+    - [x] **Dark Ritual Persistence:** Multiplier persists across all scenes in a Chapter (resets per Book).
+- [x] **Boss System:**
+    - [x] **Mini-Bosses:** Scene-end encounters with enrage timers.
+    - [x] **Primal Bosses:** 25% chance for Elysium Essence rewards on first defeat.
+    - [x] **Chapter Bosses:** Features **Option C Interrupt Zones** during charge attacks.
+- [x] **Narrative Gating:** 
+    - [x] Strictly tied to 1x playback duration + wave completion.
+    - [x] After completion, users can **CONTINUE** to farm or **GO BACK** to the Hub, updating the map.
 
 ### 2.3 Loop C: Idle Training (Passive Progression)
-- [ ] **Detailed Requirements:** [2.3_IDLE_TRAINING.md](2.3_IDLE_TRAINING.md)
-- [ ] **Skill-Based Growth:** "Melvor Idle-style" passive training system for combat, magic, and utility skills.
-- [ ] **Background Execution:** Training continues offline and while playing Story Mode.
-- [ ] **Session Floor:** Idle Training levels determine the "base stats" and power floor for Story Mode sessions.
-- [ ] **Manual Advancement:** Users can select only one skill at a time to train. The training rate is like Melvor Idle. However, users can also click into the skill itself and play clicker versions of the skill game to advance the training further. Gold earned during these sessions (enemies they encoutner come from the pool of any enemies they've unlocked up to that point in the books), gives a percentage boost (after exiting). So for example the idle level up time is 5 hours. If a user actively plays and earns gold/defeats levels - if they make it to level 500 in the manual mode, then 100% of the remaining time to level up would be gained (or something to that effect).
+- [x] **Detailed Requirements:** [2.3_IDLE_TRAINING.md](2.3_IDLE_TRAINING.md)
+- [x] **Skill-Based Growth:** "Melvor Idle-style" passive training system for combat, magic, and utility skills.
+- [x] **Background Execution:** Training continues offline and while playing Story Mode.
+- [x] **Session Floor:** Idle Training levels determine the "base stats" and power floor for Story Mode sessions.
+- [x] **Manual Advancement:** Users can select only one skill at a time to train. The training rate is like Melvor Idle. However, users can also click into the skill itself and play clicker versions of the skill game to advance the training further. Gold earned during these sessions (enemies they encoutner come from the pool of any enemies they've unlocked up to that point in the books), gives a percentage boost (after exiting). So for example the idle level up time is 5 hours. If a user actively plays and earns gold/defeats levels - if they make it to level 500 in the manual mode, then 100% of the remaining time to level up would be gained (or something to that effect).
 
 ### 2.4 Character & Progression Systems, Classes, and Skills
 - [ ] **Detailed Requirements:** [2.4_CHARACTER_PROGRESSION.md](2.4_CHARACTER_PROGRESSION.md)
@@ -175,6 +175,32 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Scalability:** System must handle 1,000+ concurrent players in chat/leaderboard instances.
 - [ ] **Security:** Rigorous JWT validation and Stripe webhook signature verification.
 
+## 8. Additional Requirements
+- [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
+- [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
+
+## 99. Prestige (NG+)
+
+> **Status: Deferred — Post-First-Release**
+
+NG+ is a designed feature that will not ship in the initial release. It is documented here to ensure schema and architecture decisions made in 2.4 do not block it.
+
+### Core Concept
+After completing the full narrative (all books/chapters), players may enter a **New Game+ loop** on any completed chapter, starting the story again at higher difficulty.
+
+### Planned Mechanics
+- **Scaled Enemies:** Higher HP and damage multipliers on NG+ tier.
+- **Visual Swaps:** Palette-swapped enemy and environment sprites to signal NG+ status. Configurable via sprite key overrides in the DB — no additional assets required to launch.
+- **Exclusive Rewards:** Rare drops and prestige currency (working title: *Shard of Recursion*) earnable only at NG+ difficulty.
+- **Tier System:** NG+1, NG+2, etc. — each tier increases scaling further and unlocks additional palette variants.
+
+### Design Constraints
+- Prestige resets **session gold and upgrades only** — idle skill levels, character level, and inventory are permanent and carry forward.
+- Chapter-level NG+ scaling factors are stored in a `prestige_config` DB table (or extended `game_configs`) — fully admin-configurable.
+- The `player_progress` table must support a `prestige_tier` column (to be added in the NG+ migration, not now).
+
+---
+
 ## TOOLING AND UTILITIES
 
 ## A. Book Agent Reader
@@ -192,7 +218,8 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ## C. Story Mode Asset Generators
 **Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
-- [ ] **PNG Text Generator:** Convert book scene text into copy-protected PNG image blocks.
-- [ ] **Audio Metadata Utility:** Extract asset lengths and scene durations from Eleven Reader.
-- [ ] **Sync Mapping Editor:** Map audio timestamps to specific PNG text blocks for the `scene_audio_sync` table.
-- [ ] **Suno Music Generation:** Generate atmospheric background tracks matching the book's mood.
+- [ ] **8 Bit Music Generator** Generate a lot more tracks for the different books, the idle_skills (manual mode), boss battle music (unique per boss).
+- [ ] **Sound Effect Generator** Need to generate these.
+- [ ] **Background image generator** Lots more for all the different books
+- [ ] **DB Populator** Update DB With lore specific information and stat blocks for entities
+- [ ] **Sprite generator** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...
