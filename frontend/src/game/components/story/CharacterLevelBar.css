@@ -1,0 +1,41 @@
+.char-level-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.char-level-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--class-primary, #ffd700);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--class-primary, #ffd700);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.char-level-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.char-level-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--class-secondary, #b8860b), var(--class-primary, #ffd700));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.char-level-xp {
+  font-size: 0.65rem;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}

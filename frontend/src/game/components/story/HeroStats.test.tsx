@@ -1,7 +1,15 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import HeroStats from './HeroStats';
 import type { StorySession } from '../../GameContext';
+
+// Mock the sub-components to isolate HeroStats tests
+vi.mock('./CharacterStatPanel', () => ({
+  default: () => <div data-testid="stat-panel">StatPanel</div>,
+}));
+vi.mock('./CharacterLevelBar', () => ({
+  default: () => <div data-testid="level-bar">LevelBar</div>,
+}));
 
 const baseSession: StorySession = {
   sessionId: 'test',
@@ -21,12 +29,16 @@ const baseSession: StorySession = {
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.5,
+  isBossSession: false,
+  bossType: null,
+  bossConfig: null,
+  isReplay: false,
 };
 
 describe('HeroStats', () => {
-  it('renders the HERO STATS title', () => {
+  it('renders the COMBAT STATS title', () => {
     render(<HeroStats session={baseSession} />);
-    expect(screen.getByText('HERO STATS')).toBeDefined();
+    expect(screen.getByText('COMBAT STATS')).toBeDefined();
   });
 
   it('displays click damage label', () => {
@@ -60,5 +72,11 @@ describe('HeroStats', () => {
     const session = { ...baseSession, characterStrength: 10, clickUpgradeLevel: 10, clickDmgMultiplier: 2, darkRitualMultiplier: 1 };
     render(<HeroStats session={session} />);
     expect(screen.getByText('40')).toBeDefined();
+  });
+
+  it('renders CharacterLevelBar and CharacterStatPanel', () => {
+    render(<HeroStats session={baseSession} />);
+    expect(screen.getByTestId('level-bar')).toBeDefined();
+    expect(screen.getByTestId('stat-panel')).toBeDefined();
   });
 });

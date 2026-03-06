@@ -15,6 +15,9 @@ class GameConfig(SQLModel, table=True):
     key: str = Field(primary_key=True, max_length=100)
     value_json: Any = Field(sa_column=Column(JSON, nullable=False))
     description: Optional[str] = Field(default=None)
+    category: Optional[str] = Field(default=None, max_length=50)
+    game_impact: Optional[str] = Field(default=None)
+    updated_by: Optional[int] = Field(default=None, foreign_key="players.id")
     updated_at: Optional[datetime] = Field(default=None)
 
 
@@ -96,7 +99,8 @@ class CharacterSkillLevel(SQLModel, table=True):
     is_in_active_mode: bool = Field(default=False)
     active_mode_started_at: Optional[datetime] = Field(default=None)
     last_offline_calc_at: Optional[datetime] = Field(default=None)
-    
+    max_session_level: int = Field(default=0)
+
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

@@ -12,7 +12,9 @@ from models import (
     ServerConfig, AdminAuditLog, ActivityEvent,
     AdminWhitelistEmail, AdminWhitelistIP, Book, Chapter, Scene, StoryBeat,
     Artifact, PlayerCollection, Skill, SkillAction, StatDefinition, BenefitEffectData, Location,
-    Entity, EntityGameplayData, SceneGameplayData, GameConfig, CharacterSkillLevel, PlayerMetaProgression
+    Entity, EntityGameplayData, SceneGameplayData, GameConfig, CharacterSkillLevel, PlayerMetaProgression,
+    IdleSkillStatContribution, ClassStatAffinity, CharacterStat, PlayerSceneRecord, SkillPrerequisite,
+    GearSlot, ItemPrefix, ItemQuality, ItemLoreTag, ItemTypeBase, ItemSuffix,
 )
 from datetime import datetime, timezone
 

@@ -27,7 +27,7 @@ from sqlmodel import Session, select, col
 from db import get_session
 from auth import get_current_player
 from models import (
-    PlayerCharacter, PlayerProgress, PlayerEssence,
+    PlayerCharacter, PlayerProgress, PlayerEssence, CharacterClass,
     Scene, Chapter, Book, StoryBeat, Entity, EntityGameplayData,
     Skill, PlayerSettings,
 )
@@ -36,6 +36,11 @@ from models.story_mode import (
     PlayerMetaProgression, DevContentAudit,
     CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
 )
+from services.character_progression import (
+    award_scene_completion_char_xp, upsert_scene_record,
+    recalculate_character_stats, get_skill_tree,
+)
+from services.item_generator import check_run_achievements
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/game/story", tags=["story_mode"])
@@ -477,6 +482,14 @@ async def start_session(
     if not scene:
         raise HTTPException(status_code=404, detail="Scene not found")
 
+    # 2.4: min_level hard gate
+    chapter = session.get(Chapter, scene.chapter_id)
+    if chapter and chapter.min_level and char.level < chapter.min_level:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Character level {char.level} is below the minimum level {chapter.min_level} required for this chapter."
+        )
+
     chapter_id = scene.chapter_id
     is_boss_session = scene.scene_type in ('chapter_boss', 'book_boss')
     boss_config = scene.boss_config or {}
@@ -623,7 +636,8 @@ async def start_session(
         session.refresh(new_session)
 
     auto_dps = _calc_auto_dps(session, char.id)
-    strength = char.strength or (char.character_class.base_strength if char.character_class else DEFAULT_CLICK_STRENGTH)
+    char_class = session.get(CharacterClass, char.class_id)
+    strength = char.strength or (char_class.base_strength if char_class else DEFAULT_CLICK_STRENGTH)
     
     idle_bonuses = _get_idle_training_bonuses(session, char.id)
 
@@ -669,6 +683,10 @@ async def start_session(
         "boss_name": boss_name,
         "boss_config": boss_config if is_boss_session else None,
         "is_replay": is_replay,
+        # 2.4: Class visual identity
+        "visual_config": char_class.visual_config if char_class else None,
+        # 2.4.1: Skill tree state for UpgradeMenu / Hotbar
+        "skill_tree": get_skill_tree(session, char.id),
     }
 
 
@@ -714,6 +732,7 @@ async def get_session_state(
     essence_earned = (story_session.current_zone * 10 + bosses_defeated * 50) * first_clear_bonus
 
     idle_bonuses = _get_idle_training_bonuses(session, char.id)
+    skill_tree = get_skill_tree(session, char.id)
 
     return {
         **story_session.model_dump(),
@@ -726,6 +745,7 @@ async def get_session_state(
         "essence_earned": round(essence_earned, 2),
         "converted_essence": round(converted_essence, 2),
         "idle_bonuses": idle_bonuses,
+        "skill_tree": skill_tree,
     }
 
 
@@ -1194,6 +1214,66 @@ async def complete_session(
             progress.updated_at = datetime.now(timezone.utc)
             session.add(progress)
 
+    # 2.4: Track max_session_level for skill upgrades
+    skill_upgrades = session.exec(
+        select(SessionUpgrade)
+        .where(SessionUpgrade.session_id == session_id)
+        .where(SessionUpgrade.upgrade_type == "skill_level")
+    ).all()
+    for su in skill_upgrades:
+        if su.target_id:
+            csl = session.exec(
+                select(CharacterSkillLevel)
+                .where(CharacterSkillLevel.character_id == char.id)
+                .where(CharacterSkillLevel.skill_id == su.target_id)
+            ).first()
+            if csl and su.level > csl.max_session_level:
+                csl.max_session_level = su.level
+                session.add(csl)
+
+    # 2.4: Award Character XP for scene completion
+    char_xp_result = award_scene_completion_char_xp(session, char)
+
+    # 2.4: Upsert player_scene_records
+    if story_session.scene_id:
+        upsert_scene_record(
+            session,
+            player_id=player.id,
+            scene_id=story_session.scene_id,
+            wave=story_session.current_zone,
+            enemies_killed=0,
+        )
+
+    # 2.4.2: Run achievement check → item drop generation
+    session_stats = {
+        "max_wave_reached": story_session.current_zone,
+        "boss_killed": bosses_defeated,
+        "enemies_killed": 0,  # TODO: track total enemies killed in session
+        "is_personal_best": False,  # Set by upsert_scene_record if applicable
+    }
+    dropped_items = []
+    achievement_results = []
+    try:
+        drops, results = check_run_achievements(
+            session, session_stats, char, scene, scene.chapter if scene else None,
+        )
+        achievement_results = results
+        for item in drops:
+            dropped_items.append({
+                "item_id": item.id,
+                "name": item.name,
+                "rarity": item.rarity,
+                "item_type": item.item_type,
+                "base_stats": item.base_stats,
+                "item_code": item.item_code,
+                "item_level": item.item_level,
+                "min_char_level": item.min_char_level,
+                "stat_requirements": item.stat_requirements,
+                "gear_slot_id": item.gear_slot_id,
+            })
+    except Exception:
+        logger.warning("Item drop generation failed", exc_info=True)
+
     story_session.is_active = False
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
@@ -1213,6 +1293,17 @@ async def complete_session(
         "total_character_essence": round(char_essence.current_balance, 2),
         "unlocked_skills": unlocked_skills,
         "idle_bonuses": idle_bonuses,
+        "character_xp": char_xp_result,
+        "dropped_items": dropped_items,
+        "achievement_results": [
+            {
+                "achievement_id": r.get("achievement_id"),
+                "display": r.get("display"),
+                "met": r.get("met"),
+                "rolled": r.get("rolled"),
+            }
+            for r in achievement_results
+        ],
     }
 # ---------------------------------------------------------------------------
 # Boss Transition Lore Endpoints

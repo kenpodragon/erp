@@ -13,7 +13,10 @@ from models.gameplay import (
     SceneGameplayData, Entity, EntityGameplayData,
     Skill, SkillAction, StatDefinition, BenefitEffectData,
 )
-from models.inventory import InventoryItem, PlayerInventory, Artifact, PlayerCollection
+from models.inventory import (
+    GearSlot, ItemPrefix, ItemQuality, ItemLoreTag, ItemTypeBase, ItemSuffix,
+    InventoryItem, PlayerInventory, Artifact, PlayerCollection,
+)
 from models.admin import (
     ServerConfig, AdminAuditLog, ActivityEvent,
     AdminWhitelistEmail, AdminWhitelistIP,
@@ -23,6 +26,10 @@ from models.story_mode import (
     PlayerMetaProgression, DevContentAudit,
     CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
 )
+from models.character_progression import (
+    IdleSkillStatContribution, ClassStatAffinity, CharacterStat,
+    PlayerSceneRecord, SkillPrerequisite,
+)
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -31,10 +38,13 @@ __all__ = [
     "Book", "Chapter", "Scene", "StoryBeat", "Location",
     "SceneGameplayData", "Entity", "EntityGameplayData",
     "Skill", "SkillAction", "StatDefinition", "BenefitEffectData",
+    "GearSlot", "ItemPrefix", "ItemQuality", "ItemLoreTag", "ItemTypeBase", "ItemSuffix",
     "InventoryItem", "PlayerInventory", "Artifact", "PlayerCollection",
     "ServerConfig", "AdminAuditLog", "ActivityEvent",
     "AdminWhitelistEmail", "AdminWhitelistIP",
     "GameConfig", "PlayerStorySession", "SessionUpgrade",
     "PlayerMetaProgression", "DevContentAudit",
     "CharacterSkillLevel", "EntitySceneAppearance", "BossCompletion",
+    "IdleSkillStatContribution", "ClassStatAffinity", "CharacterStat",
+    "PlayerSceneRecord", "SkillPrerequisite",
 ]

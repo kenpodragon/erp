@@ -314,7 +314,7 @@ def test_get_character_detail(client: TestClient, session: Session):
     assert data["character_name"] == "Aldric"
     assert data["class"] is not None
     assert data["progress"] is not None
-    assert data["elysium_essence"] is not None
+    assert data["essence"] is not None
 
 
 def test_get_character_enforces_ownership(client: TestClient, session: Session):

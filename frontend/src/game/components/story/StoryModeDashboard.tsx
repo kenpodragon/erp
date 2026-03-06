@@ -7,18 +7,45 @@ import type { StorySession } from '../../GameContext';
 import { api } from '../../../api';
 import './StoryModeDashboard.css';
 
+export interface SkillTreeEntry {
+  skill_id: number;
+  name: string;
+  display_name: string;
+  category: string;
+  description: string | null;
+  is_class_exclusive: boolean;
+  effect_type: string | null;
+  idle_level: number;
+  idle_xp: number;
+  max_session_level: number;
+  prerequisites_met: boolean;
+  prerequisites: Array<{
+    type: string;
+    ref_id: number;
+    required: number;
+    current: number;
+    met: boolean;
+    hint: string | null;
+  }>;
+  at_level_0: boolean;
+  level_0_xp_requirement: number;
+  idle_level_scaling: Record<string, Record<string, number>> | null;
+}
+
 interface Props {
   session: StorySession;
   gameConfigs: Record<string, any>;
+  skillTree: SkillTreeEntry[];
   onPlayerUpdate: () => void;
   uiScale: number;
   gameTextScale: number;
   onSettingsChange: (settings: any) => void;
 }
 
-const StoryModeDashboard: React.FC<Props> = ({ 
-  session, 
-  gameConfigs, 
+const StoryModeDashboard: React.FC<Props> = ({
+  session,
+  gameConfigs,
+  skillTree,
   onPlayerUpdate,
   uiScale,
   gameTextScale,
@@ -42,6 +69,16 @@ const StoryModeDashboard: React.FC<Props> = ({
     const val = parseFloat(e.target.value);
     onSettingsChange({ game_text_scale: val });
   };
+
+  // Split skill tree into universal and class-exclusive active skills
+  const universalActiveSkills = useMemo(() =>
+    skillTree.filter(s => s.category === 'active' && !s.is_class_exclusive),
+    [skillTree]
+  );
+  const classActiveSkills = useMemo(() =>
+    skillTree.filter(s => s.category === 'active' && s.is_class_exclusive),
+    [skillTree]
+  );
 
   return (
     <div className={`story-dashboard ${isCollapsed ? 'story-dashboard--collapsed' : 'story-dashboard--expanded'}`}>
@@ -74,10 +111,10 @@ const StoryModeDashboard: React.FC<Props> = ({
              <HeroStats session={session} />
            </div>
            <div className="dashboard-col upgrades-col">
-             <UpgradeMenu session={session} gameConfigs={gameConfigs} />
+             <UpgradeMenu session={session} gameConfigs={gameConfigs} skillTree={skillTree} />
            </div>
            <div className="dashboard-col skills-col">
-             <SkillsHotbar session={session} gameConfigs={gameConfigs} />
+             <SkillsHotbar session={session} gameConfigs={gameConfigs} classSkills={classActiveSkills} />
            </div>
         </div>
       </div>

@@ -8,8 +8,11 @@ from pydantic import BaseModel
 from db import get_session
 from auth import get_current_player
 from models import (
-    PlayerCharacter, CharacterClass, Skill, SkillAction, 
+    PlayerCharacter, CharacterClass, Skill, SkillAction,
     CharacterSkillLevel, PlayerEssence, GameConfig, PlayerMetaProgression
+)
+from services.character_progression import (
+    award_idle_xp_char_xp, recalculate_character_stats, evaluate_prerequisites,
 )
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
@@ -145,6 +148,14 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
 
     active_row.last_offline_calc_at = now
     session.add(active_row)
+
+    # 2.4: Convert idle XP to character XP and recalculate stats on level-up
+    char_xp_result = None
+    if xp_earned > 0:
+        char_xp_result = award_idle_xp_char_xp(session, character, xp_earned)
+    if levels_gained > 0:
+        recalculate_character_stats(session, character.id)
+
     session.commit()
 
     return {
@@ -161,7 +172,8 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
         "levels_gained": levels_gained,
         "essence_consumed": round(current_essence - max(0.0, temp_essence), 2),
         "remaining_essence": round(max(0.0, temp_essence), 2),
-        "new_actions_unlocked": [] # Placeholder for future logic
+        "new_actions_unlocked": [],
+        "character_xp": char_xp_result,
     }
 
 # --- Schemas ---
@@ -243,6 +255,9 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
             else:
                 is_unlocked = False
 
+        # 2.4: Prerequisite evaluation
+        prereq_state = evaluate_prerequisites(session, character.id, skill.id)
+
         res.append({
             "skill_id": skill.id,
             "skill_name": skill.name,
@@ -256,7 +271,9 @@ def get_training_status(token: dict = Depends(get_current_player), session: Sess
             "active_action": action_data,
             "is_unlocked": is_unlocked,
             "unlock_display_text": skill.unlock_display_text if not is_unlocked else None,
-            "affinity_multiplier": affinity_mult
+            "affinity_multiplier": affinity_mult,
+            "prerequisites_met": prereq_state["met"],
+            "prerequisites": prereq_state["details"],
         })
 
     return {

@@ -21,7 +21,7 @@ export default function ServerConfig() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'game' | 'ops'>('game')
+  const [activeTab, setActiveTab] = useState<'ops'>('ops')
   const [resetConfirm, setResetConfirm] = useState<string | null>(null)
 
   const fetchConfig = async () => {
@@ -166,14 +166,7 @@ export default function ServerConfig() {
 
       <div className="config-tabs">
         <button
-          className={`config-tab ${activeTab === 'game' ? 'active' : ''}`}
-          onClick={() => setActiveTab('game')}
-        >
-          Game Settings
-        </button>
-        <button
-          className={`config-tab ${activeTab === 'ops' ? 'active' : ''}`}
-          onClick={() => setActiveTab('ops')}
+          className="config-tab active"
         >
           Operational Settings
         </button>

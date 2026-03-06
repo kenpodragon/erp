@@ -10,6 +10,8 @@ import PlayerDetail from './pages/PlayerDetail'
 import Dashboard from './pages/Dashboard'
 import AccessControl from './pages/AccessControl'
 import AuditLog from './pages/AuditLog'
+import GameConfigs from './pages/GameConfigs'
+import ContentEditor from './pages/ContentEditor'
 
 interface HealthData {
   status: string;
@@ -177,7 +179,9 @@ function App() {
             <NavLink to="/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
             <NavLink to="/players" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Players</NavLink>
             <NavLink to="/support" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Support</NavLink>
-            <NavLink to="/config" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Config</NavLink>
+            <NavLink to="/config" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Server Config</NavLink>
+            <NavLink to="/game-configs" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
+            <NavLink to="/content" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Content</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
             {me?.is_owner && (
               <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
@@ -202,6 +206,8 @@ function App() {
             <Route path="/players/:id" element={<div className="admin-content"><PlayerDetail /></div>} />
             <Route path="/support/*" element={<div className="admin-content"><SupportTickets /></div>} />
             <Route path="/config" element={<div className="admin-content"><ServerConfig /></div>} />
+            <Route path="/game-configs" element={<div className="admin-content"><GameConfigs /></div>} />
+            <Route path="/content" element={<div className="admin-content"><ContentEditor /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />

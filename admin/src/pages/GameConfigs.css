@@ -1,0 +1,358 @@
+.game-configs {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.gc-header h2 {
+  margin: 0;
+}
+
+.gc-search {
+  padding: 6px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 14px;
+  width: 280px;
+}
+
+.gc-loading, .gc-empty {
+  text-align: center;
+  color: #888;
+  padding: 40px;
+}
+
+.gc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.gc-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid #333;
+  color: #aaa;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gc-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #222;
+  vertical-align: top;
+}
+
+.gc-key {
+  font-family: monospace;
+  color: #66aaff;
+  white-space: nowrap;
+}
+
+.gc-value pre {
+  margin: 0;
+  font-size: 12px;
+  color: #aaa;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+}
+
+.gc-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.gc-btn {
+  padding: 3px 10px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.gc-btn:hover { background: #2a2a4e; }
+.gc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.gc-btn--edit { border-color: #4466aa; color: #6688cc; }
+.gc-btn--meta { border-color: #886644; color: #aa8866; }
+.gc-btn--save { border-color: #44aa66; color: #66cc88; background: #112211; }
+.gc-btn--cancel { border-color: #aa4444; color: #cc6666; }
+
+.gc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.gc-modal {
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 20px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.gc-modal--wide {
+  min-width: 500px;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.gc-modal h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.gc-modal label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.gc-modal textarea,
+.gc-modal input[type="text"] {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.gc-modal textarea { min-height: 60px; resize: vertical; }
+
+.gc-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+/* Category dropdown */
+.gc-category-select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.gc-custom-category {
+  margin-top: 6px;
+}
+
+/* Value editor */
+.gc-value-editor {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 12px;
+  background: #111;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.gc-simple-value-editor {
+  margin: 8px 0;
+}
+
+.gc-simple-value-editor input,
+.gc-simple-value-editor select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 13px;
+}
+
+/* Recursive JSON Editor */
+.json-editor-object,
+.json-editor-array {
+  border-left: 2px solid #333;
+  padding-left: 8px;
+}
+
+.json-editor-field,
+.json-editor-array-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.json-editor-key {
+  font-family: monospace;
+  color: #66aaff;
+  font-size: 12px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.json-editor-index {
+  font-family: monospace;
+  color: #aa88cc;
+  font-size: 11px;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+.json-editor-text,
+.json-editor-number {
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.json-editor-select {
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.json-editor-primitive input {
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+  width: 100%;
+}
+
+.json-editor-remove-btn {
+  background: none;
+  border: 1px solid #663333;
+  color: #cc6666;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 5px;
+  border-radius: 3px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.json-editor-remove-btn:hover {
+  background: #331111;
+}
+
+.json-editor-add-btn {
+  background: none;
+  border: 1px solid #336633;
+  color: #66cc66;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-top: 4px;
+}
+
+.json-editor-add-btn:hover {
+  background: #113311;
+}
+
+.json-editor-add-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.json-editor-new-key-input {
+  padding: 3px 6px;
+  border: 1px solid #336633;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+  width: 140px;
+}
+
+.json-editor-hint {
+  font-size: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Structural change warnings */
+.gc-structural-warnings {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid #aa8800;
+  border-radius: 4px;
+  background: #221a00;
+  font-size: 12px;
+}
+
+.gc-structural-warnings strong {
+  color: #ddaa00;
+}
+
+.gc-structural-warnings ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
+  color: #ccaa44;
+}
+
+/* Confirmation dialog */
+.gc-confirm-dialog {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #cc6600;
+  border-radius: 4px;
+  background: #1a1100;
+  font-size: 13px;
+}
+
+.gc-confirm-dialog p {
+  margin: 0 0 6px;
+  color: #eebb44;
+}
+
+.gc-confirm-dialog ul {
+  margin: 4px 0 10px 16px;
+  padding: 0;
+  color: #ccaa44;
+  font-size: 12px;
+}
+
+.gc-confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

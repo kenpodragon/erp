@@ -98,6 +98,7 @@ class Skill(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100, nullable=False)
+    display_name: Optional[str] = Field(default=None, max_length=100)
     category: str = Field(max_length=50, nullable=False)
     description: Optional[str] = Field(default=None)
     benefits_json: Optional[Any] = Field(default=None, sa_column=Column(JSON))
@@ -107,6 +108,13 @@ class Skill(SQLModel, table=True):
     unlock_scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     unlock_display_text: Optional[str] = Field(default=None)
     idle_flavor_title: Optional[str] = Field(default=None, max_length=100)
+
+    # 2.4 Skill Prerequisite & Class columns
+    level_0_xp_requirement: int = Field(default=0)
+    class_id: Optional[int] = Field(default=None, foreign_key="character_classes.id")
+    is_class_exclusive: bool = Field(default=False)
+    idle_level_scaling: Optional[Any] = Field(default=None, sa_column=Column(JSON))
+    effect_type: Optional[str] = Field(default=None, max_length=50)
 
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)

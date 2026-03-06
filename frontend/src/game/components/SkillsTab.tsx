@@ -36,6 +36,15 @@ interface SkillStatus {
   is_unlocked: boolean;
   unlock_display_text: string | null;
   affinity_multiplier: number;
+  prerequisites_met: boolean;
+  prerequisites: Array<{
+    type: string;
+    ref_id: number;
+    required: number;
+    current: number;
+    met: boolean;
+    hint: string | null;
+  }>;
 }
 
 interface TrainingStatusResponse {
@@ -346,29 +355,43 @@ const SkillsTab: React.FC = () => {
       <div className="skills-main-layout">
         {/* Panel 1: Skill List */}
         <div className="skill-list-panel">
-          {status.skills.map(skill => (
-            <div 
-              key={skill.skill_id}
-              className={`skill-card ${selectedSkillId === skill.skill_id ? 'active' : ''} ${skill.is_active_training ? 'training' : ''} ${!skill.is_unlocked ? 'locked' : ''}`}
-              onClick={() => skill.is_unlocked && setSelectedSkillId(skill.skill_id)}
-              title={!skill.is_unlocked ? skill.unlock_display_text || 'Locked' : ''}
-            >
-              <div className="skill-card-header">
-                <span className="skill-name">{skill.skill_name}</span>
-                <span className="skill-level">LVL {skill.level}</span>
-              </div>
-              {!skill.is_unlocked ? (
-                <div style={{ fontSize: '0.6rem', color: '#ff3333' }}>[LOCKED]</div>
-              ) : (
-                <div className="mini-xp-bar">
-                  <div 
-                    className="mini-xp-fill" 
-                    style={{ width: `${(skill.current_xp / skill.next_level_xp) * 100}%` }} 
-                  />
+          {status.skills.map(skill => {
+            const prereqBlocked = !skill.prerequisites_met;
+            const isLocked = !skill.is_unlocked || prereqBlocked;
+            const firstUnmet = skill.prerequisites?.find(p => !p.met);
+
+            return (
+              <div
+                key={skill.skill_id}
+                className={`skill-card ${selectedSkillId === skill.skill_id ? 'active' : ''} ${skill.is_active_training ? 'training' : ''} ${isLocked ? 'locked' : ''} ${prereqBlocked ? 'prereq-locked' : ''}`}
+                onClick={() => !isLocked && setSelectedSkillId(skill.skill_id)}
+                title={!skill.is_unlocked
+                  ? skill.unlock_display_text || 'Locked'
+                  : prereqBlocked && firstUnmet
+                    ? firstUnmet.hint || `Requires ${firstUnmet.type} ≥ ${firstUnmet.required}`
+                    : ''}
+              >
+                <div className="skill-card-header">
+                  <span className="skill-name">{skill.skill_name}</span>
+                  <span className="skill-level">LVL {skill.level}</span>
                 </div>
-              )}
-            </div>
-          ))}
+                {!skill.is_unlocked ? (
+                  <div style={{ fontSize: '0.6rem', color: '#ff3333' }}>[LOCKED]</div>
+                ) : prereqBlocked ? (
+                  <div style={{ fontSize: '0.55rem', color: '#cc6600' }}>
+                    [PREREQ] {firstUnmet?.hint || `${firstUnmet?.type} ≥ ${firstUnmet?.required}`}
+                  </div>
+                ) : (
+                  <div className="mini-xp-bar">
+                    <div
+                      className="mini-xp-fill"
+                      style={{ width: `${(skill.current_xp / skill.next_level_xp) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Panel 2 & 3: Detail and Actions */}
@@ -403,6 +426,20 @@ const SkillsTab: React.FC = () => {
                     <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>RANK: {selectedSkill.level >= 99 ? 'MASTER' : 'INITIATE'}</div>
                   </div>
                 </div>
+
+                {/* Prerequisite display */}
+                {selectedSkill.prerequisites && selectedSkill.prerequisites.length > 0 && (
+                  <div style={{ marginTop: '6px', padding: '4px 6px', background: '#0f0f0f', border: '1px solid #333', borderRadius: '3px', fontSize: '0.7rem' }}>
+                    <div style={{ color: selectedSkill.prerequisites_met ? '#00ff41' : '#cc6600', marginBottom: '3px', fontWeight: 'bold' }}>
+                      {selectedSkill.prerequisites_met ? '✓ PREREQUISITES MET' : '✗ PREREQUISITES REQUIRED'}
+                    </div>
+                    {selectedSkill.prerequisites.map((p, i) => (
+                      <div key={i} style={{ color: p.met ? '#338833' : '#cc4444', fontSize: '0.65rem', paddingLeft: '8px' }}>
+                        {p.met ? '✓' : '✗'} {p.hint || `${p.type}: ${p.current}/${p.required}`}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="detail-xp-info">
                   <div className="large-xp-bar-container">

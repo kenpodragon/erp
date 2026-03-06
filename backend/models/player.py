@@ -1,8 +1,10 @@
 """Player & Account models."""
 
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional, List, Any
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column
+from sqlalchemy.types import JSON
 
 
 class Player(SQLModel, table=True):
@@ -75,6 +77,7 @@ class CharacterClass(SQLModel, table=True):
     base_intelligence: int = Field(default=10)
     sprite_key: Optional[str] = Field(default=None, max_length=100)
     is_available: bool = Field(default=True)
+    visual_config: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -92,6 +95,7 @@ class PlayerCharacter(SQLModel, table=True):
     class_id: int = Field(foreign_key="character_classes.id", nullable=False)
     character_name: str = Field(max_length=20, nullable=False)
     level: int = Field(default=1)
+    character_xp: int = Field(default=0)
     strength: Optional[int] = Field(default=None)
     agility: Optional[int] = Field(default=None)
     intelligence: Optional[int] = Field(default=None)

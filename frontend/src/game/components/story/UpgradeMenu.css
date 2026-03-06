@@ -145,3 +145,54 @@
   font-size: 8px;
   color: #8888aa;
 }
+
+/* Active skill section */
+.upgrade-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  color: #5555aa;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #1a1a3a;
+}
+
+.upgrade-row--skill {
+  cursor: default;
+}
+
+.upgrade-row--locked {
+  opacity: 0.45;
+  border-color: #1a1a2a;
+  cursor: not-allowed;
+}
+
+.upgrade-row--locked .upgrade-name {
+  color: #666688;
+}
+
+.upgrade-short--skill {
+  color: var(--class-primary, #6666aa);
+  font-size: 9px;
+}
+
+.upgrade-prereq-hint {
+  font-size: 8px;
+  color: #cc4444;
+  font-style: italic;
+}
+
+.upgrade-locked-badge {
+  font-size: 9px;
+  color: #cc4444;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.upgrade-ready-badge {
+  font-size: 9px;
+  color: #44cc66;
+  font-weight: bold;
+  letter-spacing: 1px;
+}

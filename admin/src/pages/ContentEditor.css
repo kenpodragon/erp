@@ -1,0 +1,369 @@
+.content-editor {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ce-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 4px;
+}
+
+.ce-tab {
+  padding: 6px 14px;
+  border: 1px solid #444;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background: #1a1a2e;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ce-tab--active {
+  background: #2a2a4e;
+  color: #ccc;
+  border-color: #666;
+}
+
+.ce-sub-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.ce-sub-tab {
+  padding: 4px 10px;
+  border: 1px solid #333;
+  border-radius: 3px;
+  background: #111;
+  color: #777;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.ce-sub-tab--active {
+  background: #1a1a3a;
+  color: #aaa;
+  border-color: #555;
+}
+
+.ce-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.ce-loading {
+  text-align: center;
+  color: #888;
+  padding: 30px;
+}
+
+.ce-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ce-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 2px solid #333;
+  color: #aaa;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ce-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #222;
+}
+
+.ce-row--selected {
+  background: #1a1a3a;
+}
+
+.ce-code {
+  font-family: monospace;
+  color: #66aaff;
+}
+
+.ce-btn {
+  padding: 3px 8px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+.ce-btn:hover { background: #2a2a4e; }
+.ce-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ce-btn--create { border-color: #44aa66; color: #66cc88; }
+.ce-btn--edit { border-color: #4466aa; color: #6688cc; }
+.ce-btn--delete { border-color: #aa4444; color: #cc6666; }
+.ce-btn--save { border-color: #44aa66; color: #66cc88; background: #112211; }
+.ce-btn--cancel { border-color: #aa4444; color: #cc6666; }
+
+.ce-detail {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+}
+
+.ce-detail h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.ce-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ce-form label {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.ce-form input,
+.ce-form textarea,
+.ce-form select {
+  display: block;
+  width: 100%;
+  margin-top: 3px;
+  padding: 5px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.ce-form textarea {
+  min-height: 60px;
+  resize: vertical;
+  font-family: monospace;
+}
+
+.ce-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+.ce-section-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: #66aaff;
+  margin-top: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ce-stat-row {
+  display: flex;
+  gap: 12px;
+}
+
+.ce-stat-row label {
+  flex: 1;
+}
+
+.ce-stat-row input {
+  width: 100%;
+}
+
+.ce-checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.ce-checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Stat Bonuses Editor */
+.stat-bonuses-editor {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  background: #0d0d1a;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.sbe-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.sbe-row--active {
+  background: #111122;
+}
+
+.sbe-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  cursor: pointer;
+  margin: 0 !important;
+}
+
+.sbe-toggle input[type="checkbox"] {
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.sbe-label {
+  font-size: 12px;
+  color: #ccc;
+}
+
+.sbe-group {
+  font-size: 10px;
+  color: #666;
+  margin-left: auto;
+}
+
+.sbe-value {
+  width: 80px !important;
+  padding: 2px 4px !important;
+  font-size: 12px !important;
+  text-align: right;
+}
+
+/* Visual Config Editor */
+.visual-config-editor {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 10px;
+  background: #0d0d1a;
+}
+
+.vce-field {
+  margin-bottom: 8px;
+}
+
+.vce-label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 3px;
+  font-family: monospace;
+}
+
+.vce-select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.vce-avatar-preview {
+  width: 48px;
+  height: 48px;
+  margin-top: 4px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #111;
+}
+
+.vce-color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.vce-color-picker {
+  width: 36px;
+  height: 28px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  padding: 1px;
+  background: #111;
+  cursor: pointer;
+}
+
+.vce-color-text {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.vce-number {
+  width: 100px;
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 12px;
+}
+
+/* Affinities Editor */
+.affinities-editor {
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #0d0d1a;
+  overflow: hidden;
+}
+
+.aff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.aff-table th {
+  text-align: left;
+  padding: 5px 8px;
+  background: #1a1a2e;
+  color: #888;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.aff-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.aff-table input {
+  width: 80px;
+  padding: 2px 4px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #111;
+  color: #ccc;
+  font-size: 12px;
+  text-align: right;
+}

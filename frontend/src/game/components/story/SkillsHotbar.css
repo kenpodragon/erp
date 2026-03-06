@@ -146,3 +146,54 @@
   border-radius: 2px;
   pointer-events: none;
 }
+
+/* Container wrapping both rows */
+.skills-hotbar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Class-exclusive skill row */
+.skills-hotbar--class {
+  border-top: 1px solid var(--class-primary, #3a3a6a);
+  background: #0a0a18;
+}
+
+.skill-slot--class {
+  border-color: var(--class-secondary, #2a2a5a);
+}
+
+.skill-slot--class:hover:not(.skill-slot--locked) {
+  border-color: var(--class-primary, #5555aa);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--class-primary, #5555aa) 40%, transparent);
+}
+
+.skill-slot--class .skill-short {
+  color: var(--class-primary, #ccccff);
+}
+
+.skill-gate-label--prereq {
+  font-size: 7px;
+  background: #2a0000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50px;
+}
+
+.skill-cost--locked {
+  color: #cc4444;
+  font-size: 7px;
+  font-weight: bold;
+}
+
+/* Buff bar */
+.skill-buff-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #44cc66;
+  transition: width 0.25s linear;
+  pointer-events: none;
+}

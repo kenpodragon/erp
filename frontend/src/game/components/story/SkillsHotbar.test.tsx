@@ -34,6 +34,22 @@ const baseSession: StorySession = {
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.0,
+  isBossSession: false,
+  bossType: null,
+  bossConfig: null,
+  isReplay: false,
+  idle_bonuses: {
+    attack_lvl: 1,
+    magic_lvl: 99, // High enough to unlock all skills
+    lore_lvl: 1,
+    precision_lvl: 1,
+    click_damage_floor: 0,
+    auto_dps_multiplier: 1,
+    gate_reduction_pct: 0,
+    essence_multiplier: 1,
+    crit_chance_bonus: 0,
+    crit_multiplier_total: 1,
+  },
 };
 
 describe('SkillsHotbar', () => {

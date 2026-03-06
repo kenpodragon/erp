@@ -7,6 +7,8 @@
 import React from 'react';
 import type { StorySession } from '../../GameContext';
 import { formatNumber, calculateUpgradeDamage } from '../../utils/numbers';
+import CharacterStatPanel from './CharacterStatPanel';
+import CharacterLevelBar from './CharacterLevelBar';
 import './HeroStats.css';
 
 interface Props {
@@ -37,13 +39,15 @@ const HeroStats: React.FC<Props> = ({ session }) => {
 
   return (
     <div className="hero-stats">
-      <div className="hero-stats-title">HERO STATS</div>
+      <CharacterLevelBar />
+      <div className="hero-stats-title">COMBAT STATS</div>
       {rows.map(row => (
         <div key={row.label} className={`hero-stats-row ${row.highlight ? 'hero-stats-row--highlight' : ''}`}>
           <span className="hero-stats-label">{row.label}</span>
           <span className="hero-stats-value">{row.value}</span>
         </div>
       ))}
+      <CharacterStatPanel />
     </div>
   );
 };

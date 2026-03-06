@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './HomeBase.css';
 import { api } from '../../api';
+import InventoryPanel from './InventoryPanel';
 
 interface HomeBaseProps {
   player: any;
@@ -122,7 +123,15 @@ const HomeBase: React.FC<HomeBaseProps> = ({ player, character }) => {
           </div>
         </section>
 
-        {/* ── Section 4: System Actions ─────────────────────────────── */}
+        {/* ── Section 4: Inventory ────────────────────────────────── */}
+        <section className="home-base-section inventory-section">
+          <div className="section-header">
+            <h2>Equipment</h2>
+          </div>
+          <InventoryPanel />
+        </section>
+
+        {/* ── Section 5: System Actions ─────────────────────────────── */}
         <section className="home-base-section system-actions">
           <div className="section-header">
             <span className="system-icon">🛠️</span>

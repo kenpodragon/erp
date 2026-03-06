@@ -6,9 +6,9 @@ import NarrativeBlock from './story/NarrativeBlock';
 import CombatStage from './story/CombatStage';
 import BossStage from './story/BossStage';
 import NarrativeReveal from './story/NarrativeReveal';
-import PostBattleSummary from './story/PostBattleSummary';
 import StoryModeDashboard from './story/StoryModeDashboard';
 import type { StorySession } from '../GameContext';
+import { applyClassVisuals } from '../utils/classVisuals';
 import './StoryMode.css';
 
 const TICK_INTERVAL_MS = 2000;
@@ -57,6 +57,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
   const [autoProgress, setAutoProgress] = React.useState(true);
   const [debugSuperClick, setDebugSuperClick] = React.useState(false);
   const [userWpm, setUserWpm] = React.useState(200);
+  const [skillTree, setSkillTree] = React.useState<any[]>([]);
   // Boss session state
   const [narrativeReveal, setNarrativeReveal] = React.useState<{
     text: string;
@@ -119,6 +120,8 @@ const StoryMode: React.FC<StoryModeProps> = ({
             isReplay: sessionData.is_replay ?? false,
           };
           setStorySession(session);
+          setSkillTree(sessionData.skill_tree || []);
+          applyClassVisuals(sessionData.visual_config);
           setUserWpm(player?.settings?.narration_wpm || 200);
 
           // If it was already completed, we can start in farmMode ONLY if 
@@ -145,6 +148,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
     start();
     return () => {
       if (tickTimer.current) clearInterval(tickTimer.current);
+      applyClassVisuals(null); // Clear class CSS vars on unmount
     };
   }, [activeSceneId, player]);
 
@@ -236,29 +240,6 @@ const StoryMode: React.FC<StoryModeProps> = ({
     pendingWavesComplete.current = 1;
     flushTick();
   }, [updateStorySession, farmMode, flushTick]);
-
-  // ── Session Complete ────────────────────────────────────────────────────
-  const handleComplete = useCallback(async (continueFarming: boolean) => {
-    if (!storySession) return;
-    setShowSummary(false);
-    if (continueFarming) {
-      setFarmMode(true);
-      return;
-    }
-    try {
-      const res = await api.post(`/api/game/story/session/${storySession.sessionId}/complete`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.total_character_essence !== undefined) {
-          setEssence(data.total_character_essence);
-        }
-        onPlayerUpdate(); // Refresh global balance and next level
-        exitScene();
-      }
-    } catch (err) {
-      console.error('Failed to complete session', err);
-    }
-  }, [storySession, exitScene, onPlayerUpdate, setEssence]);
 
   // ── Boss Defeated ───────────────────────────────────────────────────────
   const handleBossDefeated = useCallback(async (success: boolean) => {
@@ -461,9 +442,10 @@ const StoryMode: React.FC<StoryModeProps> = ({
 
       <button className="story-exit-btn" onClick={handleExit} title="Save and Exit">EXIT SCENE</button>
 
-      <StoryModeDashboard 
+      <StoryModeDashboard
         session={storySession}
         gameConfigs={gameConfigs}
+        skillTree={skillTree}
         onPlayerUpdate={onPlayerUpdate}
         uiScale={player?.settings?.ui_scale || 1.0}
         gameTextScale={player?.settings?.game_text_scale || 1.0}

@@ -1,0 +1,140 @@
+.inventory-panel {
+  font-family: 'Courier New', monospace;
+  background: #0a0a14;
+  border: 1px solid #1e1e3e;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inventory-title {
+  font-size: 11px;
+  color: #8888bb;
+  letter-spacing: 2px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.inventory-section-label {
+  font-size: 8px;
+  color: #5555aa;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #1a1a3a;
+}
+
+.inventory-loading,
+.inventory-empty {
+  font-size: 10px;
+  color: #555577;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Equipped slots */
+.equipped-slots {
+  display: flex;
+  gap: 8px;
+}
+
+.equipped-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.equipped-slot-label {
+  font-size: 8px;
+  color: #6666aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.equipped-slot-empty {
+  background: #0d0d1a;
+  border: 1px dashed #2a2a4a;
+  border-radius: 4px;
+  padding: 12px;
+  text-align: center;
+  font-size: 9px;
+  color: #444466;
+}
+
+/* Bag grid */
+.bag-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.bag-slot-empty {
+  background: #0d0d1a;
+  border: 1px dashed #1a1a3a;
+  border-radius: 4px;
+  min-height: 40px;
+}
+
+/* Detail panel */
+.inventory-detail {
+  border-top: 1px solid #1e1e3e;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inventory-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.inv-btn {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+}
+
+.inv-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.inv-btn--equip {
+  background: #112211;
+  border-color: #44aa66;
+  color: #66cc88;
+}
+
+.inv-btn--equip:hover:not(:disabled) {
+  background: #1a3a1a;
+}
+
+.inv-btn--unequip {
+  background: #111122;
+  border-color: #4466aa;
+  color: #6688cc;
+}
+
+.inv-btn--unequip:hover:not(:disabled) {
+  background: #1a1a3a;
+}
+
+.inv-btn--discard {
+  background: #221111;
+  border-color: #aa4444;
+  color: #cc6666;
+}
+
+.inv-btn--discard:hover:not(:disabled) {
+  background: #3a1a1a;
+}

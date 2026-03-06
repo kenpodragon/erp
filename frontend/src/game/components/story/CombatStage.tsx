@@ -1,7 +1,7 @@
 /**
  * CombatStage — PixiJS combat engine (v8).
  */
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
 import { 
   TextStyle,
@@ -10,6 +10,7 @@ import {
 import { api } from '../../../api';
 import type { StorySession } from '../../GameContext';
 import { zoneHp, zoneGold, formatNumber } from '../../utils/numbers';
+import { hexToPixiTint } from '../../utils/classVisuals';
 import ParallaxBackground from './ParallaxBackground';
 import './CombatStage.css';
 
@@ -97,6 +98,15 @@ const CombatContent: React.FC<InnerProps> = ({
   clickHandlerRef, textScale = 1.0, autoProgress, onAutoProgressToggle,
   debugSuperClick = false
 }) => {
+  const classColors = useMemo(() => {
+    const style = getComputedStyle(document.documentElement);
+    return {
+      damageText: style.getPropertyValue('--class-damage-text').trim() || '#ffffff',
+      particleTint: style.getPropertyValue('--class-particle-tint').trim(),
+      primary: style.getPropertyValue('--class-primary').trim() || '#aaaacc',
+    };
+  }, []);
+
   const MONSTERS_PER_ZONE = Number(gameConfigs['monsters_per_zone'] ?? MONSTERS_PER_ZONE_DEFAULT);
   const BOSS_ZONE_INTERVAL = Number(gameConfigs['boss_zone_interval'] ?? BOSS_ZONE_INTERVAL_DEFAULT);
   const BOSS_ENRAGE_SECONDS = Number(gameConfigs['boss_enrage_seconds'] ?? BOSS_ENRAGE_SECONDS_DEFAULT);
@@ -228,7 +238,7 @@ const CombatContent: React.FC<InnerProps> = ({
       if (newHp <= 0) {
         const goldEarned = (prev.baseGold || 0) * session.goldDropMultiplier;
         onGoldEarned(goldEarned);
-        setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : 0x444466 }))]);
+        setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : (classColors.particleTint ? hexToPixiTint(classColors.particleTint) : 0x444466) }))]);
         advanceWave();
         return null;
       }
@@ -372,6 +382,33 @@ const CombatContent: React.FC<InnerProps> = ({
         g.ellipse(enemyX, floorY, width * 0.22, height * 0.025).fill({ color: 0x0f0f26 }).stroke({ width: 1, color: 0x2a2a55, alpha: 0.8 });
       }} />
 
+      {/* Hero Avatar */}
+      <pixiContainer x={width * 0.15} y={floorY} zIndex={8}>
+        <pixiGraphics draw={g => {
+          const primaryTint = classColors.primary ? hexToPixiTint(classColors.primary) : 0x4444aa;
+          g.clear()
+            .ellipse(0, 0, 24, 7)
+            .fill({ color: 0x000000, alpha: 0.4 });
+          // Body
+          g.circle(0, -50, 16)
+            .fill({ color: primaryTint, alpha: 0.9 });
+          g.rect(-12, -34, 24, 38)
+            .fill({ color: primaryTint, alpha: 0.85 });
+        }} />
+        <pixiText
+          text="HERO"
+          y={12}
+          x={0}
+          anchor={0.5}
+          style={new TextStyle({
+            fontFamily: 'monospace',
+            fontSize: 8 * textScale,
+            fill: classColors.primary || '#aaaacc',
+            fontWeight: 'bold',
+          })}
+        />
+      </pixiContainer>
+
       {/* Enemy */}
       {enemy && (
         <pixiContainer x={enemyX + shakeX + (recoil ? -8 : 0)} y={floorY + shakeY} scale={{ x: 1 + breathe, y: 1 - breathe }} zIndex={10}>
@@ -407,7 +444,7 @@ const CombatContent: React.FC<InnerProps> = ({
       
       {/* UI Elements */}
       {enemy && <pixiText text={`${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center', fontWeight: 'bold' })} />}
-      <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : '#ffffff', stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
+      <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : classColors.damageText, stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
       
       <pixiText text={statusText} x={8} y={8} zIndex={5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#666688' })} />
     </pixiContainer>

@@ -14,6 +14,7 @@ const baseSession: StorySession = {
   darkRitualMultiplier: 1.0,
   narrativeProgressPct: 100,
   wavesComplete: true,
+  previouslyCompleted: false,
   characterStrength: 10,
   autoDpsPerSecond: 10,
   clickUpgradeLevel: 0,
@@ -21,6 +22,10 @@ const baseSession: StorySession = {
   clickDmgMultiplier: 1.0,
   autoDpsMultiplier: 1.0,
   goldDropMultiplier: 1.0,
+  isBossSession: false,
+  bossType: null,
+  bossConfig: null,
+  isReplay: false,
 };
 
 const baseSummary = {
@@ -62,7 +67,7 @@ describe('PostBattleSummary', () => {
     });
     await waitFor(() => {
       expect(screen.getByText('Gold Earned')).toBeDefined();
-      expect(screen.getByText('Essence Earned')).toBeDefined();
+      expect(screen.getByText('Converted Essence')).toBeDefined();
     });
   });
 
@@ -81,18 +86,31 @@ describe('PostBattleSummary', () => {
     expect(onContinue).toHaveBeenCalled();
   });
 
-  it('calls onReturnToHub when Return button clicked', async () => {
+  it('calls onReturnToHub after completing session', async () => {
     const onReturn = vi.fn();
     (api.get as any).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(baseSummary),
     });
+    // Mock the complete call (Return to Hub now calls complete internally)
+    (api.post as any).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        ...baseSummary,
+        achievement_results: [],
+        dropped_items: [],
+        total_character_essence: 100,
+      }),
+    });
     await act(async () => {
       render(<PostBattleSummary session={baseSession} onContinue={vi.fn()} onReturnToHub={onReturn} />);
     });
     await waitFor(() => screen.getByText(/Return to Hub/));
-    fireEvent.click(screen.getByText(/Return to Hub/));
-    expect(onReturn).toHaveBeenCalled();
+    await act(async () => {
+      fireEvent.click(screen.getByText(/Return to Hub/));
+    });
+    // onReturnToHub is called after the complete API returns (no achievements = skip loot phase)
+    await waitFor(() => expect(onReturn).toHaveBeenCalled());
   });
 
   it('does not show Dark Ritual row when multiplier is 1.0', async () => {

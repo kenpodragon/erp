@@ -47,29 +47,18 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
 
   const { player, character, onPlayerUpdate } = props;
 
-  const handleCloseSummary = async (continueFarming: boolean) => {
-    if (!state.storySession) return;
-    setSummaryData({ show: false, farmMode: continueFarming });
-    
-    if (continueFarming) {
-      // In StoryMode.tsx, this will be picked up via props or state sync
-      return;
-    }
+  const handleContinueFarming = () => {
+    setSummaryData({ show: false, farmMode: true });
+  };
 
-    try {
-      const { api } = await import('../api');
-      const res = await api.post(`/api/game/story/session/${state.storySession.sessionId}/complete`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.total_character_essence !== undefined) {
-          setEssence(data.total_character_essence);
-        }
-        onPlayerUpdate();
-        exitScene();
-      }
-    } catch (err) {
-      console.error('Failed to complete session', err);
+  const handleReturnToHub = (completeData?: any) => {
+    setSummaryData({ show: false, farmMode: false });
+    // PostBattleSummary already called /complete and handled loot
+    if (completeData?.total_character_essence !== undefined) {
+      setEssence(completeData.total_character_essence);
     }
+    onPlayerUpdate();
+    exitScene();
   };
 
   return (
@@ -136,8 +125,8 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
       {summaryData.show && state.storySession && (
         <PostBattleSummary
           session={state.storySession}
-          onContinue={() => handleCloseSummary(true)}
-          onReturnToHub={() => handleCloseSummary(false)}
+          onContinue={handleContinueFarming}
+          onReturnToHub={handleReturnToHub}
         />
       )}
     </div>

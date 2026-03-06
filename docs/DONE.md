@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-03*
+*Updated: 2026-03-05*
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
@@ -20,7 +20,13 @@ This document tracks the completed development phases for the Elysium Rising mmo
  - [x] **2.2.7 — Polish & Remaining Requirements** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*
  - [x] **2.2.8 — BUGS AND FIXES** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*   (backend/routes/story_mode.py and frontend/src/game/components/story/CombatStage.tsx)
  - [x] **2.2.9 — NARRATIVE INTERSTITIALS** (1.2 Option C)
- - [x] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*           
+ - [x] **2.3 — Loop C: Idle Training (Passive Play)** *(Ref: `docs/recs/2.3_IDLE_TRAINING.md`, `docs/recs/2.3.1_IDLE_TRAINING_UX.md`, `docs/recs/2.3.1.0_IDLE_TRAINING_SCHEMA.md`)*
+ - [x] **2.4 — Character & Progression Systems, Classes, and Skills** *(Ref: `docs/recs/2.4_CHARACTER_PROGRESSION.md`, `docs/recs/2.4_CHARACTER_PROGRESSION_DESIGN.md`, `docs/recs/2.4_CHARACTER_PROGRESSION_SCHEMA.md`)*
+   - [x] 2.4.0 — Foundation: Extensible Stats & Character Level (migrations 030–031, models, stat calc, XP accrual, level-up, frontend stat panel + level bar + class visuals)
+   - [x] 2.4.1 — Skill System: Prerequisites & Class Abilities (migrations 032–033, prerequisite evaluation, Level 0 system, dual-leveling, skill tree API, second hotbar row, effect handlers)
+   - [x] 2.4.2 — Dream Item System (migrations 034–035, 5-component item generator, rarity tiers, run achievement evaluator, inventory CRUD, PostBattleSummary loot, equip/swap UI)
+   - [x] 2.4.3 — Admin Panel: Config Browser + Content Editor (admin CRUD for configs/stats/classes/skills/benefits/items, GameConfigs + ContentEditor frontend pages)
+   - [x] 2.4.4 — Cross-Cutting / Final (data dictionary, E2E Playwright tests, doc pass)
 
 ## Book Processing Post Processing Stuff
 - [x] **Book Processing Phase 3** (all changes via `psql` against the live DB)  

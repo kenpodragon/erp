@@ -1,17 +1,18 @@
 /**
- * UpgradeMenu — Click damage and auto-DPS upgrade panel.
+ * UpgradeMenu — Click damage, auto-DPS, and active skill upgrade panel.
  *
  * Features:
  *  - Global quantity toggle: x1 / x10 / x100 / MAX
  *  - Click Damage and Auto-DPS upgrade tracks
+ *  - Active skill upgrades from skill tree (prerequisite-gated)
  *  - Cost formula: base × 1.07^level  (per unit)
- *  - Grey-out when unaffordable
+ *  - Grey-out when unaffordable or prerequisites not met
  *  - "Big Bonus" label at levels 200+ every 25 levels
- *  - Displays current damage contribution (1 damage per level)
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useGame } from '../../GameContext';
 import type { StorySession } from '../../GameContext';
+import type { SkillTreeEntry } from './StoryModeDashboard';
 import { api } from '../../../api';
 import { formatGold, upgradeCost, maxAffordable, calculateUpgradeDamage } from '../../utils/numbers';
 import './UpgradeMenu.css';
@@ -29,9 +30,10 @@ interface UpgradeTrack {
 interface Props {
   session: StorySession;
   gameConfigs: Record<string, unknown>;
+  skillTree: SkillTreeEntry[];
 }
 
-const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
+const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs, skillTree }) => {
   const { updateStorySession } = useGame();
   const [qty, setQty] = useState<Qty>(1);
 
@@ -51,6 +53,12 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
     if (!isNaN(session.autoUpgradeLevel)) setAutoLvl(session.autoUpgradeLevel);
   }, [session.clickUpgradeLevel, session.autoUpgradeLevel]);
 
+  // Filter active skills from skill tree (visible = not class-exclusive or matching class)
+  const activeSkills = useMemo(() =>
+    skillTree.filter(s => s.category === 'active' && !s.is_class_exclusive),
+    [skillTree]
+  );
+
   const handleUpgrade = useCallback(async (trackType: 'click_dmg' | 'auto_dps', currentLevel: number, baseCost: number) => {
     const safeLevel = isNaN(currentLevel) ? 1 : currentLevel;
     let n = qty === 'MAX' ? maxAffordable(baseCost, safeLevel, session.sessionGold, COST_SCALING) : qty;
@@ -67,8 +75,6 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
 
       if (res.ok) {
         const data = await res.json();
-        // Server returns new aggregate multipliers and levels
-        // Use current session values as fallbacks to prevent NaN if keys are missing
         updateStorySession({
           sessionGold: data.session_gold ?? session.sessionGold,
           clickDmgMultiplier: data.click_dmg_multiplier ?? session.clickDmgMultiplier,
@@ -127,10 +133,10 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
         let n = qty === 'MAX' ? maxAffordable(track.baseCost, track.level, session.sessionGold, COST_SCALING) : qty;
         const cost = upgradeCost(track.baseCost, track.level, n, COST_SCALING);
         const disabled = session.sessionGold < cost || n === 0;
-        
+
         const nextLevel = track.level + n;
         const isMilestone = nextLevel >= MILESTONE_START && (nextLevel % MILESTONE_INTERVAL === 0);
-        
+
         const currentDmg = calculateUpgradeDamage(track.level);
         const unitLabel = track.type === 'click_dmg' ? 'click damage bonus' : 'auto-DPS bonus';
 
@@ -160,6 +166,58 @@ const UpgradeMenu: React.FC<Props> = ({ session, gameConfigs }) => {
           </div>
         );
       })}
+
+      {/* Active Skill Upgrades — prerequisite-gated */}
+      {activeSkills.length > 0 && (
+        <>
+          <div className="upgrade-section-label">ACTIVE SKILLS</div>
+          {activeSkills.map(skill => {
+            const locked = !skill.prerequisites_met || skill.at_level_0;
+            const firstUnmetPrereq = skill.prerequisites.find(p => !p.met);
+
+            return (
+              <div
+                key={skill.skill_id}
+                className={`upgrade-row upgrade-row--skill ${locked ? 'upgrade-row--locked' : ''}`}
+                title={locked && firstUnmetPrereq?.hint
+                  ? firstUnmetPrereq.hint
+                  : skill.description || skill.display_name}
+              >
+                <div className="upgrade-row-left">
+                  <div className="upgrade-short upgrade-short--skill">
+                    {skill.effect_type ? skill.effect_type.slice(0, 3).toUpperCase() : '???'}
+                  </div>
+                  <div className="upgrade-info">
+                    <div className="upgrade-name">{skill.display_name}</div>
+                    <div className="upgrade-level">
+                      Idle Lv {skill.idle_level}
+                      {skill.max_session_level > 0 && ` | Session Lv ${skill.max_session_level}`}
+                    </div>
+                    {locked && firstUnmetPrereq && (
+                      <div className="upgrade-prereq-hint">
+                        {firstUnmetPrereq.hint || `Requires: ${firstUnmetPrereq.type} ≥ ${firstUnmetPrereq.required}`}
+                      </div>
+                    )}
+                    {skill.at_level_0 && (
+                      <div className="upgrade-prereq-hint">
+                        XP: {skill.idle_xp}/{skill.level_0_xp_requirement} to unlock
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="upgrade-row-right">
+                  {locked ? (
+                    <div className="upgrade-locked-badge">LOCKED</div>
+                  ) : (
+                    <div className="upgrade-ready-badge">READY</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 };

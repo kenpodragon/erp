@@ -16,6 +16,8 @@ class Book(SQLModel, table=True):
     title: str = Field(max_length=255, nullable=False)
     source_file: str = Field(max_length=255, nullable=False)
     transition_lore_text: Optional[str] = Field(default=None)
+    recommended_level: Optional[int] = Field(default=None)
+    min_level: Optional[int] = Field(default=None)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -35,6 +37,8 @@ class Chapter(SQLModel, table=True):
     sort_order: int = Field(nullable=False)
     processing_status: str = Field(default="not_started")
     transition_lore_text: Optional[str] = Field(default=None)
+    recommended_level: Optional[int] = Field(default=None)
+    min_level: Optional[int] = Field(default=None)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

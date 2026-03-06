@@ -155,3 +155,191 @@
   text-align: center;
   padding-top: 2px;
 }
+
+/* Loot phase */
+.post-battle-modal--loot {
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.loot-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loot-ach-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #111122;
+  border: 1px solid #1e1e3e;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all 0.3s;
+}
+
+.loot-ach--hidden {
+  opacity: 0.3;
+}
+
+.loot-ach--revealed {
+  opacity: 1;
+}
+
+.loot-ach--rolling {
+  border-color: #6666cc;
+  box-shadow: 0 0 12px rgba(100, 100, 255, 0.3);
+}
+
+.loot-ach-display {
+  color: #aaaacc;
+}
+
+.loot-ach-result {
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.loot-ach--success {
+  color: #44dd66;
+  text-shadow: 0 0 6px rgba(68, 221, 102, 0.5);
+}
+
+.loot-ach--miss {
+  color: #666688;
+}
+
+.loot-ach--fail {
+  color: #555566;
+  font-style: italic;
+}
+
+.loot-dice-spin {
+  font-size: 18px;
+  animation: diceRoll 0.3s linear infinite;
+  display: inline-block;
+}
+
+@keyframes diceRoll {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(90deg); }
+  50%  { transform: rotate(180deg); }
+  75%  { transform: rotate(270deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dropped items */
+.loot-items-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loot-items-label {
+  font-size: 9px;
+  color: #6666aa;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.loot-item-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: #0d0d1a;
+  border-radius: 4px;
+  animation: itemMaterialize 0.5s ease-out;
+}
+
+@keyframes itemMaterialize {
+  0%   { opacity: 0; transform: scale(0.8); }
+  60%  { opacity: 1; transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.loot-item--kept {
+  opacity: 0.6;
+}
+
+.loot-item--dismissed {
+  opacity: 0.3;
+}
+
+.loot-item-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.loot-btn {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 3px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+}
+
+.loot-btn--keep {
+  background: #112211;
+  border-color: #44aa66;
+  color: #66cc88;
+}
+
+.loot-btn--keep:hover {
+  background: #1a3a1a;
+}
+
+.loot-btn--dismiss {
+  background: #1a1a22;
+  border-color: #555566;
+  color: #888899;
+}
+
+.loot-btn--dismiss:hover {
+  background: #222233;
+}
+
+.loot-item-status {
+  text-align: center;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.loot-item-status--kept {
+  color: #44cc66;
+}
+
+.loot-item-status--dismissed {
+  color: #666688;
+}
+
+/* Yaldabaoth fail state */
+.loot-fail {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.loot-fail-icon {
+  font-size: 40px;
+  animation: thunderPulse 1.5s ease-in-out infinite alternate;
+  opacity: 0.7;
+}
+
+@keyframes thunderPulse {
+  from { opacity: 0.4; transform: scale(0.95); }
+  to   { opacity: 0.8; transform: scale(1.05); }
+}
+
+.loot-fail-text {
+  font-size: 11px;
+  color: #666688;
+  font-style: italic;
+  margin-top: 8px;
+}

@@ -110,6 +110,16 @@
   filter: grayscale(1);
 }
 
+.skill-card.prereq-locked {
+  opacity: 0.6;
+  border-color: #663300;
+  filter: none;
+}
+
+.skill-card.prereq-locked:hover {
+  border-color: #884400;
+}
+
 .skill-card-header {
   display: flex;
   justify-content: space-between;
