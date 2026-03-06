@@ -234,3 +234,26 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* 2.6.0: Reduce motion — hide star particles, skip all transitions */
+body.reduce-motion .narrative-reveal__stars {
+  display: none;
+}
+body.reduce-motion .narrative-reveal {
+  transition: none;
+}
+body.reduce-motion .nr-title,
+body.reduce-motion .nr-subtitle,
+body.reduce-motion .nr-separator,
+body.reduce-motion .nr-lore-scroll,
+body.reduce-motion .nr-unlocks {
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+body.reduce-motion .nr-star-icon {
+  animation: none;
+}
+body.reduce-motion .nr-continue-btn {
+  animation: none;
+}

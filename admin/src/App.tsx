@@ -14,6 +14,7 @@ import GameConfigs from './pages/GameConfigs'
 import ContentEditor from './pages/ContentEditor'
 import AtmosphereEditor from './pages/AtmosphereEditor'
 import SFXConfigEditor from './pages/SFXConfigEditor'
+import ChatManager from './pages/ChatManager'
 
 interface HealthData {
   status: string;
@@ -185,6 +186,7 @@ function App() {
             <NavLink to="/game-configs" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
             <NavLink to="/content" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Content</NavLink>
             <NavLink to="/atmospheres" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audio</NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Chat</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
             {me?.is_owner && (
               <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
@@ -213,6 +215,7 @@ function App() {
             <Route path="/content" element={<div className="admin-content"><ContentEditor /></div>} />
             <Route path="/atmospheres" element={<div className="admin-content"><AtmosphereEditor /></div>} />
             <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />
+            <Route path="/chat" element={<div className="admin-content"><ChatManager /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />

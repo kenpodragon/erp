@@ -81,6 +81,8 @@ interface GameState {
   isOffline: boolean;
   // Audio settings (2.5)
   audioSettings: AudioSettings;
+  // Animation toggle (2.6)
+  reduceMotion: boolean;
 }
 
 type SessionPatch = Partial<StorySession> | ((prev: StorySession) => Partial<StorySession>);
@@ -103,6 +105,8 @@ interface GameContextType {
   // Audio (2.5)
   updateAudioSettings: (settings: AudioSettings) => void;
   playSFX: (configKey: string, options?: SFXPlayOptions) => void;
+  // Animation toggle (2.6)
+  setReduceMotion: (val: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -121,6 +125,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     activeBuffs: [],
     isOffline: false,
     audioSettings: loadAudioSettings(),
+    reduceMotion: localStorage.getItem('erp_reduce_motion') === 'true',
   });
 
   useEffect(() => {
@@ -161,6 +166,24 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
       apiEvents.removeEventListener('api-offline', handleOffline);
       apiEvents.removeEventListener('api-online', handleOnline);
     };
+  }, []);
+
+  // 2.6.0: Set initial body class for reduce-motion on mount
+  useEffect(() => {
+    if (state.reduceMotion) {
+      document.body.classList.add('reduce-motion');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setReduceMotion = useCallback((val: boolean) => {
+    setState(prev => ({ ...prev, reduceMotion: val }));
+    localStorage.setItem('erp_reduce_motion', String(val));
+    if (val) {
+      document.body.classList.add('reduce-motion');
+    } else {
+      document.body.classList.remove('reduce-motion');
+    }
   }, []);
 
   const setEssence = (amount: number) =>
@@ -258,6 +281,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
         removeBuff,
         updateAudioSettings,
         playSFX,
+        setReduceMotion,
       }}
     >
       {children}

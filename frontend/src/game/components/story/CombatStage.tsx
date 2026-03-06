@@ -34,6 +34,7 @@ interface Enemy {
   isBoss: boolean;
   isPrimal: boolean;
   isFallback: boolean;
+  isRare?: boolean;
   role?: string;
 }
 
@@ -73,6 +74,7 @@ interface Props {
   onGoldEarned: (amount: number) => void;
   onWavesComplete: () => void;
   onZoneAdvance: (newZone: number) => void;
+  onEntityKill?: (entityId: number) => void;
   textScale?: number;
   extraWavesMode?: boolean;
   autoProgress: boolean;
@@ -80,6 +82,8 @@ interface Props {
   debugSuperClick?: boolean;
   narrativeProgressPct: number;
   playSFX?: (key: string, opts?: { pan?: number }) => void;
+  reduceMotion?: boolean;
+  rareSpawn?: { entity_id: number; canonical_name: string; entity_type: string; entity_family: string | null; base_hp: number; base_gold: number; sprite_key: string | null } | null;
 }
 
 interface InnerProps extends Props {
@@ -94,10 +98,10 @@ interface InnerProps extends Props {
 
 const CombatContent: React.FC<InnerProps> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onZoneAdvance,
-  width, height, enemyPool, waveCount,
+  onEntityKill, width, height, enemyPool, waveCount,
   setWaveCount, requiredWaves, extraWavesMode, onWavesComplete,
   clickHandlerRef, textScale = 1.0, autoProgress, onAutoProgressToggle,
-  debugSuperClick = false, playSFX
+  debugSuperClick = false, playSFX, reduceMotion = false, rareSpawn
 }) => {
   const classColors = useMemo(() => {
     const style = getComputedStyle(document.documentElement);
@@ -134,9 +138,9 @@ const CombatContent: React.FC<InnerProps> = ({
   const scalingFactor = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
   const critMult = Number(gameConfigs['crit_multiplier'] ?? 2.0);
 
-  const triggerShake = useCallback(() => { setShake(1); setTimeout(() => setShake(0), 400); }, []);
-  const triggerRecoil = useCallback(() => { setRecoil(1); setTimeout(() => setRecoil(0), 150); }, []);
-  const triggerHitFlash = useCallback(() => { setHitFlash(true); setTimeout(() => setHitFlash(false), 80); }, []);
+  const triggerShake = useCallback(() => { if (reduceMotion) return; setShake(1); setTimeout(() => setShake(0), 400); }, [reduceMotion]);
+  const triggerRecoil = useCallback(() => { if (reduceMotion) return; setRecoil(1); setTimeout(() => setRecoil(0), 150); }, [reduceMotion]);
+  const triggerHitFlash = useCallback(() => { if (reduceMotion) return; setHitFlash(true); setTimeout(() => setHitFlash(false), 80); }, [reduceMotion]);
 
   const spawnEnemy = useCallback((pool: Enemy[], zone: number, isBoss: boolean) => {
     const isBossZone = zone % BOSS_ZONE_INTERVAL === 0;
@@ -232,14 +236,19 @@ const CombatContent: React.FC<InnerProps> = ({
     const spawnX = clickX ?? (enemyX + (Math.random() - 0.5) * 40);
     const spawnY = clickY ?? (enemyY + (Math.random() - 0.5) * 40);
 
-    setDmgNumbers(prev => [...prev.slice(-12), { id: `${Date.now()}_${Math.random()}`, x: spawnX, y: spawnY, value: formatNumber(damage), type, alpha: 1.0, vy: -1.2 }]);
+    if (!reduceMotion) {
+      setDmgNumbers(prev => [...prev.slice(-12), { id: `${Date.now()}_${Math.random()}`, x: spawnX, y: spawnY, value: formatNumber(damage), type, alpha: 1.0, vy: -1.2 }]);
+    }
     setEnemy(prev => {
       if (!prev) return prev;
       const newHp = Math.max(0, prev.currentHp - damage);
       if (newHp <= 0) {
         const goldEarned = (prev.baseGold || 0) * session.goldDropMultiplier;
         onGoldEarned(goldEarned);
-        setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : (classColors.particleTint ? hexToPixiTint(classColors.particleTint) : 0x444466) }))]);
+        if (prev.entityId) onEntityKill?.(prev.entityId);
+        if (!reduceMotion) {
+          setDeathParticles(old => [...old, ...Array.from({ length: 15 }, (_, i) => ({ id: `dp_${Date.now()}_${i}`, x: enemyX, y: enemyY - 40, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, alpha: 1.0, size: 2 + Math.random() * 4, color: prev.isPrimal ? 0xffd700 : (classColors.particleTint ? hexToPixiTint(classColors.particleTint) : 0x444466) }))]);
+        }
         playSFX?.('sfx_enemy_death', { pan: (enemyX / width) * 2 - 1 });
         advanceWave();
         return null;
@@ -249,7 +258,7 @@ const CombatContent: React.FC<InnerProps> = ({
       return { ...prev, currentHp: newHp };
     });
     if (type === 'crit') triggerHitFlash();
-  }, [width, height, session.goldDropMultiplier, onGoldEarned, advanceWave, triggerShake, triggerRecoil, triggerHitFlash]);
+  }, [width, height, session.goldDropMultiplier, onGoldEarned, onEntityKill, advanceWave, triggerShake, triggerRecoil, triggerHitFlash]);
 
   useEffect(() => { 
     // Wrap in timeout to avoid "Cannot update a component while rendering a different component"
@@ -266,6 +275,28 @@ const CombatContent: React.FC<InnerProps> = ({
     }, 0);
     return () => clearTimeout(timer);
   }, [session.currentZone, enemyPool.length, spawnEnemy, MONSTERS_PER_ZONE]);
+
+  // 2.6.2: Rare spawn injection — replace current enemy when a rare spawn arrives
+  const lastRareSpawnId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!rareSpawn || rareSpawn.entity_id === lastRareSpawnId.current) return;
+    lastRareSpawnId.current = rareSpawn.entity_id;
+    const zone = session.currentZone;
+    const hp = zoneHp(zone, scalingFactor);
+    const gold = zoneGold(zone) * 5; // rare spawns drop extra gold
+    setEnemy({
+      entityId: rareSpawn.entity_id,
+      name: rareSpawn.canonical_name,
+      spriteKey: rareSpawn.sprite_key,
+      maxHp: hp,
+      currentHp: hp,
+      baseGold: gold,
+      isBoss: false,
+      isPrimal: false,
+      isFallback: false,
+      isRare: true,
+    });
+  }, [rareSpawn]);
 
   // Handle auto-progress being toggled ON while in "Ready" state
   useEffect(() => {
@@ -308,7 +339,9 @@ const CombatContent: React.FC<InnerProps> = ({
     clickTimesRef.current.push(now);
     clickTimesRef.current = clickTimesRef.current.filter(t => now - t < 1000);
     setCps(clickTimesRef.current.length);
-    setShockwaves(prev => [...prev.slice(-5), { id: `sw_${Date.now()}_${Math.random()}`, x: ox, y: oy, alpha: 0.6, radius: 5 }]);
+    if (!reduceMotion) {
+      setShockwaves(prev => [...prev.slice(-5), { id: `sw_${Date.now()}_${Math.random()}`, x: ox, y: oy, alpha: 0.6, radius: 5 }]);
+    }
     const isCrit = Math.random() < CRIT_CHANCE;
     
     let damage = 0;
@@ -346,7 +379,7 @@ const CombatContent: React.FC<InnerProps> = ({
   const hpPct = enemy ? enemy.currentHp / enemy.maxHp : 0;
   const hpColor = hpPct > 0.5 ? 0x00cc44 : hpPct > 0.25 ? 0xffaa00 : 0xcc0000;
   const breathe = Math.sin(time) * 0.03, idleY = Math.cos(time * 0.7) * 3;
-  const shakeX = shake ? (Math.random() - 0.5) * 6 : 0, shakeY = (shake ? (Math.random() - 0.5) * 4 : 0) + idleY;
+  const shakeX = (shake && !reduceMotion) ? (Math.random() - 0.5) * 6 : 0, shakeY = ((shake && !reduceMotion) ? (Math.random() - 0.5) * 4 : 0) + idleY;
 
   const totalWaveDisplay = ((session.currentZone - 1) * MONSTERS_PER_ZONE) + waveCount + 1;
   const monstersInZone = Math.min(waveCount + 1, MONSTERS_PER_ZONE);
@@ -416,14 +449,27 @@ const CombatContent: React.FC<InnerProps> = ({
       {/* Enemy */}
       {enemy && (
         <pixiContainer x={enemyX + shakeX + (recoil ? -8 : 0)} y={floorY + shakeY} scale={{ x: 1 + breathe, y: 1 - breathe }} zIndex={10}>
+          {/* 2.6.2: Rare spawn glow aura */}
+          {enemy.isRare && !reduceMotion && (
+            <pixiGraphics y={-50} alpha={0.3 + Math.sin(time * 2) * 0.2} draw={g => {
+              g.clear().circle(0, -20, 50).stroke({ width: 3, color: 0x60a5fa, alpha: 0.8 });
+              g.circle(0, -20, 60).stroke({ width: 2, color: 0x60a5fa, alpha: 0.4 });
+            }} />
+          )}
+          {enemy.isRare && reduceMotion && (
+            <pixiGraphics y={-50} alpha={0.5} draw={g => {
+              g.clear().circle(0, -20, 50).stroke({ width: 3, color: 0x60a5fa, alpha: 0.8 });
+            }} />
+          )}
           <pixiGraphics draw={g => { g.clear().ellipse(0, 0, 38, 9).fill({ color: 0x000000, alpha: 0.45 }); }} />
           <pixiGraphics draw={g => {
-            const c = hitFlash ? 0xffffff : (enemy.isPrimal ? 0xffd700 : 0x2a2a4a);
+            const c = hitFlash ? 0xffffff : (enemy.isRare ? 0x60a5fa : enemy.isPrimal ? 0xffd700 : 0x2a2a4a);
             g.clear().circle(0, -70, 22).fill({ color: c, alpha: 0.9 }).rect(-18, -48, 36, 55).fill({ color: c, alpha: 0.85 });
             if (enemy.isBoss) g.moveTo(-14, -92).lineTo(-8, -105).lineTo(0, -96).lineTo(8, -105).lineTo(14, -92).fill({ color: enemy.isPrimal ? 0xffd700 : 0x8b0000 });
           }} />
           <pixiGraphics y={-120} draw={g => { g.clear().rect(-barW/2, 0, barW, barH).fill({ color: 0x222222 }).rect(-barW/2, 0, barW*hpPct, barH).fill({ color: hpColor }); }} />
           {enemy.isBoss && <pixiText text={`ENRAGE: ${enrageTimer}s`} y={-138} x={0} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#ff4400', fontWeight: 'bold' })} />}
+          {enemy.isRare && <pixiText text="RARE" y={-142} x={0} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 11 * textScale, fill: '#60a5fa', fontWeight: 'bold', letterSpacing: 3 })} />}
         </pixiContainer>
       )}
 
@@ -442,13 +488,19 @@ const CombatContent: React.FC<InnerProps> = ({
         </pixiContainer>
       )}
 
-      {/* VFX Layers */}
-      <pixiContainer zIndex={18}>{deathParticles.map(p => <pixiGraphics key={p.id} x={p.x} y={p.y} alpha={p.alpha} draw={g => g.clear().rect(-p.size/2, -p.size/2, p.size, p.size).fill({ color: p.color })} />)}</pixiContainer>
-      <pixiContainer zIndex={25}>{shockwaves.map(sw => <pixiGraphics key={sw.id} x={sw.x} y={sw.y} alpha={sw.alpha} draw={g => g.clear().circle(0, 0, sw.radius).stroke({ width: 2, color: 0xffffff })} />)}</pixiContainer>
+      {/* VFX Layers (hidden when reduceMotion) */}
+      {!reduceMotion && (
+        <>
+          <pixiContainer zIndex={18}>{deathParticles.map(p => <pixiGraphics key={p.id} x={p.x} y={p.y} alpha={p.alpha} draw={g => g.clear().rect(-p.size/2, -p.size/2, p.size, p.size).fill({ color: p.color })} />)}</pixiContainer>
+          <pixiContainer zIndex={25}>{shockwaves.map(sw => <pixiGraphics key={sw.id} x={sw.x} y={sw.y} alpha={sw.alpha} draw={g => g.clear().circle(0, 0, sw.radius).stroke({ width: 2, color: 0xffffff })} />)}</pixiContainer>
+        </>
+      )}
       
       {/* UI Elements */}
-      {enemy && <pixiText text={`${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center', fontWeight: 'bold' })} />}
-      <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : classColors.damageText, stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
+      {enemy && <pixiText text={`${enemy.isRare ? '✦ ' : ''}${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: enemy.isRare ? '#60a5fa' : enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center', fontWeight: 'bold' })} />}
+      {!reduceMotion && (
+        <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : classColors.damageText, stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
+      )}
       
       <pixiText text={statusText} x={8} y={8} zIndex={5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#666688' })} />
     </pixiContainer>

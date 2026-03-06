@@ -6,5 +6,7 @@ python-dotenv
 firebase-admin
 stripe
 python-multipart
+pyahocorasick
+websockets
 pytest
 httpx

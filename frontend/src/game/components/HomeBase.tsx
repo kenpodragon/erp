@@ -15,20 +15,26 @@ const HomeBase: React.FC<HomeBaseProps> = ({ player, character }) => {
   const [selectedArtifact, setSelectedArtifact] = useState<any>(null);
   const [leaderboardType, setLeaderboardType] = useState('progression');
   const [loading, setLoading] = useState(true);
+  const [discoveryStats, setDiscoveryStats] = useState<{
+    total_entities: number; discovered_entities: number; entity_completion_pct: number;
+    total_skills: number; discovered_skills: number; skill_completion_pct: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchHomeData = async () => {
       setLoading(true);
       try {
-        const [artRes, journalRes, rankRes] = await Promise.all([
+        const [artRes, journalRes, rankRes, discRes] = await Promise.all([
           api.get('/api/game/artifacts'),
           api.get('/api/game/journal'),
-          api.get(`/api/game/leaderboards?type=${leaderboardType}`)
+          api.get(`/api/game/leaderboards?type=${leaderboardType}`),
+          api.get('/api/game/registry/stats'),
         ]);
 
         if (artRes.ok) setArtifacts(await artRes.json());
         if (journalRes.ok) setJournal(await journalRes.json());
         if (rankRes.ok) setRankings(await rankRes.json());
+        if (discRes.ok) setDiscoveryStats(await discRes.json());
       } catch (err) {
         console.error('Failed to fetch home base data:', err);
       } finally {
@@ -101,6 +107,38 @@ const HomeBase: React.FC<HomeBaseProps> = ({ player, character }) => {
             </div>
           )}
         </section>
+
+        {/* ── Section 2.5: Discovery Progress ─────────────────────────── */}
+        {discoveryStats && (
+          <section className="home-base-section discovery-progress">
+            <div className="section-header">
+              <span className="discovery-icon">📖</span>
+              <h2>Etheric Registry</h2>
+            </div>
+            <div className="discovery-counters">
+              <div className="discovery-counter">
+                <span className="counter-label">Entities</span>
+                <div className="counter-bar-track">
+                  <div className="counter-bar-fill" style={{ width: `${discoveryStats.entity_completion_pct}%` }} />
+                </div>
+                <span className="counter-value">{discoveryStats.discovered_entities}/{discoveryStats.total_entities} ({discoveryStats.entity_completion_pct}%)</span>
+              </div>
+              <div className="discovery-counter">
+                <span className="counter-label">Skills</span>
+                <div className="counter-bar-track">
+                  <div className="counter-bar-fill counter-bar-fill--skill" style={{ width: `${discoveryStats.skill_completion_pct}%` }} />
+                </div>
+                <span className="counter-value">{discoveryStats.discovered_skills}/{discoveryStats.total_skills} ({discoveryStats.skill_completion_pct}%)</span>
+              </div>
+              <div className="discovery-overall">
+                <span className="overall-label">Overall Completion</span>
+                <span className="overall-value">
+                  {((discoveryStats.entity_completion_pct + discoveryStats.skill_completion_pct) / 2).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── Section 3: Tower Rankings (Leaderboard) ────────────────── */}
         <section className="home-base-section rankings">

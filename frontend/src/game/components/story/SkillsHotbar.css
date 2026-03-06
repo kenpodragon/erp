@@ -187,6 +187,25 @@
   font-weight: bold;
 }
 
+/* 2.6.0: Reduce motion — static highlight only, no glow/pulse */
+body.reduce-motion .skill-slot {
+  transition: none;
+}
+body.reduce-motion .skill-slot--active {
+  box-shadow: none;
+  border-color: #44cc66;
+}
+body.reduce-motion .skill-slot--ready,
+body.reduce-motion .skill-slot--ready:hover {
+  box-shadow: none;
+}
+body.reduce-motion .skill-cd-overlay {
+  transition: none;
+}
+body.reduce-motion .skill-buff-bar {
+  transition: none;
+}
+
 /* Buff bar */
 .skill-buff-bar {
   position: absolute;

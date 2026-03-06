@@ -37,6 +37,7 @@ class Entity(SQLModel, table=True):
     first_appearance_scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
+    entity_family: Optional[str] = Field(default=None, max_length=100)
 
     # Relationships
     gameplay_data: Optional["EntityGameplayData"] = Relationship(back_populates="entity", sa_relationship_kwargs={"uselist": False})

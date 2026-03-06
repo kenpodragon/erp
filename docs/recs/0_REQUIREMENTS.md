@@ -111,14 +111,35 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Music Contexts:** Story Mode (all phases), Boss battles, Idle Training active click. No music during passive idle or hub navigation.
 - [x] **Phases:** 2.5.0 Infrastructure, 2.5.1 MusicManager, 2.5.2 SFX System, 2.5.3 Admin & Tools, 2.5.4 Polish & QA.
 
-### 2.6 Economy & Anti-Cheat
-- [ ] **Detailed Requirements:** [2.6_ECONOMY_ANTICHEAT.md](2.6_ECONOMY_ANTICHEAT.md)
-- [ ] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades.
-- [ ] **Advanced Anti-Cheat:** 
-    - [ ] **Behavioral Detection:** System must distinguish between human mouse movements/click patterns and automated macros/bots.
-    - [ ] **Server Validation:** Real-time validation of click rates, damage calculations, and playback-based gating.
+### 2.6 Economy, Anti-Cheat & Discovery
+- [x] **Detailed Requirements:** [2.6_ECONOMY_ANTICHEAT.md](2.6_ECONOMY_ANTICHEAT.md) | **Design:** [2.6_ECONOMY_ANTICHEAT_DESIGN.md](2.6_ECONOMY_ANTICHEAT_DESIGN.md) | **Schema:** [2.6_ECONOMY_ANTICHEAT_SCHEMA.md](2.6_ECONOMY_ANTICHEAT_SCHEMA.md)
+- [x] **Advanced Anti-Cheat:**
+    - [x] **Behavioral Detection:** System must distinguish between human mouse movements/click patterns and automated macros/bots.
+    - [x] **Server Validation:** Real-time validation of click rates, damage calculations, and playback-based gating.
+    - [x] **Wave Validation:** DPS-based plausibility checks on waves_completed_delta per tick.
+    - [x] **Session Integrity:** Final gold sanity check at `/complete` with anomaly logging.
+    - [x] **Anomaly Logging:** All violations logged to `activity_events` with type `anti_cheat_anomaly`.
+    - [x] **CPS Feedback:** Two-tier client-side feedback (GoldOdometer flash + escalated warning toast).
+- [x] **Discovery System (Akashic Records):**
+    - [x] **Etheric Registry:** Per-variant entity tracking with E→SS ranked reveal system.
+    - [x] **Skill & Item Library:** Unlock on first purchase/acquisition, "New" badges.
+    - [x] **Discovery Counters:** Hub progress display (X/Y entities, skills, completion %).
+    - [x] **Random Spawns:** Rare entity pool (no scene associations), config-driven spawn chance per wave, VFX indicators.
+    - [x] **Static Wiki:** Help pages + contextual "?" icons throughout UI.
+- [x] **Onboarding & UI Polish:**
+    - [x] **Welcome Modal:** Combined changelog + tutorial link, version-tracked auto-display.
+    - [x] **Interactive Tutorial:** 7-step coach-mark overlay, skippable/replayable, no rewards.
+    - [x] **Aesthetic Polish:** "Magic Research 2" styling applied to Hub/Story Mode. Idle Training terminal exception preserved.
+    - [x] **Animation Toggle:** Reduce Motion setting with CSS + JS hybrid suppression.
+- [x] **Chat System:**
+    - [x] **WebSocket Chat:** FastAPI native, JWT-authenticated, global channel, in-memory buffer.
+    - [x] **Moderation:** Profanity filter (Aho-Corasick), rate limiting, admin mute controls.
+    - [x] **System Broadcasts:** Milestone broadcasts (boss clears, chapter completions, rare drops), rate-limited.
+    - [x] **Admin Interface:** Channel management, chat monitor, player mute controls.
+- [x] **Phases:** 2.6.0 Animation Toggle, 2.6.1 Anti-Cheat, 2.6.2 Discovery, 2.6.3 Onboarding & Polish, 2.6.4 Chat.
 
-### 2.7 Dual Economy & Inventory
+### 2.7 Dual Economy & Inventory & Home Base
+- [x] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades.
 - [ ] **Elysium Essence:** Meta-currency earned from Story Mode, consumed by Training.
 - [ ] **Inventory System:** Slots for Weapons, Armor, and Trinkets (affects permanent stats).
 - [ ] **Artifacts & Collections:** Rare items earned from Chapter Mastery or boss drops.
@@ -206,6 +227,9 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ### 99.4 Multi-Instance Chat (Redis Pub/Sub)
 - [ ] **Cross-Instance Chat Sync:** If Cloud Run scales beyond a single instance, add Redis Pub/Sub (or equivalent) to synchronize in-memory chat buffers across instances so all connected players see all messages regardless of which instance they're connected to.
+
+### 99.5 Cloud Run Single-Instance WebSocket Deployment
+- [ ] **Deployment:** Set `--max-instances=1` on Cloud Run for single-instance WebSocket to ensure in-memory chat buffer consistency until Redis Pub/Sub (99.4) is implemented.
 
 ---
 

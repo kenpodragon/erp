@@ -343,3 +343,26 @@
   font-style: italic;
   margin-top: 8px;
 }
+
+/* 2.6.0: Reduce motion — instant reveals, no dice spin/item animations */
+body.reduce-motion .post-battle-backdrop {
+  animation: none;
+}
+body.reduce-motion .post-battle-modal {
+  animation: none;
+}
+body.reduce-motion .post-battle-reward--show {
+  transition: none;
+}
+body.reduce-motion .loot-dice-spin {
+  animation: none;
+}
+body.reduce-motion .loot-item-entry {
+  animation: none;
+}
+body.reduce-motion .loot-fail-icon {
+  animation: none;
+}
+body.reduce-motion .loot-ach-row {
+  transition: none;
+}

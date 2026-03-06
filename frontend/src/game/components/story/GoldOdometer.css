@@ -54,3 +54,25 @@
   70%  { opacity: 1; transform: translateY(-15px); }
   100% { opacity: 0; transform: translateY(-25px); }
 }
+
+/* 2.6.1: CPS warning flash */
+.gold-odometer--cps-warning {
+  border: 2px solid #ff3333;
+  animation: cpsFlash 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes cpsFlash {
+  0%   { border-color: #ff3333; box-shadow: 0 0 4px rgba(255, 51, 51, 0.3); }
+  100% { border-color: #ff6666; box-shadow: 0 0 8px rgba(255, 51, 51, 0.5); }
+}
+
+/* 2.6.0: Reduce motion — instant value update, no roll/flyout */
+body.reduce-motion .gold-value--roll {
+  animation: none;
+}
+body.reduce-motion .gold-delta-flyout {
+  display: none;
+}
+body.reduce-motion .gold-odometer--cps-warning {
+  animation: none;
+}

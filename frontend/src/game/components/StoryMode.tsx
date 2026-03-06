@@ -42,11 +42,12 @@ const StoryMode: React.FC<StoryModeProps> = ({
   onFarmModeChange
 }) => {
   const { state, exitScene, setStorySession, updateStorySession, setEssence, setGold, playSFX } = useGame();
-  const { activeSceneId, storySession } = state;
+  const { activeSceneId, storySession, reduceMotion } = state;
 
   const pendingClicks = useRef(0);
   const pendingGold = useRef(0);
   const pendingWavesComplete = useRef(0);
+  const pendingEntityEncounters = useRef<Map<number, { encounters: number; kills: number }>>(new Map());
   const lastTickAt = useRef(Date.now());
   const tickTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   
@@ -58,6 +59,17 @@ const StoryMode: React.FC<StoryModeProps> = ({
   const [debugSuperClick, setDebugSuperClick] = React.useState(false);
   const [userWpm, setUserWpm] = React.useState(200);
   const [skillTree, setSkillTree] = React.useState<any[]>([]);
+  // 2.6.1: CPS state machine (NORMAL→FLASHING→WARNING→COOLDOWN)
+  const [cpsState, setCpsState] = React.useState<'NORMAL' | 'FLASHING' | 'WARNING' | 'COOLDOWN'>('NORMAL');
+  const cpsViolationStart = useRef<number | null>(null);
+  const cpsValidSince = useRef<number | null>(null);
+  const [showCpsToast, setShowCpsToast] = React.useState(false);
+  // 2.6.2: Rare spawn from tick
+  const [rareSpawn, setRareSpawn] = React.useState<{
+    entity_id: number; canonical_name: string; entity_type: string;
+    entity_family: string | null; base_hp: number; base_gold: number;
+    sprite_key: string | null;
+  } | null>(null);
   // Boss session state
   const [narrativeReveal, setNarrativeReveal] = React.useState<{
     text: string;
@@ -161,26 +173,37 @@ const StoryMode: React.FC<StoryModeProps> = ({
     const goldDelta = pendingGold.current;
     const wavesCompletedDelta = pendingWavesComplete.current;
 
+    // 2.6.2: Flush entity encounters
+    const encounterMap = pendingEntityEncounters.current;
+    const entityEncounters = Array.from(encounterMap.entries()).map(
+      ([entity_id, data]) => ({ entity_id, encounters: data.encounters, kills: data.kills })
+    );
+
     pendingClicks.current = 0;
     pendingGold.current = 0;
     pendingWavesComplete.current = 0;
+    pendingEntityEncounters.current = new Map();
     lastTickAt.current = now;
 
     try {
+      const tickPayload: Record<string, unknown> = {
+        clicks,
+        elapsed_ms: elapsed,
+        zone: storySession.currentZone,
+        wave: storySession.currentWave,
+        gold_delta: goldDelta,
+        waves_completed_delta: wavesCompletedDelta,
+      };
+      if (entityEncounters.length > 0) {
+        tickPayload.entity_encounters = entityEncounters;
+      }
       const res = await api.post(
         `/api/game/story/session/${storySession.sessionId}/tick`,
-        {
-          clicks,
-          elapsed_ms: elapsed,
-          zone: storySession.currentZone,
-          wave: storySession.currentWave,
-          gold_delta: goldDelta,
-          waves_completed_delta: wavesCompletedDelta,
-        }
+        tickPayload
       );
       if (res.ok) {
         const data = await res.json();
-        
+
         const drift = Math.abs(storySession.sessionGold - data.session_gold);
         if (drift > data.session_gold * 0.01 && data.session_gold > 0) {
           setForceOdometerUpdate(true);
@@ -192,6 +215,43 @@ const StoryMode: React.FC<StoryModeProps> = ({
           currentZone: data.current_zone,
           currentWave: data.current_wave,
         });
+
+        // 2.6.1: CPS state machine
+        const warnThreshold = Number(gameConfigs['cps_warning_threshold_seconds'] ?? 5) * 1000;
+        const cooldownDuration = Number(gameConfigs['cps_warning_cooldown_seconds'] ?? 10) * 1000;
+        if (!data.cps_valid) {
+          cpsValidSince.current = null;
+          if (!cpsViolationStart.current) cpsViolationStart.current = now;
+          if (now - cpsViolationStart.current >= warnThreshold) {
+            setCpsState('WARNING');
+            setShowCpsToast(true);
+          } else {
+            setCpsState('FLASHING');
+          }
+        } else {
+          cpsViolationStart.current = null;
+          if (cpsState === 'WARNING' || cpsState === 'FLASHING') {
+            if (!cpsValidSince.current) cpsValidSince.current = now;
+            if (now - cpsValidSince.current >= cooldownDuration) {
+              setCpsState('NORMAL');
+              setShowCpsToast(false);
+              cpsValidSince.current = null;
+            } else {
+              setCpsState('COOLDOWN');
+            }
+          } else if (cpsState === 'COOLDOWN') {
+            if (cpsValidSince.current && now - cpsValidSince.current >= cooldownDuration) {
+              setCpsState('NORMAL');
+              setShowCpsToast(false);
+              cpsValidSince.current = null;
+            }
+          }
+        }
+
+        // 2.6.2: Handle rare spawn from tick
+        if (data.rare_spawn) {
+          setRareSpawn(data.rare_spawn);
+        }
       }
     } catch { /* network errors non-fatal */ }
   }, [storySession, updateStorySession]);
@@ -283,6 +343,18 @@ const StoryMode: React.FC<StoryModeProps> = ({
     updateStorySession(prev => ({ sessionGold: prev.sessionGold + amount }));
   }, [updateStorySession]);
 
+  // ── 2.6.2: Entity Kill Tracking ──────────────────────────────────────────
+  const handleEntityKill = useCallback((entityId: number) => {
+    const map = pendingEntityEncounters.current;
+    const existing = map.get(entityId);
+    if (existing) {
+      existing.encounters += 1;
+      existing.kills += 1;
+    } else {
+      map.set(entityId, { encounters: 1, kills: 1 });
+    }
+  }, []);
+
   const handleZoneAdvance = useCallback((newZone: number) => {
     updateStorySession({ currentZone: newZone, currentWave: 0 });
   }, [updateStorySession]);
@@ -362,6 +434,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
             textScale={player?.settings?.game_text_scale || 1.0}
             debugSuperClick={debugSuperClick}
             playSFX={playSFX}
+            reduceMotion={reduceMotion}
           />
           <div className="story-controls-bar">
             <button
@@ -385,6 +458,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
               setNarrativeReveal(null);
               exitScene();
             }}
+            reduceMotion={reduceMotion}
           />
         )}
       </div>
@@ -423,6 +497,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
             gameConfigs={gameConfigs}
             onEnemyClick={handleEnemyClick}
             onGoldEarned={handleGoldEarned}
+            onEntityKill={handleEntityKill}
             onWavesComplete={handleWavesComplete}
             onZoneAdvance={handleZoneAdvance}
             textScale={player?.settings?.game_text_scale || 1.0}
@@ -432,6 +507,8 @@ const StoryMode: React.FC<StoryModeProps> = ({
             debugSuperClick={debugSuperClick}
             narrativeProgressPct={storySession.narrativeProgressPct}
             playSFX={playSFX}
+            reduceMotion={reduceMotion}
+            rareSpawn={rareSpawn}
           />
 
           <div className="story-controls-bar">
@@ -463,7 +540,16 @@ const StoryMode: React.FC<StoryModeProps> = ({
         uiScale={player?.settings?.ui_scale || 1.0}
         gameTextScale={player?.settings?.game_text_scale || 1.0}
         onSettingsChange={handleSettingsUpdate}
+        cpsValid={cpsState === 'NORMAL' || cpsState === 'COOLDOWN'}
+        reduceMotion={reduceMotion}
       />
+
+      {/* 2.6.1: CPS Warning Toast */}
+      {showCpsToast && (
+        <div className="cps-warning-toast">
+          Excessive automated clicking detected. Max {gameConfigs['click_rate_cap'] ?? 20} CPS is recorded.
+        </div>
+      )}
 
       {/* Dual-condition gate indicator */}
       {bothComplete && !showSummary && !farmMode && (

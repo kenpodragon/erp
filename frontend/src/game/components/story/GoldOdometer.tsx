@@ -11,9 +11,11 @@ import './GoldOdometer.css';
 interface Props {
   gold: number;
   forceUpdate?: boolean;
+  cpsValid?: boolean;
+  reduceMotion?: boolean;
 }
 
-const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate }) => {
+const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate, cpsValid = true, reduceMotion = false }) => {
   const prevGold = useRef(gold);
   const [displayStr, setDisplayStr] = useState(formatGold(gold));
   const [rolling, setRolling] = useState(false);
@@ -26,10 +28,12 @@ const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate }) => {
     const diff = gold - prevGold.current;
     
     if (diff > 0 && !forceUpdate) {
-      setDelta(prev => prev + diff);
-      setShowDelta(true);
-      setRolling(true);
-      setTimeout(() => setRolling(false), 300);
+      if (!reduceMotion) {
+        setDelta(prev => prev + diff);
+        setShowDelta(true);
+        setRolling(true);
+        setTimeout(() => setRolling(false), 300);
+      }
 
       if (deltaTimeout.current) clearTimeout(deltaTimeout.current);
       deltaTimeout.current = setTimeout(() => {
@@ -46,7 +50,7 @@ const GoldOdometer: React.FC<Props> = ({ gold, forceUpdate }) => {
   }, [gold, forceUpdate]);
 
   return (
-    <div className="gold-odometer">
+    <div className={`gold-odometer ${!cpsValid ? 'gold-odometer--cps-warning' : ''}`}>
       <span className="gold-icon">&#9733;</span>
       <span className={`gold-value ${rolling ? 'gold-value--roll' : ''}`}>
         {displayStr}

@@ -206,3 +206,21 @@
   80%  { opacity: 1; transform: translateX(-50%) translateY(-20px); }
   100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
 }
+
+/* 2.6.0: Reduce motion — static indicators for interrupts */
+body.reduce-motion .interrupt-overlay--burst {
+  animation: none;
+}
+body.reduce-motion .interrupt-target-zone {
+  animation: none;
+  box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.5);
+}
+body.reduce-motion .interrupt-whack-zone {
+  animation: none;
+}
+body.reduce-motion .interrupt-success-flash {
+  animation: none;
+}
+body.reduce-motion .boss-timer-bar {
+  transition: none;
+}

@@ -24,6 +24,11 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `038` | Combat Entity Attack Types | Assigned lore-appropriate attack types to 4 combat entities: Sludge Stalker (1: melee), Ether Voidling (1: void), Rust Guardian (3: melee/construct/thermal), Cosmic Remnant (5: akashic/void/gravitic/psychic/corruption). Re-added 4 missing benefit effects (golden_click_pct, dark_ritual_multiplier, energize_multiplier, reload_pct). |
 | `039` | Audio & Music System | Created `atmospheres` and `audio_configs` tables. Added `atmosphere_id INTEGER FK atmospheres` to `books`, `chapters`, `scene_gameplay_data`. Added `unique_boss_theme_id INTEGER FK atmospheres` and `death_sfx_key VARCHAR(100)` to `entity_gameplay_data`. Added `activate_sfx_key VARCHAR(100)` to `skills`. Added `master_volume SMALLINT DEFAULT 80` and `master_muted BOOLEAN DEFAULT FALSE` to `player_settings`. Added `archetype_id INTEGER FK atmospheres` to `locations`. Data migration: `master_muted = NOT audio_enabled`. Seeded 13 atmosphere archetypes + 3 Training Grounds variations (16 rows), 11 SFX presets, 3 book-level atmosphere assignments. |
 | `040` | Seed Music Definitions & Extended SFX | Populated `music_definitions` JSONB on all 16 existing atmosphere rows (13 archetypes + 3 training variations). Each definition contains 4 states: explore, combat, boss, mystery with oscillator sequences, drum patterns, and effects. Added 5 unique boss theme atmospheres (Boss: Pallid Mask, Tower Guardian, Void Entity, Glitch Lord, Final Ascent) with `archetype = NULL`. Added 6 extended SFX presets: `sfx_player_hit` (combat), `sfx_dark_ritual` (combat), `sfx_ui_hover` (ui), `sfx_ui_error` (ui), `sfx_beat_reveal` (narrative), `sfx_gold` (progression). Total atmospheres: 21. Total audio_configs: 17. |
+| `041` | Anti-Cheat Configuration Seeds | Inserted 4 `game_configs` keys: `wave_validation_tolerance` (2.0), `session_gold_tolerance` (3.0), `cps_warning_threshold_seconds` (5), `cps_warning_cooldown_seconds` (10). Category: `anti-cheat`. |
+| `042` | Discovery System Tables | Created `player_entity_discovery` table (per-player entity encounter/kill tracking with rank cache). Created `player_discovery_log` table (skill/item/effect discovery tracking). Added `entity_family VARCHAR(100)` column to `entities` table. Created indexes: `idx_ped_player`, `idx_ped_entity`, `idx_ped_player_rank`, `idx_pdl_player`, `idx_pdl_player_type`, `idx_entities_family`. |
+| `043` | Discovery Configuration Seeds | Inserted 5 `game_configs` keys: `codex_rank_e` (1), `codex_rank_c` (25), `codex_rank_a` (100), `codex_rank_ss` (500), `rare_spawn_base_chance` (0.005). Category: `discovery`. |
+| `044` | Chat System Tables & Configuration | Created `chat_channels` table (VARCHAR PK, multi-channel support). Seeded `global` channel. Inserted 5 `game_configs` keys: `chat_buffer_size` (200), `chat_rate_limit_per_minute` (20), `chat_heartbeat_interval_s` (30), `broadcast_rarity_min` (4), `broadcast_rate_limit_per_minute` (10). Category: `social`. |
+| `045` | Chat Mute Columns | Added `chat_muted BOOLEAN NOT NULL DEFAULT FALSE` and `chat_muted_until VARCHAR(50) DEFAULT NULL` to `player_settings`. Supports admin mute/timed-mute of players from chat (REC 2.6.4). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -60,7 +65,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | Table | Description |
 | :--- | :--- |
 | `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. |
-| `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. |
+| `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. **2.6:** Added `chat_muted BOOLEAN DEFAULT FALSE` and `chat_muted_until VARCHAR(50)` for admin chat mute support. |
 | `character_classes` | Definitions for player classes (Engineer, Conduit, Drifter, Vessel). **2.4:** Added `visual_config JSONB` for class visual identity (colors, avatar, particles, PixiJS tints). |
 | `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). |
 
@@ -174,6 +179,23 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 **Atmosphere Resolution Hierarchy:** Boss Override (`entity_gameplay_data.unique_boss_theme_id`) > Scene (`scene_gameplay_data.atmosphere_id`) > Chapter (`chapters.atmosphere_id`) > Book (`books.atmosphere_id`) > Global Default (Mundane Dread, logged to `dev_content_audit`).
 
 **Volume Calculation:** `master_volume/100 * category_volume/100 * preset.base_volume`. If `master_muted = TRUE`, all output is 0.
+
+---
+
+### Discovery & Chat System (2.6)
+
+| Table | Description |
+| :--- | :--- |
+| `player_entity_discovery` | Per-player, per-entity encounter and kill tracking with ranked reveal. Columns: `id SERIAL PK`, `player_id INTEGER FK players`, `entity_id INTEGER FK entities`, `encounters INTEGER DEFAULT 0`, `kills INTEGER DEFAULT 0`, `rank VARCHAR(2)` (NULL/E/C/A/SS — denormalized cache), `first_seen_at TIMESTAMPTZ`, `is_new BOOLEAN DEFAULT TRUE`. UNIQUE constraint on `(player_id, entity_id)`. Indexes: `idx_ped_player`, `idx_ped_entity`, `idx_ped_player_rank`. |
+| `player_discovery_log` | Tracks discovered skills, item components, and effects. Columns: `id SERIAL PK`, `player_id INTEGER FK players`, `discovery_type VARCHAR(20)` ('skill', 'item_prefix', 'item_suffix', 'item_quality', 'lore_tag', 'effect'), `reference_id INTEGER` (app-level FK to relevant table), `discovered_at TIMESTAMPTZ`, `is_new BOOLEAN DEFAULT TRUE`. UNIQUE constraint on `(player_id, discovery_type, reference_id)`. Indexes: `idx_pdl_player`, `idx_pdl_player_type`. |
+| `chat_channels` | Chat channel metadata. Messages are in-memory only (not persisted). Columns: `id VARCHAR(50) PK`, `name VARCHAR(100)`, `channel_type VARCHAR(20) DEFAULT 'global'` ('global', 'chapter', 'book', 'custom'), `is_active BOOLEAN DEFAULT TRUE`, `created_at TIMESTAMPTZ`, `created_by INTEGER FK players ON DELETE SET NULL`. Default seed: `global` channel. |
+
+**Column Additions (2.6):**
+- `entities.entity_family VARCHAR(100)` — Species/family grouping (e.g., 'Wraith', 'Golem'). Populated via `tools/classify_entity_families.py`. NULL = standalone entry in Codex. Index: `idx_entities_family`.
+
+**Codex Rank Thresholds** (from `game_configs`, category: `discovery`): E=1 kill, C=25, A=100, SS=500. Rank determines what info is visible: E=name+image+lore, C=+HP/gold, A=+full stats, SS=+hidden lore.
+
+**Anti-Cheat Anomaly Logging:** Anomalies logged to `activity_events` with `event_type = 'anti_cheat_anomaly'`. `event_data` JSONB contains: `anomaly_type` (cps_violation, gold_correction, wave_clamp, session_integrity), `session_id`, `reported_value`, `corrected_value`, `zone`, `elapsed_ms`.
 
 ---
 

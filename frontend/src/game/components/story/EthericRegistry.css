@@ -1,0 +1,222 @@
+.etheric-registry {
+  padding: 16px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+}
+
+.registry-title {
+  color: #b8860b;
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.registry-families {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.family-tab {
+  padding: 6px 14px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  border-radius: 4px;
+  background: rgba(30, 30, 30, 0.8);
+  color: #c0c0c0;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+
+.family-tab:hover {
+  background: rgba(184, 134, 11, 0.15);
+}
+
+.family-tab.active {
+  background: rgba(184, 134, 11, 0.25);
+  color: #b8860b;
+  border-color: #b8860b;
+}
+
+.registry-loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+
+.registry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.registry-card {
+  position: relative;
+  background: rgba(20, 20, 30, 0.85);
+  border: 1px solid rgba(100, 100, 120, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.registry-card:hover {
+  border-color: rgba(184, 134, 11, 0.5);
+  background: rgba(30, 30, 40, 0.9);
+}
+
+/* Mist state — unknown entity */
+.registry-card.state-mist {
+  opacity: 0.6;
+}
+
+.registry-card.state-mist .card-sprite {
+  filter: brightness(0.2);
+}
+
+/* Grey state — seen but few kills */
+.registry-card.state-grey {
+  opacity: 0.8;
+}
+
+.registry-card.state-grey .card-sprite {
+  filter: grayscale(0.7) brightness(0.6);
+}
+
+/* Revealed state — full info */
+.registry-card.state-revealed {
+  border-color: rgba(184, 134, 11, 0.3);
+}
+
+.card-sprite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: rgba(50, 50, 60, 0.6);
+  overflow: hidden;
+}
+
+.silhouette {
+  width: 40px;
+  height: 40px;
+  background: rgba(10, 10, 10, 0.9);
+  border-radius: 50%;
+}
+
+.sprite-placeholder {
+  font-size: 20px;
+  color: #888;
+}
+
+.card-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.card-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #d4a846;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
+}
+
+.rank-badge {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border: 1px solid;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+.card-counts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.new-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #b8860b;
+  color: #111;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.card-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(100, 100, 120, 0.3);
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+.card-detail p {
+  margin: 4px 0;
+}
+
+.detail-desc {
+  color: #c0c0c0;
+}
+
+.detail-lore {
+  color: #b8860b;
+  font-style: italic;
+}
+
+.detail-first {
+  color: #666;
+  font-size: 10px;
+}
+
+.registry-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.registry-pagination button {
+  padding: 6px 16px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  border-radius: 4px;
+  background: rgba(30, 30, 30, 0.8);
+  color: #c0c0c0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.registry-pagination button:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.15);
+}
+
+.registry-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.registry-pagination span {
+  font-size: 12px;
+  color: #888;
+}

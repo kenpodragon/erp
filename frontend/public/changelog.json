@@ -1,0 +1,17 @@
+[
+  {
+    "version": "2.6.0",
+    "date": "2026-03-06",
+    "title": "Economy, Discovery & Social",
+    "entries": [
+      {"type": "feature", "text": "Reduce Motion toggle in Settings for accessibility"},
+      {"type": "feature", "text": "Etheric Registry — track every creature encountered"},
+      {"type": "feature", "text": "Discovery Library — catalog skills and items found"},
+      {"type": "feature", "text": "Global Chat system with real-time messaging"},
+      {"type": "feature", "text": "Anti-cheat hardening with wave validation"},
+      {"type": "feature", "text": "Interactive tutorial for new players"},
+      {"type": "improvement", "text": "CPS violation feedback with visual warnings"},
+      {"type": "improvement", "text": "Wiki pages for game mechanics"}
+    ]
+  }
+]

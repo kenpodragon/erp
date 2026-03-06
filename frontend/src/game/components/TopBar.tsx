@@ -62,7 +62,7 @@ const CLASS_TO_PRESET: Record<string, string> = {
 };
 
 const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) => {
-  const { state, playSFX } = useGame();
+  const { state, playSFX, setReduceMotion } = useGame();
   const [showSettings, setShowSettings] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings);
@@ -225,6 +225,19 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
               <div className="settings-group">
                 <label>Narration Font Size: {localSettings.narration_font_size}px
                   <input type="range" name="narration_font_size" min="8" max="28" step="1" value={localSettings.narration_font_size} onChange={handleSliderChange} />
+                </label>
+              </div>
+              <div className="settings-group">
+                <label className="reduce-motion-toggle">
+                  <input
+                    type="checkbox"
+                    checked={state.reduceMotion}
+                    onChange={(e) => setReduceMotion(e.target.checked)}
+                  />
+                  Reduce Motion
+                  <span style={{ display: 'block', fontSize: '0.75rem', color: '#888', marginTop: '2px' }}>
+                    Disables animations and transitions
+                  </span>
                 </label>
               </div>
               <div className="settings-actions">

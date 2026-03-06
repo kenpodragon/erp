@@ -54,3 +54,17 @@ def is_profane(text: str) -> bool:
         if word in _profanity_blocklist:
             return True
     return False
+
+
+def check_profanity(text: str) -> str:
+    """Replace any blocklist word occurrences with '*****' (case-insensitive)."""
+    if not text or not _profanity_blocklist:
+        return text
+    words = text.split()
+    result = []
+    for word in words:
+        if word.lower() in _profanity_blocklist:
+            result.append("*****")
+        else:
+            result.append(word)
+    return " ".join(result)

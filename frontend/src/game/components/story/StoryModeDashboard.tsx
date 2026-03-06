@@ -40,6 +40,8 @@ interface Props {
   uiScale: number;
   gameTextScale: number;
   onSettingsChange: (settings: any) => void;
+  cpsValid?: boolean;
+  reduceMotion?: boolean;
 }
 
 const StoryModeDashboard: React.FC<Props> = ({
@@ -49,7 +51,9 @@ const StoryModeDashboard: React.FC<Props> = ({
   onPlayerUpdate,
   uiScale,
   gameTextScale,
-  onSettingsChange
+  onSettingsChange,
+  cpsValid = true,
+  reduceMotion = false,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -98,7 +102,7 @@ const StoryModeDashboard: React.FC<Props> = ({
 
       <div className="dashboard-content">
       <div className="dashboard-top-row">
-         <GoldOdometer gold={session.sessionGold} />
+         <GoldOdometer gold={session.sessionGold} cpsValid={cpsValid} reduceMotion={reduceMotion} />
          <div className="dashboard-settings">
            <div className="setting-item">
              <label>TEXT SCALE: {gameTextScale.toFixed(1)}x</label>

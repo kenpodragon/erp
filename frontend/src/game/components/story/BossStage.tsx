@@ -68,6 +68,7 @@ interface Props {
   textScale?: number;
   debugSuperClick?: boolean;
   playSFX?: (key: string, opts?: { pan?: number }) => void;
+  reduceMotion?: boolean;
 }
 
 // ── Inner PixiJS component ──────────────────────────────────────────────────
@@ -166,7 +167,7 @@ const BossContent: React.FC<InnerProps> = ({
 // ── Main BossStage component ────────────────────────────────────────────────
 const BossStage: React.FC<Props> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onBossDefeated,
-  textScale = 1.0, debugSuperClick = false, playSFX,
+  textScale = 1.0, debugSuperClick = false, playSFX, reduceMotion = false,
 }) => {
   const { bossName = 'Guardian' } = session;
   const cfg: BossConfig = session.bossConfig ?? {
@@ -228,15 +229,17 @@ const BossStage: React.FC<Props> = ({
     bossHpRef.current = newHp;
     setBossHp(newHp);
 
-    // Floating damage number
-    const id = `${Date.now()}-${Math.random()}`;
-    setDamageNums(prev => [...prev.slice(-15), {
-      id, x: ox + (Math.random() - 0.5) * 40, y: oy - 20,
-      value: isCrit ? `⚡${formatNumber(dmg)}` : formatNumber(dmg),
-      alpha: 1, vy: -1.5, isCrit,
-    }]);
+    // Floating damage number (suppressed when reduceMotion)
+    if (!reduceMotion) {
+      const id = `${Date.now()}-${Math.random()}`;
+      setDamageNums(prev => [...prev.slice(-15), {
+        id, x: ox + (Math.random() - 0.5) * 40, y: oy - 20,
+        value: isCrit ? `⚡${formatNumber(dmg)}` : formatNumber(dmg),
+        alpha: 1, vy: -1.5, isCrit,
+      }]);
+    }
 
-    if (isCrit) setShake(3);
+    if (isCrit && !reduceMotion) setShake(3);
 
     if (newHp <= 0 && !defeatedRef.current) {
       defeatedRef.current = true;

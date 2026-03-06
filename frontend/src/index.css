@@ -162,3 +162,99 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 2.6.0: Reduce Motion global overrides */
+@media (prefers-reduced-motion: reduce) {
+  body:not(.motion-override) * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   2.6.3 — "Magic Research 2" Aesthetic Polish
+   Consistent panel, button, and modal refinements
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Polished Panel Base ─────────────────────────────────────────── */
+.home-base-section,
+.settings-modal,
+.post-battle-modal,
+.upgrade-menu-wrap,
+.hero-stats-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Polished Buttons ────────────────────────────────────────────── */
+button {
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ── Modal Backdrop Polish ───────────────────────────────────────── */
+.settings-modal-overlay,
+.post-battle-overlay,
+.artifact-detail-overlay,
+.narrative-reveal {
+  backdrop-filter: blur(6px);
+}
+
+/* ── Interactive Element Focus States ────────────────────────────── */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Currency Badge Polish ───────────────────────────────────────── */
+.currency-item {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.currency-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── TopBar Button Polish ────────────────────────────────────────── */
+.mute-toggle-btn,
+.settings-btn,
+.exit-btn {
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+/* ── Tab / Navigation Polish ─────────────────────────────────────── */
+.ranking-tabs button,
+.tab-nav button {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+/* ── Stat Bar Gradients ──────────────────────────────────────────── */
+.stat-bar-fill,
+.counter-bar-fill,
+.xp-bar-fill {
+  background: linear-gradient(to right, var(--color-accent), var(--color-accent-hover));
+  border-radius: inherit;
+}
+
+/* ── Tooltip Shadow ──────────────────────────────────────────────── */
+[data-tooltip]::after,
+.skill-tooltip,
+.item-tooltip {
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-md);
+}
+

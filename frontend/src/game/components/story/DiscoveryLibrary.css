@@ -1,0 +1,111 @@
+.discovery-library {
+  padding: 16px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+}
+
+.library-title {
+  color: #b8860b;
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.library-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.library-tab {
+  position: relative;
+  padding: 6px 14px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  border-radius: 4px;
+  background: rgba(30, 30, 30, 0.8);
+  color: #c0c0c0;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+
+.library-tab:hover {
+  background: rgba(184, 134, 11, 0.15);
+}
+
+.library-tab.active {
+  background: rgba(184, 134, 11, 0.25);
+  color: #b8860b;
+  border-color: #b8860b;
+}
+
+.tab-new-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e74c3c;
+}
+
+.library-loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+
+.library-empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.library-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.library-entry {
+  background: rgba(20, 20, 30, 0.85);
+  border: 1px solid rgba(100, 100, 120, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  transition: border-color 0.2s;
+}
+
+.library-entry:hover {
+  border-color: rgba(184, 134, 11, 0.4);
+}
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entry-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #d4a846;
+}
+
+.entry-new-badge {
+  background: #b8860b;
+  color: #111;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.entry-description {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+}

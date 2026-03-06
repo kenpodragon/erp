@@ -121,3 +121,54 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* 2.6.0: Static bottom bar when Reduce Motion is enabled */
+.static-bottom-bar {
+  height: 48px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #b8860b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border-top: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+/* 2.6.2: Home Base sub-tabs */
+.home-base-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.home-sub-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+}
+
+.home-sub-tabs button {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  border-radius: 4px;
+  padding: 6px 16px;
+  color: #999;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-sub-tabs button.active {
+  color: #b8860b;
+  border-color: #b8860b;
+  background: rgba(184, 134, 11, 0.15);
+}
+
+.home-sub-tabs button:hover:not(.active) {
+  color: #d4a846;
+  border-color: rgba(184, 134, 11, 0.5);
+}

@@ -6,7 +6,12 @@ import OverworldMap from './components/OverworldMap';
 import BottomAnimatedBanner from './components/BottomAnimatedBanner';
 import StoryMode from './components/StoryMode';
 import SkillsTab from './components/SkillsTab';
+import ChatTab from './components/ChatTab';
+import EthericRegistry from './components/story/EthericRegistry';
+import DiscoveryLibrary from './components/story/DiscoveryLibrary';
 import PostBattleSummary from './components/story/PostBattleSummary';
+import WelcomeModal from './components/story/WelcomeModal';
+import TutorialOverlay from './components/story/TutorialOverlay';
 import { GameProvider, useGame } from './GameContext';
 
 interface Player {
@@ -44,6 +49,9 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
   // Align IDs with Sidebar.tsx: map, skills, home, shop, chat, board
   const [activeTab, setActiveTab] = useState<string>('map');
   const [summaryData, setSummaryData] = useState<{ show: boolean; farmMode: boolean }>({ show: false, farmMode: false });
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [homeSubTab, setHomeSubTab] = useState<'registry' | 'library'>('registry');
 
   const { player, character, onPlayerUpdate } = props;
 
@@ -89,8 +97,18 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
             <>
               {activeTab === 'map' && <OverworldMap />}
               {activeTab === 'skills' && <SkillsTab />}
+              {activeTab === 'chat' && <ChatTab />}
+              {activeTab === 'home' && (
+                <div className="home-base-view">
+                  <div className="home-sub-tabs">
+                    <button className={homeSubTab === 'registry' ? 'active' : ''} onClick={() => setHomeSubTab('registry')}>Etheric Registry</button>
+                    <button className={homeSubTab === 'library' ? 'active' : ''} onClick={() => setHomeSubTab('library')}>Discovery Library</button>
+                  </div>
+                  {homeSubTab === 'registry' ? <EthericRegistry /> : <DiscoveryLibrary />}
+                </div>
+              )}
 
-              {activeTab !== 'map' && activeTab !== 'skills' && (
+              {activeTab !== 'map' && activeTab !== 'skills' && activeTab !== 'chat' && activeTab !== 'home' && (
                 <div className="placeholder-view">
                   <h2>{activeTab.toUpperCase()} TERMINAL</h2>
                   <p style={{ opacity: 0.5 }}>Module under construction...</p>
@@ -102,7 +120,11 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
       </div>
 
       {/* Hide bottom banner during active story scenes for more focus */}
-      {!state.activeSceneId && <BottomAnimatedBanner character={character} />}
+      {!state.activeSceneId && (
+        state.reduceMotion
+          ? <div className="static-bottom-bar">{character?.character_name || 'Adventurer'} Lv.{character?.level || 1}</div>
+          : <BottomAnimatedBanner character={character} />
+      )}
 
       {/* Global Connectivity Overlay */}
       {state.isOffline && (
@@ -128,7 +150,21 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
           onContinue={handleContinueFarming}
           onReturnToHub={handleReturnToHub}
           playSFX={playSFX}
+          reduceMotion={state.reduceMotion}
         />
+      )}
+
+      {/* 2.6.3: Welcome/Changelog Modal */}
+      {showWelcome && (
+        <WelcomeModal
+          onClose={() => setShowWelcome(false)}
+          onStartTutorial={() => { setShowWelcome(false); setShowTutorial(true); }}
+        />
+      )}
+
+      {/* 2.6.3: Interactive Tutorial Overlay */}
+      {showTutorial && (
+        <TutorialOverlay onComplete={() => setShowTutorial(false)} />
       )}
     </div>
   );

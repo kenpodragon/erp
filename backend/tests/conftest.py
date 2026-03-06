@@ -16,6 +16,8 @@ from models import (
     IdleSkillStatContribution, ClassStatAffinity, CharacterStat, PlayerSceneRecord, SkillPrerequisite,
     GearSlot, ItemPrefix, ItemQuality, ItemLoreTag, ItemTypeBase, ItemSuffix,
     Atmosphere, AudioConfig,
+    PlayerEntityDiscovery, PlayerDiscoveryLog,
+    ChatChannel,
 )
 from datetime import datetime, timezone
 

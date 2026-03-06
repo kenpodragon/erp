@@ -14,6 +14,7 @@ interface NarrativeRevealProps {
   chapterTitle?: string;
   unlocks?: string[];
   onContinue: () => void;
+  reduceMotion?: boolean;
 }
 
 const NarrativeReveal: React.FC<NarrativeRevealProps> = ({
@@ -22,22 +23,24 @@ const NarrativeReveal: React.FC<NarrativeRevealProps> = ({
   chapterTitle,
   unlocks = [],
   onContinue,
+  reduceMotion = false,
 }) => {
-  const [visible, setVisible] = useState(false);
-  const [textVisible, setTextVisible] = useState(false);
-  const [showContinue, setShowContinue] = useState(false);
+  const [visible, setVisible] = useState(reduceMotion);
+  const [textVisible, setTextVisible] = useState(reduceMotion);
+  const [showContinue, setShowContinue] = useState(reduceMotion);
 
   const isBook = bossType === 'book_boss';
   const title = isBook ? 'Book Complete' : 'Chapter Complete';
   const subtitle = chapterTitle ? `— ${chapterTitle} —` : '';
 
   useEffect(() => {
+    if (reduceMotion) return; // All states already true
     // Staged reveal: backdrop → title → text → continue button
     const t1 = setTimeout(() => setVisible(true), 50);
     const t2 = setTimeout(() => setTextVisible(true), 800);
     const t3 = setTimeout(() => setShowContinue(true), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <div className={`narrative-reveal ${visible ? 'narrative-reveal--visible' : ''} ${isBook ? 'narrative-reveal--book' : ''}`}>

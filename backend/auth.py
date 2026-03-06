@@ -119,6 +119,21 @@ def _get_admin_ips(session: Session) -> set[str]:
 
 
 # ---------------------------------------------------------------------------
+# Direct Token Verification (for WebSocket auth)
+# ---------------------------------------------------------------------------
+
+def verify_firebase_token(token: str) -> dict:
+    """Verify a raw Firebase ID token string and return the decoded claims.
+
+    Used by WebSocket endpoints that receive the token as a query parameter
+    rather than an Authorization header.
+    """
+    if not _firebase_initialized:
+        raise ValueError("Firebase not initialized")
+    return firebase_auth.verify_id_token(token)
+
+
+# ---------------------------------------------------------------------------
 # Core Token Validation
 # ---------------------------------------------------------------------------
 

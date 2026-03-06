@@ -52,9 +52,10 @@ interface Props {
   onContinue: () => void;
   onReturnToHub: (completeData?: any) => void;
   playSFX?: (key: string, opts?: { pan?: number }) => void;
+  reduceMotion?: boolean;
 }
 
-const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub, playSFX }) => {
+const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub, playSFX, reduceMotion = false }) => {
   const [stats, setStats] = useState<SummaryStats | null>(null);
   const [fetching, setFetching] = useState(true);
   const [countGold, setCountGold] = useState(0);
@@ -89,18 +90,24 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
             dark_ritual_multiplier: data.dark_ritual_multiplier ?? session.darkRitualMultiplier,
           });
 
-          const duration = 1000;
-          const startTime = Date.now();
-          const tick = () => {
-            const now = Date.now();
-            const progress = Math.min(1, (now - startTime) / duration);
-            setCountGold(Math.floor(progress * goldVal));
-            if (progress < 1) requestAnimationFrame(tick);
-            else {
-              setTimeout(() => setShowRewards(true), 300);
-            }
-          };
-          requestAnimationFrame(tick);
+          if (reduceMotion) {
+            // Instant reveal when reduce motion is active
+            setCountGold(goldVal);
+            setShowRewards(true);
+          } else {
+            const duration = 1000;
+            const startTime = Date.now();
+            const tick = () => {
+              const now = Date.now();
+              const progress = Math.min(1, (now - startTime) / duration);
+              setCountGold(Math.floor(progress * goldVal));
+              if (progress < 1) requestAnimationFrame(tick);
+              else {
+                setTimeout(() => setShowRewards(true), 300);
+              }
+            };
+            requestAnimationFrame(tick);
+          }
         }
       } catch {
         setShowRewards(true);

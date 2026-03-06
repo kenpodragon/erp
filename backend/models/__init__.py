@@ -32,6 +32,8 @@ from models.character_progression import (
 )
 from models.attack_types import AttackType, EntityAttackType, TypeBaseAttackType
 from models.audio import Atmosphere, AudioConfig
+from models.discovery import PlayerEntityDiscovery, PlayerDiscoveryLog
+from models.chat import ChatChannel
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -51,4 +53,6 @@ __all__ = [
     "PlayerSceneRecord", "SkillPrerequisite",
     "AttackType", "EntityAttackType", "TypeBaseAttackType",
     "Atmosphere", "AudioConfig",
+    "PlayerEntityDiscovery", "PlayerDiscoveryLog",
+    "ChatChannel",
 ]

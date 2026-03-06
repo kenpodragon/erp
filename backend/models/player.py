@@ -60,6 +60,8 @@ class PlayerSettings(SQLModel, table=True):
     narration_block_height: int = Field(default=50)
     ui_scale: float = Field(default=1.0)
     game_text_scale: float = Field(default=2.0)
+    chat_muted: bool = Field(default=False)
+    chat_muted_until: Optional[str] = Field(default=None, max_length=50)
     updated_at: Optional[datetime] = Field(default=None)
 
     # Relationships

@@ -129,6 +129,23 @@
   to { transform: rotate(360deg); }
 }
 
+/* 2.6.1: CPS Warning Toast */
+.cps-warning-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(180, 30, 30, 0.9);
+  color: #ffcccc;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  z-index: 600;
+  pointer-events: none;
+  border: 1px solid #ff4444;
+  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+}
+
 .story-gate-ready {
   position: fixed;
   top: 25%;

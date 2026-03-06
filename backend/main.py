@@ -36,6 +36,9 @@ from routes.inventory import router as inventory_router
 from routes.admin_game import router as admin_game_router
 from routes.admin_audio import router as admin_audio_router
 from routes.audio import router as audio_router
+from routes.discovery import router as discovery_router
+from routes.chat import router as chat_router
+from routes.admin_chat import router as admin_chat_router
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +176,9 @@ app.include_router(inventory_router)
 app.include_router(admin_game_router)
 app.include_router(admin_audio_router)
 app.include_router(audio_router)
+app.include_router(discovery_router)
+app.include_router(chat_router)
+app.include_router(admin_chat_router)
 
 
 @app.get("/debug-routes")

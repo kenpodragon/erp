@@ -29,7 +29,7 @@ from auth import get_current_player
 from models import (
     PlayerCharacter, PlayerProgress, PlayerEssence, CharacterClass,
     Scene, Chapter, Book, StoryBeat, Entity, EntityGameplayData,
-    Skill, PlayerSettings,
+    Skill, PlayerSettings, ActivityEvent,
 )
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
@@ -41,6 +41,7 @@ from services.character_progression import (
     recalculate_character_stats, get_skill_tree,
 )
 from services.item_generator import check_run_achievements
+from services.chat import manager as chat_manager
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/game/story", tags=["story_mode"])
@@ -52,6 +53,20 @@ router = APIRouter(prefix="/api/game/story", tags=["story_mode"])
 DEFAULT_HP_SCALING = 1.55
 DEFAULT_CPS_CAP = 20
 DEFAULT_WPM = 200
+
+
+async def _system_broadcast(event_type: str, player_name: str, detail: str) -> None:
+    """Fire a rate-limited system broadcast to all connected chat clients."""
+    if not chat_manager.broadcast_rate_limiter.is_allowed():
+        return
+    await chat_manager.broadcast({
+        "type": "system_broadcast",
+        "event_type": event_type,
+        "player_name": player_name,
+        "detail": detail,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "is_system": True,
+    })
 DEFAULT_CLICK_STRENGTH = 10  # fallback when no character stat
 
 
@@ -86,6 +101,177 @@ def _calc_zone_gold(zone: int) -> float:
     """Base gold per monster kill at zone. Exponential scaling."""
     scaling = 1.1
     return 5.0 * (math.pow(scaling, zone - 1) + zone - 1)
+
+
+def _compute_rank(kills: int, session: Session) -> Optional[str]:
+    """Compute codex rank from kill count using game_configs thresholds."""
+    ss = _get_config_int(session, "codex_rank_ss", 500)
+    a = _get_config_int(session, "codex_rank_a", 100)
+    c = _get_config_int(session, "codex_rank_c", 25)
+    e = _get_config_int(session, "codex_rank_e", 1)
+    if kills >= ss:
+        return "SS"
+    if kills >= a:
+        return "A"
+    if kills >= c:
+        return "C"
+    if kills >= e:
+        return "E"
+    return None
+
+
+def _log_anomaly(session: Session, player_id: int, session_id,
+                 anomaly_type: str, reported_value, corrected_value,
+                 zone: int = 0, elapsed_ms: int = 0) -> None:
+    """Log an anti-cheat anomaly to activity_events."""
+    event = ActivityEvent(
+        player_id=player_id,
+        event_type="anti_cheat_anomaly",
+        event_data={
+            "anomaly_type": anomaly_type,
+            "session_id": str(session_id),
+            "reported_value": reported_value,
+            "corrected_value": corrected_value,
+            "zone": zone,
+            "elapsed_ms": elapsed_ms,
+        },
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(event)
+
+
+def _validate_waves(session: Session, story_session, character_id: int,
+                    waves_delta: int, elapsed_ms: int, zone: int,
+                    hp_scaling: float) -> int:
+    """
+    Validate waves_completed_delta against theoretical DPS ceiling.
+    Returns the clamped waves count.
+    """
+    if waves_delta <= 0:
+        return waves_delta
+
+    tolerance = _get_config_float(session, "wave_validation_tolerance", 2.0)
+    elapsed_s = max(elapsed_ms / 1000.0, 0.001)
+
+    # Calculate theoretical max DPS
+    auto_dps = _calc_auto_dps(session, character_id)
+    cps_cap = _get_config_float(session, "click_rate_cap", DEFAULT_CPS_CAP)
+    click_strength = _get_config_float(session, "default_click_strength", DEFAULT_CLICK_STRENGTH)
+    max_click_dps = click_strength * cps_cap * 10  # generous estimate with upgrades
+    theoretical_max_dps = max_click_dps + auto_dps * 5  # generous multiplier
+
+    if theoretical_max_dps <= 0:
+        return waves_delta
+
+    # Calculate max plausible waves in elapsed time
+    max_waves = 0
+    time_remaining = elapsed_s
+    for z in range(max(1, zone - waves_delta), zone + 1):
+        zone_hp = _calc_zone_hp(z, hp_scaling)
+        if zone_hp <= 0:
+            max_waves += 1
+            continue
+        time_per_wave = zone_hp / theoretical_max_dps
+        if time_remaining >= time_per_wave:
+            time_remaining -= time_per_wave
+            max_waves += 1
+        else:
+            break
+
+    max_waves = max(1, int(max_waves * tolerance))
+
+    if waves_delta > max_waves:
+        return max_waves
+    return waves_delta
+
+
+def _check_rare_spawn(
+    session: Session,
+    waves_delta: int,
+    chapter_id: Optional[int],
+) -> Optional[dict]:
+    """Roll for a rare spawn across `waves_delta` waves.
+
+    Rare pool = entities with NO entity_scene_appearances record.
+    Returns entity data dict if triggered, else None.
+    """
+    if waves_delta <= 0:
+        return None
+
+    base_chance = _get_config_float(session, "rare_spawn_base_chance", 0.005)
+    if base_chance <= 0:
+        return None
+
+    # Resolve book/chapter numbers for modifier lookup
+    book_number = None
+    chapter_number = None
+    if chapter_id:
+        chapter = session.get(Chapter, chapter_id)
+        if chapter:
+            chapter_number = chapter.chapter_number
+            book = session.get(Book, chapter.book_id)
+            if book:
+                book_number = book.book_number
+
+    book_mod = 1.0
+    chapter_mod = 1.0
+    if book_number is not None:
+        book_mod = _get_config_float(
+            session, f"rare_spawn_book_{book_number}_modifier", 1.0
+        )
+    if chapter_number is not None:
+        chapter_mod = _get_config_float(
+            session, f"rare_spawn_chapter_{chapter_number}_modifier", 1.0
+        )
+
+    effective_chance = base_chance * book_mod * chapter_mod
+
+    # Roll once per wave
+    triggered = False
+    for _ in range(waves_delta):
+        if random.random() < effective_chance:
+            triggered = True
+            break
+
+    if not triggered:
+        return None
+
+    # Build rare pool: entities with NO entity_scene_appearances record
+    from sqlalchemy import exists as sa_exists
+
+    rare_pool_stmt = (
+        select(Entity)
+        .where(
+            ~sa_exists(
+                select(EntitySceneAppearance.id)
+                .where(EntitySceneAppearance.entity_id == Entity.id)
+                .correlate(Entity)
+            )
+        )
+        .where(Entity.first_appearance_scene_id.is_(None))  # type: ignore[union-attr]
+    )
+    rare_entities = session.exec(rare_pool_stmt).all()
+
+    if not rare_entities:
+        return None
+
+    chosen = random.choice(rare_entities)
+
+    # Get gameplay data if available
+    gp = session.exec(
+        select(EntityGameplayData)
+        .where(EntityGameplayData.entity_id == chosen.id)
+    ).first()
+
+    return {
+        "entity_id": chosen.id,
+        "canonical_name": chosen.canonical_name,
+        "entity_type": chosen.entity_type,
+        "entity_family": chosen.entity_family,
+        "base_hp": gp.base_hp if gp else 50,
+        "base_gold": gp.base_gold if gp else 10,
+        "sprite_key": gp.sprite_key if gp else None,
+    }
 
 
 def _log_audit(session: Session, audit_type: str, entity_type: str,
@@ -202,6 +388,17 @@ class SessionStartRequest(BaseModel):
     scene_id: int
 
 
+class EntityEncounterTick(BaseModel):
+    entity_id: int
+    encounters: int = 0
+    kills: int = 0
+
+
+class ItemDiscoveryTick(BaseModel):
+    type: str        # 'item_prefix', 'item_suffix', 'item_quality', 'lore_tag', 'skill', 'effect'
+    reference_id: int
+
+
 class TickRequest(BaseModel):
     clicks: int
     elapsed_ms: int
@@ -209,6 +406,9 @@ class TickRequest(BaseModel):
     wave: int
     gold_delta: float          # Client-reported gold from kills this tick
     waves_completed_delta: int  # Waves completed since last tick
+    # Discovery fields (2.6.2)
+    entity_encounters: Optional[List[EntityEncounterTick]] = None
+    item_discoveries: Optional[List[ItemDiscoveryTick]] = None
 
 
 class UpgradeRequest(BaseModel):
@@ -761,6 +961,8 @@ async def combat_tick(
     if not story_session or story_session.player_id != player.id:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    char = _get_character(session, player.id)
+
     cps_cap = _get_config_float(session, "click_rate_cap", DEFAULT_CPS_CAP)
     elapsed_s = max(body.elapsed_ms / 1000.0, 0.001)
 
@@ -769,29 +971,110 @@ async def combat_tick(
     validated_clicks = body.clicks
     if not cps_valid:
         validated_clicks = int(cps_cap * elapsed_s)
+        _log_anomaly(session, player.id, session_id, "cps_violation",
+                     round(reported_cps, 2), round(cps_cap, 2),
+                     body.zone, body.elapsed_ms)
+
+    # --- 2.6.1: Wave completion validation ---
+    hp_scaling = _get_config_float(session, "hp_scaling", DEFAULT_HP_SCALING)
+    validated_waves = _validate_waves(
+        session, story_session, char.id,
+        body.waves_completed_delta, body.elapsed_ms, body.zone, hp_scaling,
+    )
+    waves_clamped = validated_waves < body.waves_completed_delta
+    if waves_clamped:
+        _log_anomaly(session, player.id, session_id, "wave_clamp",
+                     body.waves_completed_delta, validated_waves,
+                     body.zone, body.elapsed_ms)
+
+    # --- 2.6.2: Rare spawn check ---
+    rare_spawn = _check_rare_spawn(session, validated_waves, story_session.chapter_id)
 
     z_gold = _calc_zone_gold(body.zone)
-    expected_gold = z_gold * body.waves_completed_delta
+    expected_gold = z_gold * validated_waves  # use clamped waves
 
     gold_corrected = False
     awarded_gold = body.gold_delta
-    if body.waves_completed_delta > 0 and body.gold_delta > expected_gold * 20:
+    if validated_waves > 0 and body.gold_delta > expected_gold * 20:
         awarded_gold = expected_gold * 5
         gold_corrected = True
+        _log_anomaly(session, player.id, session_id, "gold_correction",
+                     round(body.gold_delta, 2), round(awarded_gold, 2),
+                     body.zone, body.elapsed_ms)
 
     story_session.session_gold += awarded_gold
     story_session.current_zone = body.zone
     story_session.current_wave = body.wave
-    
+
     # Check if this tick included a required zone completion
-    if body.waves_completed_delta > 0:
+    if validated_waves > 0:
         story_session.required_waves_finished = True
+
+    # --- 2.6.2: Process discovery data ---
+    new_ranks = []
+    new_discoveries = 0
+    if body.entity_encounters:
+        try:
+            from models.discovery import PlayerEntityDiscovery
+            for enc in body.entity_encounters:
+                existing = session.exec(
+                    select(PlayerEntityDiscovery)
+                    .where(PlayerEntityDiscovery.player_id == player.id)
+                    .where(PlayerEntityDiscovery.entity_id == enc.entity_id)
+                ).first()
+                if existing:
+                    old_rank = existing.rank
+                    existing.encounters += enc.encounters
+                    existing.kills += enc.kills
+                    new_rank = _compute_rank(existing.kills, session)
+                    if new_rank != old_rank:
+                        existing.rank = new_rank
+                        new_ranks.append({"entity_id": enc.entity_id, "old_rank": old_rank, "new_rank": new_rank})
+                    session.add(existing)
+                else:
+                    new_rank = _compute_rank(enc.kills, session)
+                    discovery = PlayerEntityDiscovery(
+                        player_id=player.id,
+                        entity_id=enc.entity_id,
+                        encounters=enc.encounters,
+                        kills=enc.kills,
+                        rank=new_rank,
+                        first_seen_at=datetime.now(timezone.utc),
+                        is_new=True,
+                    )
+                    session.add(discovery)
+                    new_discoveries += 1
+        except ImportError:
+            logger.warning("Discovery models not available yet")
+
+    if body.item_discoveries:
+        try:
+            from models.discovery import PlayerDiscoveryLog
+            for item in body.item_discoveries:
+                existing = session.exec(
+                    select(PlayerDiscoveryLog)
+                    .where(PlayerDiscoveryLog.player_id == player.id)
+                    .where(PlayerDiscoveryLog.discovery_type == item.type)
+                    .where(PlayerDiscoveryLog.reference_id == item.reference_id)
+                ).first()
+                if not existing:
+                    log = PlayerDiscoveryLog(
+                        player_id=player.id,
+                        discovery_type=item.type,
+                        reference_id=item.reference_id,
+                        discovered_at=datetime.now(timezone.utc),
+                        is_new=True,
+                    )
+                    session.add(log)
+                    new_discoveries += 1
+        except ImportError:
+            logger.warning("Discovery models not available yet")
 
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
     session.commit()
 
-    return {
+    result = {
         "session_gold": round(story_session.session_gold, 2),
         "current_zone": story_session.current_zone,
         "current_wave": story_session.current_wave,
@@ -799,6 +1082,13 @@ async def combat_tick(
         "gold_corrected": gold_corrected,
         "gold_awarded": round(awarded_gold, 2),
     }
+    if new_ranks:
+        result["new_ranks"] = new_ranks
+    if new_discoveries > 0:
+        result["new_discoveries"] = new_discoveries
+    if rare_spawn:
+        result["rare_spawn"] = rare_spawn
+    return result
 
 
 @router.post("/session/{session_id}/upgrade")
@@ -991,6 +1281,29 @@ async def complete_session(
     char = _get_character(session, player.id)
     bosses_defeated = story_session.current_zone // 1
 
+    # --- 2.6.1: Session integrity check ---
+    session_gold_tolerance = _get_config_float(session, "session_gold_tolerance", 3.0)
+    hp_scaling = _get_config_float(session, "hp_scaling", DEFAULT_HP_SCALING)
+    if story_session.created_at:
+        created = story_session.created_at
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        session_duration_s = (datetime.now(timezone.utc) - created).total_seconds()
+        session_duration_s = max(session_duration_s, 1.0)
+        z_gold = _calc_zone_gold(story_session.current_zone)
+        z_hp = _calc_zone_hp(story_session.current_zone, hp_scaling)
+        auto_dps = _calc_auto_dps(session, char.id)
+        cps_cap = _get_config_float(session, "click_rate_cap", DEFAULT_CPS_CAP)
+        max_dps = auto_dps * 5 + cps_cap * DEFAULT_CLICK_STRENGTH * 10
+        max_waves_per_s = max_dps / max(z_hp, 1.0)
+        max_gold_per_s = z_gold * max_waves_per_s
+        plausible_max_gold = max_gold_per_s * session_duration_s * session_gold_tolerance
+        if story_session.session_gold > plausible_max_gold and plausible_max_gold > 0:
+            _log_anomaly(session, player.id, session_id, "session_integrity",
+                         round(story_session.session_gold, 2), round(plausible_max_gold, 2),
+                         story_session.current_zone, int(session_duration_s * 1000))
+            story_session.session_gold = plausible_max_gold
+
     progress = session.exec(
         select(PlayerProgress).where(PlayerProgress.character_id == char.id)
     ).first()
@@ -1064,6 +1377,18 @@ async def complete_session(
         story_session.updated_at = datetime.now(timezone.utc)
         session.add(story_session)
         session.commit()
+
+        # 2.6.4: System broadcast for first boss defeat
+        if first_clear:
+            char_name = char.character_name or "A brave Vessel"
+            boss_label = "Chapter Boss" if scene.scene_type == "chapter_boss" else "Book Boss"
+            try:
+                await _system_broadcast(
+                    "boss_defeat", char_name,
+                    f"{char_name} defeated the {boss_label}!"
+                )
+            except Exception:
+                logger.debug("Broadcast failed (non-fatal)")
 
         return {
             "session_id": session_id,
@@ -1278,6 +1603,29 @@ async def complete_session(
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
     session.commit()
+
+    # 2.6.4: System broadcasts for completions and rare drops
+    char_name = char.character_name or "A brave Vessel"
+    try:
+        # Broadcast rare item finds (legendary+)
+        broadcast_min = _get_config_int(session, "broadcast_rarity_min", 4)
+        rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4, "mythic": 5}
+        for item_data in dropped_items:
+            if rarity_order.get(item_data.get("rarity", ""), 0) >= broadcast_min:
+                await _system_broadcast(
+                    "rare_item", char_name,
+                    f"{char_name} found a {item_data['rarity']} {item_data['name']}!"
+                )
+        # Broadcast chapter/book completion
+        if both_complete and scene:
+            ch = scene.chapter
+            if ch:
+                await _system_broadcast(
+                    "chapter_complete", char_name,
+                    f"{char_name} completed Chapter {ch.chapter_number}: {ch.title or 'Unknown'}!"
+                )
+    except Exception:
+        logger.debug("Broadcast failed (non-fatal)")
 
     return {
         "session_id": session_id,

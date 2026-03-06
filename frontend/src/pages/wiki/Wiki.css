@@ -1,0 +1,33 @@
+.wiki-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+}
+
+.wiki-page h1 {
+  color: #b8860b;
+  border-bottom: 1px solid rgba(184, 134, 11, 0.3);
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+}
+
+.wiki-page h2 {
+  color: #d4a846;
+  margin-top: 24px;
+}
+
+.wiki-page h3 {
+  color: #c0c0c0;
+  margin-top: 16px;
+}
+
+.wiki-page p {
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.wiki-page section {
+  margin-bottom: 32px;
+}
