@@ -142,16 +142,16 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Detailed Requirements:** [2.7_HOME_BASE_HUB.md](2.7_HOME_BASE_HUB.md) | **Design:** [2.7_HOME_BASE_HUB_DESIGN.md](2.7_HOME_BASE_HUB_DESIGN.md) | **Schema:** [2.7_HOME_BASE_HUB_SCHEMA.md](2.7_HOME_BASE_HUB_SCHEMA.md)
 - [x] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades. *(Implemented in 2.3/2.4)*
 - [x] **Inventory System:** 16 gear slots with Dream Item generation and equip/swap. *(Implemented in 2.4.2)*
-- [ ] **Akashic Log (Personal Journal):** Keyword search, narrative completion %, hidden lore (Intelligence-gated), "New" badges.
-- [ ] **Artifact System:** Curated (~50 lore artifacts with 5 rarity tiers, boss/chapter/rare-spawn sourced) + Generated (simplified procedural artifacts). Permanent passive stat bonuses. No duplicates; rarity upgrades replace.
-    - [ ] **Relic Gallery:** Collection grid with filtering, sorting, inspection modal, silhouettes for undiscovered.
-    - [ ] **Admin Artifact Editor:** CRUD, bulk assignment, drop rate tuning.
-- [ ] **Hall of Echoes (Leaderboards):** Speedrun and Scholar categories. Static rank cards with tiered visual badges (Cosmic/Gold/Silver/Bronze).
-- [ ] **Achievement Matrix:** 90+ achievements across Combat, Narrative, Economics, Idle Training, and Discovery categories. Rewards: Shards, Titles, Essence, Badges.
-    - [ ] **Idle Training Milestones:** *(Cross-ref 2.3)* Rewards at Level 25/50/75/99 per idle skill (Essence grants, badges, titles).
-    - [ ] **Admin Achievement Editor:** CRUD, player override, completion analytics.
-- [ ] **Title System:** Earnable prefix/suffix titles displayed on leaderboards and in chat.
-- [ ] **Phases:** 2.7.0 Foundation (Artifacts + Achievements schema), 2.7.1 Akashic Log, 2.7.2 Relic Gallery, 2.7.3 Leaderboards + Achievements, 2.7.4 Admin Tools + Polish.
+- [x] **Akashic Log (Personal Journal):** Keyword search, narrative completion %, hidden lore (Intelligence-gated), "New" badges.
+- [x] **Artifact System:** Curated (~50 lore artifacts with 5 rarity tiers, boss/chapter/rare-spawn sourced) + Generated (simplified procedural artifacts). Permanent passive stat bonuses. No duplicates; rarity upgrades replace.
+    - [x] **Relic Gallery:** Collection grid with filtering, sorting, inspection modal, silhouettes for undiscovered.
+    - [x] **Admin Artifact Editor:** CRUD, bulk assignment, drop rate tuning.
+- [x] **Hall of Echoes (Leaderboards):** Speedrun and Scholar categories. Static rank cards with tiered visual badges (Cosmic/Gold/Silver/Bronze).
+- [x] **Achievement Matrix:** 90+ achievements across Combat, Narrative, Economics, Idle Training, and Discovery categories. Rewards: Shards, Titles, Essence, Badges.
+    - [x] **Idle Training Milestones:** *(Cross-ref 2.3)* Rewards at Level 25/50/75/99 per idle skill (Essence grants, badges, titles).
+    - [x] **Admin Achievement Editor:** CRUD, player override, completion analytics.
+- [x] **Title System:** Earnable prefix/suffix titles displayed on leaderboards and in chat.
+- [x] **Phases:** 2.7.0 Foundation (Artifacts + Achievements schema), 2.7.1 Akashic Log, 2.7.2 Relic Gallery, 2.7.3 Leaderboards + Achievements, 2.7.4 Admin Tools + Polish.
 
 
 ## 3. Economy & Monetization (Stripe)
@@ -265,3 +265,4 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Background image generator:** Lots more for all the different books
 - [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
 - [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...
+- [ ] Visual achievement badge icons on leaderboard rank card. *(Deferred — requires achievement icon assets)* From 2.7

@@ -7,8 +7,7 @@ import BottomAnimatedBanner from './components/BottomAnimatedBanner';
 import StoryMode from './components/StoryMode';
 import SkillsTab from './components/SkillsTab';
 import ChatTab from './components/ChatTab';
-import EthericRegistry from './components/story/EthericRegistry';
-import DiscoveryLibrary from './components/story/DiscoveryLibrary';
+import HomeBase from './components/HomeBase';
 import PostBattleSummary from './components/story/PostBattleSummary';
 import WelcomeModal from './components/story/WelcomeModal';
 import TutorialOverlay from './components/story/TutorialOverlay';
@@ -51,8 +50,6 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
   const [summaryData, setSummaryData] = useState<{ show: boolean; farmMode: boolean }>({ show: false, farmMode: false });
   const [showWelcome, setShowWelcome] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [homeSubTab, setHomeSubTab] = useState<'registry' | 'library'>('registry');
-
   const { player, character, onPlayerUpdate } = props;
 
   const handleContinueFarming = () => {
@@ -99,13 +96,7 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
               {activeTab === 'skills' && <SkillsTab />}
               {activeTab === 'chat' && <ChatTab />}
               {activeTab === 'home' && (
-                <div className="home-base-view">
-                  <div className="home-sub-tabs">
-                    <button className={homeSubTab === 'registry' ? 'active' : ''} onClick={() => setHomeSubTab('registry')}>Etheric Registry</button>
-                    <button className={homeSubTab === 'library' ? 'active' : ''} onClick={() => setHomeSubTab('library')}>Discovery Library</button>
-                  </div>
-                  {homeSubTab === 'registry' ? <EthericRegistry /> : <DiscoveryLibrary />}
-                </div>
+                <HomeBase player={player} character={character} />
               )}
 
               {activeTab !== 'map' && activeTab !== 'skills' && activeTab !== 'chat' && activeTab !== 'home' && (

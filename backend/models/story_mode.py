@@ -38,6 +38,7 @@ class PlayerStorySession(SQLModel, table=True):
     required_waves_finished: bool = Field(default=False)
     audio_finished: bool = Field(default=False)
     is_active: bool = Field(default=True)
+    deaths: int = Field(default=0)
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -63,6 +64,10 @@ class PlayerMetaProgression(SQLModel, table=True):
     elysium_essence: float = Field(default=0)
     total_essence_earned: float = Field(default=0)
     spent_essence: float = Field(default=0)
+    # Premium currency (2.7)
+    shard_balance: int = Field(default=0)
+    total_shards_earned: int = Field(default=0)
+    active_training_sessions: int = Field(default=0)
     updated_at: Optional[datetime] = Field(default=None)
 
 

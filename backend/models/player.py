@@ -62,6 +62,10 @@ class PlayerSettings(SQLModel, table=True):
     game_text_scale: float = Field(default=2.0)
     chat_muted: bool = Field(default=False)
     chat_muted_until: Optional[str] = Field(default=None, max_length=50)
+    # Home Base terminal visit timestamps (2.7)
+    akashic_last_visited_at: Optional[datetime] = Field(default=None)
+    gallery_last_visited_at: Optional[datetime] = Field(default=None)
+    achievements_last_visited_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
     # Relationships
@@ -103,6 +107,7 @@ class PlayerCharacter(SQLModel, table=True):
     strength: Optional[int] = Field(default=None)
     agility: Optional[int] = Field(default=None)
     intelligence: Optional[int] = Field(default=None)
+    equipped_title_id: Optional[int] = Field(default=None, foreign_key="titles.id")
     created_at: Optional[datetime] = Field(default=None)
     last_played_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)

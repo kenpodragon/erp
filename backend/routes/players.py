@@ -281,6 +281,14 @@ async def update_settings(
             raise HTTPException(status_code=422, detail="game_text_scale must be between 1.0 and 5.0")
         settings.game_text_scale = ts
 
+    # Home Base terminal visit timestamps (2.7)
+    if "akashic_last_visited_at" in update_data:
+        settings.akashic_last_visited_at = datetime.now(timezone.utc)
+    if "gallery_last_visited_at" in update_data:
+        settings.gallery_last_visited_at = datetime.now(timezone.utc)
+    if "achievements_last_visited_at" in update_data:
+        settings.achievements_last_visited_at = datetime.now(timezone.utc)
+
     settings.updated_at = datetime.now(timezone.utc)
     session.add(settings)
     session.commit()

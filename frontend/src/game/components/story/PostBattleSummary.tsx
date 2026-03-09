@@ -47,6 +47,17 @@ interface DroppedItem {
   gear_slot_id: number;
 }
 
+interface AchievementEarned {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  icon_sprite_key: string;
+  reward_shards: number;
+  reward_essence: number;
+  reward_title: string | null;
+}
+
 interface Props {
   session: StorySession;
   onContinue: () => void;
@@ -72,6 +83,7 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
   const [keptItems, setKeptItems] = useState<Set<number>>(new Set());
   const [dismissedItems, setDismissedItems] = useState<Set<number>>(new Set());
   const [replaceState, setReplaceState] = useState<{ item: ItemData; storedItems: ItemData[] } | null>(null);
+  const [achievementsEarned, setAchievementsEarned] = useState<AchievementEarned[]>([]);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -128,8 +140,10 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
 
         const achs = data.achievement_results || [];
         const drops = data.dropped_items || [];
+        const earned = data.achievements_earned || [];
         setAchievements(achs);
         setDroppedItems(drops);
+        setAchievementsEarned(earned);
 
         if (achs.length > 0) {
           setShowLoot(true);
@@ -292,6 +306,36 @@ const PostBattleSummary: React.FC<Props> = ({ session, onContinue, onReturnToHub
                 Yaldabaoth's grasp tightens... No items materialized.
               </div>
             </div>
+          )}
+
+          {/* Achievement toasts */}
+          {dicePhase === 'done' && achievementsEarned.length > 0 && (
+            <>
+              <div className="post-battle-divider" />
+              <div className="loot-achievements-earned">
+                <div className="loot-items-label">ACHIEVEMENTS UNLOCKED</div>
+                {achievementsEarned.map(ach => (
+                  <div key={ach.id} className="loot-ach-toast">
+                    <div className="loot-ach-toast-icon" />
+                    <div className="loot-ach-toast-body">
+                      <span className="loot-ach-toast-name">{ach.name}</span>
+                      <span className="loot-ach-toast-desc">{ach.description}</span>
+                      <div className="loot-ach-toast-rewards">
+                        {ach.reward_shards > 0 && (
+                          <span className="loot-ach-reward loot-ach-reward--shards">+{ach.reward_shards} Shards</span>
+                        )}
+                        {ach.reward_essence > 0 && (
+                          <span className="loot-ach-reward loot-ach-reward--essence">+{ach.reward_essence} Essence</span>
+                        )}
+                        {ach.reward_title && (
+                          <span className="loot-ach-reward loot-ach-reward--title">Title: {ach.reward_title}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {dicePhase === 'done' && (

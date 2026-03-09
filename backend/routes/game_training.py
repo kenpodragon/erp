@@ -14,8 +14,47 @@ from models import (
 from services.character_progression import (
     award_idle_xp_char_xp, recalculate_character_stats, evaluate_prerequisites,
 )
+from services.achievement_service import evaluate_achievements
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
+
+# Idle Training milestone thresholds: level → essence reward
+MILESTONE_REWARDS = {25: 250, 50: 500, 75: 1000, 99: 2500}
+
+
+def _check_milestones(old_level: int, new_level: int) -> list[dict]:
+    """Return list of milestone rewards crossed between old and new level."""
+    crossed = []
+    for threshold, reward in sorted(MILESTONE_REWARDS.items()):
+        if old_level < threshold <= new_level:
+            crossed.append({"level": threshold, "essence": reward})
+    return crossed
+
+
+def _grant_milestone_essence(
+    session: Session, player_id: int, character_id: int, milestones: list[dict],
+) -> int:
+    """Grant essence for crossed milestones. Returns total essence granted."""
+    if not milestones:
+        return 0
+
+    total = sum(m["essence"] for m in milestones)
+
+    essence_rec = session.exec(
+        select(PlayerEssence).where(PlayerEssence.character_id == character_id)
+    ).first()
+    if essence_rec:
+        essence_rec.current_balance += total
+        session.add(essence_rec)
+
+    meta = session.exec(
+        select(PlayerMetaProgression).where(PlayerMetaProgression.player_id == player_id)
+    ).first()
+    if meta:
+        meta.total_essence_earned = (meta.total_essence_earned or 0) + total
+        session.add(meta)
+
+    return total
 
 
 # --- Helpers ---
@@ -153,8 +192,23 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     char_xp_result = None
     if xp_earned > 0:
         char_xp_result = award_idle_xp_char_xp(session, character, xp_earned)
+    # Check milestone rewards
+    milestones = _check_milestones(old_level, new_level)
+    milestone_essence = 0
+    if milestones:
+        milestone_essence = _grant_milestone_essence(
+            session, character.player_id, character.id, milestones,
+        )
+
     if levels_gained > 0:
         recalculate_character_stats(session, character.id)
+
+    # Evaluate achievements after training progress
+    achievements_earned = []
+    try:
+        achievements_earned = evaluate_achievements(character.player_id, session)
+    except Exception:
+        pass
 
     session.commit()
 
@@ -174,6 +228,9 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
         "remaining_essence": round(max(0.0, temp_essence), 2),
         "new_actions_unlocked": [],
         "character_xp": char_xp_result,
+        "milestones": milestones,
+        "milestone_essence_granted": milestone_essence,
+        "achievements_earned": achievements_earned,
     }
 
 # --- Schemas ---

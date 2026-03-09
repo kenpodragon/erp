@@ -1,0 +1,277 @@
+/* ── Achievement Matrix Terminal (2.7.3) ───────────────────────────────────── */
+
+.achievement-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.am-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #222;
+}
+
+.am-title {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #ffb000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.am-summary {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.am-summary-count {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.am-new-count {
+  background: #ffb000;
+  color: #000;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  margin-left: 0.5rem;
+}
+
+/* ── Category Tabs ──────────────────────────────────────────────────────── */
+
+.am-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+
+.am-tab {
+  padding: 0.45rem 0.75rem;
+  background: #0a0a0a;
+  border: none;
+  border-right: 1px solid #333;
+  color: #666;
+  font-family: inherit;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.am-tab:last-child { border-right: none; }
+.am-tab:hover { background: #1a1a1a; color: #aaa; }
+.am-tab.active { background: #1a1a2e; color: #ffb000; }
+
+.am-tab-count {
+  font-size: 0.6rem;
+  color: #555;
+}
+
+.am-tab.active .am-tab-count { color: #888; }
+
+/* ── Category Progress Bar ──────────────────────────────────────────────── */
+
+.am-category-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+}
+
+.am-cat-bar {
+  flex: 1;
+  height: 4px;
+  background: #1a1a2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.am-cat-fill {
+  height: 100%;
+  background: linear-gradient(to right, #ffb000, #ff8c00);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.am-cat-pct {
+  font-size: 0.75rem;
+  color: #ffb000;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Achievement Grid ───────────────────────────────────────────────────── */
+
+.am-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.5rem;
+}
+
+.am-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 6px;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.am-card:hover { background: #1a1a1a; }
+.am-card.completed { border-color: #2ecc71; }
+.am-card.locked { opacity: 0.4; }
+
+.am-card-icon {
+  width: 32px;
+  height: 32px;
+  background: #222;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.am-card.completed .am-card-icon {
+  background: rgba(46, 204, 113, 0.15);
+}
+
+.am-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.am-card-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #ddd;
+}
+
+.am-card.completed .am-card-name { color: #2ecc71; }
+
+.am-card-desc {
+  font-size: 0.7rem;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* ── Progress Bar ───────────────────────────────────────────────────────── */
+
+.am-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.am-progress-bar {
+  flex: 1;
+  height: 3px;
+  background: #1a1a2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.am-progress-fill {
+  height: 100%;
+  background: #ffb000;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.am-card.completed .am-progress-fill { background: #2ecc71; }
+
+.am-progress-text {
+  font-size: 0.6rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* ── Rewards ────────────────────────────────────────────────────────────── */
+
+.am-rewards {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.am-reward {
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.am-reward.shards {
+  background: rgba(155, 89, 182, 0.15);
+  color: #9b59b6;
+}
+
+.am-reward.essence {
+  background: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+}
+
+.am-reward.title {
+  background: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+}
+
+/* ── New Badge ──────────────────────────────────────────────────────────── */
+
+.am-new-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.55rem;
+  background: #ffb000;
+  color: #000;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* ── Earned Date ────────────────────────────────────────────────────────── */
+
+.am-earned-date {
+  font-size: 0.6rem;
+  color: #555;
+  font-style: italic;
+}
+
+/* ── Loading / Error / Empty ───────────────────────────────────────────── */
+
+.am-loading,
+.am-error,
+.am-empty {
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.am-error { color: #ef4444; }

@@ -100,6 +100,10 @@ class StoryBeat(SQLModel, table=True):
     pacing: Optional[str] = Field(default=None, max_length=50)
     timeline_context: Optional[str] = Field(default="present", max_length=50)
 
+    # Hidden lore (2.7)
+    hidden_lore_text: Optional[str] = Field(default=None)
+    lore_intelligence_threshold: Optional[int] = Field(default=None)
+
     # Gameplay Extension
     content_image_path: Optional[str] = Field(default=None, max_length=255)
     audio_path: Optional[str] = Field(default=None, max_length=255)

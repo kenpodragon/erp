@@ -1,0 +1,298 @@
+/* ── Hall of Echoes — Leaderboard Terminal (2.7.3) ─────────────────────────── */
+
+.hall-of-echoes {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.hoe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #222;
+}
+
+.hoe-title {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #ffb000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ── Category Tabs ──────────────────────────────────────────────────────── */
+
+.hoe-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hoe-tab {
+  padding: 0.5rem 1rem;
+  background: #0a0a0a;
+  border: none;
+  border-right: 1px solid #333;
+  color: #666;
+  font-family: inherit;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hoe-tab:last-child { border-right: none; }
+.hoe-tab:hover { background: #1a1a1a; color: #aaa; }
+.hoe-tab.active { background: #1a1a2e; color: #ffb000; }
+
+/* ── Rank Table ─────────────────────────────────────────────────────────── */
+
+.hoe-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hoe-row {
+  display: grid;
+  grid-template-columns: 36px 24px 1fr 60px 80px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #111;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+
+.hoe-row:hover { background: #1a1a1a; }
+.hoe-row.self { background: rgba(255, 176, 0, 0.08); border: 1px solid rgba(255, 176, 0, 0.2); }
+
+.hoe-rank {
+  color: #888;
+  font-weight: bold;
+  text-align: center;
+}
+
+.hoe-badge {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hoe-badge.cosmic  { background: #f1c40f; box-shadow: 0 0 6px rgba(241, 196, 15, 0.5); animation: hoe-cosmic-pulse 2s ease-in-out infinite; }
+.hoe-badge.gold    { background: #f1c40f; }
+.hoe-badge.silver  { background: #bdc3c7; }
+.hoe-badge.bronze  { background: #cd6133; }
+.hoe-badge.none    { background: #333; }
+
+/* Badge tier symbols via ::after */
+.hoe-badge::after {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.hoe-badge.cosmic::after  { content: '\2605'; color: #0a0a0a; } /* star */
+.hoe-badge.gold::after    { content: '\25C6'; color: #0a0a0a; } /* diamond */
+.hoe-badge.silver::after  { content: '\25B2'; color: #333; }    /* chevron/triangle */
+.hoe-badge.bronze::after  { content: ''; }
+
+@keyframes hoe-cosmic-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(241, 196, 15, 0.5); }
+  50% { box-shadow: 0 0 12px rgba(241, 196, 15, 0.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hoe-badge.cosmic { animation: none; }
+}
+body.reduce-motion .hoe-badge.cosmic { animation: none; }
+
+.hoe-player-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hoe-alias {
+  color: #ddd;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hoe-subtitle {
+  font-size: 0.65rem;
+  color: #666;
+}
+
+.hoe-title-badge {
+  color: #9b59b6;
+  font-style: italic;
+}
+
+.hoe-level {
+  color: #888;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.hoe-metric {
+  color: #2ecc71;
+  font-weight: bold;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+/* ── Player's Own Rank (outside top N) ──────────────────────────────────── */
+
+.hoe-own-rank {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #333;
+}
+
+.hoe-own-rank .hoe-row {
+  background: rgba(255, 176, 0, 0.06);
+  border: 1px solid rgba(255, 176, 0, 0.15);
+}
+
+.hoe-own-label {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+}
+
+/* ── Pagination ─────────────────────────────────────────────────────────── */
+
+.hoe-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.hoe-page-btn {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  color: #888;
+  padding: 0.3rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.hoe-page-btn:hover { border-color: #ffb000; color: #ffb000; }
+.hoe-page-btn:disabled { opacity: 0.3; cursor: default; }
+
+.hoe-page-info {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+/* ── Loading / Error / Empty ───────────────────────────────────────────── */
+
+.hoe-loading,
+.hoe-error,
+.hoe-empty {
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.hoe-error { color: #ef4444; }
+
+/* ── Category Description ──────────────────────────────────────────────── */
+
+.hoe-category-desc {
+  font-size: 0.7rem;
+  color: #555;
+  font-style: italic;
+  padding: 0.25rem 0;
+}
+
+/* ── Milestones Grid ──────────────────────────────────────────────────── */
+
+.hoe-milestone-grid {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, 80px);
+  gap: 2px;
+}
+
+.hoe-ms-header-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #333;
+}
+
+.hoe-ms-header-cell:first-child {
+  align-items: flex-start;
+}
+
+.hoe-ms-reward {
+  font-size: 0.6rem;
+  color: #ffb000;
+  margin-top: 2px;
+}
+
+.hoe-ms-skill-name {
+  display: flex;
+  align-items: center;
+  padding: 8px 4px;
+  font-size: 0.8rem;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.hoe-ms-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background: #111;
+  border-radius: 3px;
+}
+
+.hoe-ms-complete {
+  background: rgba(46, 204, 113, 0.1);
+}
+
+.hoe-ms-check {
+  color: #2ecc71;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.hoe-ms-progress {
+  color: #666;
+  font-size: 0.75rem;
+  font-family: 'Roboto Mono', monospace;
+}

@@ -15,6 +15,7 @@ from models.character_progression import (
     PlayerSceneRecord, SkillPrerequisite,
 )
 from models.inventory import PlayerInventory, InventoryItem
+from services.artifact_service import get_artifact_stat_totals
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,9 @@ def recalculate_character_stats(session: Session, character_id: int) -> dict[str
         if item and item.base_stats:
             equipped_items.append(item)
 
+    # 6. Artifact bonuses (2.7)
+    artifact_totals = get_artifact_stat_totals(character_id, session)
+
     results = {}
     now = datetime.now(timezone.utc)
 
@@ -122,7 +126,10 @@ def recalculate_character_stats(session: Session, character_id: int) -> dict[str
             if isinstance(item.base_stats, dict):
                 equip_bonus += item.base_stats.get(stat.name, 0)
 
-        total = base + idle_bonus + lore_bonus + level_bonus + equip_bonus
+        # 6. Artifact bonuses (2.7)
+        artifact_bonus = artifact_totals.get(stat.name, 0)
+
+        total = base + idle_bonus + lore_bonus + level_bonus + equip_bonus + artifact_bonus
 
         # Upsert character_stats
         existing = session.exec(

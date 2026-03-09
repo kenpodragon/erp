@@ -1,40 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import './HomeBase.css';
 import { api } from '../../api';
-import InventoryPanel from './InventoryPanel';
+import AkashicLog from './AkashicLog';
+import RelicGallery from './RelicGallery';
+import HallOfEchoes from './HallOfEchoes';
+import AchievementMatrix from './AchievementMatrix';
+import EthericRegistry from './story/EthericRegistry';
+import DiscoveryLibrary from './story/DiscoveryLibrary';
 
 interface HomeBaseProps {
   player: any;
   character: any;
 }
 
+interface HubBadges {
+  akashic_log: number;
+  relic_gallery: number;
+  achievements: number;
+  total: number;
+}
+
+interface HubProgress {
+  achievements: { completed: number; total: number };
+  curated_artifacts: { owned: number; total: number };
+  total_artifacts: number;
+}
+
+type HubTab = 'akashic' | 'relics' | 'echoes' | 'achievements' | 'registry' | 'discovery';
+
+const TAB_CONFIG: { id: HubTab; label: string; badgeKey?: keyof HubBadges }[] = [
+  { id: 'akashic', label: 'Akashic Log', badgeKey: 'akashic_log' },
+  { id: 'relics', label: 'Relic Gallery', badgeKey: 'relic_gallery' },
+  { id: 'echoes', label: 'Hall of Echoes' },
+  { id: 'achievements', label: 'Achievements', badgeKey: 'achievements' },
+  { id: 'registry', label: 'Etheric Registry' },
+  { id: 'discovery', label: 'Discovery Library' },
+];
+
 const HomeBase: React.FC<HomeBaseProps> = ({ player, character }) => {
-  const [artifacts, setArtifacts] = useState<any[]>([]);
-  const [journal, setJournal] = useState<any[]>([]);
-  const [rankings, setRankings] = useState<any[]>([]);
-  const [selectedArtifact, setSelectedArtifact] = useState<any>(null);
-  const [leaderboardType, setLeaderboardType] = useState('progression');
   const [loading, setLoading] = useState(true);
-  const [discoveryStats, setDiscoveryStats] = useState<{
-    total_entities: number; discovered_entities: number; entity_completion_pct: number;
-    total_skills: number; discovered_skills: number; skill_completion_pct: number;
-  } | null>(null);
+  const [activeTab, setActiveTab] = useState<HubTab>('akashic');
+  const [badges, setBadges] = useState<HubBadges>({ akashic_log: 0, relic_gallery: 0, achievements: 0, total: 0 });
+  const [hubProgress, setHubProgress] = useState<HubProgress | null>(null);
 
   useEffect(() => {
     const fetchHomeData = async () => {
       setLoading(true);
       try {
-        const [artRes, journalRes, rankRes, discRes] = await Promise.all([
-          api.get('/api/game/artifacts'),
-          api.get('/api/game/journal'),
-          api.get(`/api/game/leaderboards?type=${leaderboardType}`),
-          api.get('/api/game/registry/stats'),
-        ]);
-
-        if (artRes.ok) setArtifacts(await artRes.json());
-        if (journalRes.ok) setJournal(await journalRes.json());
-        if (rankRes.ok) setRankings(await rankRes.json());
-        if (discRes.ok) setDiscoveryStats(await discRes.json());
+        const res = await api.get('/api/game/home-base/summary');
+        if (res.ok) {
+          const summary = await res.json();
+          setBadges(summary.badges);
+          setHubProgress(summary.progress);
+        }
       } catch (err) {
         console.error('Failed to fetch home base data:', err);
       } finally {
@@ -43,149 +61,70 @@ const HomeBase: React.FC<HomeBaseProps> = ({ player, character }) => {
     };
 
     if (character) fetchHomeData();
-  }, [character, leaderboardType]);
+  }, [character]);
 
   if (loading) return <div className="placeholder-view">Syncing with Central Intelligence...</div>;
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'akashic':
+        return <AkashicLog />;
+      case 'relics':
+        return <RelicGallery />;
+      case 'echoes':
+        return <HallOfEchoes currentPlayerId={player?.id} />;
+      case 'achievements':
+        return <AchievementMatrix />;
+      case 'registry':
+        return <EthericRegistry />;
+      case 'discovery':
+        return <DiscoveryLibrary />;
+    }
+  };
+
   return (
-    <div className="home-base-container">
+    <div className="home-base-container hb-terminal">
       <header className="home-base-header">
-        <h1>Home Base</h1>
+        <div className="hb-header-row">
+          <h1>Home Base</h1>
+          {badges.total > 0 && (
+            <span className="hb-badge-total">{badges.total} new</span>
+          )}
+        </div>
         <p className="subtitle">Central Intelligence & Character Hub</p>
+        {hubProgress && (
+          <div className="hb-progress-bar-row">
+            <span className="hb-progress-label">
+              Achievements {hubProgress.achievements.completed}/{hubProgress.achievements.total}
+            </span>
+            <span className="hb-progress-sep">|</span>
+            <span className="hb-progress-label">
+              Relics {hubProgress.curated_artifacts.owned}/{hubProgress.curated_artifacts.total}
+            </span>
+          </div>
+        )}
       </header>
 
-      <div className="home-base-grid">
-        {/* ── Section 1: The Akashic Log (Journal) ────────────────────── */}
-        <section className="home-base-section terminal-log">
-          <div className="section-header">
-            <span className="terminal-icon">📟</span>
-            <h2>The Akashic Log</h2>
-          </div>
-          <div className="terminal-screen">
-            {journal.length === 0 ? (
-              <div className="log-entry pending">
-                <span className="log-text">No data stabilized. Complete scenes to uncover lore.</span>
-              </div>
-            ) : (
-              journal.map((entry, idx) => (
-                <div key={idx} className="log-entry">
-                  <span className="log-timestamp">[{entry.location}]</span>
-                  <span className="log-text">{entry.title}: {entry.summary || 'Data corrupted.'}</span>
-                </div>
-              ))
-            )}
-            <div className="terminal-cursor" />
-          </div>
-        </section>
-
-        {/* ── Section 2: Artifact Gallery ────────────────────────────── */}
-        <section className="home-base-section artifacts-gallery">
-          <div className="section-header">
-            <span className="gallery-icon">🏺</span>
-            <h2>Artifact Gallery</h2>
-          </div>
-          <div className="artifact-grid">
-            {artifacts.map(art => (
-              <div 
-                key={art.id} 
-                className={`artifact-slot ${art.unlocked ? 'collected' : 'missing'} ${art.rarity}`}
-                onClick={() => art.unlocked && setSelectedArtifact(art)}
-              >
-                <div className="artifact-icon-placeholder" />
-                <span className="artifact-name">{art.name}</span>
-              </div>
-            ))}
-          </div>
-          {selectedArtifact && (
-            <div className="artifact-detail-overlay" onClick={() => setSelectedArtifact(null)}>
-              <div className="artifact-card" onClick={e => e.stopPropagation()}>
-                <h3>{selectedArtifact.name}</h3>
-                <span className={`rarity-tag ${selectedArtifact.rarity}`}>{selectedArtifact.rarity}</span>
-                <p className="lore-text">{selectedArtifact.lore_text || selectedArtifact.description}</p>
-                <button className="btn-close" onClick={() => setSelectedArtifact(null)}>Close</button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ── Section 2.5: Discovery Progress ─────────────────────────── */}
-        {discoveryStats && (
-          <section className="home-base-section discovery-progress">
-            <div className="section-header">
-              <span className="discovery-icon">📖</span>
-              <h2>Etheric Registry</h2>
-            </div>
-            <div className="discovery-counters">
-              <div className="discovery-counter">
-                <span className="counter-label">Entities</span>
-                <div className="counter-bar-track">
-                  <div className="counter-bar-fill" style={{ width: `${discoveryStats.entity_completion_pct}%` }} />
-                </div>
-                <span className="counter-value">{discoveryStats.discovered_entities}/{discoveryStats.total_entities} ({discoveryStats.entity_completion_pct}%)</span>
-              </div>
-              <div className="discovery-counter">
-                <span className="counter-label">Skills</span>
-                <div className="counter-bar-track">
-                  <div className="counter-bar-fill counter-bar-fill--skill" style={{ width: `${discoveryStats.skill_completion_pct}%` }} />
-                </div>
-                <span className="counter-value">{discoveryStats.discovered_skills}/{discoveryStats.total_skills} ({discoveryStats.skill_completion_pct}%)</span>
-              </div>
-              <div className="discovery-overall">
-                <span className="overall-label">Overall Completion</span>
-                <span className="overall-value">
-                  {((discoveryStats.entity_completion_pct + discoveryStats.skill_completion_pct) / 2).toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── Section 3: Tower Rankings (Leaderboard) ────────────────── */}
-        <section className="home-base-section rankings">
-          <div className="section-header">
-            <span className="rank-icon">🏆</span>
-            <h2>Tower Rankings</h2>
-          </div>
-          <div className="ranking-tabs">
-            <button className={leaderboardType === 'progression' ? 'active' : ''} onClick={() => setLeaderboardType('progression')}>Progression</button>
-            <button className={leaderboardType === 'essence' ? 'active' : ''} onClick={() => setLeaderboardType('essence')}>Essence</button>
-          </div>
-          <div className="ranking-list">
-            {rankings.map((r, idx) => (
-              <div key={idx} className={`ranking-row ${r.name === character?.character_name ? 'self' : ''}`}>
-                <span className="rank-num">#{idx + 1}</span>
-                <span className="rank-name">{r.name}</span>
-                <span className="rank-value">{r.value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Section 4: Inventory ────────────────────────────────── */}
-        <section className="home-base-section inventory-section">
-          <div className="section-header">
-            <h2>Equipment</h2>
-          </div>
-          <InventoryPanel />
-        </section>
-
-        {/* ── Section 5: System Actions ─────────────────────────────── */}
-        <section className="home-base-section system-actions">
-          <div className="section-header">
-            <span className="system-icon">🛠️</span>
-            <h2>System Controls</h2>
-          </div>
-          <div className="action-buttons">
-            <button className="btn-secondary danger" onClick={async () => {
-              if (window.confirm('WARNING: This will clear ALL progress. This action is permanent. Continue?')) {
-                const res = await api.post('/api/players/me/reset');
-                if (res.ok) window.location.reload();
-              }
-            }}>
-              Wipe Character Data (Reset Progress)
+      <nav className="hb-tab-bar">
+        {TAB_CONFIG.map(tab => {
+          const badge = tab.badgeKey ? badges[tab.badgeKey] : 0;
+          return (
+            <button
+              key={tab.id}
+              className={`hb-tab ${activeTab === tab.id ? 'hb-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+              {typeof badge === 'number' && badge > 0 && (
+                <span className="hb-tab-badge">{badge}</span>
+              )}
             </button>
-          </div>
-        </section>
+          );
+        })}
+      </nav>
+
+      <div className="hb-tab-content">
+        {renderTabContent()}
       </div>
     </div>
   );

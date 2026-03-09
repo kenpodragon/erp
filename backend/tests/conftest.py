@@ -18,6 +18,9 @@ from models import (
     Atmosphere, AudioConfig,
     PlayerEntityDiscovery, PlayerDiscoveryLog,
     ChatChannel,
+    CuratedArtifact, CuratedArtifactTier, ArtifactTypeBase, ArtifactPrefix,
+    ArtifactSuffix, PlayerArtifact, Title, Achievement, PlayerAchievement,
+    PlayerTitle, LeaderboardCache, ShardTransaction,
 )
 from datetime import datetime, timezone
 

@@ -1,0 +1,91 @@
+.ache-page { padding: 20px; color: #ddd; }
+.ache-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ache-header h2 { margin: 0; color: #7dd3fc; }
+.ache-header-actions { display: flex; gap: 8px; align-items: center; }
+
+.ache-layout { display: flex; gap: 20px; }
+.ache-list-panel { flex: 1; min-width: 0; max-height: 70vh; overflow-y: auto; }
+.ache-detail-panel { flex: 1; min-width: 0; max-height: 70vh; overflow-y: auto; }
+
+.ache-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ache-table th { text-align: left; padding: 8px; border-bottom: 2px solid #333; color: #888; font-weight: 600; }
+.ache-table td { padding: 6px 8px; border-bottom: 1px solid #222; cursor: pointer; }
+.ache-table tbody tr:hover { background: #1a1a2e; }
+.ache-row--selected { background: #1a1a2e !important; border-left: 3px solid #7dd3fc; }
+.ache-name { color: #7dd3fc; font-weight: 600; }
+
+.ache-cat--combat { color: #e74c3c; }
+.ache-cat--narrative { color: #3498db; }
+.ache-cat--collection { color: #f1c40f; }
+.ache-cat--training { color: #2ecc71; }
+.ache-cat--social { color: #e67e22; }
+.ache-cat--exploration { color: #9b59b6; }
+
+.ache-reward-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 11px; margin-right: 3px; font-weight: 600; }
+.ache-reward-shards { background: #4a2d6e; color: #c084fc; }
+.ache-reward-essence { background: #1e3a5f; color: #60a5fa; }
+.ache-reward-title { background: #5a4a1e; color: #fbbf24; }
+
+.ache-detail { padding: 12px; }
+.ache-detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.ache-detail-header h3 { margin: 0; color: #7dd3fc; }
+.ache-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.ache-field label { font-size: 11px; color: #888; text-transform: uppercase; }
+.ache-field p { margin: 2px 0 0; font-size: 13px; }
+
+.ache-children { list-style: none; padding: 0; margin: 4px 0; }
+.ache-children li { padding: 4px 0; border-bottom: 1px solid #222; font-size: 13px; }
+
+.ache-override { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.ache-override input, .ache-override select {
+  padding: 6px 8px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px;
+}
+.ache-override input { width: 120px; }
+
+.ache-edit-form { padding: 12px; }
+.ache-edit-form h3 { margin: 0 0 12px; color: #7dd3fc; }
+.ache-edit-form h4 { margin: 16px 0 8px; color: #ccc; border-top: 1px solid #333; padding-top: 12px; }
+.ache-form-row { margin-bottom: 10px; }
+.ache-form-row label { display: block; font-size: 12px; color: #888; margin-bottom: 3px; }
+.ache-form-row input, .ache-form-row select, .ache-form-row textarea {
+  width: 100%; padding: 6px 8px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px; box-sizing: border-box;
+}
+.ache-form-row textarea { font-family: 'Roboto Mono', monospace; resize: vertical; }
+.ache-form-checkbox label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.ache-form-checkbox input[type="checkbox"] { width: auto; }
+
+.ache-detail-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+.ache-btn { padding: 6px 14px; border: 1px solid #444; background: #2a2a3e; color: #ddd; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.ache-btn:hover { background: #333; }
+.ache-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ache-btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.ache-btn-primary:hover { background: #1d4ed8; }
+.ache-btn-danger { background: #991b1b; border-color: #991b1b; color: #fff; }
+.ache-btn-danger:hover { background: #7f1d1d; }
+
+.ache-message { padding: 8px 12px; background: #1a2e1a; border: 1px solid #2d5a2d; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+.ache-loading { padding: 40px; text-align: center; color: #888; }
+.ache-empty { text-align: center; color: #666; padding: 20px; }
+.ache-empty-detail { text-align: center; color: #666; padding: 40px; }
+
+.ache-analytics {
+  background: #1a1a2e; border: 1px solid #333; border-radius: 6px;
+  padding: 12px; margin-bottom: 16px;
+}
+.ache-analytics-row { display: flex; gap: 24px; margin-bottom: 12px; }
+.ache-stat { display: flex; flex-direction: column; }
+.ache-stat-val { font-size: 24px; font-weight: 700; color: #7dd3fc; }
+.ache-stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+.ache-analytics-cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.ache-cat-stat { font-size: 12px; background: #2a2a3e; padding: 4px 8px; border-radius: 4px; }
+.ache-cat-name { font-weight: 600; margin-right: 4px; }
+.ache-most-completed { font-size: 12px; margin-top: 8px; }
+.ache-mc-item { display: inline-block; background: #2a2a3e; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
+
+.ache-header-actions select {
+  padding: 6px 8px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px;
+}

@@ -29,6 +29,9 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `043` | Discovery Configuration Seeds | Inserted 5 `game_configs` keys: `codex_rank_e` (1), `codex_rank_c` (25), `codex_rank_a` (100), `codex_rank_ss` (500), `rare_spawn_base_chance` (0.005). Category: `discovery`. |
 | `044` | Chat System Tables & Configuration | Created `chat_channels` table (VARCHAR PK, multi-channel support). Seeded `global` channel. Inserted 5 `game_configs` keys: `chat_buffer_size` (200), `chat_rate_limit_per_minute` (20), `chat_heartbeat_interval_s` (30), `broadcast_rarity_min` (4), `broadcast_rate_limit_per_minute` (10). Category: `social`. |
 | `045` | Chat Mute Columns | Added `chat_muted BOOLEAN NOT NULL DEFAULT FALSE` and `chat_muted_until VARCHAR(50) DEFAULT NULL` to `player_settings`. Supports admin mute/timed-mute of players from chat (REC 2.6.4). |
+| `046` | Artifact System (Home Base 2.7) | Renamed `artifacts` → `artifacts_legacy`, `player_collections` → `player_collections_legacy`. Created 7 tables: `curated_artifacts`, `curated_artifact_tiers`, `artifact_type_bases`, `artifact_prefixes`, `artifact_suffixes`, `player_artifacts`, `shard_transactions`. Added columns to `story_beats` (hidden_lore_text, lore_intelligence_threshold), `player_scene_records` (total_damage_dealt, best_session_damage), `player_story_sessions` (deaths), `player_meta_progression` (shard_balance, total_shards_earned, active_training_sessions). Seeded 55 artifact components + 50 curated artifacts + 250 tier rows. Migrated legacy data. |
+| `047` | Achievement & Title System (Home Base 2.7) | Created 4 tables: `titles`, `achievements`, `player_achievements`, `player_titles`. Added `equipped_title_id` FK to `player_characters`. Added `akashic_last_visited_at`, `gallery_last_visited_at`, `achievements_last_visited_at` to `player_settings`. Seeded 20 titles, 90 achievements with parent chains and title reward links. |
+| `048` | Leaderboard Cache & Configs (Home Base 2.7) | Created `leaderboard_cache` table. Seeded 13 `game_configs` keys: 7 artifact generation configs, 2 leaderboard configs, 4 achievement milestone rewards. |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -94,8 +97,8 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | :--- | :--- |
 | `inventory_items` | Master templates for equipment, consumables, and materials. **2.4.2:** Added `item_code VARCHAR(60)` (5-part procedural code: PREFIX_QUALITY_LORETAG_TYPE_SUFFIX), `item_level INTEGER DEFAULT 1` (power level capped at chapter.recommended_level), `min_char_level INTEGER DEFAULT 1` (minimum character level to equip), `stat_requirements JSONB DEFAULT '{}'` (minimum stat values to equip), `gear_slot_id INTEGER FK gear_slots` (which gear slot this item occupies), `is_dream_item BOOLEAN DEFAULT FALSE` (TRUE for procedurally generated items), `acquired_from VARCHAR(100)` (source context: 'dream_drop', 'admin_grant', etc.). |
 | `player_inventory` | Instances of items owned and equipped by characters. **2.4.2:** New trigger `trg_enforce_inventory_slot_cap` enforces max 10 non-equipped items per character. |
-| `artifacts` | Unique lore-based items providing global passive bonuses. |
-| `player_collections` | Tracks which unique artifacts a character has uncovered. |
+| `artifacts_legacy` | *(Renamed from `artifacts` in 046)* Original lore-based items providing global passive bonuses. Superseded by `curated_artifacts` + `player_artifacts`. |
+| `player_collections_legacy` | *(Renamed from `player_collections` in 046)* Original tracking of uncovered artifacts. Superseded by `player_artifacts`. |
 
 ### 7. Skills & Training (2.3)
 
@@ -196,6 +199,79 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 **Codex Rank Thresholds** (from `game_configs`, category: `discovery`): E=1 kill, C=25, A=100, SS=500. Rank determines what info is visible: E=name+image+lore, C=+HP/gold, A=+full stats, SS=+hidden lore.
 
 **Anti-Cheat Anomaly Logging:** Anomalies logged to `activity_events` with `event_type = 'anti_cheat_anomaly'`. `event_data` JSONB contains: `anomaly_type` (cps_violation, gold_correction, wave_clamp, session_integrity), `session_id`, `reported_value`, `corrected_value`, `zone`, `elapsed_ms`.
+
+---
+
+### 13. Home Base Artifact System (2.7, Migration 046)
+
+| Table | Description |
+| :--- | :--- |
+| `curated_artifacts` | Hand-designed lore artifacts with fixed identities. Columns: `id SERIAL PK`, `name VARCHAR(200) NOT NULL`, `description TEXT`, `lore_text TEXT`, `icon_sprite_key VARCHAR(100)`, `source_type VARCHAR(30)` CHECK IN ('boss', 'mastery', 'quest', 'event', 'hidden'), `source_id INTEGER` (app-level FK to source entity), `source_hint VARCHAR(200)`, `base_drop_chance NUMERIC(5,4) DEFAULT 0.0500`, `is_active BOOLEAN DEFAULT TRUE`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. 50 curated artifacts seeded across 5 source types. |
+| `curated_artifact_tiers` | Per-rarity stat definitions for curated artifacts. Columns: `id SERIAL PK`, `curated_artifact_id INTEGER FK curated_artifacts ON DELETE CASCADE`, `rarity VARCHAR(10)` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `drop_chance_multiplier NUMERIC(5,4) DEFAULT 1.0`, `created_at TIMESTAMPTZ`. UNIQUE on `(curated_artifact_id, rarity)`. 250 tier rows seeded (5 per artifact). |
+| `artifact_type_bases` | Core artifact types for procedural generation (e.g., Shard, Prism, Sigil). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `base_stat_range JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 15 types seeded. |
+| `artifact_prefixes` | Prefix name components for generated artifacts (e.g., Fractured, Luminous). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 prefixes seeded. |
+| `artifact_suffixes` | Suffix name components for generated artifacts (e.g., of the Void, of the Tower). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 suffixes seeded. |
+| `player_artifacts` | Artifacts owned by player characters (both curated and generated). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `character_id INTEGER FK player_characters ON DELETE CASCADE`, `artifact_type VARCHAR(20) NOT NULL` CHECK IN ('curated', 'generated'), `curated_artifact_id INTEGER FK curated_artifacts` (NULL for generated), `artifact_code VARCHAR(100)` (NULL for curated; PREFIX_TYPE_SUFFIX for generated), `name VARCHAR(200) NOT NULL`, `rarity VARCHAR(10) NOT NULL` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `icon_sprite_key VARCHAR(100)`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `is_new BOOLEAN DEFAULT TRUE`, `acquired_from VARCHAR(100)`, `acquired_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(character_id, artifact_type, curated_artifact_id)` and `(character_id, artifact_code)`. |
+| `shard_transactions` | Premium currency audit trail for future 3.0 monetization. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `amount INTEGER NOT NULL`, `balance_after INTEGER NOT NULL`, `transaction_type VARCHAR(30) NOT NULL` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct'), `reference_type VARCHAR(50)`, `reference_id INTEGER`, `description TEXT`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. Index on `(player_id, created_at DESC)`. |
+
+**Legacy Table Renames (046):**
+- `artifacts` → `artifacts_legacy` (original lore artifact definitions)
+- `player_collections` → `player_collections_legacy` (original player artifact tracking)
+
+**Column Additions (046):**
+- `story_beats.hidden_lore_text TEXT` — Hidden lore revealed at high Intelligence thresholds.
+- `story_beats.lore_intelligence_threshold INTEGER` — Minimum Intelligence stat to reveal hidden lore.
+- `player_scene_records.total_damage_dealt BIGINT DEFAULT 0` — Cumulative damage across all runs.
+- `player_scene_records.best_session_damage BIGINT DEFAULT 0` — Highest single-session damage.
+- `player_story_sessions.deaths INTEGER DEFAULT 0` — Death count in current session.
+- `player_meta_progression.shard_balance INTEGER DEFAULT 0` — Current premium currency balance.
+- `player_meta_progression.total_shards_earned INTEGER DEFAULT 0` — Lifetime shards earned.
+- `player_meta_progression.active_training_sessions INTEGER DEFAULT 0` — Currently running idle sessions.
+
+**Artifact Generation Pipeline:** Prefix + TypeBase + Suffix → artifact_code (e.g., `FRACT_SHARD_VOID`). Base stats rolled from type's `base_stat_range`, then prefix/suffix bonuses added, then rarity multiplier applied. Rarity weighted by book number (`artifact_rarity_weight_book_N`). Higher rarity replaces lower; same/lower rarity discarded. Chapter mastery (all non-boss scenes completed) triggers mastery drop chance.
+
+**Artifact Stat Integration:** `recalculate_character_stats()` includes artifact bonuses as step 6 (additive stacking from all `player_artifacts` for the character).
+
+### 14. Achievement & Title System (2.7, Migration 047)
+
+| Table | Description |
+| :--- | :--- |
+| `titles` | Earnable display titles for player characters. Columns: `id SERIAL PK`, `code VARCHAR(50) UNIQUE NOT NULL`, `display_text VARCHAR(100) NOT NULL`, `title_type VARCHAR(10) NOT NULL` CHECK IN ('prefix', 'suffix'), `description TEXT`, `achievement_id INTEGER FK achievements` (which achievement grants this title), `rarity VARCHAR(10) DEFAULT 'common'` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `is_active BOOLEAN DEFAULT TRUE`, `created_at TIMESTAMPTZ`. 20 titles seeded. |
+| `achievements` | Achievement definitions with tiered parent chains. Columns: `id SERIAL PK`, `code VARCHAR(100) UNIQUE NOT NULL`, `name VARCHAR(200) NOT NULL`, `description TEXT`, `category VARCHAR(30) NOT NULL` CHECK IN ('combat', 'narrative', 'economics', 'idle', 'discovery'), `parent_id INTEGER FK achievements` (self-referencing for tier chains), `tier INTEGER DEFAULT 1`, `threshold_type VARCHAR(50) NOT NULL`, `threshold_value NUMERIC(15,2) NOT NULL`, `reward_essence INTEGER DEFAULT 0`, `reward_title_id INTEGER FK titles`, `icon_sprite_key VARCHAR(100)`, `is_hidden BOOLEAN DEFAULT FALSE`, `is_active BOOLEAN DEFAULT TRUE`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`. 90 achievements seeded across 5 categories with parent chains. |
+| `player_achievements` | Tracks which achievements each player has earned. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `achievement_id INTEGER FK achievements ON DELETE CASCADE`, `progress NUMERIC(15,2) DEFAULT 0`, `earned_at TIMESTAMPTZ`, `is_new BOOLEAN DEFAULT TRUE`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(player_id, achievement_id)`. |
+| `player_titles` | Tracks which titles each character has unlocked. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `character_id INTEGER FK player_characters ON DELETE CASCADE`, `title_id INTEGER FK titles ON DELETE CASCADE`, `unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(character_id, title_id)`. |
+
+**Column Addition (047):**
+- `player_characters.equipped_title_id INTEGER FK titles` — Currently equipped display title.
+
+**Column Additions (047, player_settings):**
+- `player_settings.akashic_last_visited_at TIMESTAMPTZ` — Last visit to Akashic Log tab.
+- `player_settings.gallery_last_visited_at TIMESTAMPTZ` — Last visit to Relic Gallery tab.
+- `player_settings.achievements_last_visited_at TIMESTAMPTZ` — Last visit to Achievements tab.
+
+### 15. Leaderboard Cache & Additional Configs (2.7, Migration 048)
+
+| Table | Description |
+| :--- | :--- |
+| `leaderboard_cache` | Pre-computed server-side rankings. Columns: `id SERIAL PK`, `category VARCHAR(20) NOT NULL` CHECK IN ('vanguard', 'alchemist', 'swift', 'scholar'), `rank INTEGER NOT NULL`, `player_id INTEGER FK players ON DELETE CASCADE`, `player_alias VARCHAR(100) NOT NULL`, `character_class VARCHAR(50)`, `character_level INTEGER`, `equipped_title VARCHAR(100)`, `metric_value NUMERIC(15,2) NOT NULL`, `badge_tier VARCHAR(10)` CHECK IN ('cosmic', 'gold', 'silver', 'bronze'), `updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(category, rank)`. Indexes: `idx_leaderboard_category`, `idx_leaderboard_player`. |
+
+#### Home Base `game_configs` Keys (seeded in 048)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `artifact_gen_drop_chance_scene` | `artifacts` | Base drop chance (0.05) for generated artifact on scene complete. |
+| `artifact_gen_drop_chance_boss` | `artifacts` | Base drop chance (0.15) for generated artifact on boss kill. |
+| `artifact_gen_drop_chance_mastery` | `artifacts` | Base drop chance (0.30) for generated artifact on chapter mastery. |
+| `artifact_rarity_weight_book_1` | `artifacts` | Rarity weights for generated artifacts in Book 1: common 70, uncommon 20, rare 8, epic 1.8, cosmic 0.2. |
+| `artifact_rarity_weight_book_2` | `artifacts` | Rarity weights for generated artifacts in Book 2: common 60, uncommon 25, rare 11, epic 3.5, cosmic 0.5. |
+| `artifact_rarity_weight_book_3` | `artifacts` | Rarity weights for generated artifacts in Book 3: common 50, uncommon 27, rare 15, epic 6, cosmic 2. |
+| `artifact_rarity_stat_multiplier` | `artifacts` | Stat multiplier per rarity: common 1.0, uncommon 1.2, rare 1.5, epic 2.0, cosmic 3.0. |
+| `leaderboard_refresh_interval_min` | `leaderboard` | Minutes between leaderboard cache refresh (5). |
+| `leaderboard_top_n` | `leaderboard` | Number of entries to cache per category (100). |
+| `achievement_milestone_essence_25` | `achievements` | Essence reward for Level 25 idle training milestone (50). |
+| `achievement_milestone_essence_50` | `achievements` | Essence reward for Level 50 idle training milestone (200). |
+| `achievement_milestone_essence_75` | `achievements` | Essence reward for Level 75 idle training milestone (500). |
+| `achievement_milestone_essence_99` | `achievements` | Essence reward for Level 99 idle training milestone (2000). |
 
 ---
 

@@ -5,24 +5,158 @@
 }
 
 .home-base-header {
-  margin-bottom: 3rem;
+  margin-bottom: 0;
   border-bottom: 1px solid #333;
   padding-bottom: 1rem;
+}
+
+/* ── Tab Bar ────────────────────────────────────────────────────── */
+.hb-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #333;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hb-tab-bar::-webkit-scrollbar { display: none; }
+
+.hb-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #666;
+  padding: 10px 16px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -2px;
+  position: relative;
+}
+
+.hb-tab:hover {
+  color: #aaa;
+}
+
+.hb-tab--active {
+  color: #ffb000;
+  border-bottom-color: #ffb000;
+}
+
+.hb-tab-badge {
+  background: #ffb000;
+  color: #0a0a0a;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.hb-tab-content {
+  min-height: 300px;
+}
+
+/* ── Terminal Theme (MR2 accent styling) ──────────────────────── */
+.hb-terminal {
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
+}
+
+.hb-terminal .home-base-header {
+  border-bottom-color: #ffb000;
+  border-bottom-width: 2px;
+}
+
+.hb-terminal .home-base-section {
+  border-color: #333;
+  position: relative;
+}
+
+.hb-terminal .section-header h2 {
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
+  color: #ffb000;
 }
 
 .home-base-header h1 {
   font-size: 2rem;
   margin: 0;
-  color: #fff;
+  color: #ffb000;
   letter-spacing: 2px;
   text-transform: uppercase;
+  font-family: 'Roboto Mono', 'Fira Code', monospace;
 }
 
 .home-base-header .subtitle {
   color: #666;
   margin: 0.5rem 0 0 0;
   font-size: 0.9rem;
+  font-family: 'Roboto Mono', monospace;
 }
+
+.hb-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hb-badge-total {
+  background: #ffb000;
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: 'Roboto Mono', monospace;
+  animation: hb-badge-pulse 2s ease-in-out infinite;
+}
+
+.hb-progress-bar-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.hb-progress-sep { color: #444; }
+
+.hb-progress-label { color: #aaa; }
+
+.hb-section-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ffb000;
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 10px;
+  padding: 0 5px;
+  font-family: 'Roboto Mono', monospace;
+  z-index: 1;
+}
+
+@keyframes hb-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Reduce Motion compliance */
+@media (prefers-reduced-motion: reduce) {
+  .hb-badge-total { animation: none; }
+}
+body.reduce-motion .hb-badge-total { animation: none; }
 
 .home-base-grid {
   display: grid;

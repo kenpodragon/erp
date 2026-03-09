@@ -34,6 +34,11 @@ from models.attack_types import AttackType, EntityAttackType, TypeBaseAttackType
 from models.audio import Atmosphere, AudioConfig
 from models.discovery import PlayerEntityDiscovery, PlayerDiscoveryLog
 from models.chat import ChatChannel
+from models.home_base import (
+    CuratedArtifact, CuratedArtifactTier, ArtifactTypeBase, ArtifactPrefix,
+    ArtifactSuffix, PlayerArtifact, Title, Achievement, PlayerAchievement,
+    PlayerTitle, LeaderboardCache, ShardTransaction,
+)
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -55,4 +60,7 @@ __all__ = [
     "Atmosphere", "AudioConfig",
     "PlayerEntityDiscovery", "PlayerDiscoveryLog",
     "ChatChannel",
+    "CuratedArtifact", "CuratedArtifactTier", "ArtifactTypeBase", "ArtifactPrefix",
+    "ArtifactSuffix", "PlayerArtifact", "Title", "Achievement", "PlayerAchievement",
+    "PlayerTitle", "LeaderboardCache", "ShardTransaction",
 ]

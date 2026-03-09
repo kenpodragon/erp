@@ -1,0 +1,123 @@
+.arte-page { padding: 20px; color: #ddd; }
+.arte-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.arte-header h2 { margin: 0; color: #7dd3fc; }
+.arte-header-actions { display: flex; gap: 8px; align-items: center; }
+
+.arte-layout { display: flex; gap: 20px; }
+.arte-list-panel { flex: 1; min-width: 0; max-height: 70vh; overflow-y: auto; }
+.arte-detail-panel { flex: 1; min-width: 0; max-height: 70vh; overflow-y: auto; }
+
+.arte-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.arte-table th { text-align: left; padding: 8px; border-bottom: 2px solid #333; color: #888; font-weight: 600; }
+.arte-table td { padding: 6px 8px; border-bottom: 1px solid #222; cursor: pointer; }
+.arte-table tbody tr:hover { background: #1a1a2e; }
+.arte-row--selected { background: #1a1a2e !important; border-left: 3px solid #7dd3fc; }
+.arte-name { color: #7dd3fc; font-weight: 600; }
+
+.arte-tier-table { margin-top: 8px; }
+.arte-tier-table td { cursor: default; }
+.arte-tier-table code { font-size: 11px; color: #aaa; }
+
+.arte-rarity--common { color: #aaa; }
+.arte-rarity--uncommon { color: #2ecc71; }
+.arte-rarity--rare { color: #3498db; }
+.arte-rarity--epic { color: #9b59b6; }
+.arte-rarity--legendary { color: #f1c40f; }
+
+.arte-detail { padding: 12px; }
+.arte-detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.arte-detail-header h3 { margin: 0; color: #7dd3fc; }
+.arte-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.arte-field label { font-size: 11px; color: #888; text-transform: uppercase; }
+.arte-field p { margin: 2px 0 0; font-size: 13px; }
+
+.arte-edit-form { padding: 12px; }
+.arte-edit-form h3 { margin: 0 0 12px; color: #7dd3fc; }
+.arte-edit-form h4 { margin: 16px 0 8px; color: #ccc; border-top: 1px solid #333; padding-top: 12px; }
+.arte-form-row { margin-bottom: 10px; }
+.arte-form-row label { display: block; font-size: 12px; color: #888; margin-bottom: 3px; }
+.arte-form-row input, .arte-form-row select, .arte-form-row textarea {
+  width: 100%; padding: 6px 8px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px; box-sizing: border-box;
+}
+.arte-form-row textarea { font-family: 'Roboto Mono', monospace; resize: vertical; }
+.arte-form-checkbox label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.arte-form-checkbox input[type="checkbox"] { width: auto; }
+
+.arte-detail-actions { display: flex; gap: 8px; margin-top: 12px; }
+.arte-tier-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.arte-tier-edit {
+  background: #1a1a2e; border: 1px solid #333; border-radius: 6px;
+  padding: 10px; margin-bottom: 8px;
+}
+
+.arte-btn { padding: 6px 14px; border: 1px solid #444; background: #2a2a3e; color: #ddd; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.arte-btn:hover { background: #333; }
+.arte-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.arte-btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.arte-btn-primary:hover { background: #1d4ed8; }
+.arte-btn-danger { background: #991b1b; border-color: #991b1b; color: #fff; }
+.arte-btn-danger:hover { background: #7f1d1d; }
+.arte-btn-sm { padding: 3px 8px; font-size: 11px; }
+
+.arte-message { padding: 8px 12px; background: #1a2e1a; border: 1px solid #2d5a2d; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+.arte-loading { padding: 40px; text-align: center; color: #888; }
+.arte-empty { text-align: center; color: #666; padding: 20px; }
+.arte-empty-detail { text-align: center; color: #666; padding: 40px; }
+
+.arte-header-actions select {
+  padding: 6px 8px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px;
+}
+
+/* ── Generation Config Panel ─────────────────────────────────────── */
+.arte-gen-config {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.arte-gen-config h3 {
+  margin: 0 0 12px;
+  color: #7dd3fc;
+  font-size: 14px;
+}
+
+.arte-gen-config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.arte-gen-config-row {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.arte-gen-config-row label {
+  font-size: 12px;
+  color: #888;
+  padding-top: 6px;
+}
+
+.arte-gen-config-row input,
+.arte-gen-config-row textarea {
+  width: 100%;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 13px;
+  box-sizing: border-box;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.arte-gen-config-row textarea {
+  resize: vertical;
+}

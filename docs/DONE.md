@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-06*
+*Updated: 2026-03-09*
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*
@@ -44,6 +44,19 @@ This document tracks the completed development phases for the Elysium Rising mmo
    - [x] 2.6.2 Remaining: Random spawn engine (`_check_rare_spawn` in story_mode.py), rare spawn VFX (blue glow aura in CombatStage), entity encounter accumulation (`pendingEntityEncounters` Map in StoryMode), discovery counters on Home Base Hub, tick integration (flush entity_encounters with tick payload)
    - [x] 2.6.3 Remaining: "Magic Research 2" aesthetic polish in index.css (panels, buttons, modals, focus states, tooltips, stat bars), Terminal Exception verified (no polish leaks into Idle Training)
    - [x] 2.6.4 Remaining: System broadcasts on boss first-clear, chapter completions, rare item drops (rarity >= broadcast_rarity_min), rate-limited via BroadcastRateLimiter, ChatTab broadcast rendering (blue, bold, ⚡ prefix)
+
+ - [x] **2.7 — Home Base Hub (Meta-Progression & Collections)** *(Ref: `docs/recs/2.7_HOME_BASE_HUB.md` | Design: `2.7_HOME_BASE_HUB_DESIGN.md` | Schema: `2.7_HOME_BASE_HUB_SCHEMA.md`)*
+   - [x] 2.7.0 — Foundation: Artifact System & Schema (migrations 046–048, curated_artifacts/tiers/player_artifacts/achievements/titles/leaderboard_cache tables, SQLModel models, artifact generation service, curated artifact drops in `/complete`, `recalculate_character_stats()` with artifact bonuses, backend tests)
+   - [x] 2.7.1 — Akashic Log Enhancements (`GET /akashic-log` with full beat hierarchy + hidden lore + intelligence gating, AkashicLog.tsx with keyword search + completion % + beat detail, "new" badge tracking via `akashic_last_visited_at`, backend + frontend tests)
+   - [x] 2.7.2 — Relic Gallery & Artifact UI (`GET /artifacts` with owned + curated silhouettes, RelicGallery.tsx with grid/filtering/sorting/collection progress, ArtifactInspectionModal.tsx, empty slot silhouettes with source hints, backend + frontend tests)
+   - [x] 2.7.3 — Leaderboard Expansion & Achievement Matrix (leaderboard_service.py: 4 categories vanguard/alchemist/swift/scholar with TTL cache, badge tiers by percentile; achievement_service.py: cumulative stat aggregation, parent chain enforcement, reward distribution; HallOfEchoes.tsx + AchievementMatrix.tsx; title system with equip/unequip; achievement toast in PostBattleSummary; 24 backend + 27 frontend tests)
+   - [x] 2.7.4 — Admin Tools & Polish (admin_home_base.py: 14 endpoints for artifact/achievement CRUD + player override + analytics; ArtifactEditor.tsx + AchievementEditor.tsx admin pages; `GET /summary` hub endpoint with badge counts; idle training milestone rewards L25/50/75/99; MR2 terminal theme with amber accents; reduce motion compliance; 26 admin tests)
+   - [x] 2.7.5 — Final Polish & Hub Integration
+     - [x] Hub Integration: HomeBase.tsx restructured from scrollable grid to 6-tab layout (Akashic Log | Relic Gallery | Hall of Echoes | Achievements | Etheric Registry | Discovery Library), wired as primary "home" tab in MainGameLayout.tsx
+     - [x] Relic Power Badge: Compact gem icon in HeroStats.tsx (Story Mode only), fetches artifact stat_total, shows total bonus with click-to-expand per-stat breakdown (STR/AGI/INT/CRIT)
+     - [x] Milestones Tab: 5th "Milestones" tab in HallOfEchoes.tsx, 4x4 grid (4 idle skills x L25/50/75/99), pulls from `/api/game/training/skills`, checkmarks for completed + percentage for in-progress, Essence reward display per tier
+     - [x] Badge Icon Enhancement: CSS `::after` pseudo-element symbols on leaderboard badge circles (Cosmic=star + pulse glow, Gold=diamond, Silver=chevron, Bronze=plain), reduce-motion compliant
+     - [x] Artifact Generation Config: Collapsible panel in ArtifactEditor.tsx for 7 artifact-related game_configs keys (3 drop chances + 3 rarity weight JSONs + stat multiplier), per-key save via PATCH API
 
 ## Requirements Doc Audit (Post-2.5)
 - [x] **Full Requirements Audit & Code Verification** (all docs through 2.5)

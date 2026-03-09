@@ -41,6 +41,8 @@ from services.character_progression import (
     recalculate_character_stats, get_skill_tree,
 )
 from services.item_generator import check_run_achievements
+from services.artifact_service import evaluate_artifact_drops
+from services.achievement_service import evaluate_achievements
 from services.chat import manager as chat_manager
 
 logger = logging.getLogger(__name__)
@@ -1373,6 +1375,31 @@ async def complete_session(
             else:
                 transition_lore_text = scene.chapter.transition_lore_text
 
+        # 2.7: Upsert scene record for boss completion
+        if story_session.scene_id:
+            upsert_scene_record(
+                session,
+                player_id=player.id,
+                scene_id=story_session.scene_id,
+                wave=story_session.current_zone,
+                enemies_killed=0,
+            )
+
+        # 2.7: Artifact drop evaluation for boss kills
+        artifact_drops = []
+        try:
+            artifact_drops = evaluate_artifact_drops(
+                session,
+                player_id=player.id,
+                character_id=char.id,
+                scene_id=story_session.scene_id,
+                chapter_id=story_session.chapter_id or (scene.chapter_id if scene else 0),
+                is_boss=True,
+                rare_spawn_kill_count=0,
+            )
+        except Exception:
+            logger.warning("Boss artifact evaluation failed", exc_info=True)
+
         story_session.is_active = False
         story_session.updated_at = datetime.now(timezone.utc)
         session.add(story_session)
@@ -1398,6 +1425,7 @@ async def complete_session(
             "transition_lore_text": transition_lore_text,
             "unlocks": [],
             "session_gold": round(story_session.session_gold, 2),
+            "artifact_drops": artifact_drops,
         }
 
     # ── Normal session completion path ───────────────────────────────────────
@@ -1599,6 +1627,28 @@ async def complete_session(
     except Exception:
         logger.warning("Item drop generation failed", exc_info=True)
 
+    # 2.7: Artifact drop evaluation for normal session
+    artifact_drops = []
+    try:
+        artifact_drops = evaluate_artifact_drops(
+            session,
+            player_id=player.id,
+            character_id=char.id,
+            scene_id=story_session.scene_id or 0,
+            chapter_id=story_session.chapter_id or (scene.chapter_id if scene else 0),
+            is_boss=False,
+            rare_spawn_kill_count=0,  # TODO: pass from client payload
+        )
+    except Exception:
+        logger.warning("Artifact evaluation failed", exc_info=True)
+
+    # 2.7.3: Achievement evaluation at session boundary
+    achievements_earned = []
+    try:
+        achievements_earned = evaluate_achievements(player.id, session)
+    except Exception:
+        logger.warning("Achievement evaluation failed", exc_info=True)
+
     story_session.is_active = False
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
@@ -1643,6 +1693,7 @@ async def complete_session(
         "idle_bonuses": idle_bonuses,
         "character_xp": char_xp_result,
         "dropped_items": dropped_items,
+        "artifact_drops": artifact_drops,
         "achievement_results": [
             {
                 "achievement_id": r.get("achievement_id"),
@@ -1652,6 +1703,7 @@ async def complete_session(
             }
             for r in achievement_results
         ],
+        "achievements_earned": achievements_earned,
     }
 # ---------------------------------------------------------------------------
 # Boss Transition Lore Endpoints

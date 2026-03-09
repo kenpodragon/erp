@@ -54,6 +54,8 @@ class PlayerSceneRecord(SQLModel, table=True):
     best_time_seconds: Optional[int] = Field(default=None)
     total_enemies_killed: int = Field(default=0)
     total_runs: int = Field(default=0)
+    total_damage_dealt: int = Field(default=0)
+    best_session_damage: int = Field(default=0)
     first_completed_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

@@ -116,8 +116,8 @@ class PlayerInventory(SQLModel, table=True):
 
 
 class Artifact(SQLModel, table=True):
-    """Maps to the `artifacts` table. Meta-progression lore items."""
-    __tablename__ = "artifacts"
+    """Maps to the `artifacts_legacy` table (renamed in migration 046)."""
+    __tablename__ = "artifacts_legacy"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100, unique=True, nullable=False)
@@ -130,10 +130,10 @@ class Artifact(SQLModel, table=True):
 
 
 class PlayerCollection(SQLModel, table=True):
-    """Maps to the `player_collections` table. Track unlocked artifacts."""
-    __tablename__ = "player_collections"
+    """Maps to the `player_collections_legacy` table (renamed in migration 046)."""
+    __tablename__ = "player_collections_legacy"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     character_id: int = Field(foreign_key="player_characters.id", nullable=False)
-    artifact_id: int = Field(foreign_key="artifacts.id", nullable=False)
+    artifact_id: int = Field(foreign_key="artifacts_legacy.id", nullable=False)
     unlocked_at: Optional[datetime] = Field(default=None)
