@@ -138,17 +138,24 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] **Admin Interface:** Channel management, chat monitor, player mute controls.
 - [x] **Phases:** 2.6.0 Animation Toggle, 2.6.1 Anti-Cheat, 2.6.2 Discovery, 2.6.3 Onboarding & Polish, 2.6.4 Chat.
 
-### 2.7 Dual Economy & Inventory & Home Base
-- [x] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades.
-- [ ] **Elysium Essence:** Meta-currency earned from Story Mode, consumed by Training.
-- [ ] **Inventory System:** Slots for Weapons, Armor, and Trinkets (affects permanent stats).
-- [ ] **Artifacts & Collections:** Rare items earned from Chapter Mastery or boss drops.
-    - [ ] **Collection View:** Dedicated hub to inspect lore and bonuses of collected artifacts.
-    - [ ] **Admin Editor:** Interface to define new artifacts, rarity, and drop conditions.
+### 2.7 Home Base Hub (Meta-Progression & Collections)
+- [x] **Detailed Requirements:** [2.7_HOME_BASE_HUB.md](2.7_HOME_BASE_HUB.md) | **Design:** [2.7_HOME_BASE_HUB_DESIGN.md](2.7_HOME_BASE_HUB_DESIGN.md) | **Schema:** [2.7_HOME_BASE_HUB_SCHEMA.md](2.7_HOME_BASE_HUB_SCHEMA.md)
+- [x] **Dual Economy:** Permanent resources (Elysium Essence) for training vs. temporary session gold for clicker upgrades. *(Implemented in 2.3/2.4)*
+- [x] **Inventory System:** 16 gear slots with Dream Item generation and equip/swap. *(Implemented in 2.4.2)*
+- [ ] **Akashic Log (Personal Journal):** Keyword search, narrative completion %, hidden lore (Intelligence-gated), "New" badges.
+- [ ] **Artifact System:** Curated (~50 lore artifacts with 5 rarity tiers, boss/chapter/rare-spawn sourced) + Generated (simplified procedural artifacts). Permanent passive stat bonuses. No duplicates; rarity upgrades replace.
+    - [ ] **Relic Gallery:** Collection grid with filtering, sorting, inspection modal, silhouettes for undiscovered.
+    - [ ] **Admin Artifact Editor:** CRUD, bulk assignment, drop rate tuning.
+- [ ] **Hall of Echoes (Leaderboards):** Speedrun and Scholar categories. Static rank cards with tiered visual badges (Cosmic/Gold/Silver/Bronze).
+- [ ] **Achievement Matrix:** 90+ achievements across Combat, Narrative, Economics, Idle Training, and Discovery categories. Rewards: Shards, Titles, Essence, Badges.
+    - [ ] **Idle Training Milestones:** *(Cross-ref 2.3)* Rewards at Level 25/50/75/99 per idle skill (Essence grants, badges, titles).
+    - [ ] **Admin Achievement Editor:** CRUD, player override, completion analytics.
+- [ ] **Title System:** Earnable prefix/suffix titles displayed on leaderboards and in chat.
+- [ ] **Phases:** 2.7.0 Foundation (Artifacts + Achievements schema), 2.7.1 Akashic Log, 2.7.2 Relic Gallery, 2.7.3 Leaderboards + Achievements, 2.7.4 Admin Tools + Polish.
 
 
 ## 3. Economy & Monetization (Stripe)
-- [ ] **Currency System:** 
+- [ ] **Currency System:**
     - [ ] In-game Gold (Earned).
     - [ ] Premium "Elysium Shards" (Purchased).
         - [ ] Some way to poll stripe to match package reciepts, and then ensure that folks have that money in their account (in case of account reset)
@@ -159,9 +166,12 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Refunds:** Full administrative workflow for triggering Stripe refunds from the Admin UI.
 - [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
     - [ ] Subscriptions (monthly or annuyal re-curring subscriptions with discount) Plus ability to cancel subscription.
-    - [ ] Donations (to support the dev process - fixed amounts and allow for bigger currency bumps). 
+    - [ ] Donations (to support the dev process - fixed amounts and allow for bigger currency bumps).
     - [ ] Purchase packages of things from the store (right now it's not doing anything in game, but need to track that they purchased something, and then redeemed it). Ability to get refunds for things not used.
     - [ ] Transaction log - see all your payments, and whatnot as an end user.
+- [ ] **Shard Economy Expansion:** Extend `shard_transactions` (created in 2.7) with Stripe `purchase`/`refund` source types. Shard spending UI, transaction history viewer, admin shard management. *(Foundation: `shard_balance` + `shard_transactions` table created in 2.7.0)*
+- [ ] **Artifact & Item Trading:** Player-to-player trading of artifacts and equipment via marketplace. NPC vendor sell-for-Essence mechanic. *(Deferred from 2.7)*
+- [ ] **Auction House:** Listing, bidding, and buyout system for player items.
 
 ## 4. Social & MMORPG Features
 - [ ] **Communication Integration:**
