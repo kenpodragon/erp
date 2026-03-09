@@ -1,17 +1,33 @@
 # ERP Project Kickstart TODO
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
-## REC_2: Game Loop 2.0 (The Towers of Elysium)
-**Note:** Initial implementation focuses on "The Rule of 4": 4 classes, 4 enemies, 4 skills, 4 scenes per chapter. All data must be server-authoritative and DB-driven.   
-
-
-
-- [ ] **3.0 — Marketplace & Premium (Monetization & Trading)** *(Ref: `docs/recs/0_REQUIREMENTS.md §3`)*
-    - [ ] **Stripe Integration:** Premium "Elysium Shards" purchasing and subscription management.
-    - [ ] **The Overworld Shop:** Central hub for trading Shards/Essence for equipment and meta-upgrades.
-    - [ ] **Player-to-Player Trading:** Implement the marketplace for selling items for premium currency.
-    - [ ] **Artifact & Item Trading:** NPC vendor sell-for-Essence + P2P artifact marketplace. *(Deferred from 2.7)*
-    - [ ] **Administrative Finance Dashboard:** Transaction logs, refund management, and subscription controls.
+- [ ] **3.0 — Economy & Monetization (Marketplace & Premium)** *(Ref: `docs/recs/3.0_ECONOMY.md`)*
+    - [ ] **3.1 — Stripe Integration & Shard Purchasing**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] Implement Stripe Checkout Sessions and webhook handler (payment confirmation, failures, disputes).
+        - [ ] Implement shard crediting flow, idempotency, refund/chargeback handling, and player transaction history.
+    - [ ] **3.2 — Subscription: Elysium Ascendant**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] **Research task:** Simulate gameplay loops to determine subscription benefits without pay-to-win.
+        - [ ] Implement Stripe Subscription lifecycle (create, renew, cancel) and webhook handlers.
+        - [ ] Implement player-facing subscription management page and status tracking.
+    - [ ] **3.3 — The Overworld Shop**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] Implement shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
+        - [ ] Implement booster system (time-limited buffs, admin-configurable durations/magnitudes, active display).
+    - [ ] **3.4 — Donations**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] Implement donation tiers, custom amounts, shard bonus mapping, and Patron badge/title.
+    - [ ] **3.5 — Player Marketplace**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] Implement listing system (24hr fixed-price, FIFO, price transparency, price adjustment).
+        - [ ] Implement buy flow (shard debit/credit, item transfer, trade history).
+        - [ ] Implement NPC Vendor salvage (Essence per rarity, double-confirm for curated artifacts).
+    - [ ] **3.6 — Admin Finance Dashboard & Tools**
+        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] Implement Stripe transaction viewer, shard management, and refund workflow.
+        - [ ] Implement subscription management, dispute queue, and revenue analytics.
+        - [ ] Implement shop catalog management and marketplace moderation tools.
 
 
 - [ ] **Bugs**
