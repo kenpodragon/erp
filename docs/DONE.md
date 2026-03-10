@@ -3,7 +3,15 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-09*
+*Updated: 2026-03-10*
+
+## REC_3: Economy & Monetization
+
+ - [x] **3.1 — Stripe Integration & Shard Purchasing (COMPLETE)** *(Ref: `docs/recs/3.1_STRIPE_SHARD_PURCHASING.md` | Design: `3.1_STRIPE_SHARD_PURCHASING_DESIGN.md` | Schema: `3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md`)*
+   - [x] 3.1.0 — Backend Foundation: Migration 049 (shard_packages/payment_orders/stripe_webhook_events tables, 3 player columns, 6 game_configs seeds, 6 package tiers), SQLModel models (`backend/models/payments.py`), payment service (`backend/services/payment_service.py`: credit_shards/debit_shards/get_or_create_stripe_customer/calculate_refund_shards/check_balance_integrity), payment routes (`backend/routes/payments.py`: POST /checkout, GET /packages, GET /status/{session_id}, GET /transactions), webhook handler (`backend/routes/webhooks.py`: 5 Stripe event handlers with signature verification + dedup)
+   - [x] 3.1.1 — Refund & Dispute: Refund webhook (charge.refunded) with proportional shard debit formula, dispute webhooks (charge.dispute.created/closed) with account flagging, dispute-won re-credit + flag clear, negative balance allowed
+   - [x] 3.1.2 — Player UI: ShopTab.tsx (unified "Buy Shards" + placeholder "Spend Shards" tabs), PackageCard.tsx (best-value/2x/limited-qty badges), PurchaseConfirmModal.tsx (age disclaimer, legal footer), TransactionHistory.tsx (paginated, refund eligibility), RefundRequestModal.tsx (partial/full options), PaymentStatus.tsx (3s polling, 60s timeout, success animation), TopBar shard balance wired to API (replaced hardcoded "10"), MainGameLayout shop tab wired
+   - [x] 3.1.3 — Reconciliation & Polish: Admin endpoints (`backend/routes/admin_payments.py`: POST /reconcile, POST /poll-refunds, POST /check-balances, GET /webhook-events), backend tests (23 pytest), frontend tests (37 vitest across 5 files), data dictionary updated, TermsPage.tsx §6 expanded with virtual currency legal text, ToS date bumped
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*

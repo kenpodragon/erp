@@ -1,0 +1,152 @@
+.pcm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: pcm-fade-in 0.2s ease;
+}
+
+@keyframes pcm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pcm-modal {
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  animation: pcm-slide-up 0.2s ease;
+}
+
+@keyframes pcm-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pcm-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e0c060;
+  text-align: center;
+}
+
+.pcm-package-name {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ddd;
+  margin-bottom: 1.25rem;
+}
+
+.pcm-details {
+  background: #0d0d1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pcm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+}
+
+.pcm-label {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.pcm-value {
+  color: #ddd;
+  font-weight: 600;
+}
+
+.pcm-shards {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #6ea8fe;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.pcm-shard-icon {
+  color: #6ea8fe;
+}
+
+.pcm-bonus-note {
+  text-align: center;
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  background: #1a2a1a;
+  border: 1px solid #2a4a2a;
+  border-radius: 4px;
+  color: #6afe6a;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pcm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pcm-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.pcm-btn:active {
+  transform: scale(0.98);
+}
+
+.pcm-btn-confirm {
+  background: linear-gradient(135deg, #e0c060, #d4a840);
+  color: #111;
+}
+
+.pcm-btn-confirm:hover {
+  background: linear-gradient(135deg, #f0d070, #e0b850);
+}
+
+.pcm-btn-cancel {
+  background: #222;
+  color: #888;
+  border: 1px solid #333;
+}
+
+.pcm-btn-cancel:hover {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+.pcm-legal {
+  text-align: center;
+  border-top: 1px solid #1a1a2e;
+  padding-top: 0.75rem;
+}
+
+.pcm-legal p {
+  margin: 0.2rem 0;
+  font-size: 0.7rem;
+  color: #555;
+}

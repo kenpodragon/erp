@@ -1,0 +1,154 @@
+.shop-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #0d0d1a;
+  color: #ddd;
+}
+
+/* Header */
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #222;
+  background-color: #111118;
+}
+
+.shop-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e0c060;
+  margin: 0;
+}
+
+.shop-balance {
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.shop-balance .shard-icon {
+  color: #6ea8fe;
+  font-size: 1.1rem;
+  margin-right: 2px;
+}
+
+.shop-balance .shard-amount {
+  color: #6ea8fe;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+/* Sub-tab navigation */
+.shop-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #222;
+  background-color: #111118;
+  padding: 0 1.5rem;
+}
+
+.shop-tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #888;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.shop-tab-btn:hover:not(.disabled) {
+  color: #ccc;
+}
+
+.shop-tab-btn.active {
+  color: #e0c060;
+  border-bottom-color: #e0c060;
+}
+
+.shop-tab-btn.disabled {
+  color: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Content area */
+.shop-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.shop-divider {
+  height: 1px;
+  background: #222;
+  margin: 2rem 0;
+}
+
+/* Loading state */
+.shop-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  color: #888;
+}
+
+.shop-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #333;
+  border-top-color: #6ea8fe;
+  border-radius: 50%;
+  animation: shop-spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes shop-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.shop-error {
+  text-align: center;
+  padding: 2rem;
+  color: #ff6b6b;
+  background: #1a0a0a;
+  border: 1px solid #331111;
+  border-radius: 8px;
+}
+
+.shop-error button {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  background: #333;
+  color: #ddd;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shop-error button:hover {
+  background: #444;
+}
+
+/* Placeholder for future tabs */
+.shop-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  color: #555;
+}
+
+.shop-placeholder h2 {
+  margin-bottom: 0.5rem;
+  color: #666;
+}

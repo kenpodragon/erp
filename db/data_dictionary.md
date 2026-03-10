@@ -32,6 +32,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `046` | Artifact System (Home Base 2.7) | Renamed `artifacts` → `artifacts_legacy`, `player_collections` → `player_collections_legacy`. Created 7 tables: `curated_artifacts`, `curated_artifact_tiers`, `artifact_type_bases`, `artifact_prefixes`, `artifact_suffixes`, `player_artifacts`, `shard_transactions`. Added columns to `story_beats` (hidden_lore_text, lore_intelligence_threshold), `player_scene_records` (total_damage_dealt, best_session_damage), `player_story_sessions` (deaths), `player_meta_progression` (shard_balance, total_shards_earned, active_training_sessions). Seeded 55 artifact components + 50 curated artifacts + 250 tier rows. Migrated legacy data. |
 | `047` | Achievement & Title System (Home Base 2.7) | Created 4 tables: `titles`, `achievements`, `player_achievements`, `player_titles`. Added `equipped_title_id` FK to `player_characters`. Added `akashic_last_visited_at`, `gallery_last_visited_at`, `achievements_last_visited_at` to `player_settings`. Seeded 20 titles, 90 achievements with parent chains and title reward links. |
 | `048` | Leaderboard Cache & Configs (Home Base 2.7) | Created `leaderboard_cache` table. Seeded 13 `game_configs` keys: 7 artifact generation configs, 2 leaderboard configs, 4 achievement milestone rewards. |
+| `049` | Shard Purchases & Stripe Integration (3.1) | Created 3 tables: `shard_packages`, `payment_orders`, `stripe_webhook_events`. Added `stripe_customer_id`, `first_purchase_claimed`, `account_flag` columns to `players`. Seeded 6 `game_configs` keys (category: economy): stripe_first_purchase_multiplier, payment_poll_max_attempts, payment_poll_interval_ms, reconciliation_lookback_hours, checkout_expiration_minutes, refund_eligible_days. |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -67,7 +68,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. |
+| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. **3.1:** Added `stripe_customer_id VARCHAR(255) UNIQUE NULL` (Stripe Customer ID), `first_purchase_claimed BOOLEAN DEFAULT FALSE` (2x first-purchase bonus used permanently), `account_flag VARCHAR(30) NULL` ('dispute' blocks purchases). |
 | `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. **2.6:** Added `chat_muted BOOLEAN DEFAULT FALSE` and `chat_muted_until VARCHAR(50)` for admin chat mute support. |
 | `character_classes` | Definitions for player classes (Engineer, Conduit, Drifter, Vessel). **2.4:** Added `visual_config JSONB` for class visual identity (colors, avatar, particles, PixiJS tints). |
 | `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). |
@@ -272,6 +273,32 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `achievement_milestone_essence_50` | `achievements` | Essence reward for Level 50 idle training milestone (200). |
 | `achievement_milestone_essence_75` | `achievements` | Essence reward for Level 75 idle training milestone (500). |
 | `achievement_milestone_essence_99` | `achievements` | Essence reward for Level 99 idle training milestone (2000). |
+
+---
+
+### 16. Shard Purchases & Stripe Integration (3.1, Migration 049)
+
+| Table | Description |
+| :--- | :--- |
+| `shard_packages` | Purchasable shard bundles (6 tiers), admin-configurable. Columns: `id SERIAL PK`, `tier_key VARCHAR(30) UNIQUE` (starter, small, medium, large, premium, ultimate), `name VARCHAR(100)`, `description VARCHAR(255)` (optional marketing text), `price_cents INTEGER` (USD cents), `base_shards INTEGER` (before bonus), `bonus_pct INTEGER` (volume bonus %), `total_shards INTEGER` (pre-calculated with bonus), `sort_order INTEGER`, `is_active BOOLEAN` (soft-disable), `is_best_value BOOLEAN` (UI badge), `max_purchases_per_player INTEGER NULL` (per-player cap; NULL=unlimited), `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. |
+| `payment_orders` | Tracks Stripe checkout lifecycle. One row per purchase attempt. Columns: `id SERIAL PK`, `player_id INTEGER FK players`, `package_id INTEGER FK shard_packages`, `status VARCHAR(20)` (pending/completed/expired/refunded/disputed), `stripe_checkout_session_id VARCHAR(255) UNIQUE` (idempotency key), `stripe_payment_intent_id VARCHAR(255)`, `stripe_charge_id VARCHAR(255)`, `idempotency_key UUID UNIQUE`, `price_cents INTEGER` (snapshot at purchase time), `shards_credited INTEGER` (total credited incl bonus), `shards_refunded INTEGER` (cumulative refunded), `is_first_purchase BOOLEAN` (triggered 2x bonus), `created_at TIMESTAMPTZ`, `completed_at TIMESTAMPTZ`, `refunded_at TIMESTAMPTZ`, `expired_at TIMESTAMPTZ`. |
+| `stripe_webhook_events` | Raw Stripe event log for debugging and deduplication. Columns: `id SERIAL PK`, `stripe_event_id VARCHAR(255) UNIQUE` (Stripe event ID), `event_type VARCHAR(100)` (e.g. checkout.session.completed), `payload JSONB` (full event data), `processed BOOLEAN` (handled flag), `processing_error TEXT` (error if failed), `created_at TIMESTAMPTZ`, `processed_at TIMESTAMPTZ`. |
+
+**Column Additions (049, players):**
+- `players.stripe_customer_id VARCHAR(255) UNIQUE NULL` — Stripe Customer ID, lazily created on first checkout.
+- `players.first_purchase_claimed BOOLEAN DEFAULT FALSE` — Whether the 2x first-purchase shard bonus has been used (permanent, one-time).
+- `players.account_flag VARCHAR(30) NULL` — Account-level flag; `'dispute'` blocks further purchases.
+
+#### Economy `game_configs` Keys (seeded in 049)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `stripe_first_purchase_multiplier` | `economy` | Multiplier applied to first shard purchase (2). |
+| `payment_poll_max_attempts` | `economy` | Max client polling attempts after checkout redirect (20). |
+| `payment_poll_interval_ms` | `economy` | Milliseconds between client poll requests (1500). |
+| `reconciliation_lookback_hours` | `economy` | Hours to look back for stale pending orders during reconciliation (24). |
+| `checkout_expiration_minutes` | `economy` | Minutes before a pending checkout session expires (30). |
+| `refund_eligible_days` | `economy` | Days after purchase within which a refund may be considered (14). |
 
 ---
 

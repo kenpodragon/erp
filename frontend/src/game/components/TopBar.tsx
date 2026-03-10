@@ -66,6 +66,16 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
   const [showSettings, setShowSettings] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings);
+  const [shardBalance, setShardBalance] = useState(0);
+
+  // Fetch shard balance from packages endpoint
+  useEffect(() => {
+    if (!player?.id) return;
+    api.get('/api/payments/packages')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.current_balance !== undefined) setShardBalance(data.current_balance); })
+      .catch(() => {});
+  }, [player?.id]);
 
   // Sync server audio settings on login (server is source of truth)
   useEffect(() => {
@@ -187,7 +197,7 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
         </div>
         <div className="currency-item shards" title="SHARDS: Rare premium crystals used for special unlocks and cosmetics.">
           <span className="icon">💎</span>
-          <span className="value">10</span>
+          <span className="value">{shardBalance.toLocaleString()}</span>
         </div>
       </div>
 

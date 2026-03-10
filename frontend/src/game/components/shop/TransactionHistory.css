@@ -1,0 +1,207 @@
+.tx-history {
+  margin-top: 0.5rem;
+}
+
+.tx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tx-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ccc;
+}
+
+.tx-filter {
+  padding: 0.4rem 0.75rem;
+  background: #1a1a2e;
+  color: #aaa;
+  border: 1px solid #2a2a4e;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tx-filter:focus {
+  outline: none;
+  border-color: #6ea8fe66;
+}
+
+/* Loading / empty */
+.tx-loading,
+.tx-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Table */
+.tx-table-wrapper {
+  overflow-x: auto;
+}
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tx-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  color: #777;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #222;
+}
+
+.tx-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #1a1a2e;
+  color: #bbb;
+}
+
+.tx-table tbody tr:hover {
+  background: #1a1a2e;
+}
+
+.tx-col-amount,
+.tx-col-balance {
+  text-align: right;
+}
+
+.tx-col-actions {
+  text-align: right;
+  width: 120px;
+}
+
+.tx-date {
+  color: #888;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.tx-desc {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Type badge */
+.tx-type-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tx-type-purchase {
+  background: #1a2a1a;
+  color: #6afe6a;
+}
+
+.tx-type-refund {
+  background: #2a1a1a;
+  color: #ff6b6b;
+}
+
+.tx-type-bonus {
+  background: #2a2a1a;
+  color: #e0c060;
+}
+
+.tx-type-spend {
+  background: #1a1a2e;
+  color: #6ea8fe;
+}
+
+.tx-type-admin {
+  background: #2a1a2a;
+  color: #c090e0;
+}
+
+.tx-type-achievement {
+  background: #1a2a2a;
+  color: #60e0c0;
+}
+
+/* Amount colors */
+.tx-amount.positive {
+  color: #6afe6a;
+  font-weight: 600;
+  text-align: right;
+}
+
+.tx-amount.negative {
+  color: #ff6b6b;
+  font-weight: 600;
+  text-align: right;
+}
+
+.tx-balance {
+  color: #888;
+  text-align: right;
+}
+
+/* Refund button */
+.tx-refund-btn {
+  padding: 0.25rem 0.6rem;
+  background: none;
+  border: 1px solid #553333;
+  border-radius: 3px;
+  color: #ff8888;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tx-refund-btn:hover {
+  background: #2a1a1a;
+  border-color: #884444;
+}
+
+/* Pagination */
+.tx-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #1a1a2e;
+}
+
+.tx-page-btn {
+  padding: 0.4rem 1rem;
+  background: #1a1a2e;
+  color: #aaa;
+  border: 1px solid #2a2a4e;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tx-page-btn:hover:not(:disabled) {
+  background: #222240;
+}
+
+.tx-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tx-page-info {
+  color: #777;
+  font-size: 0.85rem;
+}

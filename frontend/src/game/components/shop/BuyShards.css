@@ -1,0 +1,112 @@
+.buy-shards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Dispute warning banner */
+.dispute-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #2a1a0a;
+  border: 1px solid #664400;
+  border-radius: 8px;
+  color: #ffcc44;
+}
+
+.dispute-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dispute-banner p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #cc9933;
+}
+
+/* First purchase bonus banner */
+.first-purchase-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #6ea8fe44;
+  border-radius: 8px;
+  animation: fp-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes fp-glow {
+  from { box-shadow: 0 0 8px #6ea8fe22; }
+  to { box-shadow: 0 0 16px #6ea8fe44; }
+}
+
+.fp-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, #e0c060, #f0d878);
+  color: #111;
+  font-weight: 800;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.fp-text {
+  font-size: 0.95rem;
+  color: #bbb;
+}
+
+.fp-text strong {
+  color: #e0c060;
+}
+
+/* Package grid */
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .packages-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .packages-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.no-packages {
+  text-align: center;
+  padding: 3rem 0;
+  color: #666;
+}
+
+/* Legal footer */
+.shop-legal {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #1a1a2e;
+  text-align: center;
+}
+
+.age-disclaimer {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0 0 0.25rem;
+}
+
+.legal-text {
+  font-size: 0.75rem;
+  color: #555;
+  margin: 0;
+}

@@ -158,14 +158,14 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Detailed Requirements:** [3.0_ECONOMY.md](3.0_ECONOMY.md)
 
 ### 3.1 Stripe Integration & Shard Purchasing
-- [ ] **Detailed Requirements:** [3.1_STRIPE_SHARD_PURCHASING.md](3.1_STRIPE_SHARD_PURCHASING.md) | **Design:** [3.1_STRIPE_SHARD_PURCHASING_DESIGN.md](3.1_STRIPE_SHARD_PURCHASING_DESIGN.md) | **Schema:** [3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md](3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md)
-- [ ] **Stripe Checkout Sessions:** One-time shard package purchases (6 tiers, $0.99–$99.99).
-- [ ] **Webhook Pipeline:** Payment confirmation, failures, refunds, disputes.
-- [ ] **Shard Crediting:** Idempotent credit flow with audit trail. First-purchase 2x bonus.
-- [ ] **Refund/Dispute Handling:** Debit shards on refund, flag accounts on disputes. Balance can go negative.
-- [ ] **Reconciliation:** Receipt polling (daily), refund/dispute polling (6hr), balance integrity checks.
-- [ ] **Player UI:** Shard Shop, purchase confirmation, transaction history, payment status polling.
-- [ ] **Phases:** 3.1.0 Backend Foundation, 3.1.1 Refund & Dispute, 3.1.2 Player UI, 3.1.3 Reconciliation & Polish.
+- [x] **Detailed Requirements:** [3.1_STRIPE_SHARD_PURCHASING.md](3.1_STRIPE_SHARD_PURCHASING.md) | **Design:** [3.1_STRIPE_SHARD_PURCHASING_DESIGN.md](3.1_STRIPE_SHARD_PURCHASING_DESIGN.md) | **Schema:** [3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md](3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md)
+- [x] **Stripe Checkout Sessions:** One-time shard package purchases (6 tiers, $0.99–$99.99).
+- [x] **Webhook Pipeline:** Payment confirmation, failures, refunds, disputes.
+- [x] **Shard Crediting:** Idempotent credit flow with audit trail. First-purchase 2x bonus.
+- [x] **Refund/Dispute Handling:** Debit shards on refund, flag accounts on disputes. Balance can go negative.
+- [x] **Reconciliation:** Receipt polling (daily), refund/dispute polling (6hr), balance integrity checks.
+- [x] **Player UI:** Shard Shop, purchase confirmation, transaction history, payment status polling.
+- [x] **Phases:** 3.1.0 Backend Foundation, 3.1.1 Refund & Dispute, 3.1.2 Player UI, 3.1.3 Reconciliation & Polish.
 
 ### 3.2 Subscription: Elysium Ascendant
 - [ ] Stripe Subscription lifecycle (create, renew, cancel). Monthly $1.99, Annual $19.90.

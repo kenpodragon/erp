@@ -41,6 +41,9 @@ from routes.chat import router as chat_router
 from routes.admin_chat import router as admin_chat_router
 from routes.home_base import router as home_base_router
 from routes.admin_home_base import router as admin_home_base_router
+from routes.payments import router as payments_router
+from routes.webhooks import router as webhooks_router
+from routes.admin_payments import router as admin_payments_router
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +186,9 @@ app.include_router(chat_router)
 app.include_router(admin_chat_router)
 app.include_router(home_base_router)
 app.include_router(admin_home_base_router)
+app.include_router(payments_router)
+app.include_router(webhooks_router)
+app.include_router(admin_payments_router)
 
 
 @app.get("/debug-routes")

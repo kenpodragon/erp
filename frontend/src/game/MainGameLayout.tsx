@@ -8,6 +8,7 @@ import StoryMode from './components/StoryMode';
 import SkillsTab from './components/SkillsTab';
 import ChatTab from './components/ChatTab';
 import HomeBase from './components/HomeBase';
+import ShopTab from './components/shop/ShopTab';
 import PostBattleSummary from './components/story/PostBattleSummary';
 import WelcomeModal from './components/story/WelcomeModal';
 import TutorialOverlay from './components/story/TutorialOverlay';
@@ -99,7 +100,10 @@ const GameContent: React.FC<MainGameLayoutProps> = (props) => {
                 <HomeBase player={player} character={character} />
               )}
 
-              {activeTab !== 'map' && activeTab !== 'skills' && activeTab !== 'chat' && activeTab !== 'home' && (
+              {activeTab === 'shop' && (
+                <ShopTab player={player} onPlayerUpdate={onPlayerUpdate} />
+              )}
+              {activeTab !== 'map' && activeTab !== 'skills' && activeTab !== 'chat' && activeTab !== 'home' && activeTab !== 'shop' && (
                 <div className="placeholder-view">
                   <h2>{activeTab.toUpperCase()} TERMINAL</h2>
                   <p style={{ opacity: 0.5 }}>Module under construction...</p>

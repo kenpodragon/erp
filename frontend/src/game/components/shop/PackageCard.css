@@ -1,0 +1,148 @@
+.package-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.package-card:hover:not(.disabled) {
+  transform: translateY(-2px);
+  border-color: #6ea8fe66;
+  box-shadow: 0 4px 20px rgba(110, 168, 254, 0.15);
+}
+
+.package-card:active:not(.disabled) {
+  transform: translateY(0);
+}
+
+.package-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Best value highlight */
+.package-card.best-value {
+  border-color: #e0c06066;
+  background: linear-gradient(180deg, #1a1a28 0%, #1a1820 100%);
+}
+
+.package-card.best-value:hover:not(.disabled) {
+  border-color: #e0c060;
+  box-shadow: 0 4px 24px rgba(224, 192, 96, 0.2);
+}
+
+/* Best value badge */
+.best-value-badge {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+  padding: 0.2rem 0.6rem;
+  background: linear-gradient(135deg, #e0c060, #f0d878);
+  color: #111;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* First purchase badge */
+.first-purchase-badge {
+  position: absolute;
+  top: -10px;
+  left: -6px;
+  padding: 0.2rem 0.6rem;
+  background: linear-gradient(135deg, #6ea8fe, #4a90fe);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  animation: fp-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+/* Package name */
+.package-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+/* Shard amount */
+.package-shards {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.shard-diamond {
+  color: #6ea8fe;
+  font-size: 1.3rem;
+}
+
+.shard-count {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Bonus badge */
+.bonus-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: #1a2a1a;
+  border: 1px solid #2a4a2a;
+  border-radius: 4px;
+  color: #6afe6a;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Original amount when first purchase is active */
+.original-amount {
+  font-size: 0.75rem;
+  color: #666;
+  text-decoration: line-through;
+}
+
+/* Price */
+.package-price {
+  margin-top: 0.25rem;
+  padding: 0.4rem 1.2rem;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4e;
+  border-radius: 6px;
+  color: #e0c060;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+
+.package-card:hover:not(.disabled) .package-price {
+  background: #222240;
+}
+
+/* Purchases remaining */
+.purchases-remaining {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.purchases-remaining.sold-out {
+  color: #ff6b6b;
+  font-weight: 600;
+}

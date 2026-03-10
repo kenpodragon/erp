@@ -1,0 +1,207 @@
+.rrm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.rrm-modal {
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 440px;
+  width: 90%;
+}
+
+.rrm-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff8888;
+}
+
+.rrm-transaction-info {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+/* Refund type radio group */
+.rrm-type-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rrm-type-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #0d0d1a;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.rrm-type-option.selected {
+  border-color: #6ea8fe66;
+  background: #111128;
+}
+
+.rrm-type-option input[type="radio"] {
+  accent-color: #6ea8fe;
+}
+
+.rrm-radio-label {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Full refund warning */
+.rrm-warning {
+  padding: 0.75rem;
+  background: #2a1a0a;
+  border: 1px solid #664400;
+  border-radius: 6px;
+  color: #cc9933;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* Partial amount input */
+.rrm-partial-input {
+  margin-bottom: 1rem;
+}
+
+.rrm-partial-input label {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.3rem;
+}
+
+.rrm-partial-input input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: #0d0d1a;
+  color: #ddd;
+  border: 1px solid #2a2a40;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.rrm-partial-input input:focus {
+  outline: none;
+  border-color: #6ea8fe66;
+}
+
+/* Reason */
+.rrm-reason {
+  margin-bottom: 1rem;
+}
+
+.rrm-reason label {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.3rem;
+}
+
+.rrm-reason textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: #0d0d1a;
+  color: #ddd;
+  border: 1px solid #2a2a40;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.rrm-reason textarea:focus {
+  outline: none;
+  border-color: #6ea8fe66;
+}
+
+/* Error */
+.rrm-error {
+  padding: 0.5rem 0.75rem;
+  background: #2a0a0a;
+  border: 1px solid #551111;
+  border-radius: 4px;
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Actions */
+.rrm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rrm-btn {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.rrm-btn-submit {
+  background: #553333;
+  color: #ff8888;
+}
+
+.rrm-btn-submit:hover:not(:disabled) {
+  background: #664444;
+}
+
+.rrm-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rrm-btn-cancel {
+  background: #222;
+  color: #888;
+}
+
+.rrm-btn-cancel:hover {
+  background: #2a2a2a;
+}
+
+/* Success state */
+.rrm-success {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.rrm-success h2 {
+  color: #6afe6a;
+  margin-bottom: 0.75rem;
+}
+
+.rrm-success p {
+  color: #888;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

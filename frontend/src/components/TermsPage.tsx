@@ -6,7 +6,7 @@ export const TermsPage: React.FC = () => {
     <div className="page">
       <div className="page-hero page-hero-compact">
         <h1 className="page-title">Terms of Service</h1>
-        <p className="page-subtitle">Last updated: February 2026</p>
+        <p className="page-subtitle">Last updated: March 10, 2026</p>
       </div>
 
       <div className="page-content legal-content">
@@ -79,9 +79,26 @@ export const TermsPage: React.FC = () => {
           <h2>6. Virtual Currency &amp; Purchases</h2>
           <p>
             The Service may offer virtual currency ("Elysium Shards") and other virtual goods for
-            purchase with real money. All purchases are final and non-refundable except as required
-            by applicable law or as described in our refund policy. Virtual currency and goods have
-            no real-world monetary value and cannot be exchanged for cash or cash equivalents.
+            purchase with real money. Elysium Shards are digital goods and <strong>all sales are
+            final</strong>. Refund requests are handled on a case-by-case basis at the sole
+            discretion of the operator and are not guaranteed.
+          </p>
+          <p>
+            Elysium Shards have no real-world monetary value and cannot be exchanged, transferred,
+            or redeemed for cash, cash equivalents, or any form of credit. Purchases of Elysium
+            Shards should be considered voluntary contributions to the ongoing development and
+            maintenance of the game.
+          </p>
+          <p>
+            The Service is provided on an as-is basis and may be interrupted, modified, or
+            discontinued at any time without prior notice. The Service may experience downtime,
+            data loss, or permanent shutdown. We make no warranty or guarantee regarding the
+            availability, continuity, or reliability of the Service.
+          </p>
+          <p>
+            In the event that the Service is permanently shut down or discontinued, all virtual
+            currency, virtual goods, and any associated account data will be forfeited. No
+            compensation, refund, or credit of any kind will be provided in such an event.
           </p>
         </section>
 

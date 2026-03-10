@@ -39,6 +39,7 @@ from models.home_base import (
     ArtifactSuffix, PlayerArtifact, Title, Achievement, PlayerAchievement,
     PlayerTitle, LeaderboardCache, ShardTransaction,
 )
+from models.payments import ShardPackage, PaymentOrder, StripeWebhookEvent
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -63,4 +64,5 @@ __all__ = [
     "CuratedArtifact", "CuratedArtifactTier", "ArtifactTypeBase", "ArtifactPrefix",
     "ArtifactSuffix", "PlayerArtifact", "Title", "Achievement", "PlayerAchievement",
     "PlayerTitle", "LeaderboardCache", "ShardTransaction",
+    "ShardPackage", "PaymentOrder", "StripeWebhookEvent",
 ]
