@@ -155,23 +155,39 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 
 ## 3. Economy & Monetization (Stripe)
-- [ ] **Currency System:**
-    - [ ] In-game Gold (Earned).
-    - [ ] Premium "Elysium Shards" (Purchased).
-        - [ ] Some way to poll stripe to match package reciepts, and then ensure that folks have that money in their account (in case of account reset)
-        - [ ] Some way to poll stripe on anything refunded or disputed, flag for potential ban (because of purchase problems), but also reduce any paid currency (can even make it go negative if they've already spent it).
-- [ ] **Subscriptions:** Monthly "Elysium Ascendant" plans for bonus XP/drops.
-- [ ] **Microtransactions:** Purchase of shards, cosmetics, and quality-of-life boosters.
-- [ ] **Donations:** One-time support options.
-- [ ] **Refunds:** Full administrative workflow for triggering Stripe refunds from the Admin UI.
-- [ ] **Payment and Subscriptions:** Sign up for payment, donations, subscription. Cancel subscription.
-    - [ ] Subscriptions (monthly or annuyal re-curring subscriptions with discount) Plus ability to cancel subscription.
-    - [ ] Donations (to support the dev process - fixed amounts and allow for bigger currency bumps).
-    - [ ] Purchase packages of things from the store (right now it's not doing anything in game, but need to track that they purchased something, and then redeemed it). Ability to get refunds for things not used.
-    - [ ] Transaction log - see all your payments, and whatnot as an end user.
-- [ ] **Shard Economy Expansion:** Extend `shard_transactions` (created in 2.7) with Stripe `purchase`/`refund` source types. Shard spending UI, transaction history viewer, admin shard management. *(Foundation: `shard_balance` + `shard_transactions` table created in 2.7.0)*
-- [ ] **Artifact & Item Trading:** Player-to-player trading of artifacts and equipment via marketplace. NPC vendor sell-for-Essence mechanic. *(Deferred from 2.7)*
-- [ ] **Auction House:** Listing, bidding, and buyout system for player items.
+- [ ] **Detailed Requirements:** [3.0_ECONOMY.md](3.0_ECONOMY.md)
+
+### 3.1 Stripe Integration & Shard Purchasing
+- [ ] **Detailed Requirements:** [3.1_STRIPE_SHARD_PURCHASING.md](3.1_STRIPE_SHARD_PURCHASING.md) | **Design:** [3.1_STRIPE_SHARD_PURCHASING_DESIGN.md](3.1_STRIPE_SHARD_PURCHASING_DESIGN.md) | **Schema:** [3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md](3.1_STRIPE_SHARD_PURCHASING_SCHEMA.md)
+- [ ] **Stripe Checkout Sessions:** One-time shard package purchases (6 tiers, $0.99–$99.99).
+- [ ] **Webhook Pipeline:** Payment confirmation, failures, refunds, disputes.
+- [ ] **Shard Crediting:** Idempotent credit flow with audit trail. First-purchase 2x bonus.
+- [ ] **Refund/Dispute Handling:** Debit shards on refund, flag accounts on disputes. Balance can go negative.
+- [ ] **Reconciliation:** Receipt polling (daily), refund/dispute polling (6hr), balance integrity checks.
+- [ ] **Player UI:** Shard Shop, purchase confirmation, transaction history, payment status polling.
+- [ ] **Phases:** 3.1.0 Backend Foundation, 3.1.1 Refund & Dispute, 3.1.2 Player UI, 3.1.3 Reconciliation & Polish.
+
+### 3.2 Subscription: Elysium Ascendant
+- [ ] Stripe Subscription lifecycle (create, renew, cancel). Monthly $1.99, Annual $19.90.
+- [ ] **Research task:** Simulate gameplay loops to determine subscription benefits without pay-to-win.
+- [ ] Player-facing subscription management page and status tracking.
+
+### 3.3 The Overworld Shop
+- [ ] Shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
+- [ ] Booster system (time-limited buffs, admin-configurable durations/magnitudes).
+
+### 3.4 Donations
+- [ ] Donation tiers, custom amounts, shard bonus mapping, and Patron badge/title.
+
+### 3.5 Player Marketplace
+- [ ] Listing system (24hr fixed-price, FIFO, price transparency, price adjustment).
+- [ ] Buy flow (shard debit/credit, item transfer, trade history).
+- [ ] NPC Vendor salvage (Essence per rarity, double-confirm for curated artifacts).
+
+### 3.6 Admin Finance Dashboard & Tools
+- [ ] Stripe transaction viewer, shard management, and refund workflow.
+- [ ] Subscription management, dispute queue, and revenue analytics.
+- [ ] Shop catalog management and marketplace moderation tools.
 
 ## 4. Social & MMORPG Features
 - [ ] **Communication Integration:**

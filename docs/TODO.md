@@ -2,27 +2,35 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
 - [ ] **3.0 — Economy & Monetization (Marketplace & Premium)** *(Ref: `docs/recs/3.0_ECONOMY.md`)*
-    - [ ] **3.1 — Stripe Integration & Shard Purchasing**
-        - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
-        - [ ] Implement Stripe Checkout Sessions and webhook handler (payment confirmation, failures, disputes).
-        - [ ] Implement shard crediting flow, idempotency, refund/chargeback handling, and player transaction history.
+    
+    - [ ] **3.1 — Stripe Integration & Shard Purchasing** *(Ref: `docs/recs/3.1_STRIPE_SHARD_PURCHASING.md`)*
+        - [x] Create requirements, design, and schema docs (probing questions, iterate until complete).
+        - [ ] **3.1.0** Backend Foundation: Stripe SDK, shard packages, Checkout Session endpoint, webhook handler, shard crediting, idempotency, Stripe Customer linking.
+        - [ ] **3.1.1** Refund & Dispute: Refund webhook, dispute webhook, debit flow, account flagging.
+        - [ ] **3.1.2** Player UI: Shard Shop page, confirmation modal, transaction history, payment status polling.
+        - [ ] **3.1.3** Reconciliation & Polish: Receipt polling, refund polling, balance integrity check, tests.
+    
     - [ ] **3.2 — Subscription: Elysium Ascendant**
         - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
         - [ ] **Research task:** Simulate gameplay loops to determine subscription benefits without pay-to-win.
         - [ ] Implement Stripe Subscription lifecycle (create, renew, cancel) and webhook handlers.
         - [ ] Implement player-facing subscription management page and status tracking.
+    
     - [ ] **3.3 — The Overworld Shop**
         - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
         - [ ] Implement shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
         - [ ] Implement booster system (time-limited buffs, admin-configurable durations/magnitudes, active display).
+    
     - [ ] **3.4 — Donations**
         - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
         - [ ] Implement donation tiers, custom amounts, shard bonus mapping, and Patron badge/title.
+    
     - [ ] **3.5 — Player Marketplace**
         - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
         - [ ] Implement listing system (24hr fixed-price, FIFO, price transparency, price adjustment).
         - [ ] Implement buy flow (shard debit/credit, item transfer, trade history).
         - [ ] Implement NPC Vendor salvage (Essence per rarity, double-confirm for curated artifacts).
+    
     - [ ] **3.6 — Admin Finance Dashboard & Tools**
         - [ ] Create requirements, design, and schema docs (probing questions, iterate until complete).
         - [ ] Implement Stripe transaction viewer, shard management, and refund workflow.
@@ -46,4 +54,4 @@
 
 ---
 
-*Updated: 2026-03-09*
+*Updated: 2026-03-10*
