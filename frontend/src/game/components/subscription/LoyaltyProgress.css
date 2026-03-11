@@ -1,0 +1,73 @@
+.loyalty-progress {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.loyalty-heading {
+  font-size: 1rem;
+  color: #ffd700;
+  margin: 0 0 12px;
+}
+
+.loyalty-track {
+  margin-bottom: 16px;
+}
+
+.loyalty-track:last-child {
+  margin-bottom: 0;
+}
+
+.loyalty-track-label {
+  font-size: 0.8rem;
+  color: #8a8070;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.loyalty-milestones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.loyalty-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+  padding: 8px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s;
+}
+
+.loyalty-earned {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.25);
+}
+
+.loyalty-node-icon {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.loyalty-earned .loyalty-node-icon {
+  color: #ffd700;
+}
+
+.loyalty-node-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e0d8c8;
+}
+
+.loyalty-node-desc {
+  font-size: 0.65rem;
+  color: #8a8070;
+  text-align: center;
+  margin-top: 2px;
+}

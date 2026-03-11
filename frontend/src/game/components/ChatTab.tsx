@@ -75,6 +75,7 @@ const ChatTab: React.FC = () => {
             ) : (
               <>
                 <span className="chat-sender">
+                  {msg.is_ascendant && <span className="chat-ascendant-badge" title="Elysium Ascendant">★</span>}
                   [{msg.player_name} Lv.{msg.player_level}]
                 </span>
                 <span className="chat-content">{msg.content}</span>

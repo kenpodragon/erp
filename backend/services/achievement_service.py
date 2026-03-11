@@ -118,6 +118,36 @@ def get_player_cumulative_stats(player_id: int, db: Session) -> dict:
     """), params={"pid": player_id}).first()
     stats["character_level"] = int(char_row[0]) if char_row else 1
 
+    # --- Subscription stats ---
+    player_row = db.exec(text("""
+        SELECT COALESCE(cumulative_subscription_months, 0) AS cumulative_sub_months
+        FROM players WHERE id = :pid
+    """), params={"pid": player_id}).first()
+    stats["cumulative_sub_months"] = int(player_row[0]) if player_row else 0
+
+    sub_row = db.exec(text("""
+        SELECT COALESCE(continuous_streak, 0) AS continuous_sub_streak
+        FROM player_subscriptions
+        WHERE player_id = :pid AND status IN ('active', 'canceling', 'past_due')
+        ORDER BY created_at DESC LIMIT 1
+    """), params={"pid": player_id}).first()
+    stats["continuous_sub_streak"] = int(sub_row[0]) if sub_row else 0
+
+    # --- Shard purchase / spend totals ---
+    shard_row = db.exec(text("""
+        SELECT COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS shards_purchased,
+               COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) AS shards_spent
+        FROM shard_transactions
+        WHERE player_id = :pid
+    """), params={"pid": player_id}).first()
+    if shard_row:
+        m = shard_row._mapping
+        stats["shards_purchased"] = int(m["shards_purchased"])
+        stats["shards_spent"] = int(m["shards_spent"])
+    else:
+        stats["shards_purchased"] = 0
+        stats["shards_spent"] = 0
+
     return stats
 
 
@@ -217,7 +247,11 @@ def evaluate_achievements(
                 _grant_shards(player_id, ach.reward_shards, ach.id, db)
 
             if ach.reward_essence > 0:
-                _grant_essence(player_id, ach.reward_essence, db)
+                # 3.2: Apply Ascendant essence multiplier to achievement rewards
+                from services.subscription_service import get_subscriber_multipliers
+                sub_mult = get_subscriber_multipliers(player_id, db)
+                boosted_essence = int(ach.reward_essence * sub_mult["essence"])
+                _grant_essence(player_id, boosted_essence, db)
 
             if ach.reward_title_id:
                 reward_title_name = _grant_title(

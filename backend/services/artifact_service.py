@@ -377,10 +377,12 @@ def evaluate_artifact_drops(
     chapter_id: int,
     is_boss: bool = False,
     rare_spawn_kill_count: int = 0,
+    drop_rate_multiplier: float = 1.0,
 ) -> list[dict]:
     """Full artifact evaluation: curated drops + generated artifact roll.
 
     Returns list of drop info dicts for PostBattleSummary display.
+    drop_rate_multiplier: 3.2 subscription boost (e.g., 1.10 for +10% drop rate).
     """
     all_drops = []
 
@@ -399,6 +401,7 @@ def evaluate_artifact_drops(
         drop_chance_key = "artifact_gen_drop_chance_scene"
 
     drop_chance = float(_get_config_json(session, drop_chance_key, 0.05))
+    drop_chance *= drop_rate_multiplier  # 3.2: Apply subscription drop boost
 
     # Check chapter mastery for higher drop chance
     mastery = _check_chapter_mastery(session, player_id, chapter_id)

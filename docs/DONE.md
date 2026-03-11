@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-10*
+*Updated: 2026-03-11*
 
 ## REC_3: Economy & Monetization
 
@@ -12,6 +12,12 @@ This document tracks the completed development phases for the Elysium Rising mmo
    - [x] 3.1.1 — Refund & Dispute: Refund webhook (charge.refunded) with proportional shard debit formula, dispute webhooks (charge.dispute.created/closed) with account flagging, dispute-won re-credit + flag clear, negative balance allowed
    - [x] 3.1.2 — Player UI: ShopTab.tsx (unified "Buy Shards" + placeholder "Spend Shards" tabs), PackageCard.tsx (best-value/2x/limited-qty badges), PurchaseConfirmModal.tsx (age disclaimer, legal footer), TransactionHistory.tsx (paginated, refund eligibility), RefundRequestModal.tsx (partial/full options), PaymentStatus.tsx (3s polling, 60s timeout, success animation), TopBar shard balance wired to API (replaced hardcoded "10"), MainGameLayout shop tab wired
    - [x] 3.1.3 — Reconciliation & Polish: Admin endpoints (`backend/routes/admin_payments.py`: POST /reconcile, POST /poll-refunds, POST /check-balances, GET /webhook-events), backend tests (23 pytest), frontend tests (37 vitest across 5 files), data dictionary updated, TermsPage.tsx §6 expanded with virtual currency legal text, ToS date bumped
+
+ - [x] **3.2 — Subscription: Elysium Ascendant (COMPLETE)** *(Ref: `docs/recs/3.2_SUBSCRIPTION_ELYSIUM_ASCENDANT.md` | Design: `_DESIGN.md` | Schema: `_SCHEMA.md`)*
+   - [x] 3.2.0 — Backend Foundation: Migration 050 (player_subscriptions/subscription_stipend_log tables, 2 player columns, 11 game_configs seeds, 10 titles, 11 achievements), SQLModel models (`backend/models/subscriptions.py`), subscription service (`backend/services/subscription_service.py`: activate/renew/cancel/reactivate/expire/refund/mark_past_due, get_subscriber_multipliers, grace period calculator with US business day logic), subscription routes (`backend/routes/subscriptions.py`: POST /create, GET /status, POST /cancel, POST /reactivate, POST /switch), webhook handlers (invoice.paid, invoice.payment_failed, customer.subscription.updated, customer.subscription.deleted, checkout.session.completed subscription mode)
+   - [x] 3.2.1 — Benefits & Boosts: Server-side boost multipliers (XP 1.15x, Essence 1.15x, Drop Rate 1.10x, Training Speed 1.10x) applied in story_mode.py, game_training.py, achievement_service.py, artifact_service.py. Lazy stipend crediting (150 base + streak bonus, period_key idempotency). Loyalty streak/cumulative tracking with title grants at 7 milestones. Streak-based boost escalation from game_configs JSON.
+   - [x] 3.2.2 — Player UI: SubscriptionPage.tsx (status, subscribe, cancel/reactivate/switch with modals, stipend history), SubscriptionCard.tsx (plan cards), LoyaltyProgress.tsx (dual-track timeline), BoostDisplay.tsx (multiplier panel with streak breakdown), PaymentWarningBanner.tsx (grace countdown), Chat ★ badge, Leaderboard ★ indicator, Sidebar "Ascendant" tab
+   - [x] 3.2.3 — Admin & Polish: Admin endpoints (`backend/routes/admin_subscriptions.py`: GET list, POST gift, POST extend, POST force-cancel, PATCH streak), achievement integration (4 new tracking sources: cumulative_sub_months, continuous_sub_streak, shards_purchased, shards_spent), backend tests (40 pytest), frontend tests (15 vitest across 4 files), E2E tests (6 Playwright in `testing/subscription.spec.ts`: non-subscriber view, subscribe checkout, active subscriber view, cancel modal, reactivate flow, chat badge), data dictionary updated
 
 ## REC_2: Game Loop 2.0 (The Towers of Elysium)
 - [x] **2.0 — Loop A: Overworld / Hub (Skeleton & Framework)** *(Ref: `docs/recs/2.0_GAME_LOOP.md`)*

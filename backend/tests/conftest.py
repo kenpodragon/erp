@@ -22,6 +22,7 @@ from models import (
     ArtifactSuffix, PlayerArtifact, Title, Achievement, PlayerAchievement,
     PlayerTitle, LeaderboardCache, ShardTransaction,
     ShardPackage, PaymentOrder, StripeWebhookEvent,
+    PlayerSubscription, SubscriptionStipendLog,
 )
 from datetime import datetime, timezone
 

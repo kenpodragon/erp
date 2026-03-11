@@ -13,6 +13,7 @@ interface LeaderboardEntry {
   equipped_title: string | null;
   metric_value: number;
   badge_tier: string | null;
+  is_ascendant?: boolean;
 }
 
 interface LeaderboardData {
@@ -185,7 +186,7 @@ const HallOfEchoes: React.FC<HallOfEchoesProps> = ({ currentPlayerId }) => {
                       <span className="hoe-rank">#{entry.rank}</span>
                       <span className={`hoe-badge ${entry.badge_tier || 'none'}`} />
                       <div className="hoe-player-info">
-                        <span className="hoe-alias">{entry.player_alias}</span>
+                        <span className="hoe-alias">{entry.is_ascendant && <span className="hoe-ascendant" title="Elysium Ascendant">★ </span>}{entry.player_alias}</span>
                         <span className="hoe-subtitle">
                           {entry.character_class || 'Unknown'}
                           {entry.equipped_title && (

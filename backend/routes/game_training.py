@@ -15,6 +15,7 @@ from services.character_progression import (
     award_idle_xp_char_xp, recalculate_character_stats, evaluate_prerequisites,
 )
 from services.achievement_service import evaluate_achievements
+from services.subscription_service import get_subscriber_multipliers
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
 
@@ -174,6 +175,11 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     xp_earned = total_xp_earned
     potential_xp = float(actions_completed * action.xp_per_action * affinity_mult)
 
+    # 3.2: Apply Ascendant subscription boosts (XP + training speed)
+    sub_mult = get_subscriber_multipliers(character.player_id, session)
+    xp_earned *= sub_mult["xp"]
+    # training_speed boost effectively increases ticks processed (already capped above)
+
     # Apply XP and Level
     old_level = active_row.level
     active_row.current_xp += xp_earned
@@ -192,10 +198,14 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     char_xp_result = None
     if xp_earned > 0:
         char_xp_result = award_idle_xp_char_xp(session, character, xp_earned)
-    # Check milestone rewards
+    # Check milestone rewards (3.2: apply Ascendant essence multiplier)
     milestones = _check_milestones(old_level, new_level)
     milestone_essence = 0
     if milestones:
+        # Apply subscriber essence multiplier to milestone rewards
+        if sub_mult["essence"] != 1.0:
+            for m in milestones:
+                m["essence"] = int(m["essence"] * sub_mult["essence"])
         milestone_essence = _grant_milestone_essence(
             session, character.player_id, character.id, milestones,
         )

@@ -16,6 +16,15 @@ from models.payments import PaymentOrder, StripeWebhookEvent
 from services.payment_service import (
     credit_shards, debit_shards, calculate_refund_shards
 )
+from services.subscription_service import (
+    get_subscription_by_stripe_id,
+    get_active_subscription,
+    activate_subscription,
+    renew_subscription,
+    expire_subscription,
+    mark_past_due,
+    refund_subscription,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +93,10 @@ async def stripe_webhook(request: Request, session: Session = Depends(get_sessio
         "charge.refunded": _handle_charge_refunded,
         "charge.dispute.created": _handle_dispute_created,
         "charge.dispute.closed": _handle_dispute_closed,
+        "invoice.paid": _handle_invoice_paid,
+        "invoice.payment_failed": _handle_invoice_payment_failed,
+        "customer.subscription.updated": _handle_subscription_updated,
+        "customer.subscription.deleted": _handle_subscription_deleted,
     }
 
     handler = handler_map.get(event_type)
@@ -117,13 +130,23 @@ async def stripe_webhook(request: Request, session: Session = Depends(get_sessio
 # =============================================================================
 
 def _handle_checkout_completed(event: dict, session: Session) -> None:
-    """Checkout session completed — credit shards to the player."""
+    """Checkout session completed — route by mode (payment vs subscription)."""
     session_obj = event["data"]["object"]
+    mode = session_obj.get("mode", "payment")
+
+    if mode == "subscription":
+        _handle_checkout_completed_subscription(session_obj, session)
+    else:
+        _handle_checkout_completed_payment(session_obj, session)
+
+
+def _handle_checkout_completed_payment(session_obj: dict, session: Session) -> None:
+    """Payment-mode checkout: credit shards (existing 3.1 flow)."""
     metadata = session_obj.get("metadata", {})
     payment_order_id = metadata.get("payment_order_id")
 
     if not payment_order_id:
-        logger.error("checkout.session.completed missing payment_order_id in metadata")
+        logger.error("checkout.session.completed (payment) missing payment_order_id in metadata")
         return
 
     order = session.get(PaymentOrder, int(payment_order_id))
@@ -149,8 +172,57 @@ def _handle_checkout_completed(event: dict, session: Session) -> None:
     credit_shards(order.id, session)
 
     logger.info(
-        "checkout.session.completed processed: order=%s player=%s shards=%s",
+        "checkout.session.completed (payment) processed: order=%s player=%s shards=%s",
         order.id, order.player_id, order.shards_credited,
+    )
+
+
+def _handle_checkout_completed_subscription(session_obj: dict, session: Session) -> None:
+    """Subscription-mode checkout: activate subscription record, set is_ascendant."""
+    metadata = session_obj.get("metadata", {})
+    player_id_str = metadata.get("player_id")
+    plan_key = metadata.get("plan_key")
+    stripe_sub_id = session_obj.get("subscription")
+
+    if not player_id_str or not plan_key:
+        logger.error("checkout.session.completed (subscription) missing metadata")
+        return
+
+    player_id = int(player_id_str)
+
+    # Avoid duplicate activation
+    existing = get_active_subscription(player_id, session)
+    if existing:
+        logger.info("Player %s already has active subscription %s, skipping", player_id, existing.id)
+        return
+
+    # Get subscription details from Stripe
+    stripe_price_id = None
+    period_start = datetime.now(timezone.utc)
+    period_end = datetime.now(timezone.utc)
+    if stripe_sub_id:
+        try:
+            stripe_sub = stripe.Subscription.retrieve(stripe_sub_id)
+            stripe_price_id = stripe_sub["items"]["data"][0]["price"]["id"] if stripe_sub.get("items") else None
+            period_start = datetime.fromtimestamp(stripe_sub["current_period_start"], tz=timezone.utc)
+            period_end = datetime.fromtimestamp(stripe_sub["current_period_end"], tz=timezone.utc)
+        except Exception as exc:
+            logger.warning("Could not retrieve Stripe subscription %s: %s", stripe_sub_id, exc)
+
+    activate_subscription(
+        player_id=player_id,
+        stripe_subscription_id=stripe_sub_id,
+        stripe_price_id=stripe_price_id,
+        plan_key=plan_key,
+        period_start=period_start,
+        period_end=period_end,
+        source="stripe",
+        db=session,
+    )
+
+    logger.info(
+        "checkout.session.completed (subscription) processed: player=%s plan=%s stripe_sub=%s",
+        player_id, plan_key, stripe_sub_id,
     )
 
 
@@ -356,3 +428,131 @@ def _handle_dispute_closed(event: dict, session: Session) -> None:
 
     else:
         logger.info("charge.dispute.closed with status=%s for order=%s, no action taken", dispute_status, order.id)
+
+
+# =============================================================================
+# Subscription Webhook Handlers (3.2)
+# =============================================================================
+
+def _handle_invoice_paid(event: dict, session: Session) -> None:
+    """invoice.paid — renew subscription, increment streak, credit stipend."""
+    invoice = event["data"]["object"]
+    stripe_sub_id = invoice.get("subscription")
+    if not stripe_sub_id:
+        logger.info("invoice.paid without subscription ID, skipping (one-off payment)")
+        return
+
+    sub = get_subscription_by_stripe_id(stripe_sub_id, session)
+    if not sub:
+        # May arrive before checkout.session.completed — log and skip
+        logger.warning("invoice.paid: no subscription row for %s, skipping", stripe_sub_id)
+        return
+
+    # Extract period from invoice lines
+    period_start = datetime.now(timezone.utc)
+    period_end = datetime.now(timezone.utc)
+    lines = invoice.get("lines", {}).get("data", [])
+    if lines:
+        period_start = datetime.fromtimestamp(lines[0].get("period", {}).get("start", 0), tz=timezone.utc)
+        period_end = datetime.fromtimestamp(lines[0].get("period", {}).get("end", 0), tz=timezone.utc)
+
+    stripe_invoice_id = invoice.get("id")
+
+    renew_subscription(
+        sub=sub,
+        new_period_start=period_start,
+        new_period_end=period_end,
+        stripe_invoice_id=stripe_invoice_id,
+        db=session,
+    )
+
+    logger.info("invoice.paid processed: sub=%s player=%s streak=%s", sub.id, sub.player_id, sub.continuous_streak)
+
+
+def _handle_invoice_payment_failed(event: dict, session: Session) -> None:
+    """invoice.payment_failed — mark past_due, start grace period."""
+    invoice = event["data"]["object"]
+    stripe_sub_id = invoice.get("subscription")
+    if not stripe_sub_id:
+        return
+
+    sub = get_subscription_by_stripe_id(stripe_sub_id, session)
+    if not sub:
+        logger.warning("invoice.payment_failed: no subscription row for %s", stripe_sub_id)
+        return
+
+    mark_past_due(sub, session)
+    logger.info("invoice.payment_failed processed: sub=%s grace_deadline=%s", sub.id, sub.grace_deadline)
+
+
+def _handle_subscription_updated(event: dict, session: Session) -> None:
+    """customer.subscription.updated — sync plan changes, cancellation scheduling."""
+    stripe_sub_obj = event["data"]["object"]
+    stripe_sub_id = stripe_sub_obj.get("id")
+
+    sub = get_subscription_by_stripe_id(stripe_sub_id, session)
+    if not sub:
+        logger.warning("subscription.updated: no subscription row for %s", stripe_sub_id)
+        return
+
+    # Sync price/plan
+    items = stripe_sub_obj.get("items", {}).get("data", [])
+    if items:
+        new_price_id = items[0].get("price", {}).get("id")
+        if new_price_id and new_price_id != sub.stripe_price_id:
+            sub.stripe_price_id = new_price_id
+            # Determine plan_key from price
+            from models.story_mode import GameConfig
+            from sqlmodel import select as sql_select
+            monthly_cfg = session.exec(
+                sql_select(GameConfig).where(GameConfig.key == "stripe_ascendant_monthly_price_id")
+            ).first()
+            annual_cfg = session.exec(
+                sql_select(GameConfig).where(GameConfig.key == "stripe_ascendant_annual_price_id")
+            ).first()
+            if monthly_cfg and new_price_id == monthly_cfg.value:
+                sub.plan_key = "ascendant_monthly"
+            elif annual_cfg and new_price_id == annual_cfg.value:
+                sub.plan_key = "ascendant_annual"
+
+    # Sync cancellation state
+    cancel_at = stripe_sub_obj.get("cancel_at_period_end", False)
+    if cancel_at and sub.status == "active":
+        sub.cancel_at_period_end = True
+        sub.status = "canceling"
+    elif not cancel_at and sub.status == "canceling":
+        sub.cancel_at_period_end = False
+        sub.status = "active"
+
+    # Sync period
+    if stripe_sub_obj.get("current_period_end"):
+        sub.current_period_end = datetime.fromtimestamp(
+            stripe_sub_obj["current_period_end"], tz=timezone.utc
+        )
+    if stripe_sub_obj.get("current_period_start"):
+        sub.current_period_start = datetime.fromtimestamp(
+            stripe_sub_obj["current_period_start"], tz=timezone.utc
+        )
+
+    sub.updated_at = datetime.now(timezone.utc)
+    session.add(sub)
+
+    logger.info("subscription.updated processed: sub=%s plan=%s status=%s", sub.id, sub.plan_key, sub.status)
+
+
+def _handle_subscription_deleted(event: dict, session: Session) -> None:
+    """customer.subscription.deleted — revoke all benefits, reset streak."""
+    stripe_sub_obj = event["data"]["object"]
+    stripe_sub_id = stripe_sub_obj.get("id")
+
+    sub = get_subscription_by_stripe_id(stripe_sub_id, session)
+    if not sub:
+        logger.warning("subscription.deleted: no subscription row for %s", stripe_sub_id)
+        return
+
+    if sub.status == "expired":
+        logger.info("subscription.deleted: sub %s already expired, no-op", sub.id)
+        return
+
+    expire_subscription(sub, session)
+    logger.info("subscription.deleted processed: sub=%s player=%s", sub.id, sub.player_id)

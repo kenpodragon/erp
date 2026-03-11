@@ -40,6 +40,7 @@ from models.home_base import (
     PlayerTitle, LeaderboardCache, ShardTransaction,
 )
 from models.payments import ShardPackage, PaymentOrder, StripeWebhookEvent
+from models.subscriptions import PlayerSubscription, SubscriptionStipendLog
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -65,4 +66,5 @@ __all__ = [
     "ArtifactSuffix", "PlayerArtifact", "Title", "Achievement", "PlayerAchievement",
     "PlayerTitle", "LeaderboardCache", "ShardTransaction",
     "ShardPackage", "PaymentOrder", "StripeWebhookEvent",
+    "PlayerSubscription", "SubscriptionStipendLog",
 ]

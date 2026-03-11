@@ -1,0 +1,184 @@
+.sub-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  color: #e0d8c8;
+}
+
+.sub-title {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #ffd700;
+  margin-bottom: 20px;
+}
+
+.sub-star {
+  font-size: 1.3em;
+}
+
+.sub-loading {
+  text-align: center;
+  padding: 60px 0;
+  opacity: 0.6;
+}
+
+.sub-error {
+  background: rgba(220, 50, 50, 0.15);
+  border: 1px solid rgba(220, 50, 50, 0.4);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  color: #ff8888;
+  font-size: 0.9rem;
+}
+
+.sub-promo-text {
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+}
+
+.sub-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.sub-benefits-list li {
+  padding: 4px 0;
+  color: #c8b88a;
+}
+
+.sub-benefits-list li::before {
+  content: '• ';
+  color: #ffd700;
+}
+
+.sub-cards-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.sub-status-card {
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.sub-status-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sub-status-row:last-child {
+  border-bottom: none;
+}
+
+.sub-label {
+  color: #8a8070;
+  font-size: 0.9rem;
+}
+
+.sub-status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sub-status-active { background: rgba(50, 200, 80, 0.2); color: #6eff6e; }
+.sub-status-canceling { background: rgba(255, 200, 0, 0.2); color: #ffd700; }
+.sub-status-past_due { background: rgba(220, 50, 50, 0.2); color: #ff8888; }
+
+.sub-actions {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.sub-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.sub-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sub-btn-primary { background: #ffd700; color: #1a1410; }
+.sub-btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0d8c8; }
+.sub-btn-danger { background: rgba(220, 50, 50, 0.3); color: #ff8888; }
+
+.sub-stipend-history {
+  margin-top: 20px;
+}
+
+.sub-stipend-history h3 {
+  font-size: 1rem;
+  color: #c8b88a;
+  margin-bottom: 8px;
+}
+
+.sub-stipend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-stipend-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.sub-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.sub-modal {
+  background: #1e1a14;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.sub-modal h3 {
+  margin: 0 0 12px;
+  color: #ffd700;
+}
+
+.sub-modal p {
+  color: #c8b88a;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.sub-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}

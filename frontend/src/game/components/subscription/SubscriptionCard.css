@@ -1,0 +1,71 @@
+.sub-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  min-width: 160px;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.sub-card:hover {
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.sub-card-featured {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.sub-card-badge {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  background: #ffd700;
+  color: #1a1410;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.sub-card-label {
+  font-size: 1rem;
+  color: #e0d8c8;
+  margin: 0 0 8px;
+}
+
+.sub-card-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.sub-card-subprice {
+  font-size: 0.8rem;
+  color: #8a8070;
+  margin-top: 2px;
+}
+
+.sub-card-btn {
+  margin-top: 14px;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 6px;
+  background: #ffd700;
+  color: #1a1410;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.sub-card-btn:hover {
+  opacity: 0.85;
+}
+
+.sub-card-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -33,6 +33,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `047` | Achievement & Title System (Home Base 2.7) | Created 4 tables: `titles`, `achievements`, `player_achievements`, `player_titles`. Added `equipped_title_id` FK to `player_characters`. Added `akashic_last_visited_at`, `gallery_last_visited_at`, `achievements_last_visited_at` to `player_settings`. Seeded 20 titles, 90 achievements with parent chains and title reward links. |
 | `048` | Leaderboard Cache & Configs (Home Base 2.7) | Created `leaderboard_cache` table. Seeded 13 `game_configs` keys: 7 artifact generation configs, 2 leaderboard configs, 4 achievement milestone rewards. |
 | `049` | Shard Purchases & Stripe Integration (3.1) | Created 3 tables: `shard_packages`, `payment_orders`, `stripe_webhook_events`. Added `stripe_customer_id`, `first_purchase_claimed`, `account_flag` columns to `players`. Seeded 6 `game_configs` keys (category: economy): stripe_first_purchase_multiplier, payment_poll_max_attempts, payment_poll_interval_ms, reconciliation_lookback_hours, checkout_expiration_minutes, refund_eligible_days. |
+| `050` | Subscription System — Elysium Ascendant (3.2) | Created 2 tables: `player_subscriptions`, `subscription_stipend_log`. Added `is_ascendant BOOLEAN`, `cumulative_subscription_months INTEGER` columns to `players`. Seeded 10 subscription titles, 11 subscription/economy achievements, 11 `game_configs` keys (category: subscription). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -299,6 +300,43 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `reconciliation_lookback_hours` | `economy` | Hours to look back for stale pending orders during reconciliation (24). |
 | `checkout_expiration_minutes` | `economy` | Minutes before a pending checkout session expires (30). |
 | `refund_eligible_days` | `economy` | Days after purchase within which a refund may be considered (14). |
+
+---
+
+### 17. Subscription System — Elysium Ascendant (3.2, Migration 050)
+
+| Table | Description |
+| :--- | :--- |
+| `player_subscriptions` | Subscription lifecycle tracking. Columns: `id SERIAL PK`, `player_id INTEGER FK players NOT NULL`, `stripe_subscription_id VARCHAR(255)` (NULL for admin gifts), `stripe_price_id VARCHAR(255)`, `plan_key VARCHAR(30) NOT NULL` ('ascendant_monthly', 'ascendant_annual'), `status VARCHAR(20) DEFAULT 'active'` CHECK IN ('active', 'canceling', 'past_due', 'expired'), `source VARCHAR(20) DEFAULT 'stripe'` ('stripe', 'admin_gift'), `subscription_start_date TIMESTAMPTZ`, `current_period_start TIMESTAMPTZ`, `current_period_end TIMESTAMPTZ`, `cancel_at_period_end BOOLEAN DEFAULT FALSE`, `continuous_streak INTEGER DEFAULT 0` (resets on lapse, drives boost scaling), `grace_period_start TIMESTAMPTZ`, `grace_deadline TIMESTAMPTZ` (next US business day 23:59:59 UTC), `created_at TIMESTAMPTZ DEFAULT NOW()`, `updated_at TIMESTAMPTZ DEFAULT NOW()`. Indexes: `idx_ps_player_status`, `idx_ps_stripe_sub`, `idx_ps_status`, `idx_ps_period_end`. Auto-`updated_at` trigger. |
+| `subscription_stipend_log` | Monthly shard stipend crediting log (idempotent via period_key). Columns: `id SERIAL PK`, `subscription_id INTEGER FK player_subscriptions ON DELETE CASCADE NOT NULL`, `player_id INTEGER FK players NOT NULL`, `period_key VARCHAR(7) NOT NULL` (YYYY-MM format), `shards_credited INTEGER NOT NULL`, `stripe_invoice_id VARCHAR(255)`, `period_start TIMESTAMPTZ`, `created_at TIMESTAMPTZ DEFAULT NOW()`. UNIQUE on `(subscription_id, period_key)`. Indexes: `idx_ssl_sub`, `idx_ssl_player_period`. |
+
+**Column Additions (050, players):**
+- `players.is_ascendant BOOLEAN DEFAULT FALSE` — Set TRUE when active subscription exists; FALSE on expiry.
+- `players.cumulative_subscription_months INTEGER DEFAULT 0` — Lifetime total months subscribed (never resets; drives permanent title rewards).
+
+**Title Seeds (050):** 10 subscription-related titles seeded: the Ascendant (first sub), the Patron (1mo cumulative), the Devoted (6mo), the Eternal Ascendant (12mo), Architect of Elysium (24mo), Voidwalker Ascendant (36mo), Keeper of the Spire (48mo), Elysium Incarnate (60mo), the Steadfast (6mo streak), the Unwavering (12mo streak).
+
+**Achievement Seeds (050):** 11 subscription/economy achievements seeded across 'economics' category with parent chains: First Ascendant, Ascendant Patron, Devoted Subscriber, Eternal Ascendant, Shard Collector (I-III), Big Spender (I-III), Streak Master.
+
+#### Subscription `game_configs` Keys (seeded in 050)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `subscription_base_xp_boost` | `subscription` | Base XP multiplier bonus for subscribers (0.15 = +15%). |
+| `subscription_base_essence_boost` | `subscription` | Base Essence multiplier bonus for subscribers (0.15 = +15%). |
+| `subscription_base_drop_boost` | `subscription` | Base drop rate multiplier bonus for subscribers (0.10 = +10%). |
+| `subscription_base_training_boost` | `subscription` | Base idle training speed bonus for subscribers (0.10 = +10%). |
+| `subscription_base_stipend_shards` | `subscription` | Monthly shard stipend amount (150). |
+| `subscription_streak_bonuses` | `subscription` | JSON array of streak milestone bonuses. Each entry: `months`, `xp_bonus`, `essence_bonus`, `drop_bonus`, `training_bonus`, `stipend_bonus`. 5 tiers at 3/6/12/24/36 months. |
+| `subscription_cumulative_milestones` | `subscription` | JSON array of cumulative month → title reward mappings. 7 milestones at 1/6/12/24/36/48/60 months. |
+| `subscription_custom_holidays` | `subscription` | JSON array of ISO date strings for custom grace period holidays (default empty). |
+| `gift_counts_toward_loyalty` | `subscription` | Whether admin-gifted subscriptions increment loyalty counters ("false"). |
+| `stripe_ascendant_monthly_price_id` | `subscription` | Stripe Price ID for monthly plan. |
+| `stripe_ascendant_annual_price_id` | `subscription` | Stripe Price ID for annual plan. |
+
+**Grace Period Logic:** On payment failure, grace deadline is set to 23:59:59 UTC of the next US business day after the failure date. Business days exclude weekends, US federal holidays (10 fixed + floating), and custom holidays from `subscription_custom_holidays` config.
+
+**Boost Stacking:** Subscription boosts are applied server-side as multiplicative multipliers to XP, Essence, Drop Rate, and Training Speed. Base boosts + accumulated streak bonuses. Applied in `story_mode.py`, `game_training.py`, `achievement_service.py`, and `artifact_service.py`.
 
 ---
 

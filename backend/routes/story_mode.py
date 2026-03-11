@@ -42,6 +42,7 @@ from services.character_progression import (
 )
 from services.item_generator import check_run_achievements
 from services.artifact_service import evaluate_artifact_drops
+from services.subscription_service import get_subscriber_multipliers
 from services.achievement_service import evaluate_achievements
 from services.chat import manager as chat_manager
 
@@ -1385,7 +1386,8 @@ async def complete_session(
                 enemies_killed=0,
             )
 
-        # 2.7: Artifact drop evaluation for boss kills
+        # 2.7: Artifact drop evaluation for boss kills (with 3.2 subscription boost)
+        boss_sub_mult = get_subscriber_multipliers(player.id, session)
         artifact_drops = []
         try:
             artifact_drops = evaluate_artifact_drops(
@@ -1396,6 +1398,7 @@ async def complete_session(
                 chapter_id=story_session.chapter_id or (scene.chapter_id if scene else 0),
                 is_boss=True,
                 rare_spawn_kill_count=0,
+                drop_rate_multiplier=boss_sub_mult["drop_rate"],
             )
         except Exception:
             logger.warning("Boss artifact evaluation failed", exc_info=True)
@@ -1475,6 +1478,11 @@ async def complete_session(
     essence_mult = idle_bonuses.get('essence_multiplier', 1.0)
     essence_earned *= essence_mult
     converted_essence *= essence_mult
+
+    # --- 3.2: Apply Ascendant subscription boosts ---
+    sub_multipliers = get_subscriber_multipliers(player.id, session)
+    essence_earned *= sub_multipliers["essence"]
+    converted_essence *= sub_multipliers["essence"]
 
     # Update PlayerMetaProgression (Elysium Essence - Global pool)
     meta = session.get(PlayerMetaProgression, player.id)
@@ -1584,8 +1592,11 @@ async def complete_session(
                 csl.max_session_level = su.level
                 session.add(csl)
 
-    # 2.4: Award Character XP for scene completion
-    char_xp_result = award_scene_completion_char_xp(session, char)
+    # 2.4: Award Character XP for scene completion (with 3.2 subscription boost)
+    from services.character_progression import award_character_xp
+    base_scene_xp = int(_get_config_float(session, "char_xp_per_scene_base", 50.0))
+    boosted_scene_xp = int(base_scene_xp * sub_multipliers["xp"])
+    char_xp_result = award_character_xp(session, char, boosted_scene_xp)
 
     # 2.4: Upsert player_scene_records
     if story_session.scene_id:
@@ -1638,6 +1649,7 @@ async def complete_session(
             chapter_id=story_session.chapter_id or (scene.chapter_id if scene else 0),
             is_boss=False,
             rare_spawn_kill_count=0,  # TODO: pass from client payload
+            drop_rate_multiplier=sub_multipliers["drop_rate"],
         )
     except Exception:
         logger.warning("Artifact evaluation failed", exc_info=True)

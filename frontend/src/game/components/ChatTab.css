@@ -65,6 +65,13 @@
   font-weight: bold;
 }
 
+.chat-ascendant-badge {
+  color: #ffd700;
+  font-size: 0.9em;
+  margin-right: 2px;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
 .chat-content {
   color: #e0e0e0;
 }

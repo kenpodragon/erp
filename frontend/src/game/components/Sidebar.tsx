@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     { id: 'skills', label: 'Skills', icon: '⚔️' },
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'shop', label: 'Shop', icon: '💰' },
+    { id: 'ascendant', label: 'Ascendant', icon: '★' },
     { id: 'chat', label: 'Chat', icon: '💬' },
     { id: 'board', label: 'Board', icon: '📋' },
   ];

@@ -1,0 +1,46 @@
+.boost-display {
+  margin: 16px 0;
+}
+
+.boost-heading {
+  font-size: 1rem;
+  color: #c8b88a;
+  margin: 0 0 10px;
+}
+
+.boost-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boost-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.boost-label {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #e0d8c8;
+}
+
+.boost-value {
+  font-weight: 700;
+  color: #ffd700;
+  font-size: 0.95rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+.boost-streak-bonus {
+  font-size: 0.75rem;
+  color: #6eff6e;
+  background: rgba(50, 200, 80, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+}

@@ -168,9 +168,17 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Phases:** 3.1.0 Backend Foundation, 3.1.1 Refund & Dispute, 3.1.2 Player UI, 3.1.3 Reconciliation & Polish.
 
 ### 3.2 Subscription: Elysium Ascendant
-- [ ] Stripe Subscription lifecycle (create, renew, cancel). Monthly $1.99, Annual $19.90.
-- [ ] **Research task:** Simulate gameplay loops to determine subscription benefits without pay-to-win.
-- [ ] Player-facing subscription management page and status tracking.
+- [x] Stripe Subscription lifecycle (create, renew, cancel). Monthly $1.99, Annual $19.90.
+- [x] **Research task:** Simulate gameplay loops to determine subscription benefits without pay-to-win.
+- [x] Player-facing subscription management page and status tracking.
+- [x] **Backend:** Subscription service (activate, renew, cancel, expire, refund, grace period, lazy stipend, loyalty tracking).
+- [x] **Webhooks:** checkout.session.completed, invoice.paid/failed, subscription.updated/deleted, charge.refunded.
+- [x] **Boosts:** XP, Essence, Drop Rate, Training Speed multipliers with streak bonuses; monthly shard stipend.
+- [x] **Player UI:** SubscriptionPage, SubscriptionCard, BoostDisplay, LoyaltyProgress, PaymentWarningBanner, chat/leaderboard indicators.
+- [x] **Admin:** Gift, extend, force-cancel, streak override endpoints. Admin subscriptions dashboard.
+- [x] **Achievements:** 11 subscription achievements (cumulative chain, streak, shard collector, big spender) + 10 loyalty titles.
+- [x] **Tests:** 40 backend (pytest), 15 frontend (vitest). E2E deferred (requires Docker stack).
+- [x] **Phases:** 3.2.0 Backend Foundation, 3.2.1 Benefits & Boosts, 3.2.2 Player UI, 3.2.3 Admin & Polish.
 
 ### 3.3 The Overworld Shop
 - [ ] Shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
