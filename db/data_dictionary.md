@@ -34,6 +34,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `048` | Leaderboard Cache & Configs (Home Base 2.7) | Created `leaderboard_cache` table. Seeded 13 `game_configs` keys: 7 artifact generation configs, 2 leaderboard configs, 4 achievement milestone rewards. |
 | `049` | Shard Purchases & Stripe Integration (3.1) | Created 3 tables: `shard_packages`, `payment_orders`, `stripe_webhook_events`. Added `stripe_customer_id`, `first_purchase_claimed`, `account_flag` columns to `players`. Seeded 6 `game_configs` keys (category: economy): stripe_first_purchase_multiplier, payment_poll_max_attempts, payment_poll_interval_ms, reconciliation_lookback_hours, checkout_expiration_minutes, refund_eligible_days. |
 | `050` | Subscription System — Elysium Ascendant (3.2) | Created 2 tables: `player_subscriptions`, `subscription_stipend_log`. Added `is_ascendant BOOLEAN`, `cumulative_subscription_months INTEGER` columns to `players`. Seeded 10 subscription titles, 11 subscription/economy achievements, 11 `game_configs` keys (category: subscription). |
+| `051` | Elysium Emporium (3.3) | Created 5 tables: `shop_items`, `shop_bundles`, `shop_bundle_items`, `player_shop_items`, `player_active_boosters`. Added `equipped_flair_id`, `equipped_badge_id`, `equipped_avatar_id` columns to `players`. Added `equipped_skin_id` column to `player_characters`. Widened `shard_transactions` source_type CHECK constraint (+shop_purchase, +admin_refund). Seeded 32 shop items (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters), 3 bundles + 9 bundle item mappings, 9 `game_configs` keys (category: economy). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -69,10 +70,10 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. **3.1:** Added `stripe_customer_id VARCHAR(255) UNIQUE NULL` (Stripe Customer ID), `first_purchase_claimed BOOLEAN DEFAULT FALSE` (2x first-purchase bonus used permanently), `account_flag VARCHAR(30) NULL` ('dispute' blocks purchases). |
+| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. **3.1:** Added `stripe_customer_id VARCHAR(255) UNIQUE NULL` (Stripe Customer ID), `first_purchase_claimed BOOLEAN DEFAULT FALSE` (2x first-purchase bonus used permanently), `account_flag VARCHAR(30) NULL` ('dispute' blocks purchases). **3.3:** Added `equipped_flair_id INTEGER FK shop_items`, `equipped_badge_id INTEGER FK shop_items`, `equipped_avatar_id INTEGER FK shop_items` for account-wide cosmetic equip. |
 | `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. **2.6:** Added `chat_muted BOOLEAN DEFAULT FALSE` and `chat_muted_until VARCHAR(50)` for admin chat mute support. |
 | `character_classes` | Definitions for player classes (Engineer, Conduit, Drifter, Vessel). **2.4:** Added `visual_config JSONB` for class visual identity (colors, avatar, particles, PixiJS tints). |
-| `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). |
+| `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). **3.3:** Added `equipped_skin_id INTEGER FK shop_items` for character-level skin equip. |
 
 ### 4. Core Character State (Live)
 
@@ -214,7 +215,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `artifact_prefixes` | Prefix name components for generated artifacts (e.g., Fractured, Luminous). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 prefixes seeded. |
 | `artifact_suffixes` | Suffix name components for generated artifacts (e.g., of the Void, of the Tower). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 suffixes seeded. |
 | `player_artifacts` | Artifacts owned by player characters (both curated and generated). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `character_id INTEGER FK player_characters ON DELETE CASCADE`, `artifact_type VARCHAR(20) NOT NULL` CHECK IN ('curated', 'generated'), `curated_artifact_id INTEGER FK curated_artifacts` (NULL for generated), `artifact_code VARCHAR(100)` (NULL for curated; PREFIX_TYPE_SUFFIX for generated), `name VARCHAR(200) NOT NULL`, `rarity VARCHAR(10) NOT NULL` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `icon_sprite_key VARCHAR(100)`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `is_new BOOLEAN DEFAULT TRUE`, `acquired_from VARCHAR(100)`, `acquired_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(character_id, artifact_type, curated_artifact_id)` and `(character_id, artifact_code)`. |
-| `shard_transactions` | Premium currency audit trail for future 3.0 monetization. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `amount INTEGER NOT NULL`, `balance_after INTEGER NOT NULL`, `transaction_type VARCHAR(30) NOT NULL` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct'), `reference_type VARCHAR(50)`, `reference_id INTEGER`, `description TEXT`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. Index on `(player_id, created_at DESC)`. |
+| `shard_transactions` | Premium currency audit trail. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `amount INTEGER NOT NULL`, `balance_after INTEGER NOT NULL`, `transaction_type VARCHAR(30) NOT NULL` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct'), `source_type VARCHAR(30)` CHECK IN ('achievement', 'purchase', 'refund', 'admin_grant', 'admin_deduct', 'spend', 'subscription_stipend', 'subscription_refund', 'shop_purchase', 'admin_refund'), `reference_type VARCHAR(50)`, `reference_id INTEGER`, `description TEXT`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. Index on `(player_id, created_at DESC)`. **3.3:** Widened `source_type` CHECK constraint to include 'shop_purchase' and 'admin_refund'. |
 
 **Legacy Table Renames (046):**
 - `artifacts` → `artifacts_legacy` (original lore artifact definitions)
@@ -337,6 +338,98 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 **Grace Period Logic:** On payment failure, grace deadline is set to 23:59:59 UTC of the next US business day after the failure date. Business days exclude weekends, US federal holidays (10 fixed + floating), and custom holidays from `subscription_custom_holidays` config.
 
 **Boost Stacking:** Subscription boosts are applied server-side as multiplicative multipliers to XP, Essence, Drop Rate, and Training Speed. Base boosts + accumulated streak bonuses. Applied in `story_mode.py`, `game_training.py`, `achievement_service.py`, and `artifact_service.py`.
+
+---
+
+### 18. Elysium Emporium — In-Game Shop (3.3, Migration 051)
+
+| Table | Description |
+| :--- | :--- |
+| `shop_items` | Master catalog of purchasable shop items. Columns: `id SERIAL PK`, `item_key VARCHAR(60) UNIQUE NOT NULL`, `name VARCHAR(100) NOT NULL`, `description TEXT`, `category VARCHAR(20) NOT NULL` CHECK IN ('skin', 'flair', 'badge', 'avatar', 'booster'), `price_shards INTEGER NOT NULL` (>0), `icon_path VARCHAR(255)`, `class_restriction INTEGER FK character_classes` (NULL = universal), `item_metadata JSONB` (boosters: `{boost_type, magnitude, duration_seconds}`; skins: `{portrait, avatar_config, battle_bar}`; flair: `{border_color, border_style, icon}`; badges: `{frame_style, primary_color, secondary_color}`), `is_active BOOLEAN DEFAULT TRUE`, `is_featured BOOLEAN DEFAULT FALSE`, `featured_from TIMESTAMPTZ`, `featured_until TIMESTAMPTZ`, `available_from TIMESTAMPTZ`, `available_until TIMESTAMPTZ`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Indexes: `idx_shop_items_category_active` (category, sort_order WHERE is_active), `idx_shop_items_featured` (is_featured WHERE TRUE), `idx_shop_items_availability` (available windows WHERE available_until NOT NULL). Auto-`updated_at` trigger. 32 items seeded (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters). |
+| `shop_bundles` | Curated bundle packages with discount pricing. Columns: `id SERIAL PK`, `bundle_key VARCHAR(60) UNIQUE NOT NULL`, `name VARCHAR(100) NOT NULL`, `description TEXT`, `price_shards INTEGER NOT NULL` (>0), `original_price_shards INTEGER NOT NULL` (>0), `discount_pct INTEGER DEFAULT 20` (0-100), `icon_path VARCHAR(255)`, `is_active BOOLEAN DEFAULT TRUE`, `is_featured BOOLEAN DEFAULT FALSE`, `featured_from TIMESTAMPTZ`, `featured_until TIMESTAMPTZ`, `available_from TIMESTAMPTZ`, `available_until TIMESTAMPTZ`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Index: `idx_shop_bundles_active` (is_active, sort_order WHERE is_active). Auto-`updated_at` trigger. 3 bundles seeded. |
+| `shop_bundle_items` | Junction table linking bundles to their contained items. Columns: `id SERIAL PK`, `bundle_id INTEGER FK shop_bundles ON DELETE CASCADE NOT NULL`, `shop_item_id INTEGER FK shop_items ON DELETE CASCADE NOT NULL`, `sort_order INTEGER DEFAULT 0`. UNIQUE on `(bundle_id, shop_item_id)`. Index: `idx_bundle_items_bundle` (bundle_id, sort_order). 9 mappings seeded (3 items per bundle). |
+| `player_shop_items` | Player ownership of shop items (account-wide). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE NOT NULL`, `shop_item_id INTEGER FK shop_items` (NULL for bundle-only purchases), `source_bundle_id INTEGER FK shop_bundles` (non-NULL if acquired via bundle), `status VARCHAR(20) DEFAULT 'owned'` CHECK IN ('owned', 'refunded'), `purchased_at TIMESTAMPTZ DEFAULT NOW()`, `refunded_at TIMESTAMPTZ`. Indexes: `idx_psi_player_status` (player_id, status WHERE owned), `idx_psi_player_item` (player_id, shop_item_id WHERE owned), `idx_psi_player_bundle` (player_id, source_bundle_id WHERE NOT NULL). Partial UNIQUE: `idx_psi_unique_ownership` (player_id, shop_item_id WHERE owned AND shop_item_id NOT NULL). |
+| `player_active_boosters` | Tracks active and expired time-limited boosters. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE NOT NULL`, `boost_type VARCHAR(20) NOT NULL` CHECK IN ('xp', 'essence', 'drop_rate'), `magnitude NUMERIC(5,2) NOT NULL` (>1.0), `duration_seconds INTEGER NOT NULL` (>0), `elapsed_seconds INTEGER DEFAULT 0` (>=0), `shop_item_id INTEGER FK shop_items`, `status VARCHAR(20) DEFAULT 'active'` CHECK IN ('active', 'expired'), `activated_at TIMESTAMPTZ DEFAULT NOW()`, `expired_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ DEFAULT NOW()`. Indexes: `idx_pab_player_active` (player_id, boost_type WHERE active), `idx_pab_player_history` (player_id, activated_at DESC). Auto-`updated_at` trigger. |
+
+**Column Additions (051, players):**
+- `players.equipped_flair_id INTEGER DEFAULT NULL` — FK to `shop_items.id`. Account-wide equipped flair cosmetic.
+- `players.equipped_badge_id INTEGER DEFAULT NULL` — FK to `shop_items.id`. Account-wide equipped badge cosmetic.
+- `players.equipped_avatar_id INTEGER DEFAULT NULL` — FK to `shop_items.id`. Account-wide equipped avatar cosmetic.
+
+**Column Addition (051, player_characters):**
+- `player_characters.equipped_skin_id INTEGER DEFAULT NULL` — FK to `shop_items.id`. Character-level equipped skin cosmetic.
+
+**Booster Timer Model:** Elapsed time tracked server-side via `elapsed_seconds`. Frontend sends `POST /api/shop/booster-ping` every 30s during active sessions (Story Mode or Idle Training) with `elapsed_seconds: 30`. Server clamps per-ping to `shop_booster_max_elapsed_per_ping` (anti-cheat). Booster expires when `elapsed_seconds >= duration_seconds` (lazy expiry checked on any booster access). Overlapping booster of same type extends `duration_seconds` and takes `max(magnitude)`.
+
+**Boost Stacking:** `total_multiplier = subscription_multiplier × shop_booster_multiplier` via `get_effective_multipliers()` in `boost_service.py`. Applied in `story_mode.py`, `game_training.py`, `achievement_service.py`.
+
+#### Emporium `game_configs` Keys (seeded in 051)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `shop_booster_1hr_price` | `economy` | Default price in shards for 1-hour boosters (75). |
+| `shop_booster_8hr_price` | `economy` | Default price in shards for 8-hour boosters (400). |
+| `shop_booster_24hr_price` | `economy` | Default price in shards for 24-hour boosters (900). |
+| `shop_booster_1hr_magnitude` | `economy` | Multiplier value for 1-hour boosters (1.25). |
+| `shop_booster_8hr_magnitude` | `economy` | Multiplier value for 8-hour boosters (1.5). |
+| `shop_booster_24hr_magnitude` | `economy` | Multiplier value for 24-hour boosters (2.0). |
+| `shop_bundle_default_discount` | `economy` | Default bundle discount percentage (20). |
+| `shop_booster_ping_interval_s` | `economy` | Frontend booster ping interval in seconds (30). |
+| `shop_booster_max_elapsed_per_ping` | `economy` | Max elapsed seconds accepted per ping — anti-cheat clamp (60). |
+
+---
+
+### 19. Donations — One-Time Support (3.4, Migration 052)
+
+#### Table: `donations`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| player_id | INTEGER | FK → players(id), NOT NULL | Donating player |
+| payment_order_id | INTEGER | FK → payment_orders(id), UNIQUE, NOT NULL | Associated payment order |
+| amount_cents | INTEGER | NOT NULL, CHECK ≥ 100 | Donation amount in cents |
+| cumulative_total_cents | INTEGER | NOT NULL, DEFAULT 0 | Cumulative total snapshot after this donation |
+| patron_tier | VARCHAR(20) | DEFAULT NULL | Patron tier snapshot (bronze/silver/gold/diamond) |
+| diamond_stars | INTEGER | DEFAULT 0 | Diamond stars snapshot |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Donation timestamp |
+
+**Indexes:** `idx_donations_player` (player_id), `idx_donations_created` (created_at DESC)
+
+#### Columns added to `players` (Migration 052)
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| cumulative_donation_cents | INTEGER | NOT NULL, DEFAULT 0 | Lifetime cumulative donation total in cents |
+| patron_tier | VARCHAR(20) | DEFAULT NULL | Current patron tier (bronze/silver/gold/diamond) |
+| patron_diamond_stars | INTEGER | NOT NULL, DEFAULT 0 | Number of diamond stars earned |
+| donor_visibility | BOOLEAN | NOT NULL, DEFAULT FALSE | Whether player appears on donor leaderboard |
+
+#### `shard_transactions` source_type update (Migration 052)
+Added `'donation'` to the CHECK constraint.
+
+#### Seed data (Migration 052)
+- 4 patron badges in `shop_items` (patron_badge category)
+- 1 patron flair in `shop_items` (patron_flair category)
+- 1 patron avatar in `shop_items` (patron_avatar category)
+- 5 patron titles in `titles`
+- 1 "Patron of Elysium" achievement
+- 10 game_configs keys (donations category)
+
+#### Donation `game_configs` Keys (seeded in 052)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `donation_min_cents` | `donations` | Minimum donation amount in cents (100). |
+| `patron_tier_bronze_cents` | `donations` | Cumulative cents for Bronze Patron (500). |
+| `patron_tier_silver_cents` | `donations` | Cumulative cents for Silver Patron (2500). |
+| `patron_tier_gold_cents` | `donations` | Cumulative cents for Gold Patron (10000). |
+| `patron_tier_diamond_cents` | `donations` | Cumulative cents for Diamond Patron (50000). |
+| `patron_diamond_star_increment` | `donations` | Additional cents per Diamond star (50000). |
+| `patron_diamond_star_display_cap` | `donations` | Maximum stars shown in UI (5). |
+| `donor_leaderboard_size` | `donations` | Maximum entries on donor leaderboard (50). |
+| `recent_donors_count` | `donations` | Number of recent donors in rotating banner (5). |
+| `recent_donors_window_days` | `donations` | Days to look back for recent donors (7). |
 
 ---
 

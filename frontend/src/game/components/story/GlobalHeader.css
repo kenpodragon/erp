@@ -56,6 +56,20 @@
 .buff-name { color: #cc66cc; font-weight: bold; }
 .buff-timer { color: #ff88ff; }
 
+/* 3.3: Shop booster buff chips */
+.buff-chip.booster-buff {
+  background: #1a1800;
+  border-color: #4a4000;
+}
+
+.buff-chip.booster-buff .buff-name {
+  color: #fbbf24;
+}
+
+.buff-chip.booster-buff .buff-timer {
+  color: #e0c060;
+}
+
 /* Dark Ritual bar */
 .dark-ritual-bar-wrap {
   display: flex;

@@ -247,9 +247,9 @@ def evaluate_achievements(
                 _grant_shards(player_id, ach.reward_shards, ach.id, db)
 
             if ach.reward_essence > 0:
-                # 3.2: Apply Ascendant essence multiplier to achievement rewards
-                from services.subscription_service import get_subscriber_multipliers
-                sub_mult = get_subscriber_multipliers(player_id, db)
+                # 3.2/3.3: Apply Ascendant + shop booster essence multiplier
+                from services.boost_service import get_effective_multipliers
+                sub_mult = get_effective_multipliers(player_id, db)
                 boosted_essence = int(ach.reward_essence * sub_mult["essence"])
                 _grant_essence(player_id, boosted_essence, db)
 

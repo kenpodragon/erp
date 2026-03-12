@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../api';
-import type { ActiveBuff } from '../../GameContext';
+import type { ActiveBuff, ActiveBooster } from '../../GameContext';
+import { useGame } from '../../GameContext';
 import MusicManager from './MusicManager';
 import './GlobalHeader.css';
 
@@ -15,7 +16,24 @@ interface Props {
   bossEntityId?: number | null;
 }
 
+const BOOST_TYPE_LABELS: Record<string, string> = {
+  xp: 'XP',
+  essence: 'ESS',
+  drop_rate: 'DROP',
+};
+
+function formatBoosterCountdown(seconds: number): string {
+  if (seconds <= 0) return '0s';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h${m}m`;
+  if (m > 0) return `${m}m${s}s`;
+  return `${s}s`;
+}
+
 const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplier, activeBuffs, musicState, bossEntityId }) => {
+  const { state } = useGame();
   const [chapterLabel, setChapterLabel] = useState('...');
   const [sceneLabel, setSceneLabel] = useState('...');
 
@@ -57,6 +75,13 @@ const GlobalHeader: React.FC<Props> = ({ chapterId, sceneId, darkRitualMultiplie
             </div>
           );
         })}
+        {/* 3.3: Active shop boosters */}
+        {state.activeBoosters.map(b => (
+          <div key={b.boostType} className="buff-chip booster-buff" title={`${b.boostType.toUpperCase()} Booster ${b.magnitude}x`}>
+            <span className="buff-name">{'\u26A1'} {BOOST_TYPE_LABELS[b.boostType] || b.boostType} {b.magnitude}x</span>
+            <span className="buff-timer">{formatBoosterCountdown(b.remainingSeconds)}</span>
+          </div>
+        ))}
       </div>
 
       {/* Dark Ritual persistent bar */}

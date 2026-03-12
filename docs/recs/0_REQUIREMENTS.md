@@ -180,12 +180,26 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Tests:** 40 backend (pytest), 15 frontend (vitest). E2E deferred (requires Docker stack).
 - [x] **Phases:** 3.2.0 Backend Foundation, 3.2.1 Benefits & Boosts, 3.2.2 Player UI, 3.2.3 Admin & Polish.
 
-### 3.3 The Overworld Shop
-- [ ] Shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
-- [ ] Booster system (time-limited buffs, admin-configurable durations/magnitudes).
+### 3.3 The Overworld Shop (Elysium Emporium) — COMPLETE
+- [x] Shop UI with cosmetics catalog (skins, flair, badges, avatars) and shard spending flow.
+- [x] Booster system (time-limited buffs, admin-configurable durations/magnitudes).
+- [x] Bundle system (curated packages with discount pricing, partial ownership).
+- [x] Featured & limited-time rotation with countdown timers.
+- [x] Admin CRUD endpoints for catalog management and refunds.
+- [x] Backend tests (26 pytest), frontend tests (10 vitest).
+- [x] **Phases:** 3.3.0 Backend Foundation, 3.3.1 Booster Engine, 3.3.2 Player UI, 3.3.3 Tests & Polish.
 
-### 3.4 Donations
-- [ ] Donation tiers, custom amounts, shard bonus mapping, and Patron badge/title.
+### 3.4 Donations (One-Time Support) — COMPLETE
+- [x] **Detailed Requirements:** [3.4_DONATIONS.md](3.4_DONATIONS.md)
+- [x] Donation tiers ($1/$5/$10/$25/$50/$100), custom amounts (min $1, uncapped), Stripe Checkout flow.
+- [x] Patron tier system (Bronze $5 / Silver $25 / Gold $100 / Diamond $500) with Diamond stars.
+- [x] Patron cosmetics: 4 badges, 1 flair (Gold+), 1 avatar (Diamond), 5 titles. Shared equip slots with 3.3.
+- [x] "Patron of Elysium" achievement on first donation.
+- [x] Donor Hall of Honor leaderboard (top 50, opt-in only, no dollar amounts).
+- [x] Support Us tab (third tab in Shop), heartfelt message, recent donors banner.
+- [x] Admin endpoints: list donations, stats, player donation history.
+- [x] Backend tests (16 pytest), frontend tests (7 vitest).
+- [x] **Phases:** 3.4.0 Backend Foundation, 3.4.1 Player UI, 3.4.2 Tests & Polish.
 
 ### 3.5 Player Marketplace
 - [ ] Listing system (24hr fixed-price, FIFO, price transparency, price adjustment).

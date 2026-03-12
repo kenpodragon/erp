@@ -5,6 +5,8 @@ import PackageCard from './PackageCard';
 import PurchaseConfirmModal from './PurchaseConfirmModal';
 import PaymentStatus from './PaymentStatus';
 import TransactionHistory from './TransactionHistory';
+import EmporiumTab from './EmporiumTab';
+import SupportUsTab from './SupportUsTab';
 import './ShopTab.css';
 
 export interface ShardPackage {
@@ -32,7 +34,7 @@ interface ShopTabProps {
   onPlayerUpdate: () => void;
 }
 
-type ShopSubTab = 'buy' | 'spend';
+type ShopSubTab = 'buy' | 'emporium' | 'support';
 
 const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
   const [subTab, setSubTab] = useState<ShopSubTab>('buy');
@@ -151,11 +153,16 @@ const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
           Buy Shards
         </button>
         <button
-          className={`shop-tab-btn disabled`}
-          disabled
-          title="Coming soon in a future update"
+          className={`shop-tab-btn ${subTab === 'emporium' ? 'active' : ''}`}
+          onClick={() => setSubTab('emporium')}
         >
-          Spend Shards (Soon)
+          Elysium Emporium
+        </button>
+        <button
+          className={`shop-tab-btn ${subTab === 'support' ? 'active' : ''}`}
+          onClick={() => setSubTab('support')}
+        >
+          Support Us
         </button>
       </div>
 
@@ -189,12 +196,14 @@ const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
           </>
         )}
 
-        {!loading && !error && subTab === 'spend' && (
-          <div className="shop-placeholder">
-            <h2>Shard Spending</h2>
-            <p>Cosmetics, boosts, and more coming soon.</p>
-          </div>
+        {subTab === 'emporium' && (
+          <EmporiumTab
+            onPlayerUpdate={() => { fetchPackages(); onPlayerUpdate(); }}
+            onSwitchToBuy={() => setSubTab('buy')}
+          />
         )}
+
+        {subTab === 'support' && <SupportUsTab />}
       </div>
 
       {/* Purchase confirmation modal */}

@@ -41,6 +41,8 @@ from models.home_base import (
 )
 from models.payments import ShardPackage, PaymentOrder, StripeWebhookEvent
 from models.subscriptions import PlayerSubscription, SubscriptionStipendLog
+from models.shop import ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, PlayerActiveBooster
+from models.donation import Donation
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -67,4 +69,6 @@ __all__ = [
     "PlayerTitle", "LeaderboardCache", "ShardTransaction",
     "ShardPackage", "PaymentOrder", "StripeWebhookEvent",
     "PlayerSubscription", "SubscriptionStipendLog",
+    "ShopItem", "ShopBundle", "ShopBundleItem", "PlayerShopItem", "PlayerActiveBooster",
+    "Donation",
 ]

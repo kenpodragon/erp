@@ -42,7 +42,8 @@ from services.character_progression import (
 )
 from services.item_generator import check_run_achievements
 from services.artifact_service import evaluate_artifact_drops
-from services.subscription_service import get_subscriber_multipliers
+from services.boost_service import get_effective_multipliers
+from services.shop_service import increment_booster_time
 from services.achievement_service import evaluate_achievements
 from services.chat import manager as chat_manager
 
@@ -1386,8 +1387,8 @@ async def complete_session(
                 enemies_killed=0,
             )
 
-        # 2.7: Artifact drop evaluation for boss kills (with 3.2 subscription boost)
-        boss_sub_mult = get_subscriber_multipliers(player.id, session)
+        # 2.7: Artifact drop evaluation for boss kills (with 3.3 combined boost)
+        boss_sub_mult = get_effective_multipliers(player.id, session)
         artifact_drops = []
         try:
             artifact_drops = evaluate_artifact_drops(
@@ -1407,6 +1408,14 @@ async def complete_session(
         story_session.updated_at = datetime.now(timezone.utc)
         session.add(story_session)
         session.commit()
+
+        # 3.3: Increment booster elapsed time for boss session duration
+        if story_session.created_at:
+            boss_created = story_session.created_at
+            if boss_created.tzinfo is None:
+                boss_created = boss_created.replace(tzinfo=timezone.utc)
+            boss_duration_s = int((datetime.now(timezone.utc) - boss_created).total_seconds())
+            increment_booster_time(player.id, boss_duration_s, session)
 
         # 2.6.4: System broadcast for first boss defeat
         if first_clear:
@@ -1479,8 +1488,8 @@ async def complete_session(
     essence_earned *= essence_mult
     converted_essence *= essence_mult
 
-    # --- 3.2: Apply Ascendant subscription boosts ---
-    sub_multipliers = get_subscriber_multipliers(player.id, session)
+    # --- 3.2/3.3: Apply Ascendant subscription + shop booster boosts ---
+    sub_multipliers = get_effective_multipliers(player.id, session)
     essence_earned *= sub_multipliers["essence"]
     converted_essence *= sub_multipliers["essence"]
 
@@ -1665,6 +1674,14 @@ async def complete_session(
     story_session.updated_at = datetime.now(timezone.utc)
     session.add(story_session)
     session.commit()
+
+    # 3.3: Increment booster elapsed time for normal session duration
+    if story_session.created_at:
+        sess_created = story_session.created_at
+        if sess_created.tzinfo is None:
+            sess_created = sess_created.replace(tzinfo=timezone.utc)
+        session_duration_s = int((datetime.now(timezone.utc) - sess_created).total_seconds())
+        increment_booster_time(player.id, session_duration_s, session)
 
     # 2.6.4: System broadcasts for completions and rare drops
     char_name = char.character_name or "A brave Vessel"

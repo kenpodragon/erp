@@ -46,6 +46,10 @@ from routes.webhooks import router as webhooks_router
 from routes.admin_payments import router as admin_payments_router
 from routes.subscriptions import router as subscriptions_router
 from routes.admin_subscriptions import router as admin_subscriptions_router
+from routes.shop import router as shop_router
+from routes.admin_shop import router as admin_shop_router
+from routes.donations import router as donations_router
+from routes.admin_donations import router as admin_donations_router
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +197,10 @@ app.include_router(webhooks_router)
 app.include_router(admin_payments_router)
 app.include_router(subscriptions_router)
 app.include_router(admin_subscriptions_router)
+app.include_router(shop_router)
+app.include_router(admin_shop_router)
+app.include_router(donations_router)
+app.include_router(admin_donations_router)
 
 
 @app.get("/debug-routes")

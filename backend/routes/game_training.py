@@ -15,7 +15,8 @@ from services.character_progression import (
     award_idle_xp_char_xp, recalculate_character_stats, evaluate_prerequisites,
 )
 from services.achievement_service import evaluate_achievements
-from services.subscription_service import get_subscriber_multipliers
+from services.boost_service import get_effective_multipliers
+from services.shop_service import increment_booster_time
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
 
@@ -175,8 +176,8 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     xp_earned = total_xp_earned
     potential_xp = float(actions_completed * action.xp_per_action * affinity_mult)
 
-    # 3.2: Apply Ascendant subscription boosts (XP + training speed)
-    sub_mult = get_subscriber_multipliers(character.player_id, session)
+    # 3.2/3.3: Apply Ascendant subscription + shop booster boosts (XP + training speed)
+    sub_mult = get_effective_multipliers(character.player_id, session)
     xp_earned *= sub_mult["xp"]
     # training_speed boost effectively increases ticks processed (already capped above)
 
@@ -221,6 +222,9 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
         pass
 
     session.commit()
+
+    # 3.3: Increment booster elapsed time for idle training duration
+    increment_booster_time(character.player_id, capped_seconds, session)
 
     return {
         "offline_duration_seconds": capped_seconds,

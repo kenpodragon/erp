@@ -69,6 +69,34 @@
 .currency-item.essence { border-color: #a78bfa; color: #a78bfa; }
 .currency-item.shards { border-color: #60a5fa; color: #60a5fa; }
 
+/* Active booster indicators */
+.topbar-boosters {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: 0.25rem;
+}
+
+.topbar-booster-pip {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #1a1a10;
+  border: 1px solid #4a4000;
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  cursor: default;
+}
+
+.booster-pip-icon {
+  font-size: 0.75rem;
+}
+
+.booster-pip-time {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
 .top-bar-right {
   display: flex;
   gap: 0.5rem;

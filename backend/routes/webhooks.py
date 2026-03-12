@@ -141,12 +141,19 @@ def _handle_checkout_completed(event: dict, session: Session) -> None:
 
 
 def _handle_checkout_completed_payment(session_obj: dict, session: Session) -> None:
-    """Payment-mode checkout: credit shards (existing 3.1 flow)."""
+    """Payment-mode checkout: credit shards or process donation."""
     metadata = session_obj.get("metadata", {})
     payment_order_id = metadata.get("payment_order_id")
 
     if not payment_order_id:
         logger.error("checkout.session.completed (payment) missing payment_order_id in metadata")
+        return
+
+    # Route donations to donation service
+    order_type = metadata.get("order_type", "shard_purchase")
+    if order_type == "donation":
+        from services.donation_service import process_donation_webhook
+        process_donation_webhook(int(payment_order_id), session_obj, session)
         return
 
     order = session.get(PaymentOrder, int(payment_order_id))

@@ -174,6 +174,111 @@ def debit_shards(
     logger.info("Debited %d shards from player %s (%s)", amount, player_id, source_type)
 
 
+def credit_shards_direct(
+    player_id: int,
+    amount: int,
+    source_type: str,
+    source_id: int,
+    description: str,
+    session: Session,
+) -> None:
+    """Credit shards directly (not tied to a PaymentOrder).
+
+    Used for admin refunds, promotional grants, etc.
+    """
+    meta = session.get(PlayerMetaProgression, player_id)
+    if meta is None:
+        raise ValueError(f"PlayerMetaProgression not found for player {player_id}")
+
+    meta.shard_balance += amount
+    meta.total_shards_earned += amount
+    meta.updated_at = datetime.now(timezone.utc)
+    session.add(meta)
+
+    txn = ShardTransaction(
+        player_id=player_id,
+        amount=amount,
+        balance_after=meta.shard_balance,
+        source_type=source_type,
+        source_id=source_id,
+        description=description,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(txn)
+    session.commit()
+    logger.info("Credited %d shards to player %s (%s)", amount, player_id, source_type)
+
+
+def _debit_shards_internal(
+    player_id: int,
+    amount: int,
+    source_type: str,
+    source_id: int,
+    description: str,
+    session: Session,
+) -> None:
+    """Same as debit_shards but flushes instead of committing.
+
+    For use in larger transactions where the caller manages the commit
+    (e.g. shop purchases that need atomic debit + ownership creation).
+    """
+    meta = session.get(PlayerMetaProgression, player_id)
+    if meta is None:
+        raise ValueError(f"PlayerMetaProgression not found for player {player_id}")
+
+    meta.shard_balance -= amount
+    meta.updated_at = datetime.now(timezone.utc)
+    session.add(meta)
+
+    txn = ShardTransaction(
+        player_id=player_id,
+        amount=-amount,
+        balance_after=meta.shard_balance,
+        source_type=source_type,
+        source_id=source_id,
+        description=description,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(txn)
+    session.flush()
+    logger.info("Debited %d shards from player %s (%s) [internal]", amount, player_id, source_type)
+
+
+def _credit_shards_direct_internal(
+    player_id: int,
+    amount: int,
+    source_type: str,
+    source_id: int,
+    description: str,
+    session: Session,
+) -> None:
+    """Same as credit_shards_direct but flushes instead of committing.
+
+    For use in larger transactions where the caller manages the commit.
+    """
+    meta = session.get(PlayerMetaProgression, player_id)
+    if meta is None:
+        raise ValueError(f"PlayerMetaProgression not found for player {player_id}")
+
+    meta.shard_balance += amount
+    meta.total_shards_earned += amount
+    meta.updated_at = datetime.now(timezone.utc)
+    session.add(meta)
+
+    txn = ShardTransaction(
+        player_id=player_id,
+        amount=amount,
+        balance_after=meta.shard_balance,
+        source_type=source_type,
+        source_id=source_id,
+        description=description,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(txn)
+    session.flush()
+    logger.info("Credited %d shards to player %s (%s) [internal]", amount, player_id, source_type)
+
+
 def calculate_refund_shards(
     shards_credited: int,
     price_cents: int,

@@ -27,6 +27,11 @@ class Player(SQLModel, table=True):
     ban_reason: Optional[str] = Field(default=None)
     sessions_invalid_before: Optional[datetime] = Field(default=None)
 
+    # 3.3: Equipped cosmetics (account-wide)
+    equipped_flair_id: Optional[int] = Field(default=None, foreign_key="shop_items.id")
+    equipped_badge_id: Optional[int] = Field(default=None, foreign_key="shop_items.id")
+    equipped_avatar_id: Optional[int] = Field(default=None, foreign_key="shop_items.id")
+
     # Granular Roles
     is_owner: bool = Field(default=False)
     is_system_admin: bool = Field(default=False)
@@ -108,6 +113,8 @@ class PlayerCharacter(SQLModel, table=True):
     agility: Optional[int] = Field(default=None)
     intelligence: Optional[int] = Field(default=None)
     equipped_title_id: Optional[int] = Field(default=None, foreign_key="titles.id")
+    # 3.3: Equipped skin (character-level)
+    equipped_skin_id: Optional[int] = Field(default=None, foreign_key="shop_items.id")
     created_at: Optional[datetime] = Field(default=None)
     last_played_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)

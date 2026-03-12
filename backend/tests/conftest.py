@@ -23,6 +23,8 @@ from models import (
     PlayerTitle, LeaderboardCache, ShardTransaction,
     ShardPackage, PaymentOrder, StripeWebhookEvent,
     PlayerSubscription, SubscriptionStipendLog,
+    ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, PlayerActiveBooster,
+    Donation,
 )
 from datetime import datetime, timezone
 

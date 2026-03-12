@@ -61,6 +61,30 @@ const CLASS_TO_PRESET: Record<string, string> = {
   class_warrior:  'warrior',
 };
 
+const BOOST_ICONS: Record<string, string> = {
+  xp: '\u2B50',
+  essence: '\u2728',
+  drop_rate: '\uD83C\uDFAF',
+};
+
+function formatBoosterTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function formatBoosterTimeShort(seconds: number): string {
+  if (seconds <= 0) return '0s';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h`;
+  if (m > 0) return `${m}m`;
+  return `${seconds}s`;
+}
+
 const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) => {
   const { state, playSFX, setReduceMotion } = useGame();
   const [showSettings, setShowSettings] = useState(false);
@@ -199,6 +223,20 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
           <span className="icon">💎</span>
           <span className="value">{shardBalance.toLocaleString()}</span>
         </div>
+        {state.activeBoosters.length > 0 && (
+          <div className="topbar-boosters">
+            {state.activeBoosters.map(b => (
+              <div
+                key={b.boostType}
+                className="topbar-booster-pip"
+                title={`${b.boostType.toUpperCase()} ${b.magnitude}x — ${formatBoosterTime(b.remainingSeconds)}`}
+              >
+                <span className="booster-pip-icon">{BOOST_ICONS[b.boostType] || '\u26A1'}</span>
+                <span className="booster-pip-time">{formatBoosterTimeShort(b.remainingSeconds)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="top-bar-right">

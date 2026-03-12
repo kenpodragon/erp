@@ -5,6 +5,15 @@ import { loadAudioSettings, saveAudioSettingsLocal, type AudioSettings } from '.
 import { getSFXEngine, destroySFXEngine, type SFXPlayOptions } from './SFXEngine';
 export type { AudioSettings };
 
+// ── 3.3: Active booster state ────────────────────────────────────────────────
+export interface ActiveBooster {
+  boostType: 'xp' | 'essence' | 'drop_rate';
+  magnitude: number;
+  remainingSeconds: number;
+  durationSeconds: number;
+  activatedAt: string;
+}
+
 // ── Active skill buff (tracks client-side state for hotbar display) ──────────
 // ... (rest of file remains same, adding listeners in GameProvider)
 export interface ActiveBuff {
@@ -83,6 +92,8 @@ interface GameState {
   audioSettings: AudioSettings;
   // Animation toggle (2.6)
   reduceMotion: boolean;
+  // 3.3: Active boosters
+  activeBoosters: ActiveBooster[];
 }
 
 type SessionPatch = Partial<StorySession> | ((prev: StorySession) => Partial<StorySession>);
@@ -107,6 +118,9 @@ interface GameContextType {
   playSFX: (configKey: string, options?: SFXPlayOptions) => void;
   // Animation toggle (2.6)
   setReduceMotion: (val: boolean) => void;
+  // 3.3: Boosters
+  setActiveBoosters: (boosters: ActiveBooster[]) => void;
+  refreshBoosters: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -126,6 +140,7 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     isOffline: false,
     audioSettings: loadAudioSettings(),
     reduceMotion: localStorage.getItem('erp_reduce_motion') === 'true',
+    activeBoosters: [],
   });
 
   useEffect(() => {
@@ -264,6 +279,61 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
     getSFXEngine().play(configKey, options);
   }, []);
 
+  // 3.3: Booster state management
+  const setActiveBoosters = useCallback((boosters: ActiveBooster[]) => {
+    setState(prev => ({ ...prev, activeBoosters: boosters }));
+  }, []);
+
+  const refreshBoosters = useCallback(() => {
+    api.get('/api/shop/boosters')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped: ActiveBooster[] = data.map((b: any) => ({
+            boostType: b.boost_type,
+            magnitude: b.magnitude,
+            remainingSeconds: b.remaining_seconds,
+            durationSeconds: b.duration_seconds,
+            activatedAt: b.activated_at || '',
+          }));
+          setState(prev => ({ ...prev, activeBoosters: mapped }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // 3.3: Booster ping polling — sends elapsed time every 30s during active sessions
+  useEffect(() => {
+    const hasActiveSession = state.activeSceneId || state.activeTrainingId;
+    const hasBoosters = state.activeBoosters.length > 0;
+    if (!hasActiveSession || !hasBoosters) return;
+
+    const PING_INTERVAL = 30000; // 30 seconds
+    const id = setInterval(() => {
+      api.post('/api/shop/booster-ping', { elapsed_seconds: 30 }).catch(() => {});
+    }, PING_INTERVAL);
+
+    return () => clearInterval(id);
+  }, [state.activeSceneId, state.activeTrainingId, state.activeBoosters.length]);
+
+  // 3.3: Client-side countdown for booster display (cosmetic, not source of truth)
+  useEffect(() => {
+    if (state.activeBoosters.length === 0) return;
+    const id = setInterval(() => {
+      setState(prev => {
+        const updated = prev.activeBoosters
+          .map(b => ({ ...b, remainingSeconds: b.remainingSeconds - 1 }))
+          .filter(b => b.remainingSeconds > 0);
+        if (updated.length === prev.activeBoosters.length &&
+            updated.every((b, i) => b.remainingSeconds === prev.activeBoosters[i].remainingSeconds - 1)) {
+          // Normal tick
+        }
+        return { ...prev, activeBoosters: updated };
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [state.activeBoosters.length]);
+
   return (
     <GameContext.Provider
       value={{
@@ -282,6 +352,8 @@ export const GameProvider: React.FC<{ children: ReactNode; initialEssence?: numb
         updateAudioSettings,
         playSFX,
         setReduceMotion,
+        setActiveBoosters,
+        refreshBoosters,
       }}
     >
       {children}
