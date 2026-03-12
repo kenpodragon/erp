@@ -36,6 +36,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `050` | Subscription System — Elysium Ascendant (3.2) | Created 2 tables: `player_subscriptions`, `subscription_stipend_log`. Added `is_ascendant BOOLEAN`, `cumulative_subscription_months INTEGER` columns to `players`. Seeded 10 subscription titles, 11 subscription/economy achievements, 11 `game_configs` keys (category: subscription). |
 | `051` | Elysium Emporium (3.3) | Created 5 tables: `shop_items`, `shop_bundles`, `shop_bundle_items`, `player_shop_items`, `player_active_boosters`. Added `equipped_flair_id`, `equipped_badge_id`, `equipped_avatar_id` columns to `players`. Added `equipped_skin_id` column to `player_characters`. Widened `shard_transactions` source_type CHECK constraint (+shop_purchase, +admin_refund). Seeded 32 shop items (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters), 3 bundles + 9 bundle item mappings, 9 `game_configs` keys (category: economy). |
 | `053` | Dreamwalker's Bazaar (3.5) | Created 4 tables: `marketplace_listings`, `marketplace_trades`, `marketplace_notifications`, `marketplace_price_history`. Added `marketplace_slots_purchased INTEGER` to `players`. Added `marketplace_listing_id INTEGER FK` to `player_artifacts` and `player_inventory`. Updated `enforce_inventory_slot_cap()` trigger to exclude marketplace-listed items from slot count. Widened `shard_transactions` source_type CHECK (+marketplace_purchase, +marketplace_sale). Widened `shop_items` category CHECK (+marketplace_permit). Seeded 7 Bazaar Permits, 4 titles, 9 achievements with parent chains and title rewards, 15 `game_configs` keys (8 marketplace + 7 salvage). |
+| `054` | Admin Finance Dashboard | Created `admin_shard_adjustments` table (admin-initiated shard grant/debit audit trail: player_id, admin_email, adjust_type, amount, reason, balance_before/after, shard_txn_id FK). 3 indexes (player, admin, created_at). Seeded 5 `game_configs` keys (category: marketplace_anomaly): anomaly_price_multiplier_threshold (10), anomaly_rapid_relist_count (5), anomaly_rapid_relist_window_minutes (60), anomaly_wash_trade_count (3), anomaly_wash_trade_window_hours (24). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -573,6 +574,37 @@ Added `'donation'` to the CHECK constraint.
 | `salvage_equipment_legendary_essence` | `salvage` | Base Essence for salvaging Legendary/Cosmic equipment and artifacts (500). |
 | `salvage_artifact_multiplier` | `salvage` | Multiplier for artifact salvage vs equipment base rate (2.0). |
 | `salvage_curated_bonus_multiplier` | `salvage` | Additional bonus multiplier for curated artifact salvage (1.15). |
+
+---
+
+### 21. Admin Finance Dashboard (3.6, Migration 054)
+
+#### Table: `admin_shard_adjustments`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| player_id | INTEGER | FK → players(id), NOT NULL | Target player for the adjustment |
+| admin_email | VARCHAR(255) | NOT NULL | Admin who made the adjustment |
+| adjust_type | VARCHAR(10) | NOT NULL | 'grant' or 'debit' |
+| amount | INTEGER | NOT NULL, CHECK > 0 | Adjustment amount (always positive) |
+| reason | TEXT | NOT NULL | Required explanation for the adjustment |
+| balance_before | BIGINT | NOT NULL | Player shard balance before adjustment |
+| balance_after | BIGINT | NOT NULL | Player shard balance after adjustment |
+| shard_txn_id | INTEGER | FK → shard_transactions(id) | Linked shard transaction record |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Timestamp of adjustment |
+
+**Indexes:** `idx_asa_player` (player_id), `idx_asa_admin` (admin_email), `idx_asa_created` (created_at).
+
+#### Marketplace Anomaly `game_configs` Keys (seeded in 054)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `anomaly_price_multiplier_threshold` | `marketplace_anomaly` | Multiplier above average price that flags a listing as anomalous (10). |
+| `anomaly_rapid_relist_count` | `marketplace_anomaly` | Number of rapid relists within window that triggers anomaly flag (5). |
+| `anomaly_rapid_relist_window_minutes` | `marketplace_anomaly` | Time window in minutes for rapid relist detection (60). |
+| `anomaly_wash_trade_count` | `marketplace_anomaly` | Number of trades between same buyer/seller pair that flags wash trading (3). |
+| `anomaly_wash_trade_window_hours` | `marketplace_anomaly` | Time window in hours for wash trade detection (24). |
 
 ---
 

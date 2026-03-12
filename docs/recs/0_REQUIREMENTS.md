@@ -214,9 +214,13 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Phases:** 3.5.0 Backend Foundation, 3.5.1 Browse & Buy UI, 3.5.2 Sell & Salvage UI, 3.5.3 Tests & Polish.
 
 ### 3.6 Admin Finance Dashboard & Tools
-- [ ] Stripe transaction viewer, shard management, and refund workflow.
-- [ ] Subscription management, dispute queue, and revenue analytics.
-- [ ] Shop catalog management and marketplace moderation tools.
+- [x] **Detailed Requirements:** [3.6_ADMIN_FINANCE_DASHBOARD.md](3.6_ADMIN_FINANCE_DASHBOARD.md) | **Design:** [3.6_ADMIN_FINANCE_DASHBOARD_DESIGN.md](3.6_ADMIN_FINANCE_DASHBOARD_DESIGN.md) | **Schema:** [3.6_ADMIN_FINANCE_DASHBOARD_SCHEMA.md](3.6_ADMIN_FINANCE_DASHBOARD_SCHEMA.md)
+- [x] Stripe transaction viewer, shard management, and refund workflow.
+- [x] Subscription management, dispute queue, and revenue analytics.
+- [x] Shop catalog management and marketplace moderation tools.
+- [x] Backend: 15 admin finance endpoints, analytics service, migration 054, 19 pytest tests.
+- [x] Frontend: FinanceDashboard (8-tab page), PlayerDetail finance widget, 18 vitest tests.
+- [x] **Phases:** 3.6.0 Backend Foundation, 3.6.1 Overview/Transactions/Shard Economy, 3.6.2 Subscriptions/Shop/Donations, 3.6.3 Marketplace/Disputes/PlayerDetail, 3.6.4 Tests & Polish.
 
 ## 4. Social & MMORPG Features
 - [x] **Integrated Chat:** *(Implemented in 2.6.4)*
@@ -235,7 +239,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [ ] **Visual Weights:** Configure how much each stat (Str/Agi/Int) affects sprite size, speed, and VFX.
     - [ ] **Global Wave Settings:** Set `max_enemies_per_wave` and default spawn intervals.
     - [ ] **Intensity Curves:** Define how wave density increases across chapters and resets per book.
-- [ ] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. 
+- [x] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. *(Implemented in 3.6)*
 - [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
 - [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
 - [ ] **Dev Content Audit table** viewer and editor to help manage and update assets that have missing data. Flag generic vs. specific assets.
@@ -248,7 +252,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
 - [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
 - [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
-- [ ] Work on the outstanding C requirements (generators)
+- [ ] Work on the outstanding C requirements (generators) and flesh out with any other generators that might be needed from across the application (sanity check for C generators to be built next)
 
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.

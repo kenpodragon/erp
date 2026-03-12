@@ -1,0 +1,179 @@
+/* FinanceTabs.css — Styles for Subscriptions, Shop Management, Donations tabs */
+
+/* ── Shared metric cards ── */
+.ftab-metrics { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.ftab-metric-card {
+  flex: 1 1 160px; max-width: 220px;
+  background: #1a1a2e; border: 1px solid #333; border-radius: 6px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+}
+.ftab-metric-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.ftab-metric-value { font-size: 22px; font-weight: 700; color: #7dd3fc; }
+.ftab-metric-value--green { color: #2ecc71; }
+.ftab-metric-value--amber { color: #f59e0b; }
+.ftab-metric-value--red { color: #ef4444; }
+
+/* ── Section header / toolbar ── */
+.ftab-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.ftab-toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.ftab-section-title { margin: 0 0 12px; color: #7dd3fc; font-size: 18px; }
+.ftab-sub-title { margin: 20px 0 10px; color: #ccc; font-size: 15px; font-weight: 600; }
+
+/* ── Inputs & selects ── */
+.ftab-input, .ftab-select, .ftab-textarea {
+  padding: 6px 10px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px; box-sizing: border-box;
+}
+.ftab-input:focus, .ftab-select:focus, .ftab-textarea:focus { border-color: #555; outline: none; }
+.ftab-input { min-width: 140px; }
+.ftab-select { min-width: 120px; }
+.ftab-textarea { width: 100%; min-height: 60px; font-family: 'Roboto Mono', monospace; resize: vertical; }
+.ftab-input--sm { min-width: 80px; width: 80px; }
+.ftab-input--date { min-width: 150px; }
+
+/* ── Buttons ── */
+.ftab-btn {
+  padding: 6px 14px; border: 1px solid #444; background: #2a2a3e;
+  color: #ddd; border-radius: 4px; cursor: pointer; font-size: 13px;
+  white-space: nowrap;
+}
+.ftab-btn:hover { background: #333; }
+.ftab-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ftab-btn-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.ftab-btn-primary:hover { background: #1d4ed8; }
+.ftab-btn-danger { background: #991b1b; border-color: #991b1b; color: #fff; }
+.ftab-btn-danger:hover { background: #7f1d1d; }
+.ftab-btn-success { background: #166534; border-color: #166534; color: #fff; }
+.ftab-btn-success:hover { background: #14532d; }
+.ftab-btn-amber { background: #92400e; border-color: #92400e; color: #fff; }
+.ftab-btn-amber:hover { background: #78350f; }
+.ftab-btn-sm { padding: 3px 8px; font-size: 12px; }
+
+/* ── Tables ── */
+.ftab-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ftab-table th {
+  text-align: left; padding: 8px 10px; border-bottom: 2px solid #333;
+  color: #888; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.ftab-table td { padding: 7px 10px; border-bottom: 1px solid #222; }
+.ftab-table tbody tr:hover { background: #1a1a2e; }
+.ftab-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+
+/* ── Status badges ── */
+.ftab-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; text-transform: capitalize;
+}
+.ftab-badge--active { background: #14532d; color: #86efac; }
+.ftab-badge--past_due { background: #78350f; color: #fbbf24; }
+.ftab-badge--canceled { background: #450a0a; color: #fca5a5; }
+.ftab-badge--trialing { background: #1e3a5f; color: #93c5fd; }
+.ftab-badge--expired { background: #333; color: #888; }
+.ftab-badge--scheduled { background: #312e81; color: #a5b4fc; }
+.ftab-badge--yes { background: #14532d; color: #86efac; }
+.ftab-badge--no { background: #333; color: #888; }
+
+/* ── Pagination ── */
+.ftab-pagination { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 12px; }
+.ftab-pagination span { font-size: 13px; color: #888; }
+
+/* ── Modal / overlay ── */
+.ftab-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.ftab-modal {
+  background: #16162a; border: 1px solid #333; border-radius: 8px;
+  padding: 24px; min-width: 420px; max-width: 640px; width: 90%;
+  max-height: 85vh; overflow-y: auto; color: #ddd;
+}
+.ftab-modal h3 { margin: 0 0 16px; color: #7dd3fc; }
+.ftab-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* ── Form rows (modal forms) ── */
+.ftab-form-row { margin-bottom: 12px; }
+.ftab-form-row label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; text-transform: uppercase; }
+.ftab-form-row input, .ftab-form-row select, .ftab-form-row textarea {
+  width: 100%; padding: 7px 10px; background: #1a1a2e; border: 1px solid #333;
+  border-radius: 4px; color: #ddd; font-size: 13px; box-sizing: border-box;
+}
+.ftab-form-row input[type="checkbox"] { width: auto; }
+.ftab-form-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer; }
+.ftab-form-checkbox label { margin: 0; cursor: pointer; }
+.ftab-form-inline { display: flex; gap: 12px; }
+.ftab-form-inline > div { flex: 1; }
+
+/* ── Collapsible sections (Shop Management) ── */
+.ftab-section {
+  background: #111122; border: 1px solid #2a2a3e; border-radius: 6px;
+  margin-bottom: 14px; overflow: hidden;
+}
+.ftab-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; cursor: pointer; user-select: none;
+}
+.ftab-section-header:hover { background: #1a1a2e; }
+.ftab-section-header h4 { margin: 0; color: #7dd3fc; font-size: 15px; }
+.ftab-section-toggle { color: #888; font-size: 18px; transition: transform 0.2s; }
+.ftab-section-toggle--open { transform: rotate(90deg); }
+.ftab-section-body { padding: 12px 16px; }
+
+/* ── Featured rotation conflict ── */
+.ftab-row--conflict { background: rgba(245, 158, 11, 0.1) !important; }
+.ftab-conflict-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; margin-right: 6px; }
+
+/* ── Gift subscription box ── */
+.ftab-gift-box {
+  background: #1a1a2e; border: 1px solid #333; border-radius: 6px;
+  padding: 14px 16px; margin-bottom: 16px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+}
+.ftab-gift-box label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
+
+/* ── Donor list ── */
+.ftab-donor-list { list-style: none; padding: 0; margin: 0 0 16px; }
+.ftab-donor-list li {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid #222; font-size: 13px;
+}
+.ftab-donor-list li:hover { background: #1a1a2e; }
+.ftab-donor-rank { color: #f59e0b; font-weight: 700; width: 28px; }
+.ftab-donor-name { flex: 1; color: #ddd; }
+.ftab-donor-amount { color: #2ecc71; font-weight: 600; }
+
+/* ── Tier distribution ── */
+.ftab-tier-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.ftab-tier-card {
+  flex: 1 1 120px; max-width: 180px;
+  background: #1a1a2e; border: 1px solid #333; border-radius: 6px;
+  padding: 12px 14px; text-align: center;
+}
+.ftab-tier-card h5 { margin: 0 0 4px; font-size: 13px; }
+.ftab-tier-card .ftab-tier-count { font-size: 24px; font-weight: 700; }
+.ftab-tier--bronze h5 { color: #cd7f32; }
+.ftab-tier--bronze .ftab-tier-count { color: #cd7f32; }
+.ftab-tier--silver h5 { color: #c0c0c0; }
+.ftab-tier--silver .ftab-tier-count { color: #c0c0c0; }
+.ftab-tier--gold h5 { color: #ffd700; }
+.ftab-tier--gold .ftab-tier-count { color: #ffd700; }
+.ftab-tier--diamond h5 { color: #b9f2ff; }
+.ftab-tier--diamond .ftab-tier-count { color: #b9f2ff; }
+
+/* ── Loading / error / empty ── */
+.ftab-loading { padding: 40px; text-align: center; color: #888; }
+.ftab-error { padding: 12px; background: #2d1515; border: 1px solid #5a2020; border-radius: 4px; color: #fca5a5; margin-bottom: 12px; font-size: 13px; }
+.ftab-success { padding: 8px 12px; background: #1a2e1a; border: 1px solid #2d5a2d; border-radius: 4px; color: #86efac; margin-bottom: 12px; font-size: 13px; }
+.ftab-empty { text-align: center; color: #666; padding: 24px; }
+
+/* ── Item picker (bundle modal) ── */
+.ftab-item-picker { max-height: 200px; overflow-y: auto; border: 1px solid #333; border-radius: 4px; padding: 8px; background: #111122; }
+.ftab-item-picker-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; cursor: pointer; }
+.ftab-item-picker-row:hover { background: #1a1a2e; }
+.ftab-item-picker-row input[type="checkbox"] { margin: 0; }
+
+/* ── Discount calculator ── */
+.ftab-discount-calc {
+  background: #1a1a2e; border: 1px solid #333; border-radius: 4px;
+  padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #888;
+}
+.ftab-discount-calc strong { color: #2ecc71; }

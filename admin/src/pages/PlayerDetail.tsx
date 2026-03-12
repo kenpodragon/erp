@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../api'
+import PlayerFinanceWidget from './finance/PlayerFinanceWidget'
 import './PlayerDetail.css'
 
 interface Player {
@@ -70,6 +71,7 @@ export default function PlayerDetail() {
   const [banReason, setBanReason] = useState('')
   const [showEditAlias, setShowEditAlias] = useState(false)
   const [newAlias, setNewAlias] = useState('')
+  const [showFinance, setShowFinance] = useState(true)
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -331,6 +333,20 @@ export default function PlayerDetail() {
           )}
         </section>
       </div>
+
+      {/* Finance Section */}
+      <section className="detail-section info-card finance-section">
+        <h3
+          className="collapsible-header"
+          onClick={() => setShowFinance(f => !f)}
+          style={{ cursor: 'pointer', userSelect: 'none' }}
+        >
+          {showFinance ? '▾' : '▸'} Finance
+        </h3>
+        {showFinance && (
+          <PlayerFinanceWidget playerId={Number(id)} />
+        )}
+      </section>
 
       {/* Ban Modal */}
       {showBanModal && (

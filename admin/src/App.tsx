@@ -17,6 +17,7 @@ import SFXConfigEditor from './pages/SFXConfigEditor'
 import ChatManager from './pages/ChatManager'
 import ArtifactEditor from './pages/ArtifactEditor'
 import AchievementEditor from './pages/AchievementEditor'
+import FinanceDashboard from './pages/FinanceDashboard'
 
 interface HealthData {
   status: string;
@@ -191,6 +192,7 @@ function App() {
             <NavLink to="/artifacts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Artifacts</NavLink>
             <NavLink to="/achievements" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Achievements</NavLink>
             <NavLink to="/chat" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Chat</NavLink>
+            <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
             {me?.is_owner && (
               <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
@@ -222,6 +224,7 @@ function App() {
             <Route path="/artifacts" element={<div className="admin-content"><ArtifactEditor /></div>} />
             <Route path="/achievements" element={<div className="admin-content"><AchievementEditor /></div>} />
             <Route path="/chat" element={<div className="admin-content"><ChatManager /></div>} />
+            <Route path="/finance" element={<div className="admin-content"><FinanceDashboard /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />

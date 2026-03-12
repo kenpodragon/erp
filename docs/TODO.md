@@ -1,47 +1,6 @@
 # ERP Project Kickstart TODO
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
-- [ ] **3.0 — Economy & Monetization (Marketplace & Premium)** *(Ref: `docs/recs/3.0_ECONOMY.md`)*
-
-    - [ ] **3.6 — Admin Finance Dashboard & Tools** *(Ref: `docs/recs/3.6_ADMIN_FINANCE_DASHBOARD.md`)*
-        - [x] Create requirements, design, and schema docs (`3.6_ADMIN_FINANCE_DASHBOARD.md`, `_DESIGN.md`, `_SCHEMA.md`)
-        - [ ] **3.6.0 — Backend Foundation**
-            - [ ] S1.1: Database migration 054 (`admin_shard_adjustments` table, `game_configs` anomaly threshold seeds)
-            - [ ] S1.2: Finance analytics service → `backend/services/finance_analytics_service.py` (10 DB-driven aggregation functions)
-            - [ ] S1.3: Revenue analytics endpoints → `backend/routes/admin_finance.py` (8 GET endpoints: overview, revenue-chart, shard-economy, shard-flow-chart, subscription-metrics, shop-analytics, marketplace-analytics, donation-analytics)
-            - [ ] S1.4: Shard management endpoints (`POST /shard-adjust`, `GET /player-shard-summary/{player_id}`)
-            - [ ] S1.5: Stripe refund initiation endpoint (`POST /initiate-refund`)
-            - [ ] S1.6: Dispute management endpoints (`GET /disputes`, `POST /disputes/{player_id}/resolve`, `GET /disputes/{player_id}/investigate`)
-            - [ ] S1.7: Marketplace anomaly detection endpoint (`GET /marketplace-anomalies`)
-            - [ ] S1.8: Wire admin_finance router in `main.py`
-            - [ ] S1.9: `AdminShardAdjustment` SQLModel in `backend/models/finance.py`
-        - [ ] **3.6.1 — Admin UI: Overview, Transactions, Shard Economy**
-            - [ ] S2.1: `FinanceDashboard.tsx` — Page with 8-tab framework, registered in admin sidebar
-            - [ ] S2.2: `OverviewTab.tsx` — Revenue cards (recharts BarChart), quick action buttons
-            - [ ] S2.3: `TransactionsTab.tsx` — Payment orders table, filters, expandable detail, webhook viewer
-            - [ ] S2.4: `RefundModal.tsx` — Full/partial Stripe refund + proportional shard debit
-            - [ ] S2.5: `ShardEconomyTab.tsx` — Economy health metrics, shard flow chart (recharts AreaChart), adjustment tool, balance integrity
-            - [ ] S2.6: `ShardAdjustModal.tsx` — Grant/debit form with player search, balance preview, reason
-            - [ ] S2.7: `CsvExportButton.tsx` — Reusable CSV export for all list views
-            - [ ] S2.8: `FinanceDashboard.css` — Styling for all finance components
-        - [ ] **3.6.2 — Admin UI: Subscriptions, Shop, Donations**
-            - [ ] S3.1: `SubscriptionsTab.tsx` — Subscriber list, action modals (extend/cancel/streak), gift sub, churn metrics
-            - [ ] S3.2: `ShopManagementTab.tsx` — Item CRUD, bundle CRUD, featured rotation table, booster config, purchase analytics
-            - [ ] S3.3: `ShopItemModal.tsx` — Create/edit with structured booster form (boost_type, duration, magnitude)
-            - [ ] S3.4: `BundleModal.tsx` — Create/edit with multi-select item picker
-            - [ ] S3.5: `DonationsTab.tsx` — Donation list, stats cards, patron tier distribution
-        - [ ] **3.6.3 — Admin UI: Marketplace, Disputes, PlayerDetail**
-            - [ ] S4.1: `MarketplaceTab.tsx` — Listings, trade audit, stats, anomaly log, force-remove/reverse-trade
-            - [ ] S4.2: `DisputeQueueTab.tsx` — Flagged accounts, investigation panel, resolution actions (clear/warn/ban)
-            - [ ] S4.3: `PlayerFinanceWidget.tsx` — Finance panel for PlayerDetail (shard balance, adjust, history, sub, trades, donations, flags)
-            - [ ] S4.4: Integrate `PlayerFinanceWidget` into `PlayerDetail.tsx`
-        - [ ] **3.6.4 — Tests & Polish**
-            - [ ] S5.1: Backend tests (pytest) → `backend/tests/test_admin_finance.py` (~19 tests)
-            - [ ] S5.2: Frontend tests (vitest) → `admin/src/pages/FinanceDashboard.test.tsx` (~18 tests)
-            - [ ] S5.3: Data dictionary update for migration 054
-            - [ ] S5.4: Update TODO.md / requirements checkboxes
-            - [ ] S5.5: Update `0_REQUIREMENTS.md` §3.6 checkboxes
-
 
 - [ ] **Bugs**
     - [ ] Bottom battle bar updates, character starts too far to the left when dying. The monsters seem to move behind him.
@@ -71,4 +30,4 @@
 
 ---
 
-*Updated: 2026-03-12 (3.6 requirements breakdown complete; 3.6.0–3.6.4 phases defined)*
+*Updated: 2026-03-12 (3.6 Admin Finance Dashboard complete — moved to DONE.md)*
