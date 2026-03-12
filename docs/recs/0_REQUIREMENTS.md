@@ -219,16 +219,13 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] Shop catalog management and marketplace moderation tools.
 
 ## 4. Social & MMORPG Features
-- [ ] **Communication Integration:**
-    - [ ] Email alerts to users (email integration somewhere)
-- [ ] **Integrated Chat:**
-    - [ ] **General:** Global communication.
-    - [ ] **Chapter Rooms:** Content-specific discussion (instanced by book chapter).
-- [ ] **Leaderboards:**
-    - [ ] Global Cumulative Score.
-    - [ ] Chapter-specific Time Attack (Speedrunning).
-    - [ ] Monthly competitive rankings.
-- [ ] **Achievements:** Google Play Games Services integration for persistent cross-platform achievements.
+- [x] **Integrated Chat:** *(Implemented in 2.6.4)*
+    - [x] **General:** Global communication via FastAPI WebSocket, JWT-authenticated, profanity filter, rate limiting, admin mute controls.
+- [x] **Leaderboards:** *(Implemented in 2.7.3 — Hall of Echoes)*
+    - [x] **Global Cumulative Score:** Vanguard (progression) and Alchemist (essence) categories.
+    - [x] **Chapter-specific Time Attack (Speedrunning):** The Swift category — fastest boss completion times.
+    - [x] **Scholar Leaderboard:** Total unique story beats unlocked.
+- [x] **Achievements:** 90+ achievements across Combat, Narrative, Economics, Idle Training, and Discovery categories. *(Implemented in 2.7.3 — Achievement Matrix)*
 
 ## 5. Administrative Systems
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
@@ -246,24 +243,24 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [ ] Flag entities using generic sprites or missing unique death sounds.
     - [ ] Flag skills with missing SFX keys.
     - [ ] Flag generic stat blocks not extracted from lore.
+- [ ] **Game Content Management:** 
+    - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
+    - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
+- [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
+- [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
+- [ ] Work on the outstanding C requirements (generators)
 
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
 - [x] **Frontend (React/Vite/TS):** Responsive, high-fidelity UI with Vanilla CSS.
-- [ ] **Game Content Management:** 
-    - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
-    - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
 - [x] **Deployment:** Dockerized services on Google Cloud Run with automated Google Cloud Build CI/CD.
 - [x] **Secrets:** All sensitive keys (Stripe, Firebase, SQL) must reside in Google Secret Manager.
 
 ## 7. Non-Functional Requirements
 - [ ] **Latency:** Core clicker actions must feel instantaneous (optimistic UI).
 - [ ] **Scalability:** System must handle 1,000+ concurrent players in chat/leaderboard instances.
-- [ ] **Security:** Rigorous JWT validation and Stripe webhook signature verification.
+- [ ] **Security:** Rigorous JWT validation and Stripe webhook signature verification. Library CVE checking, CORS checking, PenTesting, other security testing.
 
-## 8. Additional Requirements
-- [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
-- [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
 
 ## 99. Deferred Features (Post-First-Release)
 
@@ -285,6 +282,18 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ### 99.5 Cloud Run Single-Instance WebSocket Deployment
 - [ ] **Deployment:** Set `--max-instances=1` on Cloud Run for single-instance WebSocket to ensure in-memory chat buffer consistency until Redis Pub/Sub (99.4) is implemented.
+
+### 99.6 Email Notifications
+- [ ] **Email Alerts:** Email integration for player notifications (account events, milestones, marketing). Requires email provider (SendGrid/SES), templates, and opt-in preferences.
+
+### 99.7 Chapter Chat Rooms
+- [ ] **Chapter Rooms:** Content-specific chat channels instanced by book chapter. Schema already supports multi-channel (`chat_channels.channel_type = 'chapter'`); requires activation, UI channel picker, and per-chapter instance management.
+
+### 99.8 Monthly Competitive Rankings
+- [ ] **Monthly Rankings:** Seasonal leaderboard resets with historical snapshots, reward distribution, and archive viewing.
+
+### 99.9 Google Play Games Services
+- [ ] **Cross-Platform Achievements:** Google Play Games Services integration for persistent cross-platform achievement tracking.
 
 ---
 
