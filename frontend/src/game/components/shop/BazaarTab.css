@@ -1,0 +1,1304 @@
+/* =============================================================================
+   BazaarTab — Dreamwalker's Bazaar Styles
+   ============================================================================= */
+
+/* Loading */
+.bazaar-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  color: #888;
+}
+
+/* Header */
+.bazaar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #222;
+}
+
+.bazaar-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bazaar-shard-icon {
+  color: #6ea8fe;
+  font-size: 1.1rem;
+}
+
+.bazaar-shard-amount {
+  color: #6ea8fe;
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.bazaar-shard-label {
+  color: #888;
+  font-size: 0.9rem;
+  margin-left: 0.2rem;
+}
+
+.bazaar-btn-buy-shards {
+  padding: 0.45rem 1rem;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bazaar-btn-buy-shards:hover {
+  background: #222;
+  color: #ddd;
+  border-color: #444;
+}
+
+.bazaar-inline-error {
+  background: #1a0a0a;
+  border: 1px solid #331111;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Sub-tab navigation */
+.bazaar-subtabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #222;
+  margin-bottom: 1rem;
+}
+
+.bazaar-subtab-btn {
+  padding: 0.6rem 1.2rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.bazaar-subtab-btn:hover {
+  color: #ccc;
+}
+
+.bazaar-subtab-btn.active {
+  color: #e0c060;
+  border-bottom-color: #e0c060;
+}
+
+/* Content area */
+.bazaar-content {
+  flex: 1;
+}
+
+/* =============================================================================
+   BrowseListings
+   ============================================================================= */
+
+/* Filter Bar */
+.browse-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #111118;
+  border: 1px solid #222;
+  border-radius: 8px;
+}
+
+.browse-filter-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.browse-filter-select {
+  padding: 0.4rem 0.6rem;
+  background: #0d0d1a;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  color: #ddd;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.browse-filter-select:focus {
+  border-color: #e0c060;
+  outline: none;
+}
+
+.browse-price-range {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.browse-price-input {
+  width: 90px;
+  padding: 0.4rem 0.6rem;
+  background: #0d0d1a;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  color: #ddd;
+  font-size: 0.8rem;
+}
+
+.browse-price-input:focus {
+  border-color: #e0c060;
+  outline: none;
+}
+
+.browse-price-sep {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.browse-search-input {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.4rem 0.6rem;
+  background: #0d0d1a;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  color: #ddd;
+  font-size: 0.8rem;
+}
+
+.browse-search-input:focus {
+  border-color: #e0c060;
+  outline: none;
+}
+
+.browse-search-btn {
+  padding: 0.4rem 1rem;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #e0c060;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.browse-search-btn:hover {
+  background: #222;
+  border-color: #e0c060;
+}
+
+/* Empty state */
+.browse-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Listings Grid */
+.browse-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Pagination */
+.browse-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+}
+
+.browse-page-btn {
+  padding: 0.4rem 1rem;
+  background: #1a1a2e;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.browse-page-btn:hover:not(:disabled) {
+  background: #222;
+  color: #ddd;
+  border-color: #444;
+}
+
+.browse-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.browse-page-info {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* =============================================================================
+   ListingCard
+   ============================================================================= */
+.listing-card {
+  background: #161625;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  transition: all 0.2s;
+}
+
+.listing-card:hover {
+  border-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.listing-card.own {
+  opacity: 0.7;
+}
+
+.listing-card.own:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.listing-card-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.listing-card-rarity {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.12rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.listing-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+  margin: 0.2rem 0;
+}
+
+.listing-card-stat {
+  font-size: 0.7rem;
+  color: #aaa;
+  background: #0d0d1a;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid #1a1a2e;
+}
+
+.listing-card-stat-more {
+  font-size: 0.65rem;
+  color: #666;
+  font-style: italic;
+}
+
+.listing-card-slot {
+  font-size: 0.65rem;
+  color: #a78bfa;
+  background: #1a1028;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #2a1a40;
+  text-transform: capitalize;
+}
+
+.listing-card-price {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.3rem;
+}
+
+.listing-card-shard-icon {
+  color: #6ea8fe;
+  font-size: 0.9rem;
+}
+
+.listing-card-price-value {
+  color: #6ea8fe;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.listing-card-price-value.cant-afford {
+  color: #666;
+}
+
+.listing-card-comparable {
+  font-size: 0.65rem;
+  color: #666;
+}
+
+.listing-card-seller {
+  font-size: 0.7rem;
+  color: #777;
+  margin-top: 0.1rem;
+}
+
+.listing-card-own-label {
+  color: #e0c060;
+  font-weight: 600;
+}
+
+.listing-card-buy-btn {
+  margin-top: auto;
+  padding: 0.4rem 1rem;
+  background: linear-gradient(135deg, #e0c060, #d4a840);
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.listing-card-buy-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f0d070, #e0b850);
+}
+
+.listing-card-buy-btn.disabled,
+.listing-card-buy-btn:disabled {
+  background: #222;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   BazaarPurchaseModal
+   ============================================================================= */
+.bpm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: bpm-fade-in 0.2s ease;
+}
+
+@keyframes bpm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.bpm-modal {
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 440px;
+  width: 90%;
+  animation: bpm-slide-up 0.2s ease;
+}
+
+@keyframes bpm-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.bpm-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e0c060;
+  text-align: center;
+}
+
+.bpm-item-name {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.bpm-item-rarity {
+  text-align: center;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  margin-bottom: 0.75rem;
+}
+
+.bpm-item-stats {
+  background: #0d0d1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.bpm-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.15rem 0;
+  font-size: 0.8rem;
+}
+
+.bpm-stat-key {
+  color: #888;
+  text-transform: capitalize;
+}
+
+.bpm-stat-val {
+  color: #6afe6a;
+  font-weight: 600;
+}
+
+.bpm-seller {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 0.75rem;
+}
+
+.bpm-price-section {
+  border-top: 1px solid #222;
+  padding-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.bpm-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0;
+}
+
+.bpm-label {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.bpm-price {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #6ea8fe;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.bpm-shard-icon {
+  color: #6ea8fe;
+}
+
+.bpm-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #6ea8fe;
+  font-weight: 600;
+}
+
+.bpm-balance.insufficient {
+  color: #ff6b6b;
+}
+
+.bpm-balance-after {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #888;
+  font-weight: 600;
+}
+
+.bpm-deficit {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  background: #1a0a0a;
+  border: 1px solid #331111;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.bpm-buy-shards-link {
+  background: none;
+  border: none;
+  color: #6ea8fe;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.bpm-buy-shards-link:hover {
+  color: #8ec4ff;
+}
+
+.bpm-warning {
+  background: #1a1800;
+  border: 1px solid #4a4000;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.bpm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bpm-btn {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.bpm-btn:active {
+  transform: scale(0.98);
+}
+
+.bpm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bpm-btn-confirm {
+  background: linear-gradient(135deg, #e0c060, #d4a840);
+  color: #111;
+}
+
+.bpm-btn-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f0d070, #e0b850);
+}
+
+.bpm-btn-cancel {
+  background: #222;
+  color: #888;
+  border: 1px solid #333;
+}
+
+.bpm-btn-cancel:hover:not(:disabled) {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+/* =============================================================================
+   TradeNotificationOverlay
+   ============================================================================= */
+.tno-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: bpm-fade-in 0.2s ease;
+}
+
+.tno-panel {
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  max-width: 460px;
+  width: 90%;
+  animation: bpm-slide-up 0.2s ease;
+}
+
+.tno-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e0c060;
+  text-align: center;
+}
+
+.tno-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tno-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #0d0d1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+}
+
+.tno-item-sold {
+  border-left: 3px solid #4caf50;
+}
+
+.tno-item-expired {
+  border-left: 3px solid #ff9800;
+}
+
+.tno-item-removed {
+  border-left: 3px solid #ff6b6b;
+}
+
+.tno-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.tno-item-sold .tno-icon {
+  color: #4caf50;
+}
+
+.tno-item-expired .tno-icon {
+  color: #ff9800;
+}
+
+.tno-item-removed .tno-icon {
+  color: #ff6b6b;
+}
+
+.tno-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tno-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.tno-item-status {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.tno-shard-icon {
+  color: #6ea8fe;
+  font-size: 0.85rem;
+}
+
+.tno-dismiss-btn {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #ddd;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tno-dismiss-btn:hover {
+  background: #222;
+  border-color: #444;
+}
+
+/* =============================================================================
+   ClaimModal
+   ============================================================================= */
+.claim-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  animation: bpm-fade-in 0.2s ease;
+}
+
+.claim-modal {
+  background: #141420;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  max-width: 520px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: bpm-slide-up 0.2s ease;
+}
+
+.claim-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ff9800;
+  text-align: center;
+}
+
+.claim-desc {
+  font-size: 0.85rem;
+  color: #aaa;
+  text-align: center;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.claim-desc strong {
+  color: #ddd;
+}
+
+.claim-new-item-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.5rem 0.7rem;
+  background: #0d0d1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.claim-stats-label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-right: 0.3rem;
+}
+
+.claim-stat {
+  font-size: 0.72rem;
+  color: #6afe6a;
+  background: #0d1a0d;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid #1a2a1a;
+}
+
+.claim-section {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #0d0d1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+}
+
+.claim-section-danger {
+  border-color: #331111;
+  background: #110808;
+}
+
+.claim-section-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ddd;
+}
+
+.claim-section-desc {
+  font-size: 0.78rem;
+  color: #888;
+  margin-bottom: 0.6rem;
+}
+
+.claim-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+}
+
+.claim-inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: #141420;
+  border: 1px solid #222;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.claim-inventory-item:hover {
+  border-color: #444;
+}
+
+.claim-inventory-item.selected {
+  border-color: #e0c060;
+  background: #1a1a10;
+}
+
+.claim-inv-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ddd;
+  flex: 1;
+}
+
+.claim-inv-rarity {
+  font-size: 0.65rem;
+  color: #888;
+  text-transform: capitalize;
+}
+
+.claim-inv-slot {
+  font-size: 0.65rem;
+  color: #a78bfa;
+  text-transform: capitalize;
+}
+
+.claim-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.claim-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.claim-btn-replace {
+  background: linear-gradient(135deg, #e0c060, #d4a840);
+  color: #111;
+}
+
+.claim-btn-replace:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f0d070, #e0b850);
+}
+
+.claim-btn-discard {
+  background: #331111;
+  color: #ff6b6b;
+  border: 1px solid #441111;
+}
+
+.claim-btn-discard:hover:not(:disabled) {
+  background: #441111;
+}
+
+.claim-discard-confirm {
+  margin-top: 0.5rem;
+}
+
+.claim-discard-warning {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+
+.claim-discard-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.claim-btn-discard-confirm {
+  background: #ff4444;
+  color: #fff;
+  flex: 1;
+}
+
+.claim-btn-discard-confirm:hover:not(:disabled) {
+  background: #ff5555;
+}
+
+.claim-btn-cancel {
+  background: #222;
+  color: #888;
+  border: 1px solid #333;
+  flex: 1;
+}
+
+.claim-btn-cancel:hover:not(:disabled) {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+/* =============================================================================
+   MyListings
+   ============================================================================= */
+.my-listings-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e0c060;
+  margin: 0 0 1rem;
+}
+
+.my-listings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.my-listing-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: #161625;
+  border: 1px solid #222;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.my-listing-row:hover {
+  border-color: #333;
+}
+
+.my-listing-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.my-listing-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.my-listing-rarity {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: capitalize;
+}
+
+.my-listing-price {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: #6ea8fe;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.my-listing-cancel-btn {
+  padding: 0.35rem 0.8rem;
+  background: #331111;
+  border: 1px solid #441111;
+  border-radius: 6px;
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.my-listing-cancel-btn:hover:not(:disabled) {
+  background: #441111;
+  color: #ff8888;
+}
+
+.my-listing-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   NPCVendor
+   ============================================================================= */
+.npc-vendor-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e0c060;
+  margin: 0 0 0.3rem;
+}
+
+.npc-vendor-desc {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0 0 1rem;
+}
+
+.npc-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.vendor-item-card {
+  background: #161625;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  transition: all 0.2s;
+}
+
+.vendor-item-card:hover {
+  border-color: #333;
+}
+
+.vendor-item-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.vendor-item-rarity {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.12rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.vendor-item-desc {
+  font-size: 0.72rem;
+  color: #777;
+  line-height: 1.3;
+}
+
+.vendor-item-stock {
+  font-size: 0.7rem;
+  color: #fbbf24;
+}
+
+.vendor-item-price {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: #6ea8fe;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.vendor-buy-btn {
+  margin-top: auto;
+  padding: 0.4rem 1rem;
+  background: linear-gradient(135deg, #e0c060, #d4a840);
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.vendor-buy-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f0d070, #e0b850);
+}
+
+.vendor-buy-btn.disabled,
+.vendor-buy-btn:disabled {
+  background: #222;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   TradeHistory
+   ============================================================================= */
+.trade-history-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e0c060;
+  margin: 0 0 1rem;
+}
+
+.trade-history-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #222;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.trade-history-header {
+  display: flex;
+  background: #111118;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #222;
+}
+
+.trade-history-header .th-col {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.trade-history-row {
+  display: flex;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #1a1a2e;
+  transition: background 0.15s;
+}
+
+.trade-history-row:last-child {
+  border-bottom: none;
+}
+
+.trade-history-row:hover {
+  background: #111118;
+}
+
+.th-col {
+  font-size: 0.82rem;
+  color: #ddd;
+}
+
+.th-item {
+  flex: 2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.th-type {
+  flex: 1;
+}
+
+.th-type-purchase {
+  color: #6ea8fe;
+}
+
+.th-type-sale {
+  color: #4caf50;
+}
+
+.th-type-vendor {
+  color: #fbbf24;
+}
+
+.th-price {
+  flex: 1;
+}
+
+.th-price-gain {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.th-price-spend {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.th-party {
+  flex: 1;
+  color: #888;
+}
+
+.th-date {
+  flex: 1;
+  color: #666;
+  text-align: right;
+}
+
+/* =============================================================================
+   Responsive
+   ============================================================================= */
+@media (max-width: 640px) {
+  .bazaar-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .bazaar-subtabs {
+    overflow-x: auto;
+  }
+
+  .browse-filter-row {
+    flex-direction: column;
+  }
+
+  .browse-filter-select {
+    width: 100%;
+  }
+
+  .browse-price-range {
+    width: 100%;
+  }
+
+  .browse-price-input {
+    flex: 1;
+  }
+
+  .browse-search-input {
+    width: 100%;
+  }
+
+  .browse-listings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-vendor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-history-header,
+  .trade-history-row {
+    font-size: 0.72rem;
+  }
+
+  .th-party,
+  .th-date {
+    display: none;
+  }
+
+  .claim-discard-actions {
+    flex-direction: column;
+  }
+}

@@ -35,6 +35,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `049` | Shard Purchases & Stripe Integration (3.1) | Created 3 tables: `shard_packages`, `payment_orders`, `stripe_webhook_events`. Added `stripe_customer_id`, `first_purchase_claimed`, `account_flag` columns to `players`. Seeded 6 `game_configs` keys (category: economy): stripe_first_purchase_multiplier, payment_poll_max_attempts, payment_poll_interval_ms, reconciliation_lookback_hours, checkout_expiration_minutes, refund_eligible_days. |
 | `050` | Subscription System — Elysium Ascendant (3.2) | Created 2 tables: `player_subscriptions`, `subscription_stipend_log`. Added `is_ascendant BOOLEAN`, `cumulative_subscription_months INTEGER` columns to `players`. Seeded 10 subscription titles, 11 subscription/economy achievements, 11 `game_configs` keys (category: subscription). |
 | `051` | Elysium Emporium (3.3) | Created 5 tables: `shop_items`, `shop_bundles`, `shop_bundle_items`, `player_shop_items`, `player_active_boosters`. Added `equipped_flair_id`, `equipped_badge_id`, `equipped_avatar_id` columns to `players`. Added `equipped_skin_id` column to `player_characters`. Widened `shard_transactions` source_type CHECK constraint (+shop_purchase, +admin_refund). Seeded 32 shop items (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters), 3 bundles + 9 bundle item mappings, 9 `game_configs` keys (category: economy). |
+| `053` | Dreamwalker's Bazaar (3.5) | Created 4 tables: `marketplace_listings`, `marketplace_trades`, `marketplace_notifications`, `marketplace_price_history`. Added `marketplace_slots_purchased INTEGER` to `players`. Added `marketplace_listing_id INTEGER FK` to `player_artifacts` and `player_inventory`. Updated `enforce_inventory_slot_cap()` trigger to exclude marketplace-listed items from slot count. Widened `shard_transactions` source_type CHECK (+marketplace_purchase, +marketplace_sale). Widened `shop_items` category CHECK (+marketplace_permit). Seeded 7 Bazaar Permits, 4 titles, 9 achievements with parent chains and title rewards, 15 `game_configs` keys (8 marketplace + 7 salvage). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -70,7 +71,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. **3.1:** Added `stripe_customer_id VARCHAR(255) UNIQUE NULL` (Stripe Customer ID), `first_purchase_claimed BOOLEAN DEFAULT FALSE` (2x first-purchase bonus used permanently), `account_flag VARCHAR(30) NULL` ('dispute' blocks purchases). **3.3:** Added `equipped_flair_id INTEGER FK shop_items`, `equipped_badge_id INTEGER FK shop_items`, `equipped_avatar_id INTEGER FK shop_items` for account-wide cosmetic equip. |
+| `players` | Core user account data, roles (`is_owner`, `is_system_admin`, `is_game_admin`), and status. **3.1:** Added `stripe_customer_id VARCHAR(255) UNIQUE NULL` (Stripe Customer ID), `first_purchase_claimed BOOLEAN DEFAULT FALSE` (2x first-purchase bonus used permanently), `account_flag VARCHAR(30) NULL` ('dispute' blocks purchases). **3.3:** Added `equipped_flair_id INTEGER FK shop_items`, `equipped_badge_id INTEGER FK shop_items`, `equipped_avatar_id INTEGER FK shop_items` for account-wide cosmetic equip. **3.5:** Added `marketplace_slots_purchased INTEGER NOT NULL DEFAULT 0` (extra Bazaar listing slots purchased via permits). |
 | `player_settings` | User-specific preferences (volume, speed, audio toggles, font size, UI scale). **2.5:** Added `master_volume SMALLINT DEFAULT 80` (0-100) and `master_muted BOOLEAN DEFAULT FALSE`. Note: `audio_enabled` is deprecated in favor of `master_muted`. **2.6:** Added `chat_muted BOOLEAN DEFAULT FALSE` and `chat_muted_until VARCHAR(50)` for admin chat mute support. |
 | `character_classes` | Definitions for player classes (Engineer, Conduit, Drifter, Vessel). **2.4:** Added `visual_config JSONB` for class visual identity (colors, avatar, particles, PixiJS tints). |
 | `player_characters` | Instances of characters owned by players, tracking level and stats. **2.4:** Added `character_xp BIGINT DEFAULT 0`. Deprecated columns: `strength`, `agility`, `intelligence` (use `character_stats` table instead). **3.3:** Added `equipped_skin_id INTEGER FK shop_items` for character-level skin equip. |
@@ -99,7 +100,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | Table | Description |
 | :--- | :--- |
 | `inventory_items` | Master templates for equipment, consumables, and materials. **2.4.2:** Added `item_code VARCHAR(60)` (5-part procedural code: PREFIX_QUALITY_LORETAG_TYPE_SUFFIX), `item_level INTEGER DEFAULT 1` (power level capped at chapter.recommended_level), `min_char_level INTEGER DEFAULT 1` (minimum character level to equip), `stat_requirements JSONB DEFAULT '{}'` (minimum stat values to equip), `gear_slot_id INTEGER FK gear_slots` (which gear slot this item occupies), `is_dream_item BOOLEAN DEFAULT FALSE` (TRUE for procedurally generated items), `acquired_from VARCHAR(100)` (source context: 'dream_drop', 'admin_grant', etc.). |
-| `player_inventory` | Instances of items owned and equipped by characters. **2.4.2:** New trigger `trg_enforce_inventory_slot_cap` enforces max 10 non-equipped items per character. |
+| `player_inventory` | Instances of items owned and equipped by characters. **2.4.2:** New trigger `trg_enforce_inventory_slot_cap` enforces max 10 non-equipped items per character. **3.5:** Added `marketplace_listing_id INTEGER FK marketplace_listings ON DELETE SET NULL` (NULL = not listed). Index: `idx_pi_marketplace`. Trigger updated to exclude marketplace-listed items from slot cap count. |
 | `artifacts_legacy` | *(Renamed from `artifacts` in 046)* Original lore-based items providing global passive bonuses. Superseded by `curated_artifacts` + `player_artifacts`. |
 | `player_collections_legacy` | *(Renamed from `player_collections` in 046)* Original tracking of uncovered artifacts. Superseded by `player_artifacts`. |
 
@@ -214,8 +215,8 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `artifact_type_bases` | Core artifact types for procedural generation (e.g., Shard, Prism, Sigil). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `base_stat_range JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 15 types seeded. |
 | `artifact_prefixes` | Prefix name components for generated artifacts (e.g., Fractured, Luminous). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 prefixes seeded. |
 | `artifact_suffixes` | Suffix name components for generated artifacts (e.g., of the Void, of the Tower). Columns: `id SERIAL PK`, `code VARCHAR(20) UNIQUE NOT NULL`, `display_name VARCHAR(100) NOT NULL`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`. 20 suffixes seeded. |
-| `player_artifacts` | Artifacts owned by player characters (both curated and generated). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `character_id INTEGER FK player_characters ON DELETE CASCADE`, `artifact_type VARCHAR(20) NOT NULL` CHECK IN ('curated', 'generated'), `curated_artifact_id INTEGER FK curated_artifacts` (NULL for generated), `artifact_code VARCHAR(100)` (NULL for curated; PREFIX_TYPE_SUFFIX for generated), `name VARCHAR(200) NOT NULL`, `rarity VARCHAR(10) NOT NULL` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `icon_sprite_key VARCHAR(100)`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `is_new BOOLEAN DEFAULT TRUE`, `acquired_from VARCHAR(100)`, `acquired_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(character_id, artifact_type, curated_artifact_id)` and `(character_id, artifact_code)`. |
-| `shard_transactions` | Premium currency audit trail. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `amount INTEGER NOT NULL`, `balance_after INTEGER NOT NULL`, `transaction_type VARCHAR(30) NOT NULL` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct'), `source_type VARCHAR(30)` CHECK IN ('achievement', 'purchase', 'refund', 'admin_grant', 'admin_deduct', 'spend', 'subscription_stipend', 'subscription_refund', 'shop_purchase', 'admin_refund'), `reference_type VARCHAR(50)`, `reference_id INTEGER`, `description TEXT`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. Index on `(player_id, created_at DESC)`. **3.3:** Widened `source_type` CHECK constraint to include 'shop_purchase' and 'admin_refund'. |
+| `player_artifacts` | Artifacts owned by player characters (both curated and generated). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `character_id INTEGER FK player_characters ON DELETE CASCADE`, `artifact_type VARCHAR(20) NOT NULL` CHECK IN ('curated', 'generated'), `curated_artifact_id INTEGER FK curated_artifacts` (NULL for generated), `artifact_code VARCHAR(100)` (NULL for curated; PREFIX_TYPE_SUFFIX for generated), `name VARCHAR(200) NOT NULL`, `rarity VARCHAR(10) NOT NULL` CHECK IN ('common', 'uncommon', 'rare', 'epic', 'cosmic'), `icon_sprite_key VARCHAR(100)`, `stat_bonuses JSONB NOT NULL DEFAULT '{}'`, `is_new BOOLEAN DEFAULT TRUE`, `acquired_from VARCHAR(100)`, `acquired_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. UNIQUE on `(character_id, artifact_type, curated_artifact_id)` and `(character_id, artifact_code)`. **3.5:** Added `marketplace_listing_id INTEGER FK marketplace_listings ON DELETE SET NULL` (NULL = not listed). Index: `idx_pa_marketplace`. |
+| `shard_transactions` | Premium currency audit trail. Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE`, `amount INTEGER NOT NULL`, `balance_after INTEGER NOT NULL`, `transaction_type VARCHAR(30) NOT NULL` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct'), `source_type VARCHAR(30)` CHECK IN ('purchase', 'reward', 'spend', 'refund', 'admin_grant', 'admin_deduct', 'subscription_stipend', 'subscription_refund', 'shop_purchase', 'admin_refund', 'donation', 'achievement', 'dispute', 'dispute_reversal', 'marketplace_purchase', 'marketplace_sale'), `reference_type VARCHAR(50)`, `reference_id INTEGER`, `description TEXT`, `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`. Index on `(player_id, created_at DESC)`. **3.3:** Widened `source_type` CHECK (+shop_purchase, +admin_refund). **3.4:** Added 'donation'. **3.5:** Added 'marketplace_purchase', 'marketplace_sale'. |
 
 **Legacy Table Renames (046):**
 - `artifacts` → `artifacts_legacy` (original lore artifact definitions)
@@ -345,7 +346,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `shop_items` | Master catalog of purchasable shop items. Columns: `id SERIAL PK`, `item_key VARCHAR(60) UNIQUE NOT NULL`, `name VARCHAR(100) NOT NULL`, `description TEXT`, `category VARCHAR(20) NOT NULL` CHECK IN ('skin', 'flair', 'badge', 'avatar', 'booster'), `price_shards INTEGER NOT NULL` (>0), `icon_path VARCHAR(255)`, `class_restriction INTEGER FK character_classes` (NULL = universal), `item_metadata JSONB` (boosters: `{boost_type, magnitude, duration_seconds}`; skins: `{portrait, avatar_config, battle_bar}`; flair: `{border_color, border_style, icon}`; badges: `{frame_style, primary_color, secondary_color}`), `is_active BOOLEAN DEFAULT TRUE`, `is_featured BOOLEAN DEFAULT FALSE`, `featured_from TIMESTAMPTZ`, `featured_until TIMESTAMPTZ`, `available_from TIMESTAMPTZ`, `available_until TIMESTAMPTZ`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Indexes: `idx_shop_items_category_active` (category, sort_order WHERE is_active), `idx_shop_items_featured` (is_featured WHERE TRUE), `idx_shop_items_availability` (available windows WHERE available_until NOT NULL). Auto-`updated_at` trigger. 32 items seeded (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters). |
+| `shop_items` | Master catalog of purchasable shop items. Columns: `id SERIAL PK`, `item_key VARCHAR(60) UNIQUE NOT NULL`, `name VARCHAR(100) NOT NULL`, `description TEXT`, `category VARCHAR(20) NOT NULL` CHECK IN ('skin', 'flair', 'badge', 'avatar', 'booster', 'patron_badge', 'patron_flair', 'patron_avatar', 'marketplace_permit'), `price_shards INTEGER NOT NULL` (>0), `icon_path VARCHAR(255)`, `class_restriction INTEGER FK character_classes` (NULL = universal), `item_metadata JSONB` (boosters: `{boost_type, magnitude, duration_seconds}`; skins: `{portrait, avatar_config, battle_bar}`; flair: `{border_color, border_style, icon}`; badges: `{frame_style, primary_color, secondary_color}`), `is_active BOOLEAN DEFAULT TRUE`, `is_featured BOOLEAN DEFAULT FALSE`, `featured_from TIMESTAMPTZ`, `featured_until TIMESTAMPTZ`, `available_from TIMESTAMPTZ`, `available_until TIMESTAMPTZ`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Indexes: `idx_shop_items_category_active` (category, sort_order WHERE is_active), `idx_shop_items_featured` (is_featured WHERE TRUE), `idx_shop_items_availability` (available windows WHERE available_until NOT NULL). Auto-`updated_at` trigger. 32 items seeded (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters). |
 | `shop_bundles` | Curated bundle packages with discount pricing. Columns: `id SERIAL PK`, `bundle_key VARCHAR(60) UNIQUE NOT NULL`, `name VARCHAR(100) NOT NULL`, `description TEXT`, `price_shards INTEGER NOT NULL` (>0), `original_price_shards INTEGER NOT NULL` (>0), `discount_pct INTEGER DEFAULT 20` (0-100), `icon_path VARCHAR(255)`, `is_active BOOLEAN DEFAULT TRUE`, `is_featured BOOLEAN DEFAULT FALSE`, `featured_from TIMESTAMPTZ`, `featured_until TIMESTAMPTZ`, `available_from TIMESTAMPTZ`, `available_until TIMESTAMPTZ`, `sort_order INTEGER DEFAULT 0`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Index: `idx_shop_bundles_active` (is_active, sort_order WHERE is_active). Auto-`updated_at` trigger. 3 bundles seeded. |
 | `shop_bundle_items` | Junction table linking bundles to their contained items. Columns: `id SERIAL PK`, `bundle_id INTEGER FK shop_bundles ON DELETE CASCADE NOT NULL`, `shop_item_id INTEGER FK shop_items ON DELETE CASCADE NOT NULL`, `sort_order INTEGER DEFAULT 0`. UNIQUE on `(bundle_id, shop_item_id)`. Index: `idx_bundle_items_bundle` (bundle_id, sort_order). 9 mappings seeded (3 items per bundle). |
 | `player_shop_items` | Player ownership of shop items (account-wide). Columns: `id SERIAL PK`, `player_id INTEGER FK players ON DELETE CASCADE NOT NULL`, `shop_item_id INTEGER FK shop_items` (NULL for bundle-only purchases), `source_bundle_id INTEGER FK shop_bundles` (non-NULL if acquired via bundle), `status VARCHAR(20) DEFAULT 'owned'` CHECK IN ('owned', 'refunded'), `purchased_at TIMESTAMPTZ DEFAULT NOW()`, `refunded_at TIMESTAMPTZ`. Indexes: `idx_psi_player_status` (player_id, status WHERE owned), `idx_psi_player_item` (player_id, shop_item_id WHERE owned), `idx_psi_player_bundle` (player_id, source_bundle_id WHERE NOT NULL). Partial UNIQUE: `idx_psi_unique_ownership` (player_id, shop_item_id WHERE owned AND shop_item_id NOT NULL). |
@@ -430,6 +431,148 @@ Added `'donation'` to the CHECK constraint.
 | `donor_leaderboard_size` | `donations` | Maximum entries on donor leaderboard (50). |
 | `recent_donors_count` | `donations` | Number of recent donors in rotating banner (5). |
 | `recent_donors_window_days` | `donations` | Days to look back for recent donors (7). |
+
+---
+
+### 20. Dreamwalker's Bazaar — Player Marketplace (3.5, Migration 053)
+
+#### Table: `marketplace_listings`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| seller_id | INTEGER | FK → players(id) ON DELETE CASCADE, NOT NULL | Listing seller |
+| buyer_id | INTEGER | FK → players(id) ON DELETE SET NULL | Buyer (set on sale) |
+| item_type | VARCHAR(20) | NOT NULL, CHECK IN ('artifact', 'equipment') | Type of item listed |
+| item_ref_id | INTEGER | NOT NULL | App-level FK to `player_artifacts.id` or `player_inventory.id` |
+| item_name | VARCHAR(150) | NOT NULL | Snapshot of item name at listing time |
+| item_rarity | VARCHAR(50) | NOT NULL | Snapshot of item rarity |
+| item_stats | JSONB | NOT NULL, DEFAULT '{}' | Snapshot of item stat bonuses |
+| item_icon_key | VARCHAR(100) | | Sprite key for listing thumbnail |
+| item_gear_slot | INTEGER | FK → gear_slots(id) ON DELETE SET NULL | Gear slot reference (equipment only) |
+| is_curated | BOOLEAN | NOT NULL, DEFAULT FALSE | Whether the listed artifact is curated |
+| price_shards | INTEGER | NOT NULL, CHECK >= 1 | Listing price in Shards |
+| status | VARCHAR(20) | NOT NULL, DEFAULT 'active', CHECK IN ('active', 'sold', 'expired', 'cancelled') | Listing lifecycle state |
+| listed_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | When the item was listed |
+| expires_at | TIMESTAMPTZ | NOT NULL | Expiry timestamp (listed_at + duration config) |
+| sold_at | TIMESTAMPTZ | | Timestamp of sale |
+| cancelled_at | TIMESTAMPTZ | | Timestamp of cancellation |
+| expired_at | TIMESTAMPTZ | | Timestamp of expiry processing |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Last update timestamp |
+
+**Indexes:** `idx_mpl_seller` (seller_id), `idx_mpl_status_expires` (status, expires_at WHERE active), `idx_mpl_item_name_rarity` (item_name, item_rarity WHERE active), `idx_mpl_price` (price_shards WHERE active), `idx_mpl_buyer` (buyer_id WHERE NOT NULL).
+
+#### Table: `marketplace_trades`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| listing_id | INTEGER | FK → marketplace_listings(id) ON DELETE CASCADE, NOT NULL | Source listing |
+| buyer_id | INTEGER | FK → players(id) ON DELETE CASCADE, NOT NULL | Buying player |
+| seller_id | INTEGER | FK → players(id) ON DELETE CASCADE, NOT NULL | Selling player |
+| item_type | VARCHAR(20) | NOT NULL, CHECK IN ('artifact', 'equipment') | Type of traded item |
+| item_ref_id | INTEGER | NOT NULL | App-level FK to item |
+| item_name | VARCHAR(150) | NOT NULL | Snapshot of traded item name |
+| item_rarity | VARCHAR(50) | NOT NULL | Snapshot of traded item rarity |
+| price_shards | INTEGER | NOT NULL | Sale price in Shards |
+| tax_shards | INTEGER | NOT NULL, DEFAULT 0 | Tax deducted (burned) |
+| seller_proceeds | INTEGER | NOT NULL | Net Shards credited to seller |
+| claim_status | VARCHAR(20) | NOT NULL, DEFAULT 'claimed', CHECK IN ('claimed', 'pending', 'discarded', 'reversed') | Item claim lifecycle (pending = buyer inventory full) |
+| traded_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Trade timestamp |
+
+**Indexes:** `idx_mpt_buyer` (buyer_id), `idx_mpt_seller` (seller_id), `idx_mpt_listing` (listing_id), `idx_mpt_pending_claim` (claim_status WHERE pending), `idx_mpt_traded_at` (traded_at).
+
+#### Table: `marketplace_notifications`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| player_id | INTEGER | FK → players(id) ON DELETE CASCADE, NOT NULL | Notification recipient |
+| notification_type | VARCHAR(30) | NOT NULL, CHECK IN ('item_sold', 'listing_expired', 'listing_removed') | Notification category |
+| title | VARCHAR(200) | NOT NULL | Notification title |
+| message | TEXT | NOT NULL | Notification body text |
+| related_listing_id | INTEGER | FK → marketplace_listings(id) ON DELETE SET NULL | Associated listing |
+| is_read | BOOLEAN | NOT NULL, DEFAULT FALSE | Read status |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Creation timestamp |
+| read_at | TIMESTAMPTZ | | When the notification was read |
+
+**Indexes:** `idx_mpn_player_unread` (player_id WHERE is_read = FALSE), `idx_mpn_created` (created_at).
+
+#### Table: `marketplace_price_history`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| listing_id | INTEGER | FK → marketplace_listings(id) ON DELETE CASCADE, NOT NULL | Associated listing |
+| price | INTEGER | NOT NULL | New price value |
+| old_price | INTEGER | | Previous price (NULL on initial listing) |
+| action | VARCHAR(20) | NOT NULL, CHECK IN ('listed', 'adjusted') | Type of price change |
+| changed_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Timestamp of price change |
+
+**Indexes:** `idx_mph_listing` (listing_id).
+
+#### Column Additions (053, players)
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| marketplace_slots_purchased | INTEGER | NOT NULL, DEFAULT 0 | Number of extra Bazaar listing slots purchased via permits |
+
+#### Column Additions (053, player_artifacts)
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| marketplace_listing_id | INTEGER | FK → marketplace_listings(id) ON DELETE SET NULL | Links artifact to its active marketplace listing (NULL = not listed) |
+
+**Index:** `idx_pa_marketplace` (marketplace_listing_id WHERE NOT NULL).
+
+#### Column Additions (053, player_inventory)
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| marketplace_listing_id | INTEGER | FK → marketplace_listings(id) ON DELETE SET NULL | Links equipment to its active marketplace listing (NULL = not listed) |
+
+**Index:** `idx_pi_marketplace` (marketplace_listing_id WHERE NOT NULL).
+
+#### Updated CHECK Constraints (053)
+
+- **`shard_transactions.source_type`:** Added `'marketplace_purchase'`, `'marketplace_sale'`. Full set: `'purchase'`, `'reward'`, `'spend'`, `'refund'`, `'admin_grant'`, `'admin_deduct'`, `'subscription_stipend'`, `'subscription_refund'`, `'shop_purchase'`, `'admin_refund'`, `'donation'`, `'achievement'`, `'dispute'`, `'dispute_reversal'`, `'marketplace_purchase'`, `'marketplace_sale'`.
+- **`shop_items.category`:** Added `'marketplace_permit'`. Full set: `'skin'`, `'flair'`, `'badge'`, `'avatar'`, `'booster'`, `'patron_badge'`, `'patron_flair'`, `'patron_avatar'`, `'marketplace_permit'`.
+
+#### Updated Trigger (053)
+
+- **`enforce_inventory_slot_cap()`:** Updated to exclude items with `marketplace_listing_id IS NOT NULL` from the stored-item count. Items listed on the Bazaar do not count against the 10-slot inventory cap.
+
+#### Seed Data (053)
+
+- **7 Bazaar Permits** in `shop_items` (category: `marketplace_permit`): Slots 4-10, prices doubling from 200 to 12,800 Shards.
+- **4 Titles** in `titles`: Merchant (prefix), Collector (suffix), Dreamwalker (prefix), Baron (suffix).
+- **9 Achievements** in `achievements` (category: `economics`): Open for Business (list 1), Deal Sealed (sell 1), Bazaar Regular (buy 1), Merchant of Elysium (sell 10, parent: Deal Sealed, rewards Merchant title), Master Merchant (sell 50, parent: Merchant of Elysium), The Scrapper (salvage 100), Avid Collector (buy 25, parent: Bazaar Regular, rewards Collector title), Jackpot (single sale >= 5000, rewards Dreamwalker title), Trade Baron (cumulative 10,000 earned, rewards Baron title).
+- **15 `game_configs` keys** (8 marketplace + 7 salvage):
+
+#### Marketplace `game_configs` Keys (seeded in 053)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `marketplace_tax_rate` | `marketplace` | Transaction tax rate deducted from seller proceeds and burned (0.05 = 5%). |
+| `marketplace_listing_duration_hours` | `marketplace` | Listing duration in hours before automatic expiry (24). |
+| `marketplace_base_listing_slots` | `marketplace` | Default listing slots per player before permits (3). |
+| `marketplace_max_listing_slots` | `marketplace` | Hard cap on total listing slots (10 = 3 base + 7 permits). |
+| `marketplace_min_listing_price` | `marketplace` | Minimum listing price in Shards (1). |
+| `marketplace_notification_retention_days` | `marketplace` | Days to retain read notifications before purge (30). |
+| `bazaar_permit_base_price` | `marketplace` | Price of first Bazaar Permit in Shards (200) — doubles per tier. |
+| `bazaar_permit_price_multiplier` | `marketplace` | Price multiplier per subsequent permit purchase (2.0). |
+
+#### Salvage `game_configs` Keys (seeded in 053)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `salvage_equipment_common_essence` | `salvage` | Base Essence for salvaging Common equipment (5). |
+| `salvage_equipment_uncommon_essence` | `salvage` | Base Essence for salvaging Uncommon equipment (15). |
+| `salvage_equipment_rare_essence` | `salvage` | Base Essence for salvaging Rare equipment (50). |
+| `salvage_equipment_epic_essence` | `salvage` | Base Essence for salvaging Epic equipment (150). |
+| `salvage_equipment_legendary_essence` | `salvage` | Base Essence for salvaging Legendary/Cosmic equipment and artifacts (500). |
+| `salvage_artifact_multiplier` | `salvage` | Multiplier for artifact salvage vs equipment base rate (2.0). |
+| `salvage_curated_bonus_multiplier` | `salvage` | Additional bonus multiplier for curated artifact salvage (1.15). |
 
 ---
 

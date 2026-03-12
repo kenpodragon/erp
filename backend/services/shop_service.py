@@ -148,6 +148,22 @@ def purchase_item(player_id: int, item_id: int, session: Session) -> dict:
         booster_status = _activate_booster(player_id, item, session)
         result["booster_status"] = booster_status
 
+    elif item.category == "marketplace_permit":
+        # Bazaar Permit: increment marketplace_slots_purchased on player
+        from sqlalchemy import text as sa_text
+        # Check hard cap (max 7 permits = 10 total slots)
+        current_row = session.execute(
+            sa_text("SELECT marketplace_slots_purchased FROM players WHERE id = :pid"),
+            {"pid": player_id},
+        ).fetchone()
+        current_permits = current_row.marketplace_slots_purchased if current_row else 0
+        if current_permits >= 7:
+            raise ShopError("Maximum listing slots already unlocked (10/10)", "permit_cap")
+        session.execute(
+            sa_text("UPDATE players SET marketplace_slots_purchased = marketplace_slots_purchased + 1 WHERE id = :pid"),
+            {"pid": player_id},
+        )
+
     session.commit()
     return result
 

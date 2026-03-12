@@ -43,6 +43,7 @@ from models.payments import ShardPackage, PaymentOrder, StripeWebhookEvent
 from models.subscriptions import PlayerSubscription, SubscriptionStipendLog
 from models.shop import ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, PlayerActiveBooster
 from models.donation import Donation
+from models.marketplace import MarketplaceListing, MarketplaceTrade, MarketplaceNotification, MarketplacePriceHistory
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -71,4 +72,5 @@ __all__ = [
     "PlayerSubscription", "SubscriptionStipendLog",
     "ShopItem", "ShopBundle", "ShopBundleItem", "PlayerShopItem", "PlayerActiveBooster",
     "Donation",
+    "MarketplaceListing", "MarketplaceTrade", "MarketplaceNotification", "MarketplacePriceHistory",
 ]

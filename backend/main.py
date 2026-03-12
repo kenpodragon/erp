@@ -50,6 +50,8 @@ from routes.shop import router as shop_router
 from routes.admin_shop import router as admin_shop_router
 from routes.donations import router as donations_router
 from routes.admin_donations import router as admin_donations_router
+from routes.marketplace import router as marketplace_router
+from routes.admin_marketplace import router as admin_marketplace_router
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +203,8 @@ app.include_router(shop_router)
 app.include_router(admin_shop_router)
 app.include_router(donations_router)
 app.include_router(admin_donations_router)
+app.include_router(marketplace_router)
+app.include_router(admin_marketplace_router)
 
 
 @app.get("/debug-routes")

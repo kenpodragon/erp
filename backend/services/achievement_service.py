@@ -148,6 +148,47 @@ def get_player_cumulative_stats(player_id: int, db: Session) -> dict:
         stats["shards_purchased"] = 0
         stats["shards_spent"] = 0
 
+    # --- Marketplace stats (3.5) ---
+    try:
+        listing_count = db.exec(text(
+            "SELECT COUNT(*) FROM marketplace_listings WHERE seller_id = :pid"
+        ), params={"pid": player_id}).first()
+        stats["marketplace_listings"] = int(listing_count[0]) if listing_count else 0
+
+        sales_row = db.exec(text("""
+            SELECT COUNT(*) AS sales_count,
+                   COALESCE(MAX(price_shards), 0) AS max_sale_price,
+                   COALESCE(SUM(seller_proceeds), 0) AS total_earned
+            FROM marketplace_trades
+            WHERE seller_id = :pid
+        """), params={"pid": player_id}).first()
+        if sales_row:
+            m = sales_row._mapping
+            stats["marketplace_sales"] = int(m["sales_count"])
+            stats["marketplace_single_sale_max"] = int(m["max_sale_price"])
+            stats["marketplace_total_earned"] = int(m["total_earned"])
+        else:
+            stats["marketplace_sales"] = 0
+            stats["marketplace_single_sale_max"] = 0
+            stats["marketplace_total_earned"] = 0
+
+        purchase_count = db.exec(text(
+            "SELECT COUNT(*) FROM marketplace_trades WHERE buyer_id = :pid"
+        ), params={"pid": player_id}).first()
+        stats["marketplace_purchases"] = int(purchase_count[0]) if purchase_count else 0
+
+        salvage_count = db.exec(text(
+            "SELECT COUNT(*) FROM activity_events WHERE player_id = :pid AND event_type = 'item_salvaged'"
+        ), params={"pid": player_id}).first()
+        stats["marketplace_salvages"] = int(salvage_count[0]) if salvage_count else 0
+    except Exception:
+        stats["marketplace_listings"] = 0
+        stats["marketplace_sales"] = 0
+        stats["marketplace_purchases"] = 0
+        stats["marketplace_salvages"] = 0
+        stats["marketplace_single_sale_max"] = 0
+        stats["marketplace_total_earned"] = 0
+
     return stats
 
 

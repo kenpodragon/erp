@@ -201,10 +201,17 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] Backend tests (16 pytest), frontend tests (7 vitest).
 - [x] **Phases:** 3.4.0 Backend Foundation, 3.4.1 Player UI, 3.4.2 Tests & Polish.
 
-### 3.5 Player Marketplace
-- [ ] Listing system (24hr fixed-price, FIFO, price transparency, price adjustment).
-- [ ] Buy flow (shard debit/credit, item transfer, trade history).
-- [ ] NPC Vendor salvage (Essence per rarity, double-confirm for curated artifacts).
+### 3.5 Dreamwalker's Bazaar (Player Marketplace) — COMPLETE
+- [x] **Detailed Requirements:** [3.5_DREAMWALKERS_BAZAAR.md](3.5_DREAMWALKERS_BAZAAR.md) | **Design:** [3.5_DREAMWALKERS_BAZAAR_DESIGN.md](3.5_DREAMWALKERS_BAZAAR_DESIGN.md) | **Schema:** [3.5_DREAMWALKERS_BAZAAR_SCHEMA.md](3.5_DREAMWALKERS_BAZAAR_SCHEMA.md)
+- [x] Listing system (24hr fixed-price, FIFO, price transparency, price adjustment, lazy expiry, listing slot expansion via Bazaar Permits).
+- [x] Buy flow (shard debit/credit with 5% burned tax, row-level locking, item transfer, claim queue for inventory-full equipment, trade history).
+- [x] NPC Vendor salvage (Essence per rarity, 2x artifact multiplier, 1.15x curated bonus, bulk salvage, double-confirm for curated artifacts).
+- [x] Trade notifications (sold/expired/removed, piggyback on idle gains pattern).
+- [x] 9 marketplace achievements with parent chains + 4 titles.
+- [x] Admin endpoints (listings, trades, stats, force-remove, reverse-trade).
+- [x] Player UI: BazaarTab (4th shop tab), BrowseListings, ListingCard, BazaarPurchaseModal, TradeNotificationOverlay, ClaimModal, MyListings, CreateListingModal, PriceAdjustModal, NPCVendor, TradeHistory, BazaarPermitUpsell.
+- [x] Backend tests (32 pytest), frontend tests (12 vitest).
+- [x] **Phases:** 3.5.0 Backend Foundation, 3.5.1 Browse & Buy UI, 3.5.2 Sell & Salvage UI, 3.5.3 Tests & Polish.
 
 ### 3.6 Admin Finance Dashboard & Tools
 - [ ] Stripe transaction viewer, shard management, and refund workflow.

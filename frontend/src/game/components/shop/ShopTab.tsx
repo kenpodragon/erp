@@ -7,6 +7,7 @@ import PaymentStatus from './PaymentStatus';
 import TransactionHistory from './TransactionHistory';
 import EmporiumTab from './EmporiumTab';
 import SupportUsTab from './SupportUsTab';
+import BazaarTab from './BazaarTab';
 import './ShopTab.css';
 
 export interface ShardPackage {
@@ -34,7 +35,7 @@ interface ShopTabProps {
   onPlayerUpdate: () => void;
 }
 
-type ShopSubTab = 'buy' | 'emporium' | 'support';
+type ShopSubTab = 'buy' | 'emporium' | 'support' | 'bazaar';
 
 const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
   const [subTab, setSubTab] = useState<ShopSubTab>('buy');
@@ -164,6 +165,12 @@ const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
         >
           Support Us
         </button>
+        <button
+          className={`shop-tab-btn ${subTab === 'bazaar' ? 'active' : ''}`}
+          onClick={() => setSubTab('bazaar')}
+        >
+          Dreamwalker's Bazaar
+        </button>
       </div>
 
       {/* Tab content */}
@@ -204,6 +211,10 @@ const ShopTab: React.FC<ShopTabProps> = ({ player, onPlayerUpdate }) => {
         )}
 
         {subTab === 'support' && <SupportUsTab />}
+
+        {subTab === 'bazaar' && (
+          <BazaarTab onPlayerUpdate={() => { fetchPackages(); onPlayerUpdate(); }} />
+        )}
       </div>
 
       {/* Purchase confirmation modal */}
