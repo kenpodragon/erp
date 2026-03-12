@@ -83,3 +83,23 @@ Generates the flavor recap text shown after defeating chapter/book boss nodes in
 - [ ] **7.2 GPT Generation:** Use GPT with the chapter/book `story_beats` summary as input to generate `transition_lore_text` — a congratulatory flavor recap displayed in the post-boss cinematic. Should be 3–6 sentences, immersive, narrative tone matching the book's voice.
 - [ ] **7.3 DB Population:** `UPDATE chapters SET transition_lore_text = '...' WHERE chapter_number = N;` and `UPDATE books SET transition_lore_text = '...' WHERE book_number = N;`. Placeholder seeds exist for chapters 1-2 and book 1 (migration 021); all remaining chapters/books need real content.
 - [ ] **7.4 Review:** Content must be reviewed for lore accuracy against `docs/lore/` guides before merging to production.
+
+---
+
+## 8. Elysium Emporium Cosmetic Asset Generators
+Automated generation of pixel-art cosmetic assets for the Elysium Emporium shop (Ref: `docs/recs/3.3_ELYSIUM_EMPORIUM.md`).
+
+- [ ] **8.1 Skin Generator:** Generate character skin pixel-art sprite sets for each launch skin (2 universal + 4 class-specific = 6 total). Each skin requires:
+    - Portrait image (128×128 px)
+    - Battle avatar sprite/color configuration (PixiJS-compatible JSON or spritesheet)
+    - Battle bar portrait thumbnail (48×48 px)
+    - Must respect class visual identity from `character_classes.visual_config` (color palette, silhouette, particle style).
+    - Universal skins use a neutral palette not tied to any class.
+    - Output: `/assets/game/cosmetics/skins/{skin_key}/` with `portrait.png`, `avatar_config.json`, `thumb.png`.
+- [ ] **8.2 Badge & Flair Generator:** Generate cosmetic overlay assets for chat and leaderboards:
+    - **Chat Flair:** 5 variants — each with a name border/glow texture and a small icon (16×16 px). Output as transparent PNGs.
+    - **Leaderboard Badges:** 4 frame styles — each a transparent overlay (decorative border) sized to wrap the rank card. Output as transparent PNGs or SVGs.
+    - Output: `/assets/game/cosmetics/flair/{flair_key}.png`, `/assets/game/cosmetics/badges/{badge_key}.png`.
+- [ ] **8.3 Avatar Generator:** Generate lore-themed avatar profile pictures (8 at launch). Pixel-art style consistent with game aesthetic. 128×128 px. Each avatar should visually evoke its lore theme (e.g., "The Pallid Mask" = pale porcelain mask, "Void Gazer" = eye in a rift).
+    - Output: `/assets/game/cosmetics/avatars/{avatar_key}.png`.
+- [ ] **8.4 Thematic Consistency:** All generated cosmetic assets must match the dark, high-contrast pixel-art aesthetic established in §4.2. Color palettes should align with the game's existing visual language (void purples, celestial golds, infernal reds, akashic teals).
