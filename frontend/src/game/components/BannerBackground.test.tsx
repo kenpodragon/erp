@@ -2,6 +2,14 @@ import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import BannerBackground from './BannerBackground';
 
+// Mock api module
+vi.mock('../../api', () => ({
+  api: {
+    get: vi.fn(() => Promise.resolve({ ok: false, status: 404 })),
+  },
+  apiEvents: new EventTarget(),
+}));
+
 // Mock @pixi/react and pixi.js
 vi.mock('@pixi/react', () => ({
   extend: vi.fn(),
@@ -17,7 +25,9 @@ vi.mock('pixi.js', () => ({
   Assets: {
     load: vi.fn().mockResolvedValue({}),
   },
-  Texture: vi.fn(),
+  Texture: Object.assign(vi.fn(), {
+    from: vi.fn(() => ({})),
+  }),
 }));
 
 // Provide mocked react-pixi elements for testing

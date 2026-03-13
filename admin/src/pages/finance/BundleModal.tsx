@@ -20,7 +20,7 @@ interface Bundle {
   price_shards: number
   original_price_shards: number
   discount_pct: number
-  icon_path: string
+  icon_asset_key: string
   is_active: boolean
   sort_order: number
   item_ids: number[]
@@ -40,7 +40,7 @@ function emptyBundle(): Bundle {
     price_shards: 0,
     original_price_shards: 0,
     discount_pct: 0,
-    icon_path: '',
+    icon_asset_key: '',
     is_active: true,
     sort_order: 0,
     item_ids: [],
@@ -182,8 +182,8 @@ export default function BundleModal({ bundle, onClose, onSaved }: BundleModalPro
 
         <div className="ftab-form-inline">
           <div className="ftab-form-row">
-            <label>Icon Path</label>
-            <input value={form.icon_path} onChange={e => setField('icon_path', e.target.value)} placeholder="/icons/bundle.png" />
+            <label>Icon Asset Key</label>
+            <input value={form.icon_asset_key} onChange={e => setField('icon_asset_key', e.target.value)} placeholder="ui_bundle_starter" />
           </div>
           <div className="ftab-form-row">
             <label>Sort Order</label>

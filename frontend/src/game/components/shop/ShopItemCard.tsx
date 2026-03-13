@@ -7,7 +7,7 @@ export interface ShopItemData {
   description: string | null;
   category: string;
   price_shards: number;
-  icon_path: string | null;
+  icon_asset_key: string | null;
   class_restriction: number | null;
   class_restriction_name?: string | null;
   is_featured: boolean;
@@ -68,8 +68,8 @@ const ShopItemCard: React.FC<Props> = ({ item, balance, onPurchase }) => {
       aria-label={`${item.name} - ${statusLabel}`}
     >
       <div className="sic-icon">
-        {item.icon_path
-          ? <img src={item.icon_path} alt={item.name} className="sic-icon-img" />
+        {item.icon_asset_key
+          ? <img src={item.icon_asset_key} alt={item.name} className="sic-icon-img" />
           : <span className="sic-icon-fallback">{CATEGORY_ICONS[item.category] || '\u25C6'}</span>
         }
       </div>

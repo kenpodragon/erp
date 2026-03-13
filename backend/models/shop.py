@@ -16,7 +16,7 @@ class ShopItem(SQLModel, table=True):
     description: Optional[str] = Field(default=None, sa_column=Column(Text))
     category: str = Field(max_length=20, nullable=False)  # skin, flair, badge, avatar, booster
     price_shards: int = Field(nullable=False)
-    icon_path: Optional[str] = Field(default=None, max_length=255)
+    icon_asset_key: Optional[str] = Field(default=None, max_length=255)
     class_restriction: Optional[int] = Field(default=None, foreign_key="character_classes.id")
     item_metadata: Optional[dict] = Field(default=None, sa_column=Column("item_metadata", JSON))
     is_active: bool = Field(default=True, nullable=False)
@@ -46,7 +46,7 @@ class ShopBundle(SQLModel, table=True):
     price_shards: int = Field(nullable=False)
     original_price_shards: int = Field(nullable=False)
     discount_pct: int = Field(default=20, nullable=False)
-    icon_path: Optional[str] = Field(default=None, max_length=255)
+    icon_asset_key: Optional[str] = Field(default=None, max_length=255)
     is_active: bool = Field(default=True, nullable=False)
     is_featured: bool = Field(default=False, nullable=False)
     featured_from: Optional[datetime] = Field(default=None)

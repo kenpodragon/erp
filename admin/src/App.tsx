@@ -18,6 +18,7 @@ import ChatManager from './pages/ChatManager'
 import ArtifactEditor from './pages/ArtifactEditor'
 import AchievementEditor from './pages/AchievementEditor'
 import FinanceDashboard from './pages/FinanceDashboard'
+import AssetRegistry from './pages/AssetRegistry'
 
 interface HealthData {
   status: string;
@@ -191,6 +192,7 @@ function App() {
             <NavLink to="/atmospheres" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audio</NavLink>
             <NavLink to="/artifacts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Artifacts</NavLink>
             <NavLink to="/achievements" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Achievements</NavLink>
+            <NavLink to="/asset-registry" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Assets</NavLink>
             <NavLink to="/chat" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Chat</NavLink>
             <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
@@ -223,6 +225,7 @@ function App() {
             <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />
             <Route path="/artifacts" element={<div className="admin-content"><ArtifactEditor /></div>} />
             <Route path="/achievements" element={<div className="admin-content"><AchievementEditor /></div>} />
+            <Route path="/asset-registry" element={<div className="admin-content"><AssetRegistry /></div>} />
             <Route path="/chat" element={<div className="admin-content"><ChatManager /></div>} />
             <Route path="/finance" element={<div className="admin-content"><FinanceDashboard /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />

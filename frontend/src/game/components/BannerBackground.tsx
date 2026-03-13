@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useTick, extend } from '@pixi/react';
-import { Assets, Texture, TilingSprite, Container, Graphics } from 'pixi.js';
+import { Texture, TilingSprite, Container, Graphics } from 'pixi.js';
+import { api } from '../../api';
+import * as BackgroundRenderer from '../renderers/BackgroundRenderer';
 
 // Register elements for v8
 extend({ TilingSprite, Container, Graphics });
@@ -12,8 +14,76 @@ interface BannerBackgroundProps {
   height: number;
 }
 
+/** Module-level cache for background definitions from the asset registry. */
+const bgDefCache = new Map<string, BackgroundRenderer.RenderDefinition>();
+const bgDefFailed = new Set<string>();
+const bgDefPending = new Map<string, Promise<BackgroundRenderer.RenderDefinition | null>>();
+
+async function fetchBgDefinition(assetKey: string): Promise<BackgroundRenderer.RenderDefinition | null> {
+  if (bgDefCache.has(assetKey)) return bgDefCache.get(assetKey)!;
+  if (bgDefFailed.has(assetKey)) return null;
+  if (bgDefPending.has(assetKey)) return bgDefPending.get(assetKey)!;
+
+  const promise = (async () => {
+    try {
+      const res = await api.get(`/api/admin/assets/batch?keys=${encodeURIComponent(assetKey)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : (data.items || []);
+        const match = items.find((i: any) => i.asset_key === assetKey);
+        if (match?.render_definition) {
+          bgDefCache.set(assetKey, match.render_definition);
+          return match.render_definition as BackgroundRenderer.RenderDefinition;
+        }
+      }
+      bgDefFailed.add(assetKey);
+      return null;
+    } catch {
+      return null;
+    } finally {
+      bgDefPending.delete(assetKey);
+    }
+  })();
+
+  bgDefPending.set(assetKey, promise);
+  return promise;
+}
+
+/** Render a procedural fallback gradient background. */
+function renderFallbackBg(width: number, height: number, chapterId: number, layer: 'far' | 'mid'): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas; // Test environment — return blank canvas
+
+  // Dark gradient fallback
+  const hue = ((chapterId - 1) * 60) % 360;
+  const alpha = layer === 'far' ? '0.3' : '0.5';
+  const grad = ctx.createLinearGradient(0, 0, 0, height);
+  grad.addColorStop(0, `hsla(${hue}, 30%, 8%, 1)`);
+  grad.addColorStop(1, `hsla(${hue + 30}, 30%, 4%, 1)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, width, height);
+
+  // Add some stars for the far layer
+  if (layer === 'far') {
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    for (let i = 0; i < 30; i++) {
+      const x = (Math.sin(i * 7.3 + chapterId) * 0.5 + 0.5) * width;
+      const y = (Math.cos(i * 3.7 + chapterId) * 0.5 + 0.5) * height;
+      ctx.beginPath();
+      ctx.arc(x, y, 1 + (i % 2), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  return canvas;
+}
+
 /**
  * Handles infinite parallax layers with cross-fade transitions between chapters.
+ * Uses procedural rendering from the Asset Registry instead of filesystem PNGs.
  */
 const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSpeed, width, height }) => {
   const [textures, setTextures] = useState<Record<string, Texture>>({});
@@ -25,16 +95,25 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
   const MID_FACTOR = 0.5;
   const BASE_SPEED = 2;
 
-  // Load all background assets
+  // Load backgrounds from asset registry
   useEffect(() => {
     const loadBgs = async () => {
-      const loaded: any = {};
+      const loaded: Record<string, Texture> = {};
       for (let i = 1; i <= 4; i++) {
-        try {
-          loaded[`bg_${i}_far`] = await Assets.load(`/assets/game/backgrounds/bg_${i}_far.png`);
-          loaded[`bg_${i}_mid`] = await Assets.load(`/assets/game/backgrounds/bg_${i}_mid.png`);
-        } catch (e) {
-          console.error(`Banner: Failed to load background ${i}`, e);
+        for (const layer of ['far', 'mid'] as const) {
+          const assetKey = `bg_${i}_${layer}`;
+          const def = await fetchBgDefinition(assetKey);
+          let canvas: HTMLCanvasElement;
+
+          if (def) {
+            const renderDef = { ...def, width: 512, height: 150 };
+            const result = BackgroundRenderer.render(renderDef);
+            canvas = result.canvas;
+          } else {
+            canvas = renderFallbackBg(512, 150, i, layer);
+          }
+
+          loaded[assetKey] = Texture.from(canvas);
         }
       }
       setTextures(loaded);

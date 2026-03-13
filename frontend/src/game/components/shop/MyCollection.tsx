@@ -7,7 +7,7 @@ interface CollectionItem {
   name: string;
   category: string;
   description: string | null;
-  icon_path: string | null;
+  icon_asset_key: string | null;
   equipped: boolean;
   class_restriction_name: string | null;
 }
@@ -147,8 +147,8 @@ const MyCollection: React.FC<Props> = ({ onEquipChange }) => {
             {items.map(item => (
               <div key={item.id} className={`collection-item ${item.equipped ? 'equipped' : ''}`}>
                 <div className="collection-item-icon">
-                  {item.icon_path
-                    ? <img src={item.icon_path} alt={item.name} />
+                  {item.icon_asset_key
+                    ? <img src={item.icon_asset_key} alt={item.name} />
                     : <span className="collection-item-icon-fallback">{'\u25C6'}</span>
                   }
                 </div>

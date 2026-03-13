@@ -37,6 +37,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `051` | Elysium Emporium (3.3) | Created 5 tables: `shop_items`, `shop_bundles`, `shop_bundle_items`, `player_shop_items`, `player_active_boosters`. Added `equipped_flair_id`, `equipped_badge_id`, `equipped_avatar_id` columns to `players`. Added `equipped_skin_id` column to `player_characters`. Widened `shard_transactions` source_type CHECK constraint (+shop_purchase, +admin_refund). Seeded 32 shop items (6 skins, 5 flair, 4 badges, 8 avatars, 9 boosters), 3 bundles + 9 bundle item mappings, 9 `game_configs` keys (category: economy). |
 | `053` | Dreamwalker's Bazaar (3.5) | Created 4 tables: `marketplace_listings`, `marketplace_trades`, `marketplace_notifications`, `marketplace_price_history`. Added `marketplace_slots_purchased INTEGER` to `players`. Added `marketplace_listing_id INTEGER FK` to `player_artifacts` and `player_inventory`. Updated `enforce_inventory_slot_cap()` trigger to exclude marketplace-listed items from slot count. Widened `shard_transactions` source_type CHECK (+marketplace_purchase, +marketplace_sale). Widened `shop_items` category CHECK (+marketplace_permit). Seeded 7 Bazaar Permits, 4 titles, 9 achievements with parent chains and title rewards, 15 `game_configs` keys (8 marketplace + 7 salvage). |
 | `054` | Admin Finance Dashboard | Created `admin_shard_adjustments` table (admin-initiated shard grant/debit audit trail: player_id, admin_email, adjust_type, amount, reason, balance_before/after, shard_txn_id FK). 3 indexes (player, admin, created_at). Seeded 5 `game_configs` keys (category: marketplace_anomaly): anomaly_price_multiplier_threshold (10), anomaly_rapid_relist_count (5), anomaly_rapid_relist_window_minutes (60), anomaly_wash_trade_count (3), anomaly_wash_trade_window_hours (24). |
+| `055` | Asset Registry | Created `asset_registry` table (id, asset_key UNIQUE, category, display_name, description, render_definition JSONB, tags JSONB/GIN, source, created_at, updated_at + trigger). Indexes: asset_key, category, source, tags GIN, display_name. Renamed `shop_items.icon_path` → `icon_asset_key`, `shop_bundles.icon_path` → `icon_asset_key`. Seeded 21 migrated filesystem assets + ~140 placeholder icons for existing sprite_key values. |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -605,6 +606,34 @@ Added `'donation'` to the CHECK constraint.
 | `anomaly_rapid_relist_window_minutes` | `marketplace_anomaly` | Time window in minutes for rapid relist detection (60). |
 | `anomaly_wash_trade_count` | `marketplace_anomaly` | Number of trades between same buyer/seller pair that flags wash trading (3). |
 | `anomaly_wash_trade_window_hours` | `marketplace_anomaly` | Time window in hours for wash trade detection (24). |
+
+---
+
+### 22. Asset Registry (5.7, Migration 055)
+
+#### Table: `asset_registry`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| asset_key | VARCHAR(150) | UNIQUE, NOT NULL | Canonical identifier. Format: `{prefix}_{name}` (e.g., `enemy_sludge`, `bg_ch1_far`). Referenced by `sprite_key` / `icon_sprite_key` columns across game tables. |
+| category | VARCHAR(50) | NOT NULL | Asset type: `entity_sprite`, `class_sprite`, `background`, `item_icon`, `artifact_icon`, `achievement_icon`, `skill_icon`, `avatar`, `skin`, `badge`, `flair`, `spell_effect`, `ui_icon`, `narrative_image`, `portrait`. Validated at application level. |
+| display_name | VARCHAR(200) | NULL | Human-readable name for admin display. |
+| description | TEXT | NULL | Optional longer description or notes. |
+| render_definition | JSONB | NOT NULL, DEFAULT `'{}'` | Procedural rendering payload. Contains shapes, colors, sizes, features — everything needed to render the asset at runtime via Canvas 2D / PixiJS. Structure varies by category. |
+| tags | JSONB | NOT NULL, DEFAULT `'[]'` | Freeform label array for filtering. Queried with `@>` containment. Examples: `["book_1", "chapter_3", "void"]`. |
+| source | VARCHAR(50) | NOT NULL, DEFAULT `'admin'` | Origin: `seed` (migration), `admin` (manual), `generator` (C_ pipeline), `migrated` (converted from filesystem). |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Row creation timestamp. |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Last modification. Auto-updated via `trg_asset_registry_updated_at` trigger. |
+
+**Indexes:** `idx_ar_asset_key` (asset_key), `idx_ar_category` (category), `idx_ar_source` (source), `idx_ar_tags` (GIN on tags), `idx_ar_display_name` (display_name).
+
+#### Modified Tables (055)
+
+| Table | Change |
+|:---|:---|
+| `shop_items` | Renamed `icon_path VARCHAR(255)` → `icon_asset_key VARCHAR(255)`. Now stores `asset_registry.asset_key` reference instead of filesystem path. |
+| `shop_bundles` | Renamed `icon_path VARCHAR(255)` → `icon_asset_key VARCHAR(255)`. Same semantics change as `shop_items`. |
 
 ---
 

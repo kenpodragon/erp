@@ -3,19 +3,21 @@
  */
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
-import { 
-  TextStyle,
-  Container, Graphics, Text
+import {
+  TextStyle, Texture,
+  Container, Graphics, Text, Sprite
 } from 'pixi.js';
 import { api } from '../../../api';
 import type { StorySession } from '../../GameContext';
 import { zoneHp, zoneGold, formatNumber } from '../../utils/numbers';
 import { hexToPixiTint } from '../../utils/classVisuals';
+import { useAssets } from '../../providers/AssetProvider';
+import { assetRenderer } from '../../renderers/AssetRenderer';
 import ParallaxBackground from './ParallaxBackground';
 import './CombatStage.css';
 
 // Register for v8 JSX
-extend({ Container, Graphics, Text });
+extend({ Container, Graphics, Text, Sprite });
 
 const MONSTERS_PER_ZONE_DEFAULT = 10;
 const BOSS_ZONE_INTERVAL_DEFAULT = 5;
@@ -462,6 +464,7 @@ const CombatContent: React.FC<InnerProps> = ({
             }} />
           )}
           <pixiGraphics draw={g => { g.clear().ellipse(0, 0, 38, 9).fill({ color: 0x000000, alpha: 0.45 }); }} />
+          {/* 5.7.3: Inline fallback rendering (existing) */}
           <pixiGraphics draw={g => {
             const c = hitFlash ? 0xffffff : (enemy.isRare ? 0x60a5fa : enemy.isPrimal ? 0xffd700 : 0x2a2a4a);
             g.clear().circle(0, -70, 22).fill({ color: c, alpha: 0.9 }).rect(-18, -48, 36, 55).fill({ color: c, alpha: 0.85 });
@@ -514,6 +517,20 @@ const CombatStage: React.FC<Props> = (props) => {
   const [requiredWaves, setRequiredWaves] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const clickHandlerRef = useRef<((ox: number, oy: number) => void) | null>(null);
+
+  // 5.7.3: Preload asset definitions for enemy sprites when pool changes
+  let assets: ReturnType<typeof useAssets> | null = null;
+  try { assets = useAssets(); } catch { /* AssetProvider not mounted — skip */ }
+
+  useEffect(() => {
+    if (!assets) return;
+    const spriteKeys = enemyPool
+      .map(e => e.spriteKey)
+      .filter((k): k is string => !!k);
+    if (spriteKeys.length > 0) {
+      assets.preloadBatch(spriteKeys);
+    }
+  }, [enemyPool, assets]);
 
   useEffect(() => {
     const update = () => { if (containerRef.current) { const r = containerRef.current.getBoundingClientRect(); setDims({ w: Math.floor(r.width), h: Math.floor(r.height) }); } };

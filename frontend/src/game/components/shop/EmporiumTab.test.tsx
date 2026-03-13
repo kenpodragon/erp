@@ -28,26 +28,26 @@ const mockCatalog = {
   items: [
     {
       id: 1, item_key: 'skin_void', name: 'Void Walker', description: 'A dark skin.',
-      category: 'skin', price_shards: 250, icon_path: null, class_restriction: null,
+      category: 'skin', price_shards: 250, icon_asset_key: null, class_restriction: null,
       class_restriction_name: null, is_featured: false, is_limited_time: false,
       available_until: null, owned: false, equipped: false, item_metadata: null,
     },
     {
       id: 2, item_key: 'flair_glow', name: 'Celestial Glow', description: 'Glowing flair.',
-      category: 'flair', price_shards: 100, icon_path: null, class_restriction: null,
+      category: 'flair', price_shards: 100, icon_asset_key: null, class_restriction: null,
       class_restriction_name: null, is_featured: true, is_limited_time: false,
       available_until: null, owned: true, equipped: false, item_metadata: null,
     },
     {
       id: 3, item_key: 'booster_xp_1hr', name: 'XP Boost (1hr)', description: 'Boosts XP.',
-      category: 'booster', price_shards: 75, icon_path: null, class_restriction: null,
+      category: 'booster', price_shards: 75, icon_asset_key: null, class_restriction: null,
       class_restriction_name: null, is_featured: false, is_limited_time: false,
       available_until: null, owned: false, equipped: false,
       item_metadata: { boost_type: 'xp', magnitude: 1.25, duration_seconds: 3600 },
     },
     {
       id: 4, item_key: 'badge_limited', name: 'Limited Badge', description: 'Time-limited!',
-      category: 'badge', price_shards: 200, icon_path: null, class_restriction: null,
+      category: 'badge', price_shards: 200, icon_asset_key: null, class_restriction: null,
       class_restriction_name: null, is_featured: false, is_limited_time: true,
       available_until: new Date(Date.now() + 86400000).toISOString(), owned: false,
       equipped: false, item_metadata: null,
@@ -57,7 +57,7 @@ const mockCatalog = {
     {
       id: 1, bundle_key: 'bundle_starter', name: 'Starter Bundle',
       description: 'Great value!', price_shards: 300, original_price_shards: 400,
-      discount_pct: 25, icon_path: null, is_featured: false, is_limited_time: false,
+      discount_pct: 25, icon_asset_key: null, is_featured: false, is_limited_time: false,
       available_until: null, owned: false, all_items_owned: false,
       items: [
         { id: 1, name: 'Void Walker', category: 'skin', owned: false },

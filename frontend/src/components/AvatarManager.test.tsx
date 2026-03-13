@@ -5,6 +5,7 @@ import { api } from '../api';
 
 vi.mock('../api', () => ({
   api: {
+    get: vi.fn(() => Promise.resolve({ ok: false, status: 404 })),
     patch: vi.fn(),
     upload: vi.fn(),
   }
@@ -17,14 +18,15 @@ describe('AvatarManager', () => {
 
   it('highlights current preset', () => {
     render(
-      <AvatarManager 
-        currentPreset="warrior" 
+      <AvatarManager
+        currentPreset="warrior"
         googleAvatarUrl={null}
-        onUpdate={() => {}} 
+        onUpdate={() => {}}
       />
     );
-    const warriorImg = screen.getByAltText('The Sentinel');
-    expect(warriorImg.className).toContain('selected');
+    // AvatarPreset renders a canvas with title attribute set to the preset key or alt
+    const warriorCanvas = screen.getByTitle('The Sentinel');
+    expect(warriorCanvas.closest('.avatar-preset')?.className).toContain('selected');
   });
 
   it('updates preset on click', async () => {
@@ -32,13 +34,13 @@ describe('AvatarManager', () => {
     vi.mocked(api.patch).mockResolvedValue({ ok: true } as Response);
 
     render(
-      <AvatarManager 
-        currentPreset="warrior" 
+      <AvatarManager
+        currentPreset="warrior"
         googleAvatarUrl="http://google.com/photo.png"
-        onUpdate={onUpdateSpy} 
+        onUpdate={onUpdateSpy}
       />
     );
-    
+
     // Test selecting Google avatar (null preset) — click the Google avatar img
     const googleImg = screen.getByAltText('Google Profile');
     fireEvent.click(googleImg.closest('.avatar-preset')!);
@@ -48,9 +50,9 @@ describe('AvatarManager', () => {
       expect(onUpdateSpy).toHaveBeenCalledWith({ preset: undefined });
     });
 
-    // Test selecting a preset
-    const mageImg = screen.getByAltText('The Arcanist');
-    fireEvent.click(mageImg);
+    // Test selecting a preset - canvas has title="The Arcanist"
+    const mageCanvas = screen.getByTitle('The Arcanist');
+    fireEvent.click(mageCanvas.closest('.avatar-preset')!);
 
     await waitFor(() => {
       expect(api.patch).toHaveBeenCalledWith('/api/players/me', { avatar_preset_key: 'mage' });

@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
-import { Container, Graphics, Text, TextStyle, TilingSprite, Assets, Texture, Sprite, ColorMatrixFilter } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle, TilingSprite, Texture, Sprite, ColorMatrixFilter } from 'pixi.js';
 import './BottomAnimatedBanner.css';
 import BannerBackground from './BannerBackground';
 import { useGame } from '../GameContext';
 import { api } from '../../api';
+import { useAssets } from '../providers/AssetProvider';
+import { assetRenderer } from '../renderers/AssetRenderer';
 
 // Register Pixi elements for use in React JSX
 extend({ Container, Graphics, Text, TilingSprite, Sprite });
@@ -135,27 +137,65 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   const height = 150;
   const groundY = 75; 
 
+  // 5.7.3: Preload asset definitions from registry
+  let assets: ReturnType<typeof useAssets> | null = null;
+  try { assets = useAssets(); } catch { /* AssetProvider not mounted — skip */ }
+
   // ── Asset Loading & Enemy Pool ──────────────────────────────────
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [enemyPool, setEnemyPool] = useState<any[]>([]);
-  
+
+  // 5.7.3: Preload enemy + player sprite keys from asset registry
   useEffect(() => {
-    const loadAssets = async () => {
-      const paths = {
-        player: '/assets/game/classes/base_vessel.png',
-        enemy_sludge: '/assets/game/enemies/enemy_sludge.png',
-        enemy_voidling: '/assets/game/enemies/enemy_voidling.png',
-        enemy_guardian: '/assets/game/enemies/enemy_guardian.png',
-        enemy_remnant: '/assets/game/enemies/enemy_remnant.png',
-      };
-      const loaded: any = {};
-      for (const [key, path] of Object.entries(paths)) {
-        try {
-          loaded[key] = await Assets.load(path);
-        } catch (e) {
-          console.error(`Banner: Failed to load asset ${path}`, e);
+    if (!assets) return;
+    const keys = [
+      'class_vessel',
+      ...enemyPool
+        .map((e: any) => e.gameplay_data?.sprite_key)
+        .filter((k: any): k is string => !!k),
+    ];
+    if (keys.length > 0) {
+      assets.preloadBatch(keys);
+    }
+  }, [enemyPool, assets]);
+
+  // Build textures from procedural asset registry renderings
+  useEffect(() => {
+    const buildTextures = () => {
+      const loaded: Record<string, Texture> = {};
+
+      // Player sprite from asset registry
+      if (assets) {
+        const playerResult = assets.renderAssetWithFallback('class_vessel', 'class_sprite');
+        if (playerResult?.canvas) {
+          loaded.player = Texture.from(playerResult.canvas);
         }
       }
+
+      // Enemy sprites — try registry, fall back to procedural
+      const enemyKeys = ['enemy_sludge', 'enemy_voidling', 'enemy_guardian', 'enemy_remnant'];
+      for (const key of enemyKeys) {
+        if (assets) {
+          const result = assets.renderAssetWithFallback(key, 'entity_sprite');
+          if (result?.canvas) {
+            loaded[key] = Texture.from(result.canvas);
+          }
+        }
+      }
+
+      // Also render textures for any enemy pool sprite keys
+      if (assets && enemyPool.length > 0) {
+        for (const enemy of enemyPool) {
+          const spriteKey = enemy.gameplay_data?.sprite_key;
+          if (spriteKey && !loaded[spriteKey]) {
+            const result = assets.renderAssetWithFallback(spriteKey, 'entity_sprite');
+            if (result?.canvas) {
+              loaded[spriteKey] = Texture.from(result.canvas);
+            }
+          }
+        }
+      }
+
       setTextures(loaded);
     };
 
@@ -168,9 +208,9 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       }
     };
 
-    loadAssets();
+    buildTextures();
     fetchPool();
-  }, []);
+  }, [assets, enemyPool.length]);
 
   // ── Local State ───────────────────────────────────────────────────
   const [player, setPlayer] = useState<BannerEntity & { animState: string, vengeance: boolean }>({

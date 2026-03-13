@@ -29,7 +29,7 @@ class CreateShopItemRequest(BaseModel):
     description: Optional[str] = None
     category: str  # skin, flair, badge, avatar, booster
     price_shards: int
-    icon_path: Optional[str] = None
+    icon_asset_key: Optional[str] = None
     class_restriction: Optional[int] = None
     item_metadata: Optional[dict] = None
     is_active: bool = True
@@ -45,7 +45,7 @@ class UpdateShopItemRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price_shards: Optional[int] = None
-    icon_path: Optional[str] = None
+    icon_asset_key: Optional[str] = None
     item_metadata: Optional[dict] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
@@ -63,7 +63,7 @@ class CreateBundleRequest(BaseModel):
     price_shards: int
     original_price_shards: int
     discount_pct: int = 20
-    icon_path: Optional[str] = None
+    icon_asset_key: Optional[str] = None
     item_ids: list[int]  # shop_item IDs to include
     is_active: bool = True
     sort_order: int = 0
@@ -75,7 +75,7 @@ class UpdateBundleRequest(BaseModel):
     price_shards: Optional[int] = None
     original_price_shards: Optional[int] = None
     discount_pct: Optional[int] = None
-    icon_path: Optional[str] = None
+    icon_asset_key: Optional[str] = None
     item_ids: Optional[list[int]] = None  # if provided, replaces contents
     is_active: Optional[bool] = None
     sort_order: Optional[int] = None
@@ -143,7 +143,7 @@ async def create_shop_item(
         description=body.description,
         category=body.category,
         price_shards=body.price_shards,
-        icon_path=body.icon_path,
+        icon_asset_key=body.icon_asset_key,
         class_restriction=body.class_restriction,
         item_metadata=body.item_metadata,
         is_active=body.is_active,
@@ -293,7 +293,7 @@ async def create_bundle(
         price_shards=body.price_shards,
         original_price_shards=body.original_price_shards,
         discount_pct=body.discount_pct,
-        icon_path=body.icon_path,
+        icon_asset_key=body.icon_asset_key,
         is_active=body.is_active,
         sort_order=body.sort_order,
     )

@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import './RelicGallery.css';
 import { api } from '../../api';
+import { useAssets } from '../providers/AssetProvider';
+import type { RenderResult } from '../renderers/AssetRenderer';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +52,54 @@ const RARITY_ORDER: Record<string, number> = {
   cosmic: 5, epic: 4, rare: 3, uncommon: 2, common: 1,
 };
 
+// ── Asset Icon Helper ─────────────────────────────────────────────────────
+
+/** Safe wrapper around useAssets that returns null when outside AssetProvider. */
+function useSafeAssets() {
+  try {
+    return useAssets();
+  } catch {
+    return null;
+  }
+}
+
+const ArtifactIcon: React.FC<{
+  assetKey: string;
+  size: number;
+  className?: string;
+}> = ({ assetKey, size, className }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const assets = useSafeAssets();
+
+  useEffect(() => {
+    if (!assets || !canvasRef.current) return;
+    const result: RenderResult | null = assets.renderAssetWithFallback(assetKey, 'artifact_icon');
+    if (result) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        canvasRef.current.width = size;
+        canvasRef.current.height = size;
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(result.canvas, 0, 0, size, size);
+      }
+    }
+  }, [assets, assetKey, size]);
+
+  if (!assets) {
+    return <div className={className || 'relic-icon-placeholder'} />;
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={className}
+      width={size}
+      height={size}
+      style={{ width: size, height: size }}
+    />
+  );
+};
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 const RelicGallery: React.FC = () => {
@@ -61,6 +111,7 @@ const RelicGallery: React.FC = () => {
   const [filterRarity, setFilterRarity] = useState<FilterRarity>('all');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [showUndiscovered, setShowUndiscovered] = useState(true);
+  const assets = useSafeAssets();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,8 +120,18 @@ const RelicGallery: React.FC = () => {
       try {
         const res = await api.get('/api/game/home-base/artifacts');
         if (!res.ok) throw new Error('Failed to fetch artifacts');
-        const json = await res.json();
+        const json: GalleryData = await res.json();
         setData(json);
+
+        // Preload icon assets for all owned artifacts
+        if (assets) {
+          const spriteKeys = json.owned_artifacts
+            .map(a => a.icon_sprite_key)
+            .filter(Boolean);
+          if (spriteKeys.length > 0) {
+            assets.preloadBatch(spriteKeys);
+          }
+        }
 
         // Mark visited — clears "new" badges on next load
         api.post('/api/game/home-base/artifacts/mark-visited');
@@ -81,7 +142,7 @@ const RelicGallery: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [assets]);
 
   // ── Filtering & sorting ────────────────────────────────────────────────
 
@@ -196,7 +257,7 @@ const RelicGallery: React.FC = () => {
             className={`relic-card relic-rarity-${art.rarity}`}
             onClick={() => setSelectedArtifact(art)}
           >
-            <div className="relic-icon-placeholder" />
+            <ArtifactIcon assetKey={art.icon_sprite_key} size={40} className="relic-icon-canvas" />
             <span className="relic-card-name">{art.name}</span>
             <span className={`relic-rarity-badge relic-rarity-${art.rarity}`}>{art.rarity}</span>
             {art.is_new && <span className="relic-new-badge">NEW</span>}
@@ -223,7 +284,7 @@ const RelicGallery: React.FC = () => {
           <div className="relic-modal" onClick={e => e.stopPropagation()}>
             <button className="relic-modal-close" onClick={() => setSelectedArtifact(null)}>&times;</button>
 
-            <div className="relic-modal-icon" />
+            <ArtifactIcon assetKey={selectedArtifact.icon_sprite_key} size={64} className="relic-modal-icon-canvas" />
             <h3 className="relic-modal-name">{selectedArtifact.name}</h3>
             <span className={`relic-rarity-badge relic-rarity-${selectedArtifact.rarity}`}>
               {selectedArtifact.rarity}

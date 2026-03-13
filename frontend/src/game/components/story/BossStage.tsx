@@ -17,6 +17,8 @@ import { Application, extend, useTick } from '@pixi/react';
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import type { StorySession, BossConfig } from '../../GameContext';
 import { zoneHp, formatNumber } from '../../utils/numbers';
+import { useAssets } from '../../providers/AssetProvider';
+import { assetRenderer } from '../../renderers/AssetRenderer';
 import './BossStage.css';
 
 extend({ Container, Graphics, Text });
@@ -170,6 +172,19 @@ const BossStage: React.FC<Props> = ({
   textScale = 1.0, debugSuperClick = false, playSFX, reduceMotion = false,
 }) => {
   const { bossName = 'Guardian' } = session;
+
+  // 5.7.3: Preload boss sprite asset definition if available
+  let assets: ReturnType<typeof useAssets> | null = null;
+  try { assets = useAssets(); } catch { /* AssetProvider not mounted — skip */ }
+
+  useEffect(() => {
+    if (!assets) return;
+    // Boss sprite key could come from session data; preload if present
+    const bossKey = (session as any).bossSpriteKey;
+    if (bossKey) {
+      assets.preloadBatch([bossKey]);
+    }
+  }, [(session as any).bossSpriteKey, assets]);
   const cfg: BossConfig = session.bossConfig ?? {
     timer_seconds: 120,
     hp_multiplier: 8,

@@ -45,6 +45,7 @@ from models.shop import ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, Pl
 from models.donation import Donation
 from models.marketplace import MarketplaceListing, MarketplaceTrade, MarketplaceNotification, MarketplacePriceHistory
 from models.finance import AdminShardAdjustment
+from models.asset_registry import AssetRegistryEntry
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -75,4 +76,5 @@ __all__ = [
     "Donation",
     "MarketplaceListing", "MarketplaceTrade", "MarketplaceNotification", "MarketplacePriceHistory",
     "AdminShardAdjustment",
+    "AssetRegistryEntry",
 ]

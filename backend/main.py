@@ -53,6 +53,7 @@ from routes.admin_donations import router as admin_donations_router
 from routes.marketplace import router as marketplace_router
 from routes.admin_marketplace import router as admin_marketplace_router
 from routes.admin_finance import router as admin_finance_router
+from routes.admin_assets import router as admin_assets_router
 
 logger = logging.getLogger(__name__)
 
@@ -207,6 +208,7 @@ app.include_router(admin_donations_router)
 app.include_router(marketplace_router)
 app.include_router(admin_marketplace_router)
 app.include_router(admin_finance_router)
+app.include_router(admin_assets_router)
 
 
 @app.get("/debug-routes")

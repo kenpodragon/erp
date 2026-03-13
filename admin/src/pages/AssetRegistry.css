@@ -1,0 +1,556 @@
+/* ------------------------------------------------------------------ */
+/* Asset Registry Page                                                 */
+/* ------------------------------------------------------------------ */
+
+.ar-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Header                                                              */
+/* ------------------------------------------------------------------ */
+
+.ar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ar-header h2 { margin: 0; }
+
+.ar-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ar-search-input {
+  padding: 6px 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 13px;
+  width: 200px;
+}
+
+.ar-search-input::placeholder { color: #555; }
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+
+.ar-btn {
+  padding: 6px 14px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #2a2a3e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 13px;
+}
+.ar-btn:hover { background: #3a3a4e; }
+
+.ar-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.ar-btn-primary:hover { background: #1d4ed8; }
+.ar-btn-primary:disabled { opacity: 0.5; cursor: default; }
+
+.ar-btn-danger {
+  background: #991b1b;
+  border-color: #991b1b;
+  color: #fff;
+}
+.ar-btn-danger:hover { background: #b91c1c; }
+
+.ar-btn-sm {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Category Tabs                                                       */
+/* ------------------------------------------------------------------ */
+
+.ar-category-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+}
+
+.ar-category-tab {
+  padding: 4px 12px;
+  border: 1px solid #333;
+  border-radius: 4px 4px 0 0;
+  background: #0f0f1a;
+  color: #888;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: lowercase;
+  border-bottom: none;
+}
+.ar-category-tab:hover { background: #1a1a2e; color: #ccc; }
+.ar-category-tab--active {
+  background: #1a1a2e;
+  color: #7dd3fc;
+  border-color: #2563eb;
+  border-bottom: 2px solid #2563eb;
+}
+
+/* ------------------------------------------------------------------ */
+/* Asset Grid / Table                                                  */
+/* ------------------------------------------------------------------ */
+
+.ar-table-wrapper {
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #0f0f1a;
+  overflow-x: auto;
+}
+
+.ar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ar-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid #333;
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  background: #0f0f1a;
+  white-space: nowrap;
+}
+
+.ar-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #1a1a2e;
+  vertical-align: middle;
+}
+
+.ar-table tr:hover td { background: #1a1a2e; }
+
+.ar-preview-cell {
+  width: 56px;
+  padding: 4px 8px !important;
+}
+
+.ar-key-cell {
+  font-family: 'Courier New', monospace;
+  color: #7dd3fc;
+  font-size: 12px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ar-name-cell {
+  color: #ddd;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ar-category-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: #2a2a4e;
+  color: #a78bfa;
+  white-space: nowrap;
+}
+
+.ar-source-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: #1a2a1a;
+  color: #8f8;
+  white-space: nowrap;
+}
+
+.ar-source-badge--admin { background: #2a2a1a; color: #f59e0b; }
+.ar-source-badge--generator { background: #1a1a2a; color: #7dd3fc; }
+.ar-source-badge--migrated { background: #2a1a2a; color: #c084fc; }
+
+.ar-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.ar-tag-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  background: #1a2a3e;
+  color: #7dd3fc;
+  white-space: nowrap;
+}
+
+.ar-time-cell {
+  color: #888;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ar-actions-cell {
+  display: flex;
+  gap: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pagination                                                          */
+/* ------------------------------------------------------------------ */
+
+.ar-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #888;
+}
+
+.ar-pagination-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ar-pagination-controls button {
+  padding: 4px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+}
+.ar-pagination-controls button:disabled { opacity: 0.4; cursor: default; }
+.ar-pagination-controls button:hover:not(:disabled) { background: #2a2a3e; }
+
+/* ------------------------------------------------------------------ */
+/* Loading / Empty                                                     */
+/* ------------------------------------------------------------------ */
+
+.ar-loading, .ar-empty {
+  text-align: center;
+  color: #666;
+  padding: 40px 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Message                                                             */
+/* ------------------------------------------------------------------ */
+
+.ar-message {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #1a2a1a;
+  border: 1px solid #2a4a2a;
+  border-radius: 4px;
+  color: #8f8;
+  font-size: 13px;
+}
+
+.ar-message--error {
+  background: #2a1a1a;
+  border-color: #4a2a2a;
+  color: #f88;
+}
+
+/* ------------------------------------------------------------------ */
+/* Modal                                                               */
+/* ------------------------------------------------------------------ */
+
+.ar-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ar-modal {
+  background: #12121e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90vw;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.ar-modal h3 { margin-top: 0; margin-bottom: 16px; }
+
+.ar-modal-body {
+  display: flex;
+  gap: 20px;
+}
+
+.ar-modal-left {
+  flex: 0 0 320px;
+}
+
+.ar-modal-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ar-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+}
+
+/* ------------------------------------------------------------------ */
+/* Form Rows                                                           */
+/* ------------------------------------------------------------------ */
+
+.ar-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.ar-form-row label {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ar-form-row input,
+.ar-form-row select,
+.ar-form-row textarea {
+  padding: 6px 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.ar-form-row input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* JSON Editor                                                         */
+/* ------------------------------------------------------------------ */
+
+.ar-json-editor {
+  width: 100%;
+  min-height: 300px;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #0a0a15;
+  color: #7dd3fc;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.ar-json-editor:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.ar-json-label {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Live Preview                                                        */
+/* ------------------------------------------------------------------ */
+
+.ar-live-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #0a0a15;
+}
+
+.ar-live-preview-label {
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Delete Confirm Dialog                                               */
+/* ------------------------------------------------------------------ */
+
+.ar-confirm-dialog {
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 420px;
+  text-align: center;
+}
+
+.ar-confirm-dialog h3 { margin-top: 0; color: #f88; }
+.ar-confirm-dialog p { color: #ccc; font-size: 14px; margin: 12px 0; }
+.ar-confirm-dialog .ar-ref-warning {
+  color: #f59e0b;
+  font-size: 12px;
+  margin: 8px 0;
+  padding: 8px;
+  background: #2a2a1a;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Orphan Detection Panel                                              */
+/* ------------------------------------------------------------------ */
+
+.ar-orphan-panel {
+  margin-top: 24px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #0f0f1a;
+}
+
+.ar-orphan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.ar-orphan-header:hover { background: #1a1a2e; border-radius: 6px; }
+
+.ar-orphan-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #f59e0b;
+}
+
+.ar-orphan-toggle {
+  color: #888;
+  font-size: 12px;
+}
+
+.ar-orphan-body {
+  padding: 0 16px 16px;
+}
+
+.ar-orphan-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.ar-orphan-tab {
+  padding: 6px 16px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #0f0f1a;
+  color: #888;
+  cursor: pointer;
+  font-size: 12px;
+}
+.ar-orphan-tab:hover { background: #1a1a2e; }
+.ar-orphan-tab--active {
+  background: #1a1a2e;
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.ar-orphan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ar-orphan-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #333;
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ar-orphan-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #1a1a2e;
+  color: #ccc;
+}
+
+.ar-orphan-table .ar-key-cell {
+  font-family: 'Courier New', monospace;
+  color: #f59e0b;
+}
+
+.ar-orphan-ref {
+  font-size: 11px;
+  color: #888;
+}
+
+.ar-bulk-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 800px) {
+  .ar-modal-body {
+    flex-direction: column;
+  }
+  .ar-modal-left {
+    flex: none;
+    width: 100%;
+  }
+}

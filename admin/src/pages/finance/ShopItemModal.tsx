@@ -11,7 +11,7 @@ interface ShopItem {
   description: string
   category: string
   price_shards: number
-  icon_path: string
+  icon_asset_key: string
   class_restriction: string | null
   is_active: boolean
   is_featured: boolean
@@ -39,7 +39,7 @@ function emptyItem(): ShopItem {
     description: '',
     category: 'skin',
     price_shards: 0,
-    icon_path: '',
+    icon_asset_key: '',
     class_restriction: null,
     is_active: true,
     is_featured: false,
@@ -164,8 +164,8 @@ export default function ShopItemModal({ item, onClose, onSaved }: ShopItemModalP
 
         <div className="ftab-form-inline">
           <div className="ftab-form-row">
-            <label>Icon Path</label>
-            <input value={form.icon_path} onChange={e => setField('icon_path', e.target.value)} placeholder="/icons/item.png" />
+            <label>Icon Asset Key</label>
+            <input value={form.icon_asset_key} onChange={e => setField('icon_asset_key', e.target.value)} placeholder="skin_void_walker" />
           </div>
           <div className="ftab-form-row">
             <label>Class Restriction</label>

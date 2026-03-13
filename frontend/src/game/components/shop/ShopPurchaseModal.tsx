@@ -9,7 +9,7 @@ export interface BundleData {
   price_shards: number;
   original_price_shards: number;
   discount_pct: number;
-  icon_path: string | null;
+  icon_asset_key: string | null;
   is_featured: boolean;
   is_limited_time: boolean;
   available_until: string | null;

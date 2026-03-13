@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api';
+import { AvatarPreset } from './AvatarPreset';
 
 interface AvatarManagerProps {
   currentPreset: string | null;
@@ -8,20 +9,20 @@ interface AvatarManagerProps {
 }
 
 const PRESETS = [
-  { key: 'engineer', name: 'The Engineer', url: '/assets/avatars/preset_engineer.png' },
-  { key: 'conduit', name: 'The Conduit', url: '/assets/avatars/preset_conduit.png' },
-  { key: 'drifter', name: 'The Drifter', url: '/assets/avatars/preset_drifter.png' },
-  { key: 'vessel', name: 'The Vessel', url: '/assets/avatars/preset_vessel.png' },
-  { key: 'warrior', name: 'The Sentinel', url: '/assets/avatars/preset_warrior.png' },
-  { key: 'mage', name: 'The Arcanist', url: '/assets/avatars/preset_mage.png' },
-  { key: 'rogue', name: 'The Shadow', url: '/assets/avatars/preset_rogue.png' },
-  { key: 'cleric', name: 'The Warden', url: '/assets/avatars/preset_cleric.png' },
+  { key: 'engineer', name: 'The Engineer' },
+  { key: 'conduit', name: 'The Conduit' },
+  { key: 'drifter', name: 'The Drifter' },
+  { key: 'vessel', name: 'The Vessel' },
+  { key: 'warrior', name: 'The Sentinel' },
+  { key: 'mage', name: 'The Arcanist' },
+  { key: 'rogue', name: 'The Shadow' },
+  { key: 'cleric', name: 'The Warden' },
 ];
 
-export const AvatarManager: React.FC<AvatarManagerProps> = ({ 
-  currentPreset, 
+export const AvatarManager: React.FC<AvatarManagerProps> = ({
+  currentPreset,
   googleAvatarUrl,
-  onUpdate 
+  onUpdate
 }) => {
   const [selectedPreset, setSelectedPreset] = useState(currentPreset);
   const [error, setError] = useState<string | null>(null);
@@ -81,21 +82,21 @@ export const AvatarManager: React.FC<AvatarManagerProps> = ({
   return (
     <div className="profile-section">
       <h3>Avatar</h3>
-      
+
       <div className="form-group">
         <label>Upload Custom Photo</label>
         <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleFileUpload} 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
             id="avatar-upload-input"
             disabled={isUploading}
           />
-          <label 
-            htmlFor="avatar-upload-input" 
-            className="btn-secondary" 
+          <label
+            htmlFor="avatar-upload-input"
+            className="btn-secondary"
             style={{ cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}
           >
             {isUploading ? 'Uploading...' : 'Choose File'}
@@ -107,51 +108,52 @@ export const AvatarManager: React.FC<AvatarManagerProps> = ({
       <div className="form-group" style={{ marginTop: '1.5rem' }}>
         <label>Or Choose a Preset</label>
         <div className="avatar-grid">
-          <div 
+          <div
             className={`avatar-preset ${selectedPreset === null ? 'selected' : ''}`}
             onClick={() => handlePresetSelect(null)}
-            style={{ 
-              display: 'flex', 
+            style={{
+              display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center', 
-              justifyContent: 'center', 
+              alignItems: 'center',
+              justifyContent: 'center',
               background: '#111',
               overflow: 'hidden',
               position: 'relative'
             }}
           >
             {googleAvatarUrl ? (
-              <img 
-                src={googleAvatarUrl} 
-                alt="Google Profile" 
+              <img
+                src={googleAvatarUrl}
+                alt="Google Profile"
                 referrerPolicy="no-referrer"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
               <div style={{ fontSize: '0.6rem', textAlign: 'center' }}>No Google Photo</div>
             )}
-            <div style={{ 
-              fontSize: '0.5rem', 
-              background: 'rgba(0,0,0,0.7)', 
-              width: '100%', 
+            <div style={{
+              fontSize: '0.5rem',
+              background: 'rgba(0,0,0,0.7)',
+              width: '100%',
               textAlign: 'center',
               position: 'absolute',
               bottom: 0
             }}>Google</div>
           </div>
           {PRESETS.map((p) => (
-            <img
+            <div
               key={p.key}
-              src={p.url}
-              alt={p.name}
-              title={p.name}
               className={`avatar-preset ${selectedPreset === p.key ? 'selected' : ''}`}
               onClick={() => handlePresetSelect(p.key)}
-              onError={(e) => {
-                // Fallback for missing assets
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80/000000/b8860b?text=' + p.key[0].toUpperCase();
-              }}
-            />
+              style={{ cursor: 'pointer' }}
+            >
+              <AvatarPreset
+                presetKey={p.key}
+                size={80}
+                alt={p.name}
+                style={{ borderRadius: '4px', width: '100%', height: '100%' }}
+              />
+            </div>
           ))}
         </div>
         {error && <div className="validation-msg error">{error}</div>}

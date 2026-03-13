@@ -13,7 +13,7 @@ interface ShopItem {
   description: string
   category: string
   price_shards: number
-  icon_path: string
+  icon_asset_key: string
   class_restriction: string | null
   is_active: boolean
   is_featured: boolean
@@ -33,7 +33,7 @@ interface Bundle {
   price_shards: number
   original_price_shards: number
   discount_pct: number
-  icon_path: string
+  icon_asset_key: string
   is_active: boolean
   sort_order: number
   item_ids: number[]

@@ -1,27 +1,8 @@
 # ERP Project Kickstart TODO
-**Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
-
-
-- [ ] **Bugs**
-    - [ ] Bottom battle bar updates, character starts too far to the left when dying. The monsters seem to move behind him.
-    - [ ] Weird bug hitting exit level after completing the boss in farming mode (getting the farm or hub popup).
-    - [ ] Investigate some standard SDD frameworks (Open Spec) - consider converting this and documentation into that format.
-    - [ ] Code bloat and ballooning (a few god class files have been created, break these back down into modules)
-    - [ ] Code documentation - link to requirements documentation, functional specs, or inline code comments
-
-- [ ] **Enabling Cloud Deployment without the cost**
-    - [ ] See if firebase can store a JSON string for users (how much space, how updatable).
-    - [ ] If not, are there free clud DBS?
-    - [ ] If yes, then create postgres docker container, load up with DB dump (everything except player data) when container inits.
-    - [ ] When player logs in first time (if missing) gets info from firebase and repopulates their record.
-    - [ ] Every now and then update the JSON string in firebase.
+**Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement. 
 
 - [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
-    - [ ] **5.7 — Asset Registry & Sprite Management** *(must come first — foundation for C_ generators)*
-        - [ ] 5.7.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
-        - [ ] 5.7.1 — Asset Registry DB Schema & Backend CRUD
-        - [ ] 5.7.2 — Admin Asset Registry Page (browse, preview, orphan detection)
-        - [ ] 5.7.3 — Bulk Import, Existing Asset Catalog & Tests
+    - [x] **5.7 — Asset Registry & Sprite Management** *(COMPLETE — moved to DONE.md)* *(Ref: `docs/recs/5.7_ASSET_REGISTRY.md`)*
     - [ ] **5.1 — Player & Character Management (Support Tooling)**
         - [ ] 5.1.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
         - [ ] 5.1.1 — Character Deep Editor & Item Crafting Tool (backend + admin UI)
@@ -69,6 +50,24 @@
     - [ ] **3.5 Rate limiting** → Per-endpoint rate limits on marketplace endpoints (10 req/min list/buy/salvage, 30 req/min browse) *(Ref: `docs/recs/3.5_DREAMWALKERS_BAZAAR.md` §12.4)*
     - [ ] **3.5 Alt account detection** → Flag accounts sharing Stripe payment methods via `stripe_customer_id` cross-reference, log to `activity_events` as `marketplace_alt_warning` *(Ref: `docs/recs/3.5_DREAMWALKERS_BAZAAR.md` §11.3)*
 
+
+
+- [ ] **Bugs**
+    - [ ] Bottom battle bar updates, character starts too far to the left when dying. The monsters seem to move behind him.
+    - [ ] Weird bug hitting exit level after completing the boss in farming mode (getting the farm or hub popup).
+    - [ ] Investigate some standard SDD frameworks (Open Spec) - consider converting this and documentation into that format.
+    - [ ] Code bloat and ballooning (a few god class files have been created, break these back down into modules)
+    - [ ] Code documentation - link to requirements documentation, functional specs, or inline code comments
+
+- [ ] **Enabling Cloud Deployment without the cost**
+    - [ ] See if firebase can store a JSON string for users (how much space, how updatable).
+    - [ ] If not, are there free clud DBS?
+    - [ ] If yes, then create postgres docker container, load up with DB dump (everything except player data) when container inits.
+    - [ ] When player logs in first time (if missing) gets info from firebase and repopulates their record.
+    - [ ] Every now and then update the JSON string in firebase.
+
+
+
 ---
 
-*Updated: 2026-03-12 (3.6 Admin Finance Dashboard complete — moved to DONE.md)*
+*Updated: 2026-03-13 (5.7 Asset Registry fully complete — all items including S3.7 + S4.4 moved to DONE.md)*

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AliasEditor } from './AliasEditor';
 import { AvatarManager } from './AvatarManager';
+import { AvatarPreset } from './AvatarPreset';
 import { AudioSettings } from './AudioSettings';
 import { CharacterCreator } from './CharacterCreator';
 import './Profile.css';
@@ -93,13 +94,6 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
     setImgError(false);
   }, [player.avatar_preset_key, player.google_avatar_url, player.custom_avatar_url]);
 
-  const avatarUrl = useMemo(() => {
-    if (imgError) return 'https://via.placeholder.com/128/000000/b8860b?text=ERP';
-    if (player.avatar_preset_key) return `/assets/avatars/preset_${player.avatar_preset_key}.png`;
-    // Note: implementation of custom_avatar_url would go here if used
-    return player.google_avatar_url || 'https://via.placeholder.com/128/000000/b8860b?text=ERP';
-  }, [player.avatar_preset_key, player.google_avatar_url, imgError]);
-
   return (
     <div className="profile-container">
 
@@ -139,13 +133,29 @@ export const ProfileDashboard: React.FC<ProfileDashboardProps> = ({
       {/* ── Profile header ────────────────────────────────────────────── */}
       <div className="profile-header">
         <div style={{ position: 'relative', width: '128px', height: '128px', flexShrink: 0 }}>
-          <img
-            src={avatarUrl}
-            alt="Profile Avatar"
-            className="profile-avatar-large"
-            referrerPolicy="no-referrer"
-            onError={() => setImgError(true)}
-          />
+          {player.avatar_preset_key ? (
+            <AvatarPreset
+              presetKey={player.avatar_preset_key}
+              size={128}
+              className="profile-avatar-large"
+              alt="Profile Avatar"
+            />
+          ) : player.google_avatar_url && !imgError ? (
+            <img
+              src={player.google_avatar_url}
+              alt="Profile Avatar"
+              className="profile-avatar-large"
+              referrerPolicy="no-referrer"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <AvatarPreset
+              presetKey="default"
+              size={128}
+              className="profile-avatar-large"
+              alt="Profile Avatar"
+            />
+          )}
           {/* Camera button — bottom-left of avatar */}
           <button
             onClick={() => setShowAvatarModal(true)}

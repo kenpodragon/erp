@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api';
 import { CharacterCreator } from './CharacterCreator';
+import { AvatarPreset } from './AvatarPreset';
 import { TermsPage } from './TermsPage';
 import './OnboardingFlow.css';
 
@@ -158,14 +159,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ player, onComple
   );
 
   const PRESETS = [
-    { key: 'engineer', name: 'The Engineer', url: '/assets/avatars/preset_engineer.png' },
-    { key: 'conduit', name: 'The Conduit', url: '/assets/avatars/preset_conduit.png' },
-    { key: 'drifter', name: 'The Drifter', url: '/assets/avatars/preset_drifter.png' },
-    { key: 'vessel', name: 'The Vessel', url: '/assets/avatars/preset_vessel.png' },
-    { key: 'warrior', name: 'The Sentinel', url: '/assets/avatars/preset_warrior.png' },
-    { key: 'mage', name: 'The Arcanist', url: '/assets/avatars/preset_mage.png' },
-    { key: 'rogue', name: 'The Shadow', url: '/assets/avatars/preset_rogue.png' },
-    { key: 'cleric', name: 'The Warden', url: '/assets/avatars/preset_cleric.png' },
+    { key: 'engineer', name: 'The Engineer' },
+    { key: 'conduit', name: 'The Conduit' },
+    { key: 'drifter', name: 'The Drifter' },
+    { key: 'vessel', name: 'The Vessel' },
+    { key: 'warrior', name: 'The Sentinel' },
+    { key: 'mage', name: 'The Arcanist' },
+    { key: 'rogue', name: 'The Shadow' },
+    { key: 'cleric', name: 'The Warden' },
   ];
 
   const renderStep2 = () => (
@@ -203,12 +204,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ player, onComple
             <div className="preset-label">Google</div>
           </div>
           {PRESETS.map(p => (
-            <div 
+            <div
               key={p.key}
               className={`avatar-preset ${selectedPreset === p.key ? 'selected' : ''}`}
               onClick={() => setSelectedPreset(p.key)}
             >
-              <img src={p.url} alt={p.name} onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80/000000/b8860b?text=' + p.key[0].toUpperCase()} />
+              <AvatarPreset presetKey={p.key} size={80} alt={p.name} style={{ width: '100%', height: 'auto' }} />
               <div className="preset-label">{p.name}</div>
             </div>
           ))}
@@ -243,17 +244,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ player, onComple
 
   const renderStep4 = () => {
     const spriteKey = createdCharacter?.class?.sprite_key ?? '';
-    const presetKey = spriteKey.replace('class_', '');
-    const spriteUrl = `/assets/avatars/preset_${presetKey}.png`;
+    const presetKey = spriteKey.replace('class_', '') || 'vessel';
 
     return (
       <div className="onboarding-step welcome-screen">
         <div className="welcome-hero">
-          <img 
-            src={spriteUrl} 
-            alt="Character" 
+          <AvatarPreset
+            presetKey={presetKey}
+            size={128}
             className="welcome-avatar"
-            onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/128/000000/b8860b?text=ERP'}
+            alt="Character"
           />
           <h1>Welcome, {createdCharacter?.character_name}</h1>
           <h3 className="class-title">{createdCharacter?.class?.name}</h3>

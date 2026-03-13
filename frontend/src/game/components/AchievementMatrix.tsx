@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './AchievementMatrix.css';
 import { api } from '../../api';
+import { useAssets } from '../providers/AssetProvider';
+import { assetRenderer, type RenderResult } from '../renderers/AssetRenderer';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +47,84 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const CATEGORY_ORDER = ['combat', 'narrative', 'economics', 'idle', 'discovery'];
 
+// ── Asset Icon Helper ─────────────────────────────────────────────────────
+
+/** Safe wrapper around useAssets that returns null when outside AssetProvider. */
+function useSafeAssets() {
+  try {
+    return useAssets();
+  } catch {
+    return null;
+  }
+}
+
+const AchievementIcon: React.FC<{
+  assetKey: string;
+  size: number;
+  isLocked?: boolean;
+  className?: string;
+}> = ({ assetKey, size, isLocked, className }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const assets = useSafeAssets();
+
+  useEffect(() => {
+    if (!assets || !canvasRef.current) return;
+
+    // If locked, modify the definition to include locked variant
+    if (isLocked) {
+      const assetData = assets.getAsset(assetKey);
+      if (assetData) {
+        // Render with locked flag by augmenting the definition
+        const lockedDef = {
+          ...assetData.render_definition,
+          locked: true,
+          locked_variant: {
+            grayscale: true,
+            overlay_color: 'rgba(0, 0, 0, 0.5)',
+            lock_icon: true,
+            ...(assetData.render_definition.locked_variant as Record<string, unknown> || {}),
+          },
+          size,
+        };
+        const result: RenderResult = assetRenderer.render(assetKey + ':locked', lockedDef, 'achievement_icon');
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          canvasRef.current.width = size;
+          canvasRef.current.height = size;
+          ctx.clearRect(0, 0, size, size);
+          ctx.drawImage(result.canvas, 0, 0, size, size);
+        }
+        return;
+      }
+    }
+
+    const result: RenderResult | null = assets.renderAssetWithFallback(assetKey, 'achievement_icon');
+    if (result) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        canvasRef.current.width = size;
+        canvasRef.current.height = size;
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(result.canvas, 0, 0, size, size);
+      }
+    }
+  }, [assets, assetKey, size, isLocked]);
+
+  if (!assets) {
+    return <div className={className || 'am-card-icon'} />;
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={className}
+      width={size}
+      height={size}
+      style={{ width: size, height: size }}
+    />
+  );
+};
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 const AchievementMatrix: React.FC = () => {
@@ -52,6 +132,7 @@ const AchievementMatrix: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
+  const assets = useSafeAssets();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,8 +141,18 @@ const AchievementMatrix: React.FC = () => {
       try {
         const res = await api.get('/api/game/home-base/achievements');
         if (!res.ok) throw new Error('Failed');
-        const json = await res.json();
+        const json: AchievementData = await res.json();
         setData(json);
+
+        // Preload icon assets for all achievements
+        if (assets) {
+          const spriteKeys = json.achievements
+            .map(a => a.icon_sprite_key)
+            .filter(Boolean);
+          if (spriteKeys.length > 0) {
+            assets.preloadBatch(spriteKeys);
+          }
+        }
 
         // Mark visited
         api.post('/api/game/home-base/achievements/mark-visited');
@@ -72,7 +163,7 @@ const AchievementMatrix: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [assets]);
 
   const filteredAchievements = useMemo(() => {
     if (!data) return [];
@@ -177,7 +268,12 @@ const AchievementMatrix: React.FC = () => {
                     : ''
                 }`}
               >
-                <div className="am-card-icon" />
+                <AchievementIcon
+                  assetKey={ach.icon_sprite_key}
+                  size={40}
+                  isLocked={!!ach.parent_achievement_id && !ach.is_completed && ach.progress_value === 0}
+                  className="am-card-icon-canvas"
+                />
                 <div className="am-card-body">
                   <span className="am-card-name">{ach.name}</span>
                   <span className="am-card-desc">{ach.description}</span>

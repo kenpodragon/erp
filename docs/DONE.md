@@ -3,7 +3,16 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-12*
+*Updated: 2026-03-13*
+
+## REC_5: Administrative Systems
+
+ - [x] **5.7 — Asset Registry & Sprite Management (COMPLETE)** *(Ref: `docs/recs/5.7_ASSET_REGISTRY.md` | Design: `5.7_ASSET_REGISTRY_DESIGN.md` | Schema: `5.7_ASSET_REGISTRY_SCHEMA.md`)*
+   - [x] 5.7.0 — Requirements, design, and schema documentation
+   - [x] 5.7.1 — Backend Foundation: Migration 055 (`asset_registry` table with 5 indexes + updated_at trigger, `shop_items`/`shop_bundles` RENAME `icon_path` → `icon_asset_key` with data migration), SQLModel model (`backend/models/asset_registry.py`: AssetRegistryEntry + VALID_CATEGORIES), admin CRUD routes (`backend/routes/admin_assets.py`: 9 endpoints — paginated list with category/tag/search filters, get, create, update, delete with reference-check warning, orphan detection missing/unused, bulk import upsert, batch preload), router wired in `main.py`, `icon_path` → `icon_asset_key` renamed across 16 files (models, routes, admin UI, frontend, tests)
+   - [x] 5.7.2 — Admin Asset Registry Page: 3 new components (`AssetRegistry.tsx` — full page with grid/table view, category filter tabs, search, create/edit modal with split layout JSON editor + live canvas preview with 200ms debounce, delete confirmation with reference warning, collapsible orphan detection panel with Missing/Unused tabs + bulk delete, pagination; `AssetPreview.tsx` — reusable canvas renderer for all 15 categories; `AssetRegistry.css` — complete dark-theme styling). Registered in admin sidebar via `App.tsx`.
+   - [x] 5.7.3 — Frontend Asset Renderers & Integration: 7 new modules (`frontend/src/game/renderers/`: AssetRenderer.ts core dispatcher with LRU cache 200 entries, EntityRenderer.ts, BackgroundRenderer.ts with seeded PRNG, IconRenderer.ts with locked variant, AvatarRenderer.ts, PlaceholderRenderer.ts with dev_content_audit logging). `AssetProvider.tsx` React context with batch preload + `useAssets` hook. Refactored CombatStage.tsx, BossStage.tsx, BottomAnimatedBanner.tsx with asset preloading (existing inline rendering preserved as fallback). S3.7: RelicGallery.tsx + AchievementMatrix.tsx refactored to use IconRenderer via inline ArtifactIcon/AchievementIcon components with useSafeAssets pattern + preloadBatch.
+   - [x] 5.7.4 — Existing Asset Migration, Bulk Import & Tests: Migration 055 seeds 196 assets (4 entity sprites, 1 class sprite, 8 backgrounds, 8 avatars, 2 default placeholders, 50 curated artifact icons, 100 achievement icons, 23 shop item icons). Backend tests (`test_asset_registry.py`: 20 tests, 18 pass / 2 skip on SQLite). Admin tests (`AssetRegistry.test.tsx`: 15 tests passing). Data dictionary updated. `GAME_ASSETS_GUIDE.md` rewritten for procedural approach. S4.4: All filesystem assets retired — `frontend/public/assets/avatars/` (8 PNGs), `frontend/public/assets/game/` (backgrounds/classes/enemies PNGs), `frontend/public/music/` (4 WAVs). 10+ components refactored from PNG paths to AvatarPreset/BackgroundRenderer API-driven rendering.
 
 ## REC_3: Economy & Monetization
 

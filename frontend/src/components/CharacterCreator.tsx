@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api';
+import { AvatarPreset } from './AvatarPreset';
 
 interface CharacterClass {
   id: number;
@@ -218,9 +219,6 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
   if (existingCharacter) {
     const spriteKey = existingCharacter.class?.sprite_key ?? null;
     const presetKey = spriteKey ? (CLASS_AVATAR_MAP[spriteKey] ?? null) : null;
-    const charAvatarUrl = presetKey
-      ? `/assets/avatars/preset_${presetKey}.png`
-      : `https://via.placeholder.com/96/111111/c41e3a?text=${encodeURIComponent(existingCharacter.character_name[0].toUpperCase())}`;
 
     return (
       <div className="profile-section" data-testid="character-display">
@@ -232,15 +230,11 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
 
           {/* Left: avatar */}
           <div style={{ flexShrink: 0 }}>
-            <img
-              src={charAvatarUrl}
+            <AvatarPreset
+              presetKey={presetKey || existingCharacter.character_name.toLowerCase().replace(/\s+/g, '_')}
+              size={96}
               alt="Character Avatar"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  `https://via.placeholder.com/96/111111/b8860b?text=${encodeURIComponent(existingCharacter.character_name[0].toUpperCase())}`;
-              }}
-              style={{ width: '96px', height: '96px', objectFit: 'cover', borderRadius: '6px', border: '2px solid #333', display: 'block' }}
+              style={{ borderRadius: '6px', border: '2px solid #333' }}
             />
           </div>
 
@@ -449,17 +443,12 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
                   >
                     {/* Image header */}
                     {presetKey && (
-                      <div style={{ position: 'relative', height: '120px', overflow: 'hidden', background: '#0a0a0a' }}>
-                        <img
-                          src={`/assets/avatars/preset_${presetKey}.png`}
+                      <div style={{ position: 'relative', height: '120px', overflow: 'hidden', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <AvatarPreset
+                          presetKey={presetKey}
+                          size={120}
                           alt={cls.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'center top',
-                            display: 'block',
-                          }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                         {/* Subtle gradient at bottom for blend into card body */}
                         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.75) 100%)' }} />

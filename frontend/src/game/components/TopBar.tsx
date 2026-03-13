@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useGame } from '../GameContext';
+import { AvatarPreset } from '../../components/AvatarPreset';
 import AudioSettingsModal, {
   loadAudioSettings,
   saveAudioSettingsLocal,
@@ -43,9 +43,7 @@ interface TopBarProps {
   onPlayerUpdate: () => void;
 }
 
-const FALLBACK_AVATAR = 'https://via.placeholder.com/32/000000/b8860b?text=ERP';
-
-// Map database sprite_keys to available PNG filenames in /assets/avatars/preset_*.png
+// Map database sprite_keys to avatar preset keys
 const CLASS_TO_PRESET: Record<string, string> = {
   class_sentinel: 'engineer',
   class_engineer: 'engineer',
@@ -141,42 +139,20 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
     }
   }, [player?.settings]);
 
-  // Calculate the intended URL
-  const targetUrl = useMemo(() => {
+  // Determine which avatar preset key to use
+  const avatarPresetKey = useMemo(() => {
     const charClass = character?.class || character?.character_class;
     const spriteKey = charClass?.sprite_key;
-    
+
     if (spriteKey && CLASS_TO_PRESET[spriteKey]) {
-      return `/assets/avatars/preset_${CLASS_TO_PRESET[spriteKey]}.png`;
+      return CLASS_TO_PRESET[spriteKey];
     }
-    
+
     if (player?.avatar_preset_key) {
-      return `/assets/avatars/preset_${player?.avatar_preset_key}.png`;
+      return player.avatar_preset_key;
     }
-    return player?.google_avatar_url || FALLBACK_AVATAR;
+    return null;
   }, [player, character]);
-
-  // Persistent state for the current valid image source
-  const [imgSrc, setImgSrc] = useState(targetUrl);
-  const [failedUrls] = useState<Set<string>>(new Set());
-
-  // Only update imgSrc if the targetUrl is new and hasn't failed before
-  useEffect(() => {
-    if (targetUrl !== imgSrc) {
-      if (failedUrls.has(targetUrl)) {
-        setImgSrc(FALLBACK_AVATAR);
-      } else {
-        setImgSrc(targetUrl);
-      }
-    }
-  }, [targetUrl, failedUrls, imgSrc]);
-
-  const handleImgError = () => {
-    if (imgSrc !== FALLBACK_AVATAR) {
-      failedUrls.add(imgSrc);
-      setImgSrc(FALLBACK_AVATAR);
-    }
-  };
 
   const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -201,12 +177,28 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
     <header className="game-top-bar">
       <div className="top-bar-left">
         <div className="avatar-wrapper-mini">
-          <img 
-            src={imgSrc} 
-            alt="Avatar" 
-            className="player-avatar-mini"
-            onError={handleImgError}
-          />
+          {avatarPresetKey ? (
+            <AvatarPreset
+              presetKey={avatarPresetKey}
+              size={32}
+              className="player-avatar-mini"
+              alt="Avatar"
+            />
+          ) : player?.google_avatar_url ? (
+            <img
+              src={player.google_avatar_url}
+              alt="Avatar"
+              className="player-avatar-mini"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <AvatarPreset
+              presetKey="default"
+              size={32}
+              className="player-avatar-mini"
+              alt="Avatar"
+            />
+          )}
         </div>
         <div className="player-stats-mini">
           <span className="player-name">{character?.character_name || player?.alias || player?.google_display_name || 'Ascendant'}</span>

@@ -56,9 +56,11 @@ describe('TopBar Component', () => {
     expect(screen.getByText('Test Player')).toBeDefined();
   });
 
-  it('uses character class sprite for avatar if available', () => {
+  it('uses AvatarPreset canvas for avatar if class sprite is available', () => {
     renderTopBar({ player: mockPlayer, character: mockCharacter });
-    const img = screen.getByAltText('Avatar') as HTMLImageElement;
-    expect(img.src).toContain('/assets/avatars/preset_vessel.png');
+    // AvatarPreset renders a <canvas> element with the title set to the preset key
+    const canvas = document.querySelector('.player-avatar-mini');
+    expect(canvas).toBeDefined();
+    expect(canvas?.tagName.toLowerCase()).toBe('canvas');
   });
 });
