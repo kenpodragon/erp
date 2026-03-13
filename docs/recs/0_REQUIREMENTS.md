@@ -232,6 +232,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Achievements:** 90+ achievements across Combat, Narrative, Economics, Idle Training, and Discovery categories. *(Implemented in 2.7.3 — Achievement Matrix)*
 
 ## 5. Administrative Systems
+- [ ] **Detailed Requirements:** [5.0_ADMIN_SYSTEMS.md](5.0_ADMIN_SYSTEMS.md)
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
 - [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.

@@ -16,6 +16,47 @@
     - [ ] When player logs in first time (if missing) gets info from firebase and repopulates their record.
     - [ ] Every now and then update the JSON string in firebase.
 
+- [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
+    - [ ] **5.7 — Asset Registry & Sprite Management** *(must come first — foundation for C_ generators)*
+        - [ ] 5.7.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.7.1 — Asset Registry DB Schema & Backend CRUD
+        - [ ] 5.7.2 — Admin Asset Registry Page (browse, preview, orphan detection)
+        - [ ] 5.7.3 — Bulk Import, Existing Asset Catalog & Tests
+    - [ ] **5.1 — Player & Character Management (Support Tooling)**
+        - [ ] 5.1.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.1.1 — Character Deep Editor & Item Crafting Tool (backend + admin UI)
+        - [ ] 5.1.2 — Currency, Progression & Skill Editors (backend + admin UI)
+        - [ ] 5.1.3 — Activity Timeline, Integration & Tests
+    - [ ] **5.2 — Game Content Editor (Narrative & World Data)**
+        - [ ] 5.2.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.2.1 — Book, Chapter & Scene Editors (backend + admin UI)
+        - [ ] 5.2.2 — Narrative Text Editor, Story Beats & Entity-Scene Mapper
+        - [ ] 5.2.3 — Location Editor, Polish & Tests
+    - [ ] **5.3 — Entity Type & Classification Management**
+        - [ ] 5.3.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.3.1 — Attack Type & Entity Family Management UI
+        - [ ] 5.3.2 — Visual Classification Tags & Banner Behavior Mapping
+        - [ ] 5.3.3 — Stat Block Templates & Tests
+    - [ ] **5.4 — Banner & Scaling Editor (Visual & Difficulty Tuning)**
+        - [ ] 5.4.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.4.1 — Visual Weight Editor & Global Wave Settings
+        - [ ] 5.4.2 — Intensity Curve Editor & Difficulty Presets
+        - [ ] 5.4.3 — Chapter Scaling Preview & Tests
+    - [ ] **5.5 — Content Management & Live Tuning**
+        - [ ] 5.5.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.5.1 — Drop Rate Manager & HP/Gold Scaler
+        - [ ] 5.5.2 — Skill Balance, Economy Tuning & Narrative Timing
+        - [ ] 5.5.3 — Config Categories Reorganization & Tests
+    - [ ] **5.6 — Dev Content Audit Dashboard**
+        - [ ] 5.6.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
+        - [ ] 5.6.1 — Audit Table Viewer, Filters & Severity Flagging
+        - [ ] 5.6.2 — Inline Fix Actions, Progress Dashboard & Generic vs. Specific Tagging
+        - [ ] 5.6.3 — Bulk Status Updates & Tests
+    - [ ] **5.8 — UI Polish & Debug Cleanup** *(incremental throughout; final pass at end)*
+        - [ ] Hide debug controls behind ADMIN role check
+        - [ ] Lore description updates via Audit Dashboard (5.6) + Content Editor (5.2)
+        - [ ] Admin navigation & consistent styling for all new pages
+
 - [ ] **Deferred Items (require live Stripe or depend on future modules)**
     - [ ] **3.1 E2E tests** → `testing/shard_purchasing.spec.ts` *(Ref: `docs/recs/3.1_STRIPE_SHARD_PURCHASING.md`)*
     - [ ] **3.2 Live Stripe tests:** Plan switch with proration, Stripe Customer creation for first-time subscriber, price change propagation *(Ref: `docs/recs/3.2_SUBSCRIPTION_ELYSIUM_ASCENDANT.md` §12.1)*
