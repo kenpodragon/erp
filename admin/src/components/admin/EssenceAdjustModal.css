@@ -1,0 +1,330 @@
+/* EssenceAdjustModal.css — Admin essence adjustment modal */
+
+/* ── Overlay ── */
+.ea-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ── Modal container ── */
+.ea-modal {
+  background: #1a1a1a;
+  border: 1px solid var(--color-border-medium, #333);
+  border-radius: 8px;
+  padding: 2rem;
+  min-width: 420px;
+  max-width: 560px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  color: #ddd;
+}
+
+.ea-modal h3 {
+  margin: 0 0 1.25rem;
+  color: #fff;
+  font-size: 1.15rem;
+}
+
+/* ── Loading ── */
+.ea-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+}
+
+/* ── Error / Success / Warning banners ── */
+.ea-error {
+  padding: 0.6rem 0.75rem;
+  background: #2d1515;
+  border: 1px solid #5a2020;
+  border-radius: 4px;
+  color: #fca5a5;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.ea-success {
+  padding: 0.6rem 0.75rem;
+  background: #1a2e1a;
+  border: 1px solid #2d5a2d;
+  border-radius: 4px;
+  color: #86efac;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.ea-warning {
+  padding: 0.6rem 0.75rem;
+  background: #2e2410;
+  border: 1px solid #92400e;
+  border-radius: 4px;
+  color: #fbbf24;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+/* ── Current balance display ── */
+.ea-balance-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #111122;
+  border: 1px solid #2a2a3e;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.ea-balance-label {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.ea-balance-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #7dd3fc;
+}
+
+/* ── Form fields ── */
+.ea-field {
+  margin-bottom: 0.85rem;
+}
+
+.ea-field label {
+  display: block;
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.3rem;
+}
+
+.ea-field input[type="number"],
+.ea-field textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  background: #000;
+  border: 1px solid var(--color-border-strong, #444);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.ea-field input[type="number"]:focus,
+.ea-field textarea:focus {
+  border-color: #555;
+  outline: none;
+}
+
+.ea-field textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.ea-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+/* ── Radio group ── */
+.ea-radio-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.ea-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.ea-radio-label input[type="radio"] {
+  accent-color: #7dd3fc;
+}
+
+/* ── Preview ── */
+.ea-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #111122;
+  border: 1px solid #2a2a3e;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.ea-preview-label {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.ea-preview-old {
+  color: #999;
+}
+
+.ea-preview-arrow {
+  color: #555;
+}
+
+.ea-preview-new {
+  font-weight: 700;
+  color: #2ecc71;
+}
+
+.ea-preview-new--negative {
+  color: #f44336;
+}
+
+/* ── Recent adjustments history ── */
+.ea-history {
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ea-history-title {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #2a2a3e;
+  margin-bottom: 0.5rem;
+}
+
+.ea-history-list {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ea-history-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.ea-history-row:last-child {
+  border-bottom: none;
+}
+
+.ea-history-date {
+  color: #666;
+  min-width: 80px;
+}
+
+.ea-history-amount {
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.ea-history-amount--grant {
+  color: #2ecc71;
+}
+
+.ea-history-amount--debit {
+  color: #f44336;
+}
+
+.ea-history-reason {
+  color: #999;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ── */
+.ea-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.ea-btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.ea-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ea-btn-secondary {
+  background: var(--color-border-medium, #333);
+  color: #fff;
+  border: 1px solid var(--color-border-strong, #444);
+}
+
+.ea-btn-secondary:hover:not(:disabled) {
+  background: #444;
+}
+
+.ea-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.ea-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.ea-btn-danger {
+  background: #991b1b;
+  color: #fff;
+}
+
+.ea-btn-danger:hover:not(:disabled) {
+  background: #7f1d1d;
+}
+
+/* Pulse animation for large-adjustment re-confirm */
+.ea-btn-pulse {
+  animation: ea-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ea-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .ea-modal {
+    min-width: unset;
+    width: 95%;
+    padding: 1.25rem;
+  }
+
+  .ea-radio-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ea-history-row {
+    flex-wrap: wrap;
+  }
+}

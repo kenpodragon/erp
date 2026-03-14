@@ -54,6 +54,9 @@ from routes.marketplace import router as marketplace_router
 from routes.admin_marketplace import router as admin_marketplace_router
 from routes.admin_finance import router as admin_finance_router
 from routes.admin_assets import router as admin_assets_router
+from routes.admin_characters import router as admin_characters_router
+from routes.admin_characters import items_router as admin_items_router
+from routes.admin_characters import players_timeline_router as admin_timeline_router
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +212,9 @@ app.include_router(marketplace_router)
 app.include_router(admin_marketplace_router)
 app.include_router(admin_finance_router)
 app.include_router(admin_assets_router)
+app.include_router(admin_characters_router)
+app.include_router(admin_items_router)
+app.include_router(admin_timeline_router)
 
 
 @app.get("/debug-routes")

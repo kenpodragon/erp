@@ -1,0 +1,398 @@
+/* -- SkillEditorModal ------------------------------------- */
+
+.sem-modal {
+  background: #1a1a1a;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-medium);
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.sem-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-medium);
+}
+
+.sem-title-bar h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15rem;
+}
+
+.sem-close-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.sem-close-btn:hover {
+  color: #fff;
+}
+
+/* -- Body ------------------------------------------------- */
+
+.sem-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sem-loading {
+  text-align: center;
+  color: #888;
+  padding: 2rem 0;
+}
+
+.sem-empty {
+  text-align: center;
+  color: #555;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.sem-error {
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.sem-success {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* -- Table ------------------------------------------------ */
+
+.sem-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.sem-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.sem-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.sem-table th {
+  background: #111;
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-medium);
+  white-space: nowrap;
+}
+
+.sem-th-name {
+  min-width: 200px;
+}
+
+.sem-th-cat {
+  min-width: 80px;
+}
+
+.sem-th-num {
+  min-width: 65px;
+  text-align: center !important;
+}
+
+.sem-th-status {
+  min-width: 55px;
+  text-align: center !important;
+}
+
+/* -- Row states ------------------------------------------- */
+
+.sem-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+}
+
+.sem-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sem-row-locked {
+  opacity: 0.55;
+}
+
+.sem-row-warning {
+  background: rgba(255, 152, 0, 0.06);
+}
+
+.sem-row-warning:hover {
+  background: rgba(255, 152, 0, 0.1);
+}
+
+/* -- Cells ------------------------------------------------ */
+
+.sem-row td {
+  padding: 0.55rem 0.5rem;
+  vertical-align: top;
+  color: #e0e0e0;
+}
+
+.sem-td-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sem-td-name .sem-skill-icon {
+  display: inline;
+  margin-right: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.sem-td-name .sem-skill-label {
+  font-weight: 500;
+}
+
+.sem-td-cat {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.sem-td-num {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sem-td-status {
+  text-align: center;
+}
+
+/* -- Class exclusive star --------------------------------- */
+
+.sem-exclusive {
+  color: #ffd700;
+  font-size: 0.85rem;
+}
+
+/* -- Prerequisite detail (under skill name) --------------- */
+
+.sem-prereq-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-left: 1.6rem;
+  margin-top: 0.15rem;
+}
+
+.sem-prereq-line {
+  font-size: 0.75rem;
+  color: #f44336;
+  font-style: italic;
+}
+
+/* -- Dependent warning (under skill name) ----------------- */
+
+.sem-dep-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-left: 1.6rem;
+  margin-top: 0.15rem;
+}
+
+.sem-dep-warning-line {
+  font-size: 0.75rem;
+  color: var(--color-warning, #ff9800);
+  font-style: italic;
+}
+
+/* -- Prereq status icons ---------------------------------- */
+
+.sem-prereq-met {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.sem-prereq-unmet {
+  color: #f44336;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* -- Inline inputs ---------------------------------------- */
+
+.sem-input {
+  width: 60px;
+  background: #000;
+  border: 1px solid var(--color-border-strong);
+  color: #fff;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.sem-input:focus {
+  outline: none;
+  border-color: var(--color-success);
+}
+
+.sem-input:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #111;
+}
+
+/* -- Legend ----------------------------------------------- */
+
+.sem-legend {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.sem-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* -- Reset row -------------------------------------------- */
+
+.sem-reset-row {
+  margin: 0.75rem 0 0.5rem 0;
+}
+
+.sem-btn-reset {
+  background: transparent;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  color: #f44336;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sem-btn-reset:hover {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #f44336;
+}
+
+.sem-btn-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -- Footer actions --------------------------------------- */
+
+.sem-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border-medium);
+}
+
+/* -- Reset confirmation overlay --------------------------- */
+
+.sem-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-xl);
+  z-index: 10;
+}
+
+.sem-confirm-dialog {
+  background: #222;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 90%;
+}
+
+.sem-confirm-dialog h4 {
+  margin: 0 0 0.75rem 0;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.sem-confirm-dialog p {
+  color: #ccc;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.sem-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.sem-btn-danger {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.sem-btn-danger:hover {
+  background: #d32f2f;
+}
+
+/* -- Responsive ------------------------------------------- */
+
+@media (max-width: 700px) {
+  .sem-modal {
+    max-width: 100%;
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+
+  .sem-input {
+    width: 50px;
+  }
+
+  .sem-th-name {
+    min-width: 140px;
+  }
+}

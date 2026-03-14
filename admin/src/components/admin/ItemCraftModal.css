@@ -1,0 +1,415 @@
+/* ── ItemCraftModal.css ── Craft / Grant item modal ── */
+
+/* ── Modal overlay + container (matches ftab-modal pattern) ── */
+.icm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.icm-modal {
+  background: #16162a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 760px;
+  max-width: 960px;
+  width: 92%;
+  max-height: 88vh;
+  overflow-y: auto;
+  color: #ddd;
+}
+
+.icm-modal h3 {
+  margin: 0 0 16px;
+  color: #7dd3fc;
+  font-size: 18px;
+}
+
+/* ── Tab bar ── */
+.icm-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #333;
+  margin-bottom: 18px;
+}
+
+.icm-tab {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  padding: 8px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  font-family: inherit;
+}
+
+.icm-tab:hover {
+  color: #bbb;
+}
+
+.icm-tab.active {
+  color: #fff;
+  border-bottom-color: #7dd3fc;
+}
+
+/* ── Two-column layout ── */
+.icm-body {
+  display: flex;
+  gap: 24px;
+}
+
+.icm-left {
+  flex: 1 1 55%;
+  min-width: 0;
+}
+
+.icm-right {
+  flex: 0 0 260px;
+  min-width: 260px;
+}
+
+/* ── ItemComponentPicker field styling ── */
+.icp-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.icp-field label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.icp-field select {
+  width: 100%;
+  padding: 7px 10px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.icp-field select:focus {
+  border-color: #555;
+  outline: none;
+}
+
+.icp-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Base stat sliders ── */
+.icp-stats-section {
+  margin-top: 6px;
+  border-top: 1px solid #333;
+  padding-top: 10px;
+}
+
+.icp-stats-heading {
+  display: block;
+  font-size: 12px;
+  color: #7dd3fc;
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.icp-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.icp-stat-label {
+  width: 52px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.icp-stat-slider {
+  flex: 1;
+  accent-color: #7dd3fc;
+  height: 4px;
+  cursor: pointer;
+}
+
+.icp-stat-input {
+  width: 54px;
+  padding: 3px 6px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.icp-stat-input:focus {
+  border-color: #555;
+  outline: none;
+}
+
+.icp-stat-range {
+  font-size: 11px;
+  color: #555;
+  width: 48px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Live preview panel ── */
+.icm-preview {
+  background: #111122;
+  border: 1px solid #2a2a3e;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.icm-preview-title {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+}
+
+.icm-preview-rarity {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.icm-preview-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+
+.icm-preview-stats {
+  margin-bottom: 14px;
+}
+
+.icm-preview-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.icm-preview-stat-name {
+  color: #aaa;
+  text-transform: capitalize;
+}
+
+.icm-preview-stat-value {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.icm-preview-reqs {
+  border-top: 1px solid #333;
+  padding-top: 10px;
+}
+
+.icm-preview-req {
+  font-size: 12px;
+  color: #888;
+  padding: 1px 0;
+}
+
+.icm-preview-empty {
+  color: #555;
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* ── Rarity colors ── */
+.rarity-common   { color: #aaa; }
+.rarity-uncommon { color: #2ecc71; }
+.rarity-rare     { color: #3498db; }
+.rarity-epic     { color: #9b59b6; }
+.rarity-cosmic   { color: #f39c12; }
+
+/* ── Random mode ── */
+.icm-random-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.icm-random-field label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.icm-random-field select {
+  width: 100%;
+  padding: 7px 10px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.icm-random-field select:focus {
+  border-color: #555;
+  outline: none;
+}
+
+.icm-generate-btn {
+  margin-top: 8px;
+  padding: 8px 20px;
+  background: #2563eb;
+  border: 1px solid #2563eb;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.icm-generate-btn:hover {
+  background: #1d4ed8;
+}
+
+.icm-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Random preview card ── */
+.icm-random-result {
+  margin-top: 16px;
+}
+
+/* ── Item level field ── */
+.icm-level-field {
+  margin-top: 10px;
+}
+
+.icm-level-field label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.icm-level-field input {
+  width: 100px;
+  padding: 7px 10px;
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.icm-level-field input:focus {
+  border-color: #555;
+  outline: none;
+}
+
+/* ── Warnings / Errors ── */
+.icm-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid #78350f;
+  border-radius: 4px;
+  color: #fbbf24;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-top: 14px;
+}
+
+.icm-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid #991b1b;
+  border-radius: 4px;
+  color: #fca5a5;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.icm-success {
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid #166534;
+  border-radius: 4px;
+  color: #86efac;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+/* ── Actions footer ── */
+.icm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.icm-btn {
+  padding: 7px 16px;
+  border: 1px solid #444;
+  background: #2a2a3e;
+  color: #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.icm-btn:hover {
+  background: #333;
+}
+
+.icm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icm-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.icm-btn-primary:hover {
+  background: #1d4ed8;
+}

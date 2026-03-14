@@ -2,12 +2,6 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement. 
 
 - [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
-    - [x] **5.7 — Asset Registry & Sprite Management** *(COMPLETE — moved to DONE.md)* *(Ref: `docs/recs/5.7_ASSET_REGISTRY.md`)*
-    - [ ] **5.1 — Player & Character Management (Support Tooling)**
-        - [ ] 5.1.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
-        - [ ] 5.1.1 — Character Deep Editor & Item Crafting Tool (backend + admin UI)
-        - [ ] 5.1.2 — Currency, Progression & Skill Editors (backend + admin UI)
-        - [ ] 5.1.3 — Activity Timeline, Integration & Tests
     - [ ] **5.2 — Game Content Editor (Narrative & World Data)**
         - [ ] 5.2.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
         - [ ] 5.2.1 — Book, Chapter & Scene Editors (backend + admin UI)
@@ -70,4 +64,4 @@
 
 ---
 
-*Updated: 2026-03-13 (5.7 Asset Registry fully complete — all items including S3.7 + S4.4 moved to DONE.md)*
+*Updated: 2026-03-14 (5.1 COMPLETE — moved to DONE.md. Next: 5.2 Game Content Editor)*

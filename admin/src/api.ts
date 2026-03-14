@@ -84,7 +84,11 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     }),
 
-  delete: (path: string) => request(path, { method: 'DELETE' }),
+  delete: (path: string, body?: unknown) =>
+    request(path, {
+      method: 'DELETE',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
 
   /** For multipart uploads — no Content-Type header. */
   upload: async (path: string, formData: FormData) => {

@@ -1,0 +1,362 @@
+/* ── ProgressionEditorModal ─────────────────────────────── */
+
+.pem-modal {
+  background: #1a1a1a;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-medium);
+  width: 100%;
+  max-width: 620px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.pem-loading,
+.pem-error {
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+}
+
+.pem-error {
+  color: #f44336;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.pem-header {
+  margin-bottom: 1.5rem;
+}
+
+.pem-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+/* ── Current Position ────────────────────────────────────── */
+
+.pem-current-position {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.pem-label {
+  color: #888;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.pem-breadcrumb {
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ── Sections ────────────────────────────────────────────── */
+
+.pem-section {
+  margin-bottom: 1.5rem;
+}
+
+.pem-section-title {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #888;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border-medium);
+  padding-bottom: 0.5rem;
+}
+
+/* ── Form Fields ─────────────────────────────────────────── */
+
+.pem-field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.pem-field label {
+  width: 70px;
+  text-align: right;
+  color: #888;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.pem-field select {
+  flex: 1;
+  background: #000;
+  color: #fff;
+  border: 1px solid var(--color-border-strong);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.pem-field select:focus {
+  outline: none;
+  border-color: var(--color-success);
+}
+
+/* ── Direction Indicator ─────────────────────────────────── */
+
+.pem-direction {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+}
+
+.pem-direction-advancing {
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.pem-direction-rewinding {
+  background: rgba(255, 152, 0, 0.08);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.pem-direction-same {
+  background: var(--color-border-subtle);
+  border: 1px solid var(--color-border-medium);
+}
+
+.pem-direction-icon {
+  flex-shrink: 0;
+}
+
+.pem-direction-advancing .pem-direction-icon,
+.pem-direction-advancing .pem-direction-label {
+  color: var(--color-success);
+}
+
+.pem-direction-rewinding .pem-direction-icon,
+.pem-direction-rewinding .pem-direction-label {
+  color: #ff9800;
+}
+
+.pem-direction-same .pem-direction-icon,
+.pem-direction-same .pem-direction-label {
+  color: #888;
+}
+
+.pem-direction-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pem-direction-desc {
+  color: #ccc;
+}
+
+/* ── Boss Completions ────────────────────────────────────── */
+
+.pem-boss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pem-boss-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pem-boss-item:hover {
+  background: #2a2a2a;
+}
+
+.pem-boss-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pem-boss-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.pem-boss-chapter {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.pem-boss-name {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pem-boss-date {
+  font-size: 0.75rem;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.pem-empty {
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.btn-reset-bosses {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btn-reset-bosses:hover {
+  background: rgba(255, 152, 0, 0.2);
+}
+
+.btn-reset-bosses:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+
+.pem-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-medium);
+}
+
+/* ── Confirmation Dialog ─────────────────────────────────── */
+
+.pem-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.pem-confirm-dialog {
+  background: #1a1a1a;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-strong);
+  max-width: 420px;
+  width: 90%;
+}
+
+.pem-confirm-dialog h4 {
+  margin: 0 0 1rem 0;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.pem-confirm-dialog p {
+  color: #ccc;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.pem-confirm-detail {
+  color: #888 !important;
+  font-size: 0.85rem !important;
+  font-style: italic;
+  margin-bottom: 1.25rem !important;
+}
+
+.pem-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-confirm-save {
+  background: var(--color-success);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-confirm-danger {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-confirm-save:disabled,
+.btn-confirm-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .pem-modal {
+    max-width: 100%;
+    margin: 1rem;
+    max-height: 90vh;
+  }
+
+  .pem-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .pem-field label {
+    width: auto;
+    text-align: left;
+  }
+
+  .pem-current-position {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

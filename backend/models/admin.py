@@ -60,6 +60,23 @@ class AdminWhitelistEmail(SQLModel, table=True):
     created_at: Optional[datetime] = Field(default=datetime.now(timezone.utc))
 
 
+class AdminEssenceAdjustment(SQLModel, table=True):
+    """Maps to `admin_essence_adjustments`. Immutable audit trail for admin Essence grants/debits."""
+
+    __tablename__ = "admin_essence_adjustments"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    character_id: int = Field(foreign_key="player_characters.id", nullable=False, index=True)
+    player_id: int = Field(foreign_key="players.id", nullable=False, index=True)
+    admin_email: str = Field(max_length=255, nullable=False)
+    adjustment_type: str = Field(max_length=10, nullable=False)  # "grant" or "debit"
+    amount: float = Field(nullable=False)
+    balance_before: float = Field(nullable=False)
+    balance_after: float = Field(nullable=False)
+    reason: str = Field(max_length=500, nullable=False)
+    created_at: Optional[datetime] = Field(default=None)
+
+
 class AdminWhitelistIP(SQLModel, table=True):
     """Maps to `admin_whitelist_ips`. Dynamic IP whitelist for admin access."""
     __tablename__ = "admin_whitelist_ips"

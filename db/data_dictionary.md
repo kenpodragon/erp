@@ -637,4 +637,25 @@ Added `'donation'` to the CHECK constraint.
 
 ---
 
+### 23. Admin Essence Adjustments (5.1, Migration 056)
+
+#### Table: `admin_essence_adjustments`
+
+| Column | Type | Constraints | Description |
+|:---|:---|:---|:---|
+| id | SERIAL | PK | Auto-increment primary key |
+| character_id | INTEGER | FK → player_characters(id) CASCADE, NOT NULL | Target character |
+| player_id | INTEGER | FK → players(id) CASCADE, NOT NULL | Owning player (denormalized for fast player-level queries) |
+| admin_email | VARCHAR(255) | NOT NULL | Admin who performed the adjustment |
+| adjustment_type | VARCHAR(10) | NOT NULL, CHECK IN ('grant', 'debit') | Direction of adjustment |
+| amount | DOUBLE PRECISION | NOT NULL, CHECK > 0 | Adjustment amount (always positive) |
+| balance_before | DOUBLE PRECISION | NOT NULL | Essence balance before adjustment |
+| balance_after | DOUBLE PRECISION | NOT NULL | Essence balance after adjustment |
+| reason | VARCHAR(500) | NOT NULL | Required audit reason |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Timestamp |
+
+**Indexes:** `idx_admin_essence_adj_character` (character_id), `idx_admin_essence_adj_player` (player_id), `idx_admin_essence_adj_created` (created_at DESC).
+
+---
+
 *(Note: For specific column metadata and types, refer to `db/001_init_db_tables.sql`.)*

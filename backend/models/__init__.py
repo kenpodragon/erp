@@ -19,7 +19,7 @@ from models.inventory import (
 )
 from models.admin import (
     ServerConfig, AdminAuditLog, ActivityEvent,
-    AdminWhitelistEmail, AdminWhitelistIP,
+    AdminWhitelistEmail, AdminWhitelistIP, AdminEssenceAdjustment,
 )
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
@@ -57,7 +57,7 @@ __all__ = [
     "GearSlot", "ItemPrefix", "ItemQuality", "ItemLoreTag", "ItemTypeBase", "ItemSuffix",
     "InventoryItem", "PlayerInventory", "Artifact", "PlayerCollection",
     "ServerConfig", "AdminAuditLog", "ActivityEvent",
-    "AdminWhitelistEmail", "AdminWhitelistIP",
+    "AdminWhitelistEmail", "AdminWhitelistIP", "AdminEssenceAdjustment",
     "GameConfig", "PlayerStorySession", "SessionUpgrade",
     "PlayerMetaProgression", "DevContentAudit",
     "CharacterSkillLevel", "EntitySceneAppearance", "BossCompletion",

@@ -1,0 +1,300 @@
+/* ── Activity Timeline Modal ──────────────────────────────── */
+
+.atm-modal {
+  background: #1a1a1a;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-medium);
+  width: 80vw;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Title bar */
+.atm-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-medium);
+  flex-shrink: 0;
+}
+
+.atm-title-bar h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.atm-close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.atm-close-btn:hover {
+  color: #fff;
+}
+
+/* Filters */
+.atm-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-medium);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.atm-filters-label {
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 0.25rem;
+}
+
+.atm-filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.atm-filter-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--color-success);
+}
+
+.atm-filter-tag {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-border-subtle);
+}
+
+.atm-cat-gameplay { border-left: 2px solid var(--color-success); }
+.atm-cat-economy { border-left: 2px solid #ffd700; }
+.atm-cat-admin { border-left: 2px solid #2196f3; }
+.atm-cat-social { border-left: 2px solid #9c27b0; }
+.atm-cat-anticheat { border-left: 2px solid #f44336; }
+
+/* Scrollable body */
+.atm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+/* Loading / error / empty states */
+.atm-loading,
+.atm-empty {
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.atm-error {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.08);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  text-align: center;
+}
+
+/* Date group */
+.atm-date-group {
+  margin-bottom: 1.25rem;
+}
+
+.atm-date-separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.atm-date-separator::before,
+.atm-date-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-medium);
+}
+
+.atm-date-separator span {
+  color: #888;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Event card */
+.atm-event {
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+}
+
+.atm-event:hover {
+  background: #2a2a2a;
+}
+
+/* Category-specific left borders */
+.atm-event-gameplay { border-left-color: var(--color-success); }
+.atm-event-economy { border-left-color: #ffd700; }
+.atm-event-admin { border-left-color: #2196f3; }
+.atm-event-social { border-left-color: #9c27b0; }
+.atm-event-anticheat {
+  border-left-color: #f44336;
+  background: rgba(244, 67, 54, 0.05);
+}
+
+.atm-event-anticheat:hover {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+/* Event row */
+.atm-event-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.atm-event-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.atm-event-time {
+  color: #888;
+  font-size: 0.8rem;
+  font-family: monospace;
+  flex-shrink: 0;
+  min-width: 3.5rem;
+}
+
+.atm-event-summary {
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Detail toggle button */
+.atm-detail-toggle {
+  background: none;
+  border: 1px solid var(--color-border-medium);
+  color: #888;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.atm-detail-toggle:hover {
+  color: #fff;
+  border-color: var(--color-border-strong);
+}
+
+/* Inline stats (for session-complete gameplay events) */
+.atm-event-stats {
+  display: flex;
+  gap: 1rem;
+  padding: 0.35rem 0 0 2.7rem;
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.atm-event-stats span {
+  white-space: nowrap;
+}
+
+/* Expanded detail JSON */
+.atm-event-detail {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #000;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-medium);
+  overflow-x: auto;
+}
+
+.atm-event-detail pre {
+  margin: 0;
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #aaa;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Load More */
+.atm-load-more {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.atm-load-more button {
+  background: var(--color-border-medium);
+  color: #fff;
+  border: 1px solid var(--color-border-strong);
+  padding: 0.6rem 2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.atm-load-more button:hover {
+  background: var(--color-border-strong);
+}
+
+.atm-load-more button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .atm-modal {
+    width: 95vw;
+    height: 95vh;
+  }
+
+  .atm-filters {
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .atm-body {
+    padding: 0.75rem 1rem;
+  }
+
+  .atm-event-stats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

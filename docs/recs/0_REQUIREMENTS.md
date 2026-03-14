@@ -233,6 +233,13 @@ The primary goal of ERP is to provide an immersive environment where players **r
 
 ## 5. Administrative Systems
 - [ ] **Detailed Requirements:** [5.0_ADMIN_SYSTEMS.md](5.0_ADMIN_SYSTEMS.md)
+- [x] **5.1 Player & Character Management (Support Tooling):** [5.1_PLAYER_CHARACTER_MANAGEMENT.md](5.1_PLAYER_CHARACTER_MANAGEMENT.md) | [Design](5.1_PLAYER_CHARACTER_MANAGEMENT_DESIGN.md) | [Schema](5.1_PLAYER_CHARACTER_MANAGEMENT_SCHEMA.md)
+    - [x] Character Deep Editor (stats, level, XP, class reassignment with skill mapping)
+    - [x] Item Crafting Tool (manual + random modes, existing item/artifact editing)
+    - [x] Essence Currency Editor (grant/debit with audit trail)
+    - [x] Progression Editor (book/chapter/scene unlock with backfill, boss completion reset)
+    - [x] Skill Editor (idle training levels, prerequisite enforcement)
+    - [x] Activity Timeline (unified player event viewer, 7-day default, 5 categories)
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
 - [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.
