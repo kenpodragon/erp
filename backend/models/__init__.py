@@ -46,6 +46,11 @@ from models.donation import Donation
 from models.marketplace import MarketplaceListing, MarketplaceTrade, MarketplaceNotification, MarketplacePriceHistory
 from models.finance import AdminShardAdjustment
 from models.asset_registry import AssetRegistryEntry
+from models.classification import EntityType, EntityFamily, VisualBehavior
+from models.content import (
+    Background, SceneWaveConfig, EntityAlias, EntityBeatAppearance,
+    LocationAlias, LocationSceneAppearance, SemanticTag,
+)
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -77,4 +82,7 @@ __all__ = [
     "MarketplaceListing", "MarketplaceTrade", "MarketplaceNotification", "MarketplacePriceHistory",
     "AdminShardAdjustment",
     "AssetRegistryEntry",
+    "EntityType", "EntityFamily", "VisualBehavior",
+    "Background", "SceneWaveConfig", "EntityAlias", "EntityBeatAppearance",
+    "LocationAlias", "LocationSceneAppearance", "SemanticTag",
 ]

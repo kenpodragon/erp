@@ -1,0 +1,11 @@
+/* WorldBuilder page-specific styles */
+/* Shared styles are in components/content/content-editor.css */
+
+.wb-page {
+  padding: 0;
+}
+
+.wb-page .content-editor {
+  /* Ensure ContentEditor inherits proper width inside WorldBuilder */
+  max-width: 100%;
+}

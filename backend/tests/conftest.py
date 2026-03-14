@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from main import app
 from db import get_session
 from auth import get_current_player, get_current_admin
@@ -25,6 +27,8 @@ from models import (
     PlayerSubscription, SubscriptionStipendLog,
     ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, PlayerActiveBooster,
     Donation,
+    AttackType, EntityAttackType, TypeBaseAttackType,
+    EntityType, EntityFamily, VisualBehavior,
 )
 from datetime import datetime, timezone
 
@@ -37,6 +41,11 @@ def session_fixture():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    # Map PostgreSQL JSONB to plain JSON for SQLite compatibility
+    from sqlalchemy.ext.compiler import compiles
+    @compiles(JSONB, "sqlite")
+    def compile_jsonb_sqlite(type_, compiler, **kw):
+        return "JSON"
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session

@@ -1,0 +1,437 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Classification Editor — Sub-tab styles, CRUD tables, forms
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Sub-tab Bar ── */
+.cls-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.cls-tab {
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+}
+.cls-tab:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+}
+.cls-tab--active {
+  color: var(--color-info);
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-medium);
+  border-bottom-color: var(--color-bg-elevated);
+}
+
+/* ── Color Badge ── */
+.cls-color-badge {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-medium);
+  vertical-align: middle;
+}
+
+.cls-color-preview {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-medium);
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+/* ── Color Input Row ── */
+.cls-color-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cls-color-input-row input[type="color"] {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.cls-color-input-row input[type="text"] {
+  flex: 1;
+}
+
+/* ── Stat Template Grid ── */
+.cls-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.cls-stat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cls-stat-field label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.cls-stat-field input {
+  padding: 5px 8px;
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  width: 100%;
+}
+
+.cls-stat-field input:focus {
+  outline: none;
+  border-color: var(--color-info);
+}
+
+/* ── Template Status ── */
+.cls-template-yes {
+  color: var(--color-success);
+  font-weight: 600;
+}
+.cls-template-no {
+  color: var(--color-text-muted);
+}
+
+/* ── Help Text ── */
+.cls-help-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 4px 0 10px 0;
+}
+
+/* ── Placeholder ── */
+.cls-placeholder {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 60px 20px;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Audit — Summary Cards
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-audit-cards {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.cls-audit-card {
+  flex: 1 1 130px;
+  padding: 12px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 120px;
+}
+
+.cls-audit-card:hover {
+  border-color: var(--color-border-medium);
+  background: var(--color-bg-elevated);
+}
+
+.cls-audit-card--active {
+  border-color: var(--color-info);
+  box-shadow: 0 0 0 1px var(--color-info);
+}
+
+.cls-audit-card-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cls-audit-card-pct {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.cls-audit-card-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Audit — Filter Bar
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-audit-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cls-missing-checkboxes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cls-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cls-checkbox-label input[type="checkbox"] {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bulk Assignment — Filter & Action Bars
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-bulk-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cls-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: 12px;
+}
+
+.cls-attack-checkboxes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 400px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Status Badges & Missing Tags
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-status-yes {
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cls-status-no {
+  color: var(--color-danger, var(--color-error, #e55));
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cls-missing-tag {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.cls-missing-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 1px 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--color-warning-bg, rgba(255, 170, 0, 0.12));
+  color: var(--color-warning, #fa0);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-warning, #fa0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Export Button
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-export-btn {
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Modal Overlay & Content
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.cls-modal-content {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.cls-modal-sm {
+  width: 420px;
+}
+
+.cls-modal-lg {
+  width: 720px;
+}
+
+.cls-modal-content h3 {
+  margin: 0 0 14px 0;
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+.cls-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Template Apply — Preview Cards
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cls-template-previews {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.cls-template-card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--color-bg-base, var(--color-bg-primary));
+}
+
+.cls-template-card--skipped {
+  opacity: 0.6;
+  border-color: var(--color-warning, #fa0);
+}
+
+.cls-template-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.cls-template-status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cls-template-status--ready {
+  color: var(--color-success);
+}
+
+.cls-template-status--skipped {
+  color: var(--color-warning, #fa0);
+}
+
+.cls-template-warning {
+  font-size: 12px;
+  color: var(--color-warning, #fa0);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.cls-template-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cls-stat-preview-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.cls-stat-preview-empty {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.cls-stat-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cls-stat-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.cls-template-summary {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}

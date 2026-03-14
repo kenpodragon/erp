@@ -12,6 +12,7 @@ import AccessControl from './pages/AccessControl'
 import AuditLog from './pages/AuditLog'
 import GameConfigs from './pages/GameConfigs'
 import ContentEditor from './pages/ContentEditor'
+import WorldBuilder from './pages/WorldBuilder'
 import AtmosphereEditor from './pages/AtmosphereEditor'
 import SFXConfigEditor from './pages/SFXConfigEditor'
 import ChatManager from './pages/ChatManager'
@@ -188,7 +189,7 @@ function App() {
             <NavLink to="/support" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Support</NavLink>
             <NavLink to="/config" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Server Config</NavLink>
             <NavLink to="/game-configs" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
-            <NavLink to="/content" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Content</NavLink>
+            <NavLink to="/world-builder" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>World Builder</NavLink>
             <NavLink to="/atmospheres" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audio</NavLink>
             <NavLink to="/artifacts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Artifacts</NavLink>
             <NavLink to="/achievements" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Achievements</NavLink>
@@ -220,6 +221,7 @@ function App() {
             <Route path="/support/*" element={<div className="admin-content"><SupportTickets /></div>} />
             <Route path="/config" element={<div className="admin-content"><ServerConfig /></div>} />
             <Route path="/game-configs" element={<div className="admin-content"><GameConfigs /></div>} />
+            <Route path="/world-builder/*" element={<div className="admin-content"><WorldBuilder /></div>} />
             <Route path="/content" element={<div className="admin-content"><ContentEditor /></div>} />
             <Route path="/atmospheres" element={<div className="admin-content"><AtmosphereEditor /></div>} />
             <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />

@@ -85,7 +85,7 @@ interface Props {
   narrativeProgressPct: number;
   playSFX?: (key: string, opts?: { pan?: number }) => void;
   reduceMotion?: boolean;
-  rareSpawn?: { entity_id: number; canonical_name: string; entity_type: string; entity_family: string | null; base_hp: number; base_gold: number; sprite_key: string | null } | null;
+  rareSpawn?: { entity_id: number; canonical_name: string; entity_type_id: number; entity_family_id: number | null; base_hp: number; base_gold: number; sprite_key: string | null } | null;
 }
 
 interface InnerProps extends Props {

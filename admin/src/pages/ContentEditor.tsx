@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 import './ContentEditor.css'
 
-type EntityType = 'stats' | 'classes' | 'skills' | 'benefits' | 'items' | 'attack_types' | 'gear_slots'
+type EntityType = 'stats' | 'classes' | 'skills' | 'benefits' | 'items' | 'gear_slots'
 
 interface TabConfig {
   key: EntityType
@@ -18,7 +18,6 @@ const TABS: TabConfig[] = [
   { key: 'skills', label: 'Skills', endpoint: '/api/admin/game/skills', columns: ['id', 'name', 'display_name', 'category', 'is_class_exclusive', 'effect_type'], nameField: 'name' },
   { key: 'benefits', label: 'Benefit Effects', endpoint: '/api/admin/game/benefits', columns: ['id', 'effect_key', 'display_name', 'description'], nameField: 'effect_key' },
   { key: 'items', label: 'Item Components', endpoint: '/api/admin/game/items/components', columns: [], nameField: '' },
-  { key: 'attack_types', label: 'Attack Types', endpoint: '/api/admin/game/attack-types', columns: ['id', 'name', 'display_name', 'is_physical', 'description'], nameField: 'name' },
   { key: 'gear_slots', label: 'Gear Slots', endpoint: '/api/admin/game/gear-slots', columns: ['id', 'name', 'display_name', 'sort_order', 'description'], nameField: 'name' },
 ]
 
@@ -386,9 +385,6 @@ export default function ContentEditor() {
     if (activeTab === 'classes') {
       return renderClassForm()
     }
-    if (activeTab === 'attack_types') {
-      return renderAttackTypeForm()
-    }
     if (activeTab === 'gear_slots') {
       return renderGearSlotForm()
     }
@@ -474,25 +470,6 @@ export default function ContentEditor() {
       </div>
     )
   }
-
-  /* ---- Attack Type Form ---- */
-  const renderAttackTypeForm = () => (
-    <div className="ce-form">
-      {!creating && <label>ID <input type="text" value={editForm.id ?? ''} disabled /></label>}
-      <label>Name <input type="text" value={editForm.name || ''} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} /></label>
-      <label>Display Name <input type="text" value={editForm.display_name || ''} onChange={e => setEditForm(p => ({ ...p, display_name: e.target.value }))} /></label>
-      <label className="ce-checkbox-label">
-        <input type="checkbox" checked={editForm.is_physical || false} onChange={e => setEditForm(p => ({ ...p, is_physical: e.target.checked }))} />
-        Physical Attack
-      </label>
-      <label>Description
-        <textarea value={editForm.description || ''} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} />
-      </label>
-      <label>Lore Reference
-        <textarea value={editForm.lore_reference || ''} onChange={e => setEditForm(p => ({ ...p, lore_reference: e.target.value }))} />
-      </label>
-    </div>
-  )
 
   /* ---- Gear Slot Form ---- */
   const renderGearSlotForm = () => (

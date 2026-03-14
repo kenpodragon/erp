@@ -57,6 +57,10 @@ from routes.admin_assets import router as admin_assets_router
 from routes.admin_characters import router as admin_characters_router
 from routes.admin_characters import items_router as admin_items_router
 from routes.admin_characters import players_timeline_router as admin_timeline_router
+from routes.admin_content import router as admin_content_router
+from routes.admin_content_locations import router as admin_content_locations_router
+from routes.admin_content_entities import router as admin_content_entities_router
+from routes.admin_classification import router as admin_classification_router
 
 logger = logging.getLogger(__name__)
 
@@ -215,6 +219,10 @@ app.include_router(admin_assets_router)
 app.include_router(admin_characters_router)
 app.include_router(admin_items_router)
 app.include_router(admin_timeline_router)
+app.include_router(admin_content_router)
+app.include_router(admin_content_locations_router)
+app.include_router(admin_content_entities_router)
+app.include_router(admin_classification_router)
 
 
 @app.get("/debug-routes")

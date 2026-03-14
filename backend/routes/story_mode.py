@@ -270,8 +270,8 @@ def _check_rare_spawn(
     return {
         "entity_id": chosen.id,
         "canonical_name": chosen.canonical_name,
-        "entity_type": chosen.entity_type,
-        "entity_family": chosen.entity_family,
+        "entity_type_id": chosen.entity_type_id,
+        "entity_family_id": chosen.entity_family_id,
         "base_hp": gp.base_hp if gp else 50,
         "base_gold": gp.base_gold if gp else 10,
         "sprite_key": gp.sprite_key if gp else None,

@@ -15,6 +15,7 @@ class SceneGameplayData(SQLModel, table=True):
     scene_id: int = Field(foreign_key="scenes.id", nullable=False, unique=True)
     required_time_seconds: int = Field(default=0)
     background_sprite_key: Optional[str] = Field(default=None, max_length=100)
+    background_id: Optional[int] = Field(default=None, foreign_key="backgrounds.id")
     is_boss_scene: bool = Field(default=False)
     atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
 
@@ -31,13 +32,21 @@ class Entity(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     canonical_name: str = Field(max_length=255, unique=True, nullable=False)
-    entity_type: str = Field(max_length=50, nullable=False)
+    entity_type_id: int = Field(foreign_key="entity_types.id")
     is_generated: bool = Field(default=False)
     base_description: Optional[str] = Field(default=None)
+    base_emotional_state: Optional[str] = Field(default=None)
+    base_sounds: Optional[str] = Field(default=None)
+    base_smells: Optional[str] = Field(default=None)
+    base_equipment: Optional[str] = Field(default=None)
+    base_abilities: Optional[str] = Field(default=None)
+    boss_text_references: Optional[str] = Field(default=None)
+    boss_action_quote: Optional[str] = Field(default=None)
+    boss_variant_differences: Optional[str] = Field(default=None)
     first_appearance_scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
-    entity_family: Optional[str] = Field(default=None, max_length=100)
+    entity_family_id: Optional[int] = Field(default=None, foreign_key="entity_families.id")
 
     # Relationships
     gameplay_data: Optional["EntityGameplayData"] = Relationship(back_populates="entity", sa_relationship_kwargs={"uselist": False})

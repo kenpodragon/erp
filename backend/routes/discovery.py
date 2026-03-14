@@ -14,7 +14,7 @@ from sqlmodel import Session, select, func, col
 
 from db import get_session
 from auth import get_current_player
-from models import Entity, EntityGameplayData, PlayerProgress, Skill
+from models import Entity, EntityGameplayData, PlayerProgress, Skill, EntityType, EntityFamily
 from models.discovery import PlayerEntityDiscovery, PlayerDiscoveryLog
 from models.story_mode import GameConfig
 
@@ -27,8 +27,10 @@ router = APIRouter(prefix="/api/game/registry", tags=["discovery"])
 class EntitySummary(BaseModel):
     entity_id: int
     canonical_name: str
-    entity_type: Optional[str] = None
-    entity_family: Optional[str] = None
+    entity_type_id: Optional[int] = None
+    entity_type_name: Optional[str] = None
+    entity_family_id: Optional[int] = None
+    entity_family_name: Optional[str] = None
     sprite_key: Optional[str] = None
     encounters: int = 0
     kills: int = 0
@@ -40,8 +42,10 @@ class EntitySummary(BaseModel):
 class EntityDetail(BaseModel):
     entity_id: int
     canonical_name: str
-    entity_type: Optional[str] = None
-    entity_family: Optional[str] = None
+    entity_type_id: Optional[int] = None
+    entity_type_name: Optional[str] = None
+    entity_family_id: Optional[int] = None
+    entity_family_name: Optional[str] = None
     sprite_key: Optional[str] = None
     rank: str = "E"
     encounters: int = 0
@@ -149,13 +153,17 @@ def get_entity_registry(
     ).first()
     current_chapter_id = progress.current_chapter_id if progress else None
 
-    # Build base query
+    # Build base query — join EntityType and EntityFamily for display info
     stmt = (
         select(
             Entity,
             EntityGameplayData,
             PlayerEntityDiscovery,
+            EntityType,
+            EntityFamily,
         )
+        .join(EntityType, Entity.entity_type_id == EntityType.id)
+        .outerjoin(EntityFamily, Entity.entity_family_id == EntityFamily.id)
         .outerjoin(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
         .outerjoin(
             PlayerEntityDiscovery,
@@ -165,14 +173,14 @@ def get_entity_registry(
     )
 
     if family:
-        stmt = stmt.where(Entity.entity_family == family)
+        stmt = stmt.where(EntityFamily.name == family)
 
     stmt = stmt.offset((page - 1) * per_page).limit(per_page)
 
     rows = session.exec(stmt).all()
 
     results: list[EntitySummary] = []
-    for entity, gameplay, discovery in rows:
+    for entity, gameplay, discovery, entity_type, entity_family in rows:
         # Visibility logic
         if discovery and discovery.encounters > 0:
             visibility = "revealed"
@@ -186,8 +194,10 @@ def get_entity_registry(
             EntitySummary(
                 entity_id=entity.id,
                 canonical_name=entity.canonical_name if visibility != "mist" else "???",
-                entity_type=entity.entity_type if visibility != "mist" else None,
-                entity_family=entity.entity_family if visibility != "mist" else None,
+                entity_type_id=entity.entity_type_id if visibility != "mist" else None,
+                entity_type_name=entity_type.name if visibility != "mist" else None,
+                entity_family_id=entity.entity_family_id if visibility != "mist" else None,
+                entity_family_name=entity_family.name if entity_family and visibility != "mist" else None,
                 sprite_key=gameplay.sprite_key if gameplay and visibility == "revealed" else None,
                 encounters=discovery.encounters if discovery else 0,
                 kills=discovery.kills if discovery else 0,
@@ -218,6 +228,10 @@ def get_entity_detail(
     if not entity:
         raise HTTPException(status_code=404, detail="Entity not found")
 
+    # Lookup entity type and family for display info
+    entity_type = session.get(EntityType, entity.entity_type_id) if entity.entity_type_id else None
+    entity_family = session.get(EntityFamily, entity.entity_family_id) if entity.entity_family_id else None
+
     gameplay = session.exec(
         select(EntityGameplayData).where(EntityGameplayData.entity_id == entity_id)
     ).first()
@@ -235,8 +249,10 @@ def get_entity_detail(
     result = EntityDetail(
         entity_id=entity.id,
         canonical_name=entity.canonical_name,
-        entity_type=entity.entity_type,
-        entity_family=entity.entity_family,
+        entity_type_id=entity.entity_type_id,
+        entity_type_name=entity_type.name if entity_type else None,
+        entity_family_id=entity.entity_family_id,
+        entity_family_name=entity_family.name if entity_family else None,
         sprite_key=gameplay.sprite_key if gameplay else None,
         rank=rank,
         encounters=discovery.encounters if discovery else 0,

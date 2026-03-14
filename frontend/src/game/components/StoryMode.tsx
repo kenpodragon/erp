@@ -66,8 +66,8 @@ const StoryMode: React.FC<StoryModeProps> = ({
   const [showCpsToast, setShowCpsToast] = React.useState(false);
   // 2.6.2: Rare spawn from tick
   const [rareSpawn, setRareSpawn] = React.useState<{
-    entity_id: number; canonical_name: string; entity_type: string;
-    entity_family: string | null; base_hp: number; base_gold: number;
+    entity_id: number; canonical_name: string; entity_type_id: number;
+    entity_family_id: number | null; base_hp: number; base_gold: number;
     sprite_key: string | null;
   } | null>(null);
   // Boss session state

@@ -3,6 +3,8 @@
 from datetime import datetime
 from typing import Optional
 from sqlmodel import SQLModel, Field
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class AttackType(SQLModel, table=True):
@@ -15,6 +17,8 @@ class AttackType(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
     is_physical: bool = Field(default=False)
     lore_reference: Optional[str] = Field(default=None)
+    visual_behavior_id: Optional[int] = Field(default=None, foreign_key="visual_behaviors.id")
+    stat_multipliers: Optional[dict] = Field(default=None, sa_column=Column(JSONB))
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

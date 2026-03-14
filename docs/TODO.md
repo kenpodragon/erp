@@ -2,16 +2,6 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement. 
 
 - [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
-    - [ ] **5.2 — Game Content Editor (Narrative & World Data)**
-        - [ ] 5.2.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
-        - [ ] 5.2.1 — Book, Chapter & Scene Editors (backend + admin UI)
-        - [ ] 5.2.2 — Narrative Text Editor, Story Beats & Entity-Scene Mapper
-        - [ ] 5.2.3 — Location Editor, Polish & Tests
-    - [ ] **5.3 — Entity Type & Classification Management**
-        - [ ] 5.3.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
-        - [ ] 5.3.1 — Attack Type & Entity Family Management UI
-        - [ ] 5.3.2 — Visual Classification Tags & Banner Behavior Mapping
-        - [ ] 5.3.3 — Stat Block Templates & Tests
     - [ ] **5.4 — Banner & Scaling Editor (Visual & Difficulty Tuning)**
         - [ ] 5.4.0 — Create requirements, design, and schema documentation (question → refine → design → schema → consistency review)
         - [ ] 5.4.1 — Visual Weight Editor & Global Wave Settings
@@ -32,7 +22,8 @@
         - [ ] Lore description updates via Audit Dashboard (5.6) + Content Editor (5.2)
         - [ ] Admin navigation & consistent styling for all new pages
 
-- [ ] **Deferred Items (require live Stripe or depend on future modules)**
+- [ ] **Deferred Items (require live Stripe, Docker stack, or depend on future modules)**
+    - [ ] **5.2 Integration pass:** Verify all World Builder tabs navigate correctly, cascading filters work across editors (requires running app) *(Ref: `docs/recs/5.2_GAME_CONTENT_EDITOR.md`)*
     - [ ] **3.1 E2E tests** → `testing/shard_purchasing.spec.ts` *(Ref: `docs/recs/3.1_STRIPE_SHARD_PURCHASING.md`)*
     - [ ] **3.2 Live Stripe tests:** Plan switch with proration, Stripe Customer creation for first-time subscriber, price change propagation *(Ref: `docs/recs/3.2_SUBSCRIPTION_ELYSIUM_ASCENDANT.md` §12.1)*
     - [ ] **3.2 Dispute integration:** Subscribe blocked when account has active dispute *(Ref: `docs/recs/3.2_SUBSCRIPTION_ELYSIUM_ASCENDANT.md` §12.1 — depends on 3.6 dispute queue)*
@@ -64,4 +55,4 @@
 
 ---
 
-*Updated: 2026-03-14 (5.1 COMPLETE — moved to DONE.md. Next: 5.2 Game Content Editor)*
+*Updated: 2026-03-14 (5.3 moved to DONE.md. Remaining: 5.4-5.6, 5.8, deferred items, bugs)*

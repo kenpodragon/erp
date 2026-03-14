@@ -240,6 +240,16 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] Progression Editor (book/chapter/scene unlock with backfill, boss completion reset)
     - [x] Skill Editor (idle training levels, prerequisite enforcement)
     - [x] Activity Timeline (unified player event viewer, 7-day default, 5 categories)
+- [x] **5.2 Game Content Editor (Narrative & World Data):** [5.2_GAME_CONTENT_EDITOR.md](5.2_GAME_CONTENT_EDITOR.md) | [Design](5.2_GAME_CONTENT_EDITOR_DESIGN.md) | [Schema](5.2_GAME_CONTENT_EDITOR_SCHEMA.md)
+    - [x] Book, Chapter & Scene Editors (CRUD with structured boss config, backgrounds, wave config)
+    - [x] Entity Editor (full CRUD for all 9 types, gameplay data, aliases, attack types)
+    - [x] Story Beat Editor (narrative text editing — the content players see)
+    - [x] Entity-Scene/Beat Mappers (bulk assignment, copy operations)
+    - [x] Background Editor (new backgrounds table, parallax config)
+    - [x] Scene Wave Config (per-scene wave composition, bulk template operations)
+    - [x] Location Editor (sensory metadata, aliases, atmosphere associations)
+    - [x] Semantic Tag Manager (AI-enriched metadata, analytics, bulk rename)
+    - [x] World Builder top-level page (Narrative Editor + Content Editor + Classification under one roof)
 - [ ] **User Management:** View, search, block/unblock, and edit user profiles.
 - [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
 - [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.
@@ -258,7 +268,14 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **Game Content Management:** 
     - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
     - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
-- [ ] **Entity types and classes** Melee, Ranged, Magic (able to be one or combo or all - think of more, flying, etc...). Effects how they attack on the screen, show up in the battle banner. Classes (stying and color choices). Ability to add new types (or maybe just re-use class from player?) Editor and ability to change, add, and assign entities (in bulk, search) the types and classes. Also stat block editor and other fun bits.
+- [x] **5.3 Entity Type & Classification Management:** [5.3_ENTITY_CLASSIFICATION.md](5.3_ENTITY_CLASSIFICATION.md) | [Design](5.3_ENTITY_CLASSIFICATION_DESIGN.md) | [Schema](5.3_ENTITY_CLASSIFICATION_SCHEMA.md)
+    - [x] Entity type normalization (VARCHAR → lookup table FK, 9 types, admin CRUD, 3,936 entities migrated)
+    - [x] Entity family normalization (VARCHAR → lookup table FK, metadata, stat templates)
+    - [x] Visual behavior system (derived from attack types, animation configs, 5 seed behaviors)
+    - [x] Attack type extensions (visual_behavior_id FK, stat_multipliers JSONB, 13 types mapped)
+    - [x] Stat block templates (family base + attack type multipliers, preview/apply workflow)
+    - [x] Bulk classification assignment (6 actions) + classification audit view (6 summary cards, CSV export)
+    - [x] WorldBuilder integration (third tab: Classification with 6 sub-tabs)
 - [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
 - [ ] Work on the outstanding C requirements (generators) and flesh out with any other generators that might be needed from across the application (sanity check for C generators to be built next)
 
@@ -328,6 +345,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
 **Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
 - [x] **8 Bit Music Generator:** Completed in REC 2.5 (`tools/generate_8bit_music.py`)
 - [x] **Sound Effect Generator:** Completed in REC 2.5 (`tools/generate_8bit_sfx.py`)
+- [ ] **Banner Animation System:** PixiJS rendering integration consuming `visual_behaviors.animation_config` from 5.3, per-behavior animation state machines, animation sprite sheets per visual behavior. *(Deferred — depends on 5.3 data model + Asset Registry 5.7)*
 - [ ] **Background image generator:** Lots more for all the different books
 - [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
 - [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...

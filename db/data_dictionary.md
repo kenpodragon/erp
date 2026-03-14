@@ -38,6 +38,8 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `053` | Dreamwalker's Bazaar (3.5) | Created 4 tables: `marketplace_listings`, `marketplace_trades`, `marketplace_notifications`, `marketplace_price_history`. Added `marketplace_slots_purchased INTEGER` to `players`. Added `marketplace_listing_id INTEGER FK` to `player_artifacts` and `player_inventory`. Updated `enforce_inventory_slot_cap()` trigger to exclude marketplace-listed items from slot count. Widened `shard_transactions` source_type CHECK (+marketplace_purchase, +marketplace_sale). Widened `shop_items` category CHECK (+marketplace_permit). Seeded 7 Bazaar Permits, 4 titles, 9 achievements with parent chains and title rewards, 15 `game_configs` keys (8 marketplace + 7 salvage). |
 | `054` | Admin Finance Dashboard | Created `admin_shard_adjustments` table (admin-initiated shard grant/debit audit trail: player_id, admin_email, adjust_type, amount, reason, balance_before/after, shard_txn_id FK). 3 indexes (player, admin, created_at). Seeded 5 `game_configs` keys (category: marketplace_anomaly): anomaly_price_multiplier_threshold (10), anomaly_rapid_relist_count (5), anomaly_rapid_relist_window_minutes (60), anomaly_wash_trade_count (3), anomaly_wash_trade_window_hours (24). |
 | `055` | Asset Registry | Created `asset_registry` table (id, asset_key UNIQUE, category, display_name, description, render_definition JSONB, tags JSONB/GIN, source, created_at, updated_at + trigger). Indexes: asset_key, category, source, tags GIN, display_name. Renamed `shop_items.icon_path` → `icon_asset_key`, `shop_bundles.icon_path` → `icon_asset_key`. Seeded 21 migrated filesystem assets + ~140 placeholder icons for existing sprite_key values. |
+| `057` | Backgrounds & Wave Configs (5.2) | Created `backgrounds` table (id, name UNIQUE, description, background_key UNIQUE, parallax_config JSONB, time_of_day, mood, color_palette JSONB, created_at, updated_at + trigger). Created `scene_wave_configs` table (id, scene_id FK UNIQUE scenes CASCADE, max_enemies_per_wave, wave_count, spawn_interval_ms, scaling_factor, hp_multiplier, gold_multiplier, entity_pool JSONB, boss_entity_id FK entities SET NULL, created_at, updated_at + trigger). Added `background_id INTEGER FK backgrounds SET NULL` to `scene_gameplay_data` with data migration from `background_sprite_key`. Added `description TEXT` to `locations` (if not exists). |
+| `058` | Entity Classification | Created `entity_types`, `entity_families`, `visual_behaviors` tables. Extended `attack_types` with `visual_behavior_id` FK and `stat_multipliers` JSONB. Migrated `entities.entity_type` (VARCHAR) → `entity_type_id` (FK) and `entities.entity_family` (VARCHAR) → `entity_family_id` (FK). Seeded 9 entity types, 5 visual behaviors, and attack type → behavior mappings. |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -54,7 +56,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `scenes` | Narrative nodes within chapters, linked to locations. Includes `scene_type` and `boss_config`. |
 | `story_beats` | The smallest narrative units within a scene. Includes `content_image_path`, `audio_path`, and `audio_duration_seconds`. |
 | `locations` | Master list of canonical locations within the Tower. **2.5:** Added `archetype_id INTEGER FK atmospheres` for atmosphere classification. |
-| `entities` | Master list of characters, enemies, and neutral figures from the lore. |
+| `entities` | Master list of characters, enemies, and neutral figures from the lore. **5.3:** Replaced `entity_type VARCHAR(50)` with `entity_type_id INTEGER FK entity_types ON DELETE RESTRICT`. Replaced `entity_family VARCHAR(100)` with `entity_family_id INTEGER FK entity_families ON DELETE SET NULL`. |
 | `entity_aliases` | Alternate names or titles for entities. |
 | `entity_scene_appearances` | Tracks which entities appear in which scenes and their roles. |
 | `entity_beat_appearances` | Tracks entity presence at the beat level for precise sync. |
@@ -167,7 +169,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `attack_types` | Combat attack type definitions. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `is_physical BOOLEAN DEFAULT FALSE`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 13 types: melee, ranged, akashic, aerial, psychic, nanite, phase, void, resonance, construct, thermal, gravitic, corruption. |
+| `attack_types` | Combat attack type definitions. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `is_physical BOOLEAN DEFAULT FALSE`, `lore_reference TEXT`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. **5.3:** Added `visual_behavior_id INTEGER FK visual_behaviors ON DELETE SET NULL` and `stat_multipliers JSONB` (nullable). Seeded with 13 types: melee, ranged, akashic, aerial, psychic, nanite, phase, void, resonance, construct, thermal, gravitic, corruption. |
 | `entity_attack_types` | Many-to-many junction: entities to attack types. Columns: `id SERIAL PK`, `entity_id INTEGER FK entities ON DELETE CASCADE`, `attack_type_id INTEGER FK attack_types ON DELETE CASCADE`, `is_primary BOOLEAN DEFAULT FALSE`, `created_at TIMESTAMPTZ`. UNIQUE constraint on `(entity_id, attack_type_id)`. |
 | `type_base_attack_types` | Many-to-many junction: item type bases to attack types (for weapons). Columns: `id SERIAL PK`, `type_base_id INTEGER FK item_type_bases ON DELETE CASCADE`, `attack_type_id INTEGER FK attack_types ON DELETE CASCADE`, `created_at TIMESTAMPTZ`. UNIQUE constraint on `(type_base_id, attack_type_id)`. |
 
@@ -200,7 +202,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `chat_channels` | Chat channel metadata. Messages are in-memory only (not persisted). Columns: `id VARCHAR(50) PK`, `name VARCHAR(100)`, `channel_type VARCHAR(20) DEFAULT 'global'` ('global', 'chapter', 'book', 'custom'), `is_active BOOLEAN DEFAULT TRUE`, `created_at TIMESTAMPTZ`, `created_by INTEGER FK players ON DELETE SET NULL`. Default seed: `global` channel. |
 
 **Column Additions (2.6):**
-- `entities.entity_family VARCHAR(100)` — Species/family grouping (e.g., 'Wraith', 'Golem'). Populated via `tools/classify_entity_families.py`. NULL = standalone entry in Codex. Index: `idx_entities_family`.
+- ~~`entities.entity_family VARCHAR(100)`~~ — **Replaced in 5.3** by `entity_family_id INTEGER FK entity_families ON DELETE SET NULL`. Species/family grouping (e.g., 'Wraith', 'Golem'). NULL = standalone entry in Codex. Index: `idx_entities_family`.
 
 **Codex Rank Thresholds** (from `game_configs`, category: `discovery`): E=1 kill, C=25, A=100, SS=500. Rank determines what info is visible: E=name+image+lore, C=+HP/gold, A=+full stats, SS=+hidden lore.
 
@@ -634,6 +636,16 @@ Added `'donation'` to the CHECK constraint.
 |:---|:---|
 | `shop_items` | Renamed `icon_path VARCHAR(255)` → `icon_asset_key VARCHAR(255)`. Now stores `asset_registry.asset_key` reference instead of filesystem path. |
 | `shop_bundles` | Renamed `icon_path VARCHAR(255)` → `icon_asset_key VARCHAR(255)`. Same semantics change as `shop_items`. |
+
+---
+
+### 24. Entity Classification System (5.3, Migration 058)
+
+| Table | Description |
+| :--- | :--- |
+| `entity_types` | Entity classification type lookup table (replaces VARCHAR `entity_type` on entities). Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `color_hex VARCHAR(7)`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 9 types: enemy, creature, character, manifestation, object, group, environment, event, other. |
+| `entity_families` | Entity family/species grouping lookup table with stat templates (replaces VARCHAR `entity_family` on entities). Columns: `id SERIAL PK`, `name VARCHAR(100) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `icon_key VARCHAR(100)`, `lore_reference TEXT`, `base_stat_template JSONB`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. |
+| `visual_behaviors` | Admin-configurable visual rendering behaviors for battle banner entities. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `animation_config JSONB NOT NULL`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 5 behaviors: grounded_melee, grounded_ranged, airborne, magic_caster, hybrid. |
 
 ---
 
