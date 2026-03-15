@@ -3,9 +3,15 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (5.5 Content Management & Live Tuning complete)*
+*Updated: 2026-03-15 (5.6 Dev Content Audit Dashboard complete)*
 
 ## REC_5: Administrative Systems
+
+ - [x] **5.6 — Dev Content Audit Dashboard (COMPLETE)** *(Ref: `docs/recs/5.6_DEV_CONTENT_AUDIT.md` | [Design](docs/recs/5.6_DEV_CONTENT_AUDIT_DESIGN.md) | [Schema](docs/recs/5.6_DEV_CONTENT_AUDIT_SCHEMA.md))*
+   - [x] 5.6.0 — Requirements, design, and schema documentation (3 docs created, migration 060 planned)
+   - [x] 5.6.1 — Audit Table Viewer, Filters & Summary Cards: Migration 060 (replaced `resolved` boolean with `status` VARCHAR(20), added indexes). `DevContentAudit` model updated. `dev_audit_service.py` (6 functions: `log_content_audit` with dedup, `list_audit_records` with scene title enrichment, `get_audit_summary`, `get_filter_options`, `update_audit_status`, `bulk_update_status`). `admin_dev_audit.py` (5 endpoints: paginated list, summary, filter-options, PATCH status, POST bulk-status). Router registered in `main.py`. Frontend: `DevAudit.tsx` (orchestrator page), `AuditSummaryCards.tsx` (5 clickable status cards with per-type breakdown), `AuditFilterBar.tsx` (dynamic type/entity dropdowns with counts, status filter, debounced search, date range), `AuditTable.tsx` (paginated table, colored type badges, status pills, pagination). `dev-audit.css` (dark-theme styling). Admin sidebar updated with "Dev Audit" NavLink + route. Data dictionary updated for migration 060.
+   - [x] 5.6.2 — Fix Actions, Status Management & Fallback Instrumentation: `StatusDropdown.tsx` (inline per-row status changer with colored backgrounds). `BulkStatusBar.tsx` (multi-select, bulk action dropdown, confirmation dialog). Deep-link fix routing via `getFixRoute()` in AuditTable (7 audit_type → WorldBuilder URL mappings + generic fallback). `log_content_audit()` shared helper with application-level dedup replaces old `_log_audit()` in `story_mode.py`. Existing `missing_entity`/`missing_stat`/`missing_sprite` logging refactored to use shared helper. New instrumentation: `missing_atmosphere` in `audio.py` (atmosphere resolution fallback), `missing_lore_text` in `story_mode.py` (boss completion endpoint). Proactive content scanner cross-ref added to `C_STORY_ASSET_GENERATORS.md` §9 (7 scan targets).
+   - [x] 5.6.3 — Tests: Backend (`test_dev_audit.py`: 13 pytest — log_content_audit create/dedup/resolved-reopen, list default/filter-by-type/filter-by-status, summary counts, filter-options, status update valid/invalid/not-found, bulk update valid/invalid). Frontend (5 test files, 37 vitest — AuditSummaryCards ×6, AuditFilterBar ×7, AuditTable ×13, StatusDropdown ×5, BulkStatusBar ×6).
 
  - [x] **5.5 — Content Management & Live Tuning (COMPLETE)** *(Ref: `docs/recs/5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md` | [Design](docs/recs/5.5_CONTENT_MANAGEMENT_LIVE_TUNING_DESIGN.md) | [Schema](docs/recs/5.5_CONTENT_MANAGEMENT_LIVE_TUNING_SCHEMA.md))*
    - [x] 5.5.0 — Requirements, design, and schema documentation (requirements, design, schema docs — no migration needed, frontend-only)

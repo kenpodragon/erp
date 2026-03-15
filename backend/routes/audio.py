@@ -19,8 +19,9 @@ from auth import get_current_player
 from models import (
     Atmosphere, AudioConfig,
     SceneGameplayData, Chapter, Book, Scene,
-    EntityGameplayData, DevContentAudit,
+    EntityGameplayData,
 )
+from services.dev_audit_service import log_content_audit
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,14 @@ async def get_atmosphere(
             if resolved_atmosphere:
                 resolution_source = "chapter"
 
+        # Log missing_atmosphere when chapter has no atmosphere_id (5.6.2)
+        if chapter and not chapter.atmosphere_id:
+            log_content_audit(
+                session, "missing_atmosphere", "chapter", chapter.id,
+                chapter.title, "base_atmosphere", scene_id=scene_id
+            )
+            session.commit()
+
         # 4. Book level
         if not resolved_atmosphere and chapter:
             book = session.get(Book, chapter.book_id)
@@ -119,13 +128,14 @@ async def get_atmosphere(
         resolution_source = "global_default"
 
         # Log fallback to dev_content_audit
-        audit = DevContentAudit(
+        log_content_audit(
+            session,
             audit_type="audio_atmosphere_fallback",
             entity_type="scene",
             entity_id=scene_id,
-            details=f"No atmosphere assigned. Fell back to global default for scene {scene_id}.",
+            entity_name=f"scene_{scene_id}",
+            missing_field="atmosphere_assignment",
         )
-        session.add(audit)
         session.commit()
 
     if not resolved_atmosphere:

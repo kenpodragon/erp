@@ -20,6 +20,7 @@ import ArtifactEditor from './pages/ArtifactEditor'
 import AchievementEditor from './pages/AchievementEditor'
 import FinanceDashboard from './pages/FinanceDashboard'
 import AssetRegistry from './pages/AssetRegistry'
+import DevAudit from './pages/DevAudit'
 
 interface HealthData {
   status: string;
@@ -197,6 +198,7 @@ function App() {
             <NavLink to="/chat" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Chat</NavLink>
             <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
             <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
+            <NavLink to="/dev-audit" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Dev Audit</NavLink>
             {me?.is_owner && (
               <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
             )}
@@ -231,6 +233,7 @@ function App() {
             <Route path="/chat" element={<div className="admin-content"><ChatManager /></div>} />
             <Route path="/finance" element={<div className="admin-content"><FinanceDashboard /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
+            <Route path="/dev-audit" element={<div className="admin-content"><DevAudit /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />
             )}

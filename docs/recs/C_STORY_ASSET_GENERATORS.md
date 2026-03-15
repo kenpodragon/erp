@@ -103,3 +103,22 @@ Automated generation of pixel-art cosmetic assets for the Elysium Emporium shop 
 - [ ] **8.3 Avatar Generator:** Generate lore-themed avatar profile pictures (8 at launch). Pixel-art style consistent with game aesthetic. 128×128 px. Each avatar should visually evoke its lore theme (e.g., "The Pallid Mask" = pale porcelain mask, "Void Gazer" = eye in a rift).
     - Output: `/assets/game/cosmetics/avatars/{avatar_key}.png`.
 - [ ] **8.4 Thematic Consistency:** All generated cosmetic assets must match the dark, high-contrast pixel-art aesthetic established in §4.2. Color palettes should align with the game's existing visual language (void purples, celestial golds, infernal reds, akashic teals).
+
+---
+
+## 9. Proactive Content Scanner (Cross-Ref: 5.6)
+
+A batch scanner that queries the database for known content gaps and populates `dev_content_audit` records for the Dev Audit Dashboard (5.6) to surface.
+
+**Scan targets:**
+- [ ] **9.1** All entities without `entity_gameplay_data` → log `missing_stat`
+- [ ] **9.2** All scenes without entity assignments → log `missing_entity`
+- [ ] **9.3** All chapters without `base_atmosphere` (atmosphere_id) → log `missing_atmosphere`
+- [ ] **9.4** All chapters/books without `transition_lore_text` → log `missing_lore_text`
+- [ ] **9.5** All entities without `sprite_key` in gameplay data → log `missing_sprite`
+- [ ] **9.6** All entities without `death_sfx_key` in gameplay data → log `missing_sfx`
+- [ ] **9.7** All skills without `activate_sfx_key` → log `missing_sfx`
+
+**Implementation:** Python CLI script or admin endpoint. Uses `log_content_audit()` from `services/dev_audit_service.py` for consistent dedup and logging.
+
+**Trigger:** On-demand (admin button or CLI invocation). Not scheduled.

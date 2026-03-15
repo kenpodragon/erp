@@ -33,7 +33,7 @@ from models import (
 )
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
-    PlayerMetaProgression, DevContentAudit,
+    PlayerMetaProgression,
     CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
 )
 from services.character_progression import (
@@ -46,6 +46,7 @@ from services.boost_service import get_effective_multipliers
 from services.shop_service import increment_booster_time
 from services.achievement_service import evaluate_achievements
 from services.chat import manager as chat_manager
+from services.dev_audit_service import log_content_audit
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/game/story", tags=["story_mode"])
@@ -278,30 +279,7 @@ def _check_rare_spawn(
     }
 
 
-def _log_audit(session: Session, audit_type: str, entity_type: str,
-               entity_id: Optional[int], entity_name: Optional[str],
-               missing_field: Optional[str], scene_id: Optional[int],
-               zone_level: Optional[int]) -> None:
-    """Insert a dev_content_audit record if one doesn't already exist."""
-    existing = session.exec(
-        select(DevContentAudit)
-        .where(DevContentAudit.entity_id == entity_id)
-        .where(DevContentAudit.missing_field == missing_field)
-        .where(DevContentAudit.resolved == False)
-    ).first()
-    if existing:
-        return
-    audit = DevContentAudit(
-        audit_type=audit_type,
-        entity_type=entity_type,
-        entity_id=entity_id,
-        entity_name=entity_name,
-        missing_field=missing_field,
-        scene_id=scene_id,
-        zone_level=zone_level,
-        logged_at=datetime.now(timezone.utc),
-    )
-    session.add(audit)
+# _log_audit replaced by services.dev_audit_service.log_content_audit
 
 
 def _get_character(session: Session, player_id: int) -> PlayerCharacter:
@@ -604,7 +582,7 @@ async def get_scene_enemies(
     results = []
     if not final_eligible:
         # Fallback if no entities found
-        _log_audit(session, "missing_entity", "scene", None,
+        log_content_audit(session, "missing_entity", "scene", None,
                    f"scene_{scene_id}", "enemies", scene_id, zone)
         session.commit()
         
@@ -630,7 +608,7 @@ async def get_scene_enemies(
 
             is_fallback = False
             if gd is None:
-                _log_audit(session, "missing_stat", "enemy", entity.id,
+                log_content_audit(session, "missing_stat", "enemy", entity.id,
                            entity.canonical_name, "entity_gameplay_data", scene_id, zone)
                 hp = z_hp
                 gold = z_gold
@@ -642,19 +620,19 @@ async def get_scene_enemies(
                 sprite_key = gd.sprite_key
 
                 if not hp:
-                    _log_audit(session, "missing_stat", "enemy", entity.id,
+                    log_content_audit(session, "missing_stat", "enemy", entity.id,
                                entity.canonical_name, "base_hp", scene_id, zone)
                     hp = z_hp
                     is_fallback = True
 
                 if not gold:
-                    _log_audit(session, "missing_stat", "enemy", entity.id,
+                    log_content_audit(session, "missing_stat", "enemy", entity.id,
                                entity.canonical_name, "base_gold", scene_id, zone)
                     gold = z_gold
                     is_fallback = True
 
                 if not sprite_key:
-                    _log_audit(session, "missing_sprite", "enemy", entity.id,
+                    log_content_audit(session, "missing_sprite", "enemy", entity.id,
                                entity.canonical_name, "sprite_key", scene_id, zone)
 
             results.append({
@@ -1376,6 +1354,19 @@ async def complete_session(
                 transition_lore_text = scene.chapter.book.transition_lore_text
             else:
                 transition_lore_text = scene.chapter.transition_lore_text
+
+        # 5.6.2: Log missing lore text for dev_content_audit
+        if scene and not transition_lore_text:
+            if scene.scene_type == 'book_boss':
+                log_content_audit(
+                    session, "missing_lore_text", "book", scene.chapter.book.id,
+                    scene.chapter.book.title, "transition_lore_text", scene_id=scene.id
+                )
+            else:
+                log_content_audit(
+                    session, "missing_lore_text", "chapter", scene.chapter.id,
+                    scene.chapter.title, "transition_lore_text", scene_id=scene.id
+                )
 
         # 2.7: Upsert scene record for boss completion
         if story_session.scene_id:

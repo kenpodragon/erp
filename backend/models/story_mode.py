@@ -84,7 +84,7 @@ class DevContentAudit(SQLModel, table=True):
     scene_id: Optional[int] = Field(default=None, foreign_key="scenes.id")
     zone_level: Optional[int] = Field(default=None)
     logged_at: Optional[datetime] = Field(default=None)
-    resolved: bool = Field(default=False)
+    status: str = Field(default="open", max_length=20)
 
 
 class CharacterSkillLevel(SQLModel, table=True):

@@ -1,40 +1,12 @@
 # ERP Project Kickstart TODO
-**Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement. 
+**Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement.
 
-- [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*       
-    - [ ] **5.6 — Dev Content Audit Dashboard** *(Ref: `docs/recs/5.6_DEV_CONTENT_AUDIT.md`)*
-        - [x] 5.6.0 — Requirements, design, and schema documentation *(3 docs created, migration 060)*
-        - [ ] 5.6.1 — Audit Table Viewer, Filters & Summary Cards
-            - [ ] **Migration 060**: Add `status` VARCHAR(20) to `dev_content_audit`, migrate `resolved` data, drop `resolved`, add indexes on `status` and `audit_type`
-            - [ ] **Backend model update**: Update `DevContentAudit` in `backend/models/story_mode.py` — remove `resolved: bool`, add `status: str`
-            - [ ] **Backend routes**: Create `backend/routes/admin_dev_audit.py` — `GET /api/admin/dev-audit` (paginated, filtered list), `GET /summary`, `GET /filter-options`
-            - [ ] **Backend service**: Create `backend/services/dev_audit_service.py` — `list_audit_records()`, `get_audit_summary()`, `get_filter_options()`
-            - [ ] **Backend**: Register `admin_dev_audit` router in `main.py`
-            - [ ] **Frontend**: Create `admin/src/pages/DevAudit.tsx` (top-level page)
-            - [ ] **Frontend**: Create `admin/src/components/audit/` directory + `dev-audit.css`
-            - [ ] **Frontend**: Create `AuditSummaryCards.tsx` (5 status cards, per-type breakdown in Open card, clickable to filter)
-            - [ ] **Frontend**: Create `AuditFilterBar.tsx` (dynamic type/entity dropdowns with counts, status filter, search, date range)
-            - [ ] **Frontend**: Create `AuditTable.tsx` (paginated table, colored type badges, status pills)
-            - [ ] **Admin sidebar**: Add "Dev Audit" entry after "Audit Log"
-            - [ ] **Data dictionary**: Update `db/data_dictionary.md` with `status` column change
-        - [ ] 5.6.2 — Fix Actions, Status Management & Fallback Instrumentation
-            - [ ] **Backend routes**: `PATCH /api/admin/dev-audit/{id}` (status update), `POST /api/admin/dev-audit/bulk-status` (bulk update)
-            - [ ] **Backend service**: `update_audit_status()`, `bulk_update_status()` in `dev_audit_service.py`
-            - [ ] **Backend service**: Create `log_content_audit()` shared helper with application-level dedup check
-            - [ ] **Backend instrumentation**: Instrument atmosphere resolution fallback in `story_mode.py` → log `missing_atmosphere`
-            - [ ] **Backend instrumentation**: Instrument boss completion lore text path in `story_mode.py` → log `missing_lore_text`
-            - [ ] **Backend refactor**: Update existing `missing_entity` and `missing_stat` logging to use the shared `log_content_audit()` helper
-            - [ ] **Frontend**: Create `StatusDropdown.tsx` (inline per-row status changer with colored pills)
-            - [ ] **Frontend**: Create `BulkStatusBar.tsx` (multi-select, bulk action dropdown, confirmation dialog)
-            - [ ] **Frontend**: Add deep-link fix routing to `AuditTable.tsx` — `getFixRoute()` switch by audit_type → WorldBuilder query params
-            - [ ] **C_ cross-ref**: Add proactive content scanner note to `docs/recs/C_STORY_ASSET_GENERATORS.md`
-        - [ ] 5.6.3 — Tests
-            - [ ] **Backend tests**: `backend/tests/test_dev_audit.py` — list/filter/summary endpoints, status update, bulk status, `log_content_audit()` dedup, atmosphere fallback logging, lore text fallback logging
-            - [ ] **Frontend tests**: `admin/src/components/audit/*.test.tsx` — AuditSummaryCards, AuditFilterBar, AuditTable, StatusDropdown, BulkStatusBar, fix route mapping
+- [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
     - [ ] **5.8 — UI Polish & Debug Cleanup** *(incremental throughout; final pass at end)*
         - [ ] Hide debug controls behind ADMIN role check
         - [ ] Lore description updates via Audit Dashboard (5.6) + Content Editor (5.2)
         - [ ] Admin navigation & consistent styling for all new pages
+        - [ ] End to end testing and defferred items. Spin up the local host servers and begin functionality testing everything. Start off by creating a DB dump of everything - create or update the db_dump_import python script (so we can revert any changes to the DB). Then go requriement by requirement and ensure things on the front end are working as expected. Ensure there are no server errors and that things are properly being displayed.
 
 - [ ] **Deferred Items (require live Stripe, Docker stack, or depend on future modules)**
     - [ ] **5.2 Integration pass:** Verify all World Builder tabs navigate correctly, cascading filters work across editors (requires running app) *(Ref: `docs/recs/5.2_GAME_CONTENT_EDITOR.md`)*
@@ -69,4 +41,4 @@
 
 ---
 
-*Updated: 2026-03-15 (5.5 Content Management & Live Tuning complete. 5.6 execution plan remains with detailed sub-tasks.)*
+*Updated: 2026-03-15 (5.6 Dev Content Audit Dashboard complete. Moved to DONE.md.)*

@@ -32,6 +32,7 @@ from models import (
     WavePreset, WavePresetAssignment, DifficultyCurve, DifficultyPreset,
     SceneWaveConfig,
 )
+from models.story_mode import DevContentAudit
 from datetime import datetime, timezone
 
 @pytest.fixture(name="session")
