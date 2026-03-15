@@ -43,6 +43,7 @@ class VisualBehavior(SQLModel, table=True):
     display_name: str = Field(max_length=100)
     description: Optional[str] = None
     animation_config: dict = Field(default_factory=dict, sa_column=Column(JSONB, nullable=False, server_default="'{}'::jsonb"))
+    stat_weights: Optional[dict] = Field(default=None, sa_column=Column(JSONB))
     sort_order: int = Field(default=0)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

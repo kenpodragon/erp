@@ -61,6 +61,7 @@ from routes.admin_content import router as admin_content_router
 from routes.admin_content_locations import router as admin_content_locations_router
 from routes.admin_content_entities import router as admin_content_entities_router
 from routes.admin_classification import router as admin_classification_router
+from routes.admin_scaling import router as admin_scaling_router
 
 logger = logging.getLogger(__name__)
 
@@ -223,6 +224,7 @@ app.include_router(admin_content_router)
 app.include_router(admin_content_locations_router)
 app.include_router(admin_content_entities_router)
 app.include_router(admin_classification_router)
+app.include_router(admin_scaling_router)
 
 
 @app.get("/debug-routes")

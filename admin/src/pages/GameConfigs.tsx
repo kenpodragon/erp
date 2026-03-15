@@ -1,8 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { api } from '../api'
+import GameConfigsCategoryView from '../components/tuning/GameConfigsCategoryView'
+import DropRateManager from '../components/tuning/DropRateManager'
+import { SkillBalanceViewer } from '../components/tuning/SkillBalanceViewer'
+import { EconomyTuningPanel } from '../components/tuning/EconomyTuningPanel'
 import './GameConfigs.css'
+import '../components/tuning/tuning.css'
 
-interface GameConfigEntry {
+export interface GameConfigEntry {
   key: string
   value_json: any
   description: string | null
@@ -21,7 +26,7 @@ interface JsonEditorProps {
   depth?: number
 }
 
-function JsonEditor({ value, onChange, onStructuralChange, depth = 0 }: JsonEditorProps) {
+export function JsonEditor({ value, onChange, onStructuralChange, depth = 0 }: JsonEditorProps) {
   if (value === null || value === undefined) {
     return (
       <div className="json-editor-primitive">
@@ -142,31 +147,61 @@ function JsonEditor({ value, onChange, onStructuralChange, depth = 0 }: JsonEdit
 }
 
 /* ------------------------------------------------------------------ */
-/* Main Component                                                     */
+/* Tab definitions                                                     */
+/* ------------------------------------------------------------------ */
+
+const TABS = [
+  { key: 'all', label: 'All Configs' },
+  { key: 'drop-rates', label: 'Drop Rates' },
+  { key: 'skill-balance', label: 'Skill Balance' },
+  { key: 'economy', label: 'Economy' },
+] as const
+
+type TabKey = typeof TABS[number]['key']
+
+/* ------------------------------------------------------------------ */
+/* Main Component                                                      */
 /* ------------------------------------------------------------------ */
 
 export default function GameConfigs() {
-  const [configs, setConfigs] = useState<GameConfigEntry[]>([])
+  const [serverConfigs, setServerConfigs] = useState<GameConfigEntry[]>([])
+  const [localConfigs, setLocalConfigs] = useState<Record<string, GameConfigEntry>>({})
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [dirtyKeys, setDirtyKeys] = useState<Set<string>>(new Set())
+  const [saving, setSaving] = useState(false)
+
+  // Active tab from URL
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab && TABS.some(t => t.key === tab)) return tab as TabKey
+    return 'all'
+  })
 
   // Metadata editing
   const [editingMeta, setEditingMeta] = useState<string | null>(null)
   const [metaForm, setMetaForm] = useState({ description: '', game_impact: '', category: '' })
 
-  // Value editing
+  // Value editing (legacy modal, kept for JsonEditor use)
   const [editingValue, setEditingValue] = useState<string | null>(null)
   const [valueForm, setValueForm] = useState<any>(null)
   const [pendingStructuralChanges, setPendingStructuralChanges] = useState<string[]>([])
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
-  const [saving, setSaving] = useState(false)
+  /* ---- Data fetching ---- */
 
   const fetchConfigs = useCallback(async () => {
     try {
       const res = await api.get('/api/admin/game/configs')
-      if (res.ok) setConfigs(await res.json())
+      if (res.ok) {
+        const data: GameConfigEntry[] = await res.json()
+        setServerConfigs(data)
+        const map: Record<string, GameConfigEntry> = {}
+        data.forEach(c => { map[c.key] = { ...c } })
+        setLocalConfigs(map)
+        setDirtyKeys(new Set())
+      }
     } catch { /* ignore */ }
     finally { setLoading(false) }
   }, [])
@@ -183,25 +218,85 @@ export default function GameConfigs() {
     fetchCategories()
   }, [fetchConfigs, fetchCategories])
 
-  const filtered = useMemo(() => {
-    if (!search) return configs
-    const q = search.toLowerCase()
-    return configs.filter(c =>
-      c.key.toLowerCase().includes(q) ||
-      (c.description || '').toLowerCase().includes(q) ||
-      (c.category || '').toLowerCase().includes(q)
-    )
-  }, [configs, search])
+  /* ---- Derived data ---- */
+
+  const configsList = useMemo(() => Object.values(localConfigs), [localConfigs])
+
+  const configsRecord = useMemo(() => {
+    const rec: Record<string, any> = {}
+    Object.values(localConfigs).forEach(c => { rec[c.key] = c.value_json })
+    return rec
+  }, [localConfigs])
+
+  /* ---- Config change handling ---- */
+
+  const updateConfig = useCallback((key: string, value: any) => {
+    setLocalConfigs(prev => {
+      const existing = prev[key]
+      if (!existing) return prev
+      return { ...prev, [key]: { ...existing, value_json: value } }
+    })
+    setDirtyKeys(prev => {
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+  }, [])
+
+  const saveAll = useCallback(async () => {
+    if (dirtyKeys.size === 0) return
+    setSaving(true)
+    try {
+      const promises = Array.from(dirtyKeys).map(key => {
+        const config = localConfigs[key]
+        if (!config) return Promise.resolve()
+        return api.patch(
+          `/api/admin/game/configs/${encodeURIComponent(key)}/value`,
+          { value_json: config.value_json }
+        )
+      })
+      await Promise.all(promises)
+      await fetchConfigs()
+      await fetchCategories()
+    } catch { /* ignore */ }
+    finally { setSaving(false) }
+  }, [dirtyKeys, localConfigs, fetchConfigs, fetchCategories])
+
+  const resetAll = useCallback(() => {
+    const map: Record<string, GameConfigEntry> = {}
+    serverConfigs.forEach(c => { map[c.key] = { ...c } })
+    setLocalConfigs(map)
+    setDirtyKeys(new Set())
+  }, [serverConfigs])
+
+  /* ---- Tab navigation ---- */
+
+  const handleTabChange = useCallback((tab: TabKey) => {
+    setActiveTab(tab)
+    const url = new URL(window.location.href)
+    if (tab === 'all') {
+      url.searchParams.delete('tab')
+    } else {
+      url.searchParams.set('tab', tab)
+    }
+    window.history.replaceState({}, '', url.toString())
+  }, [])
+
+  /* ---- Title ---- */
+
+  const tabLabel = TABS.find(t => t.key === activeTab)?.label ?? 'All Configs'
+  const pageTitle = activeTab === 'all' ? 'Game Configs' : `Game Configs — ${tabLabel}`
 
   /* ---- Meta editing ---- */
-  const handleEditMeta = (config: GameConfigEntry) => {
+
+  const handleEditMeta = useCallback((config: GameConfigEntry) => {
     setEditingMeta(config.key)
     setMetaForm({
       description: config.description || '',
       game_impact: config.game_impact || '',
       category: config.category || '',
     })
-  }
+  }, [])
 
   const handleSaveMeta = async () => {
     if (!editingMeta) return
@@ -217,7 +312,8 @@ export default function GameConfigs() {
     finally { setSaving(false) }
   }
 
-  /* ---- Value editing ---- */
+  /* ---- Value editing (legacy modal) ---- */
+
   const handleEditValue = (config: GameConfigEntry) => {
     setEditingValue(config.key)
     setValueForm(JSON.parse(JSON.stringify(config.value_json)))
@@ -248,7 +344,6 @@ export default function GameConfigs() {
   }
 
   const handleSaveValue = () => {
-    // If there are structural changes, require confirmation first
     if (pendingStructuralChanges.length > 0 && !showConfirmDialog) {
       setShowConfirmDialog(true)
       return
@@ -258,52 +353,79 @@ export default function GameConfigs() {
 
   const isComplex = (v: any) => typeof v === 'object' && v !== null
 
+  /* ---- Render ---- */
+
   if (loading) return <div className="gc-loading">Loading game configs...</div>
 
   return (
     <div className="game-configs">
       <div className="gc-header">
-        <h2>Game Configs</h2>
-        <input
-          className="gc-search"
-          type="text"
-          placeholder="Search keys, descriptions..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        <h2>{pageTitle}</h2>
       </div>
 
-      <table className="gc-table">
-        <thead>
-          <tr>
-            <th>Key</th>
-            <th>Value</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Impact</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map(c => (
-            <tr key={c.key}>
-              <td className="gc-key">{c.key}</td>
-              <td className="gc-value">
-                <pre>{isComplex(c.value_json) ? JSON.stringify(c.value_json, null, 2) : String(c.value_json)}</pre>
-              </td>
-              <td>{c.category || '\u2014'}</td>
-              <td>{c.description || '\u2014'}</td>
-              <td>{c.game_impact || '\u2014'}</td>
-              <td className="gc-actions">
-                <button className="gc-btn gc-btn--edit" onClick={() => handleEditValue(c)}>Edit Value</button>
-                <button className="gc-btn gc-btn--meta" onClick={() => handleEditMeta(c)}>Edit Meta</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Top-level tabs */}
+      <div className="gc-top-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            className={'gc-top-tab' + (activeTab === tab.key ? ' gc-top-tab--active' : '')}
+            onClick={() => handleTabChange(tab.key)}
+          >
+            {tab.label}
+            {dirtyKeys.size > 0 && tab.key === activeTab && (
+              <span className="dirty-dot" />
+            )}
+          </button>
+        ))}
+      </div>
 
-      {filtered.length === 0 && <div className="gc-empty">No configs match your search.</div>}
+      {/* Active tab content */}
+      {activeTab === 'all' && (
+        <GameConfigsCategoryView
+          configs={localConfigs}
+          configsList={configsList}
+          categories={categories}
+          onConfigChange={updateConfig}
+          dirtyKeys={dirtyKeys}
+          onSave={saveAll}
+          onReset={resetAll}
+          onMetaEdit={handleEditMeta}
+          saving={saving}
+        />
+      )}
+
+      {activeTab === 'drop-rates' && (
+        <DropRateManager
+          configs={configsRecord}
+          onConfigChange={updateConfig}
+          dirtyKeys={dirtyKeys}
+          onSave={saveAll}
+          onReset={resetAll}
+          saving={saving}
+        />
+      )}
+
+      {activeTab === 'skill-balance' && (
+        <SkillBalanceViewer
+          configs={configsRecord}
+          onConfigChange={updateConfig}
+          dirtyKeys={dirtyKeys}
+          onSave={saveAll}
+          onReset={resetAll}
+          saving={saving}
+        />
+      )}
+
+      {activeTab === 'economy' && (
+        <EconomyTuningPanel
+          configs={configsRecord}
+          onConfigChange={updateConfig}
+          dirtyKeys={dirtyKeys}
+          onSave={saveAll}
+          onReset={resetAll}
+          saving={saving}
+        />
+      )}
 
       {/* ---- Metadata Modal ---- */}
       {editingMeta && (

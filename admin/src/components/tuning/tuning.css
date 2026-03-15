@@ -1,0 +1,728 @@
+/* ================================================================== */
+/* Shared styles for GameConfigs tuning panels (5.5)                  */
+/* ================================================================== */
+
+/* ---- Layout ---- */
+.tuning-panel {
+  padding: 16px 0;
+}
+
+.tuning-section {
+  margin-bottom: 24px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 16px;
+  background: #0d0d1a;
+}
+
+.tuning-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333;
+}
+
+/* ---- Field rows ---- */
+.tuning-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.tuning-field-label {
+  min-width: 200px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.tuning-field-input {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tuning-field-hint {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.tuning-field-help {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  padding: 6px 10px;
+  background: #111;
+  border-radius: 4px;
+  border-left: 3px solid #336;
+}
+
+/* ---- Inputs ---- */
+.tuning-input {
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 13px;
+  width: 120px;
+}
+
+.tuning-input--wide {
+  width: 200px;
+}
+
+.tuning-slider {
+  width: 200px;
+  accent-color: #4466aa;
+}
+
+.tuning-slider-value {
+  font-family: monospace;
+  font-size: 13px;
+  color: #88aadd;
+  min-width: 50px;
+  text-align: right;
+}
+
+.tuning-toggle {
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: #333;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.tuning-toggle:checked {
+  background: #44aa66;
+}
+
+.tuning-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ccc;
+  transition: left 0.2s;
+}
+
+.tuning-toggle:checked::after {
+  left: 18px;
+}
+
+/* ---- JSON editor inline ---- */
+.tuning-json-editor {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  background: #111;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 12px;
+  width: 100%;
+}
+
+.tuning-json-toggle {
+  font-size: 11px;
+  color: #6688cc;
+  background: none;
+  border: 1px solid #335;
+  border-radius: 3px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.tuning-json-toggle:hover {
+  background: #1a1a3e;
+}
+
+/* ---- Rarity weight bar ---- */
+.rarity-bar {
+  display: flex;
+  height: 28px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #333;
+  margin-bottom: 8px;
+}
+
+.rarity-bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+  transition: width 0.3s ease;
+}
+
+.rarity-bar-segment--narrow {
+  font-size: 0;
+}
+
+.rarity-weights-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rarity-weight-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rarity-weight-label {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.rarity-weight-input {
+  width: 60px;
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---- Preview box ---- */
+.tuning-preview {
+  padding: 10px 14px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.tuning-preview-title {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* ---- Skill balance table ---- */
+.skill-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.skill-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 2px solid #333;
+  color: #aaa;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.skill-table th:hover {
+  color: #ddd;
+}
+
+.skill-table th.sorted {
+  color: #88aadd;
+}
+
+.skill-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #222;
+  white-space: nowrap;
+}
+
+.skill-table td.changed {
+  background: rgba(200, 180, 50, 0.15);
+}
+
+.skill-table .skill-link {
+  color: #6688cc;
+  font-size: 11px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.skill-table .skill-link:hover {
+  text-decoration: underline;
+}
+
+.skill-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.skill-filters select {
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+}
+
+/* ---- Coefficient panel ---- */
+.coefficient-panel {
+  border-top: 1px solid #333;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.coefficient-panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+
+.coefficient-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.coefficient-key {
+  font-family: monospace;
+  font-size: 12px;
+  color: #66aaff;
+  min-width: 240px;
+}
+
+.coefficient-input {
+  width: 100px;
+  padding: 3px 6px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.coefficient-hint {
+  font-size: 11px;
+  color: #666;
+}
+
+/* ---- Essence XP curve ---- */
+.xp-curve-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #0a0a14;
+  margin-bottom: 16px;
+}
+
+.xp-curve-y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 20px;
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 4px 6px;
+}
+
+.xp-curve-y-label {
+  font-size: 10px;
+  color: #666;
+}
+
+.xp-curve-chart {
+  position: absolute;
+  left: 50px;
+  right: 10px;
+  top: 10px;
+  bottom: 20px;
+}
+
+.xp-curve-step {
+  position: absolute;
+  bottom: 0;
+  background: rgba(68, 102, 170, 0.3);
+  border-top: 2px solid #4466aa;
+  transition: all 0.3s ease;
+}
+
+.xp-curve-step-label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.xp-curve-x-label {
+  position: absolute;
+  bottom: 0;
+  font-size: 10px;
+  color: #666;
+}
+
+/* ---- Salvage rate table ---- */
+.salvage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.salvage-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 2px solid #333;
+  color: #aaa;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.salvage-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #222;
+}
+
+.salvage-table .computed {
+  color: #88aadd;
+  font-style: italic;
+}
+
+/* ---- Action bar ---- */
+.tuning-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+}
+
+.tuning-btn {
+  padding: 6px 16px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tuning-btn:hover {
+  background: #2a2a4e;
+}
+
+.tuning-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tuning-btn--save {
+  border-color: #44aa66;
+  color: #66cc88;
+  background: #112211;
+}
+
+.tuning-btn--save:hover {
+  background: #1a331a;
+}
+
+.tuning-btn--reset {
+  border-color: #aa8844;
+  color: #ccaa66;
+}
+
+.tuning-unsaved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(200, 180, 50, 0.1);
+  border: 1px solid #554400;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ccaa44;
+  margin-top: 12px;
+}
+
+/* ---- Category view ---- */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.category-tab {
+  padding: 5px 12px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #0d0d1a;
+  color: #888;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.category-tab:hover {
+  border-color: #555;
+  color: #ccc;
+}
+
+.category-tab--active {
+  border-color: #4466aa;
+  color: #88aadd;
+  background: #111133;
+}
+
+.category-tab--highlight {
+  border-color: #aa8844;
+  box-shadow: 0 0 4px rgba(170, 136, 68, 0.3);
+}
+
+.category-tab .count-badge {
+  font-size: 10px;
+  color: #666;
+  margin-left: 4px;
+}
+
+/* ---- Config search bar ---- */
+.config-search-bar {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.config-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.config-search-input:focus {
+  border-color: #4466aa;
+  outline: none;
+}
+
+.config-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+}
+
+.config-search-result {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid #222;
+}
+
+.config-search-result:hover {
+  background: #222244;
+}
+
+.config-search-result-key {
+  font-family: monospace;
+  color: #66aaff;
+}
+
+.config-search-result-category {
+  font-size: 10px;
+  color: #888;
+  margin-left: 8px;
+  padding: 1px 6px;
+  background: #222;
+  border-radius: 3px;
+}
+
+/* ---- Config key list ---- */
+.config-key-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-key-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #222;
+  border-radius: 4px;
+  background: #0d0d1a;
+}
+
+.config-key-row:hover {
+  border-color: #333;
+}
+
+.config-key-name {
+  font-family: monospace;
+  font-size: 12px;
+  color: #66aaff;
+  min-width: 260px;
+  flex-shrink: 0;
+}
+
+.config-key-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-key-meta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-key-description {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.config-key-impact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #335;
+  color: #6688cc;
+  font-size: 11px;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+/* ---- Tab bar for top-level tabs ---- */
+.gc-top-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #333;
+}
+
+.gc-top-tab {
+  padding: 8px 20px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.gc-top-tab:hover {
+  color: #ccc;
+  background: #111;
+}
+
+.gc-top-tab--active {
+  color: #88aadd;
+  background: #0d0d1a;
+  border-color: #333;
+  border-bottom: 2px solid #0d0d1a;
+  margin-bottom: -2px;
+}
+
+.gc-top-tab .dirty-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ccaa44;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ---- Progression preview ---- */
+.progression-preview {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 16px;
+  font-size: 12px;
+}
+
+.progression-preview-level {
+  color: #888;
+}
+
+.progression-preview-xp {
+  color: #88aadd;
+  font-family: monospace;
+}
+
+/* ---- Gear slot bar ---- */
+.gear-slot-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #333;
+  margin-bottom: 6px;
+}
+
+.gear-slot-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0 4px;
+  transition: width 0.3s ease;
+}

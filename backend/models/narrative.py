@@ -19,6 +19,7 @@ class Book(SQLModel, table=True):
     recommended_level: Optional[int] = Field(default=None)
     min_level: Optional[int] = Field(default=None)
     atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
+    difficulty_curve_id: Optional[int] = Field(default=None, foreign_key="difficulty_curves.id")
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

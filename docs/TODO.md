@@ -1,64 +1,7 @@
 # ERP Project Kickstart TODO
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement. 
 
-- [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
-    - [ ] **5.4 — Banner & Scaling Editor (Visual & Difficulty Tuning)** *(Ref: `docs/recs/5.4_BANNER_SCALING_EDITOR.md`)*
-        - [x] 5.4.0 — Requirements, design, and schema documentation *(3 docs created, consistency reviewed)*
-        - [ ] 5.4.1 — Visual Weight Editor & Global Wave Settings
-            - [ ] **Migration 059**: Create `wave_presets`, `wave_preset_assignments`, `difficulty_curves`, `difficulty_presets` tables; add `stat_weights` to `visual_behaviors`; add `difficulty_curve_id` FK to `books`; seed defaults; add 4 `waves` game_configs keys
-            - [ ] **Backend model**: Create `backend/models/scaling.py` (WavePreset, WavePresetAssignment, DifficultyCurve, DifficultyPreset); update `models/__init__.py` re-exports
-            - [ ] **Backend model update**: Add `stat_weights` field to `VisualBehavior` in `backend/models/classification.py`; add `difficulty_curve_id` field to Book model in `backend/models/gameplay.py`
-            - [ ] **Backend validation**: Add `validate_stat_weights()` to `admin_classification_service.py`; extend visual behavior PATCH endpoint in `admin_classification.py`
-            - [ ] **Frontend**: Create `admin/src/components/scaling/` directory; create `VisualWeightEditor.tsx` (behavior selector, 3×3 sliders, clamp inputs, proportional bars, reset-to-defaults)
-            - [ ] **Frontend**: Create `ScalingEditor.tsx` (tabbed container with 5 sub-tabs); extend `WorldBuilder.tsx` with fourth "Scaling & Difficulty" tab
-            - [ ] **Frontend**: Create `scaling-editor.css`
-            - [ ] **Data dictionary**: Update `db/data_dictionary.md` with new tables + modified columns
-        - [ ] 5.4.2 — Wave Presets & Difficulty Curves
-            - [ ] **Backend routes**: Create `backend/routes/admin_scaling.py` — wave preset CRUD (GET list, POST create, PATCH update, DELETE with blocking)
-            - [ ] **Backend routes**: Wave preset assignment endpoints (GET assignments, POST assign, DELETE unassign)
-            - [ ] **Backend routes**: `POST /wave-presets/{id}/apply-to-scenes` bulk action
-            - [ ] **Backend routes**: Difficulty curve CRUD (GET list, POST create, PATCH update, DELETE with blocking)
-            - [ ] **Backend routes**: `PATCH /difficulty-curves/{id}/assign-book` endpoint
-            - [ ] **Backend service**: Create `backend/services/admin_scaling_service.py` — all business logic (list, create, update, delete, assign, bulk-apply)
-            - [ ] **Backend**: Register `admin_scaling` router in `main.py`
-            - [ ] **Frontend**: Create `WavePresetManager.tsx` (CRUD table, config editor, spawn pattern dropdown, default toggle)
-            - [ ] **Frontend**: Create `WavePresetAssignPanel.tsx` (book/chapter assignment, bulk apply-to-scenes with confirmation)
-            - [ ] **Frontend**: Create `DifficultyCurveManager.tsx` (CRUD table, editable chapter×dimension grid, add/remove chapter rows, book assignment panel)
-        - [ ] 5.4.3 — Scaling Preview & Difficulty Presets & Tests
-            - [ ] **Frontend**: Create `scaling-utils.ts` — `computeProjections()`, `getCurveEntry()`, comparison diff logic
-            - [ ] **Frontend**: Create `ScalingPreview.tsx` (book selector, chapter range, config A/B source selectors)
-            - [ ] **Frontend**: Create `ScalingComparisonTable.tsx` (side-by-side table, color-coded cells, % delta, summary row)
-            - [ ] **Backend routes**: Difficulty preset CRUD (GET list, POST create, PATCH update, DELETE with active-block)
-            - [ ] **Backend routes**: `GET /presets/capture-current` — category-based game_configs snapshot
-            - [ ] **Backend routes**: `POST /presets/{id}/apply` — atomic apply (game_configs write + curve assign + wave preset default)
-            - [ ] **Frontend**: Create `DifficultyPresetManager.tsx` (CRUD table, curve/wave picker, expandable config_snapshot, active badge)
-            - [ ] **Frontend**: Create `PresetApplyModal.tsx` (change summary, diff display, confirmation)
-            - [ ] **Backend tests**: `backend/tests/test_scaling.py` — wave preset CRUD, assignment, bulk-apply, curve CRUD, preset capture/apply, stat_weights validation
-            - [ ] **Frontend tests**: `admin/src/components/scaling/*.test.tsx` — ScalingEditor tabs, VisualWeightEditor, WavePresetManager, DifficultyCurveManager, ScalingPreview computation, DifficultyPresetManager
-    - [ ] **5.5 — Content Management & Live Tuning** *(Ref: `docs/recs/5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md`)* — Frontend only, no migration
-        - [x] 5.5.0 — Requirements, design, and schema documentation *(3 docs created, no migration needed)*
-        - [ ] 5.5.1 — Drop Rate Manager
-            - [ ] **Frontend**: Create `admin/src/components/tuning/` directory + `tuning.css`
-            - [ ] **Frontend**: Create `tuning-utils.ts` — `inferInputType()`, `computeDropPreview()`, `computeSkillBalance()`, `buildEssenceSteps()`, `goldPerEssence()`
-            - [ ] **Frontend**: Create `DropRateManager.tsx` (artifact drop sliders, rare spawn slider)
-            - [ ] **Frontend**: Create `RarityWeightBar.tsx` (reusable stacked bar — rarity colors, proportional segments)
-            - [ ] **Frontend**: Create `DropPreview.tsx` (per-100-scenes estimates, reactive)
-        - [ ] 5.5.2 — Skill Balance Viewer & Economy Tuning Panel
-            - [ ] **Frontend**: Create `SkillBalanceViewer.tsx` (container — fetches skills + game_configs)
-            - [ ] **Frontend**: Create `SkillBalanceTable.tsx` (sortable table — name, category, class, base CD, cost at Lv 5/10/25, effective CD at Lv 10/25, ContentEditor deep-link)
-            - [ ] **Frontend**: Create `CoefficientPanel.tsx` (editable global coefficients — cd_reduction, int_power, gcd, upgrade_cost_scaling, etc.; reactive table updates; save/reset)
-            - [ ] **Frontend**: Create `EconomyTuningPanel.tsx` (container for sub-panels)
-            - [ ] **Frontend**: Create `EssenceXPCurve.tsx` (CSS step-function chart — 5 threshold inputs, reactive rendering, contextual help)
-            - [ ] **Frontend**: Create `SalvageRateTable.tsx` (rarity × essence table, computed artifact/curated columns)
-            - [ ] **Frontend**: Create `EssenceEconomyPanel.tsx` (drain/capacity/offline inputs, gold-to-essence conversion preview at zones 1/5/10/25)
-            - [ ] **Frontend**: Create `SubscriptionBoostPanel.tsx` (boost sliders, stipend input, streak/milestone JSON editors)
-            - [ ] **Frontend**: Create `ProgressionPanel.tsx` (level cap, XP factor, XP requirements preview at levels 10/25/50/99)
-        - [ ] 5.5.3 — GameConfigs Categories Reorganization & Tests
-            - [ ] **Frontend**: Create `GameConfigsCategoryView.tsx` (category tab bar with key counts, per-category key list)
-            - [ ] **Frontend**: Create `TypeAwareInput.tsx` (inferred input: slider_01, integer, float, string, boolean, json_array, json_object, fallback JSON)
-            - [ ] **Frontend**: Create `ConfigSearchBar.tsx` (cross-category search, category highlight badges, jump-to-category)
-            - [ ] **Frontend**: Extend `GameConfigs.tsx` — add top-level tab bar (All Configs, Drop Rates, Skill Balance, Economy), shared config state, dirty tracking, URL routing (`?tab=`)
-            - [ ] **Frontend tests**: `admin/src/components/tuning/*.test.tsx` — TypeAwareInput inference, RarityWeightBar, SkillBalanceTable computed values, EssenceXPCurve rendering, ConfigSearchBar, GameConfigs tab routing
+- [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*       
     - [ ] **5.6 — Dev Content Audit Dashboard** *(Ref: `docs/recs/5.6_DEV_CONTENT_AUDIT.md`)*
         - [x] 5.6.0 — Requirements, design, and schema documentation *(3 docs created, migration 060)*
         - [ ] 5.6.1 — Audit Table Viewer, Filters & Summary Cards
@@ -126,4 +69,4 @@
 
 ---
 
-*Updated: 2026-03-15 (5.4/5.5/5.6 docs complete — 9 files created. Execution plan expanded with detailed sub-tasks per sub-requirement.)*
+*Updated: 2026-03-15 (5.5 Content Management & Live Tuning complete. 5.6 execution plan remains with detailed sub-tasks.)*

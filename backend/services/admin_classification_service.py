@@ -371,6 +371,34 @@ def delete_entity_family(session: Session, family_id: int) -> None:
     session.commit()
 
 
+def validate_stat_weights(stat_weights: dict) -> None:
+    """Validate stat_weights JSONB structure for visual behaviors."""
+    PROPERTIES = ["size", "speed", "vfx_intensity"]
+    STATS = ["strength", "agility", "intelligence"]
+
+    for prop in PROPERTIES:
+        if prop in stat_weights:
+            if not isinstance(stat_weights[prop], dict):
+                raise HTTPException(422, detail=f"stat_weights.{prop} must be an object")
+            for stat in STATS:
+                val = stat_weights[prop].get(stat, 0)
+                if not isinstance(val, (int, float)) or val < 0.0 or val > 1.0:
+                    raise HTTPException(422, detail=f"stat_weights.{prop}.{stat} must be between 0.0 and 1.0")
+
+    if "clamps" in stat_weights:
+        if not isinstance(stat_weights["clamps"], dict):
+            raise HTTPException(422, detail="stat_weights.clamps must be an object")
+        for prop in PROPERTIES:
+            if prop in stat_weights["clamps"]:
+                clamp = stat_weights["clamps"][prop]
+                if not (isinstance(clamp, list) and len(clamp) == 2):
+                    raise HTTPException(422, detail=f"stat_weights.clamps.{prop} must be [min, max]")
+                if not all(isinstance(v, (int, float)) for v in clamp):
+                    raise HTTPException(422, detail=f"stat_weights.clamps.{prop} values must be numeric")
+                if clamp[0] > clamp[1]:
+                    raise HTTPException(422, detail=f"stat_weights.clamps.{prop} min must be <= max")
+
+
 # ===========================================================================
 #  VISUAL BEHAVIORS
 # ===========================================================================
@@ -456,6 +484,11 @@ def update_visual_behavior(session: Session, behavior_id: int, data: dict) -> di
             raise HTTPException(422, detail=f"Visual behavior '{name}' already exists")
         vb.name = name
 
+    if "stat_weights" in data:
+        if data["stat_weights"] is not None:
+            validate_stat_weights(data["stat_weights"])
+        vb.stat_weights = data["stat_weights"]
+
     for field in ["display_name", "description", "animation_config", "sort_order"]:
         if field in data:
             setattr(vb, field, data[field])
@@ -491,6 +524,7 @@ def _visual_behavior_to_dict(vb: VisualBehavior) -> dict:
         "display_name": vb.display_name,
         "description": vb.description,
         "animation_config": vb.animation_config,
+        "stat_weights": vb.stat_weights,
         "sort_order": vb.sort_order,
         "created_at": vb.created_at.isoformat() if vb.created_at else None,
         "updated_at": vb.updated_at.isoformat() if vb.updated_at else None,

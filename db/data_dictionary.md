@@ -40,6 +40,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 | `055` | Asset Registry | Created `asset_registry` table (id, asset_key UNIQUE, category, display_name, description, render_definition JSONB, tags JSONB/GIN, source, created_at, updated_at + trigger). Indexes: asset_key, category, source, tags GIN, display_name. Renamed `shop_items.icon_path` → `icon_asset_key`, `shop_bundles.icon_path` → `icon_asset_key`. Seeded 21 migrated filesystem assets + ~140 placeholder icons for existing sprite_key values. |
 | `057` | Backgrounds & Wave Configs (5.2) | Created `backgrounds` table (id, name UNIQUE, description, background_key UNIQUE, parallax_config JSONB, time_of_day, mood, color_palette JSONB, created_at, updated_at + trigger). Created `scene_wave_configs` table (id, scene_id FK UNIQUE scenes CASCADE, max_enemies_per_wave, wave_count, spawn_interval_ms, scaling_factor, hp_multiplier, gold_multiplier, entity_pool JSONB, boss_entity_id FK entities SET NULL, created_at, updated_at + trigger). Added `background_id INTEGER FK backgrounds SET NULL` to `scene_gameplay_data` with data migration from `background_sprite_key`. Added `description TEXT` to `locations` (if not exists). |
 | `058` | Entity Classification | Created `entity_types`, `entity_families`, `visual_behaviors` tables. Extended `attack_types` with `visual_behavior_id` FK and `stat_multipliers` JSONB. Migrated `entities.entity_type` (VARCHAR) → `entity_type_id` (FK) and `entities.entity_family` (VARCHAR) → `entity_family_id` (FK). Seeded 9 entity types, 5 visual behaviors, and attack type → behavior mappings. |
+| `059` | Banner & Scaling Editor (5.4) | Added `stat_weights JSONB` to `visual_behaviors`. Created `wave_presets` (name, config JSONB, is_default, sort_order), `wave_preset_assignments` (wave_preset_id FK, book_id/chapter_id with exactly-one-target CHECK + partial unique indexes), `difficulty_curves` (name, curve_data JSONB, is_default, sort_order), `difficulty_presets` (name, difficulty_curve_id FK, wave_preset_id FK, config_snapshot JSONB, is_active). Added `difficulty_curve_id INTEGER FK difficulty_curves ON DELETE SET NULL` to `books`. Seeded 5 behavior stat_weights, 1 "Standard" wave preset, 1 "Standard Ramp" 10-chapter difficulty curve, 4 `game_configs` keys (category: waves). |
 
 *Note: Individual migration history (001-029) has been archived in `db/old/` for historical reference.*
 
@@ -51,7 +52,7 @@ This document serves as the single source of truth for the Elysium Rising mmorPg
 
 | Table | Description |
 | :--- | :--- |
-| `books` | Top-level container for the book series. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for book-wide audio fallback. |
+| `books` | Top-level container for the book series. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for book-wide audio fallback. **5.4:** Added `difficulty_curve_id INTEGER FK difficulty_curves ON DELETE SET NULL` for per-book difficulty curve assignment. |
 | `chapters` | Chapters within a book, containing raw text and processing status. Includes `transition_lore_text`. **2.4:** Added `recommended_level INTEGER` and `min_level INTEGER` for level-gated progression. **2.5:** Added `atmosphere_id INTEGER FK atmospheres` for chapter-level audio. |
 | `scenes` | Narrative nodes within chapters, linked to locations. Includes `scene_type` and `boss_config`. |
 | `story_beats` | The smallest narrative units within a scene. Includes `content_image_path`, `audio_path`, and `audio_duration_seconds`. |
@@ -645,7 +646,7 @@ Added `'donation'` to the CHECK constraint.
 | :--- | :--- |
 | `entity_types` | Entity classification type lookup table (replaces VARCHAR `entity_type` on entities). Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `color_hex VARCHAR(7)`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 9 types: enemy, creature, character, manifestation, object, group, environment, event, other. |
 | `entity_families` | Entity family/species grouping lookup table with stat templates (replaces VARCHAR `entity_family` on entities). Columns: `id SERIAL PK`, `name VARCHAR(100) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `icon_key VARCHAR(100)`, `lore_reference TEXT`, `base_stat_template JSONB`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. |
-| `visual_behaviors` | Admin-configurable visual rendering behaviors for battle banner entities. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `animation_config JSONB NOT NULL`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 5 behaviors: grounded_melee, grounded_ranged, airborne, magic_caster, hybrid. |
+| `visual_behaviors` | Admin-configurable visual rendering behaviors for battle banner entities. Columns: `id SERIAL PK`, `name VARCHAR(50) UNIQUE`, `display_name VARCHAR(100)`, `description TEXT`, `animation_config JSONB NOT NULL`, `sort_order INTEGER`, `created_at TIMESTAMPTZ`, `updated_at TIMESTAMPTZ`. Seeded with 5 behaviors: grounded_melee, grounded_ranged, airborne, magic_caster, hybrid. **5.4:** Added `stat_weights JSONB` for stat-to-visual weight mapping per behavior. |
 
 ---
 
@@ -667,6 +668,26 @@ Added `'donation'` to the CHECK constraint.
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Timestamp |
 
 **Indexes:** `idx_admin_essence_adj_character` (character_id), `idx_admin_essence_adj_player` (player_id), `idx_admin_essence_adj_created` (created_at DESC).
+
+---
+
+### 25. Scaling & Difficulty (5.4, Migration 059)
+
+| Table | Description |
+| :--- | :--- |
+| `wave_presets` | Named reusable wave configuration templates as JSONB. Fields: name (unique), description, config JSONB, is_default, sort_order. Inheritance chain: scene → chapter → book → global default. |
+| `wave_preset_assignments` | Links wave presets to books or chapters. Exactly one of book_id/chapter_id must be non-null (CHECK). Partial unique indexes ensure each book/chapter has at most one preset. |
+| `difficulty_curves` | Named difficulty curve profiles with multi-dimension per-chapter multipliers (hp, gold, wave_density, spawn_speed). Books reference by FK. |
+| `difficulty_presets` | Named bundles of game_configs snapshot + difficulty_curve FK + wave_preset FK for A/B testing difficulty configurations. At most one active at a time. |
+
+#### Wave `game_configs` Keys (seeded in 059)
+
+| Key | Category | Description |
+| :--- | :--- | :--- |
+| `wave_default_max_enemies` | `waves` | Default max enemies per wave (fallback) |
+| `wave_default_wave_count` | `waves` | Default waves per scene (fallback) |
+| `wave_default_spawn_interval_ms` | `waves` | Default spawn interval ms (fallback) |
+| `wave_default_spawn_pattern` | `waves` | Default spawn distribution pattern (fallback) |
 
 ---
 

@@ -47,6 +47,7 @@ from models.marketplace import MarketplaceListing, MarketplaceTrade, Marketplace
 from models.finance import AdminShardAdjustment
 from models.asset_registry import AssetRegistryEntry
 from models.classification import EntityType, EntityFamily, VisualBehavior
+from models.scaling import WavePreset, WavePresetAssignment, DifficultyCurve, DifficultyPreset
 from models.content import (
     Background, SceneWaveConfig, EntityAlias, EntityBeatAppearance,
     LocationAlias, LocationSceneAppearance, SemanticTag,
@@ -83,6 +84,7 @@ __all__ = [
     "AdminShardAdjustment",
     "AssetRegistryEntry",
     "EntityType", "EntityFamily", "VisualBehavior",
+    "WavePreset", "WavePresetAssignment", "DifficultyCurve", "DifficultyPreset",
     "Background", "SceneWaveConfig", "EntityAlias", "EntityBeatAppearance",
     "LocationAlias", "LocationSceneAppearance", "SemanticTag",
 ]

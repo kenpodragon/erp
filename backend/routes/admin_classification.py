@@ -119,6 +119,7 @@ class VisualBehaviorUpdate(BaseModel):
     display_name: Optional[str] = None
     description: Optional[str] = None
     animation_config: Optional[dict] = None
+    stat_weights: Optional[dict] = None
     sort_order: Optional[int] = None
 
 
