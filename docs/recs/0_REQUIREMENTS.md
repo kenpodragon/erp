@@ -250,24 +250,28 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] Location Editor (sensory metadata, aliases, atmosphere associations)
     - [x] Semantic Tag Manager (AI-enriched metadata, analytics, bulk rename)
     - [x] World Builder top-level page (Narrative Editor + Content Editor + Classification under one roof)
-- [ ] **User Management:** View, search, block/unblock, and edit user profiles.
-- [ ] **Character Editor:** Direct manipulation of stats, inventory, and premium balances for support/testing.
-- [ ] **Gameplay Data Editor:** Allows editing of book data (text), entities and location data, entity_game_play data, skills, benefit effects, stats, and other game play related data.
-- [ ] **Banner & Scaling Editor:** 
-    - [ ] **Visual Weights:** Configure how much each stat (Str/Agi/Int) affects sprite size, speed, and VFX.
-    - [ ] **Global Wave Settings:** Set `max_enemies_per_wave` and default spawn intervals.
-    - [ ] **Intensity Curves:** Define how wave density increases across chapters and resets per book.
+- [ ] **5.4 Banner & Scaling Editor (Visual & Difficulty Tuning):** [5.4_BANNER_SCALING_EDITOR.md](5.4_BANNER_SCALING_EDITOR.md) | [Design](5.4_BANNER_SCALING_EDITOR_DESIGN.md) | [Schema](5.4_BANNER_SCALING_EDITOR_SCHEMA.md)
+    - [ ] Visual Weight Editor (stat_weights JSONB on visual_behaviors per behavior)
+    - [ ] Wave Presets (named JSONB configs with book/chapter assignment inheritance chain)
+    - [ ] Difficulty Curves (multi-dimension per-chapter multipliers, book FK assignment)
+    - [ ] Chapter Scaling Preview (comparison mode — two configs side-by-side, client-side computation)
+    - [ ] Difficulty Presets (bundle game_configs snapshot + curve FK + wave preset FK for A/B testing)
+    - [ ] WorldBuilder fourth tab: "Scaling & Difficulty" with 5 sub-tabs
+- [ ] **5.5 Content Management & Live Tuning:** [5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md](5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md) | [Design](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_DESIGN.md) | [Schema](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_SCHEMA.md)
+    - [ ] GameConfigs page reorganization (category tabs, type-inferred inputs, enhanced search)
+    - [ ] Drop Rate Manager (specialized tab — artifact/item drop sliders, rarity distribution bars, preview)
+    - [ ] Skill Balance Viewer (specialized tab — read-only cross-reference with computed costs/cooldowns)
+    - [ ] Economy Tuning Panel (specialized tab — essence XP step-function visualization, salvage rates, subscription boosts)
+    - [ ] *Note: HP/Gold Scaler merged into 5.4 Scaling Preview. Narrative Timing stays in generic GameConfigs (single key).*
 - [x] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. *(Implemented in 3.6)*
-- [ ] **Content Management:** Adjust drop rates, enemy HP, and narrative trigger timing without redeploying code.
-- [ ] **Premium Currency Bundles:** Allow to set, award, edit, etc...
-- [ ] **Dev Content Audit table** viewer and editor to help manage and update assets that have missing data. Flag generic vs. specific assets.
-    - [ ] Flag missing `base_atmosphere` or music tracks.
-    - [ ] Flag entities using generic sprites or missing unique death sounds.
-    - [ ] Flag skills with missing SFX keys.
-    - [ ] Flag generic stat blocks not extracted from lore.
-- [ ] **Game Content Management:** 
-    - [ ] **Admin Editor:** Interface to create and edit Chapters, Scenes, Story Beats, and Entities (HP, Gold, Stat Blocks). Editor for artifacts, inventory items, etc...
-    - [ ] **Asset Registry:** Map sprite keys to actual URLs for PixiJS rendering.
+- [ ] **5.6 Dev Content Audit Dashboard:** [5.6_DEV_CONTENT_AUDIT.md](5.6_DEV_CONTENT_AUDIT.md) | [Design](5.6_DEV_CONTENT_AUDIT_DESIGN.md) | [Schema](5.6_DEV_CONTENT_AUDIT_SCHEMA.md)
+    - [ ] Audit table viewer (paginated, filterable by dynamic audit_type + status + entity_type + date range)
+    - [ ] Status management (open → acknowledged → in_progress → resolved → wont_fix) with bulk updates
+    - [ ] Deep-link fix actions (routes to relevant editor with flagged entity pre-selected)
+    - [ ] Summary cards (counts by status + per-type breakdown)
+    - [ ] Backend fallback instrumentation (atmosphere + lore text paths; sprite/SFX deferred to C_ scanner)
+    - [ ] *Note: Severity flagging skipped (audit_type sufficient). Proactive scanning deferred to C_ generators.*
+- [x] **5.7 Asset Registry & Sprite Management:** *(Implemented — see 5.0)*
 - [x] **5.3 Entity Type & Classification Management:** [5.3_ENTITY_CLASSIFICATION.md](5.3_ENTITY_CLASSIFICATION.md) | [Design](5.3_ENTITY_CLASSIFICATION_DESIGN.md) | [Schema](5.3_ENTITY_CLASSIFICATION_SCHEMA.md)
     - [x] Entity type normalization (VARCHAR → lookup table FK, 9 types, admin CRUD, 3,936 entities migrated)
     - [x] Entity family normalization (VARCHAR → lookup table FK, metadata, stat templates)
