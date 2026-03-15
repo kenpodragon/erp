@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
+import { api, setAuthBypass, isAuthBypassed } from './api'
 import './App.css'
 import ServerConfig from './pages/ServerConfig'
 import SupportTickets from './pages/SupportTickets'
@@ -180,6 +181,35 @@ function App() {
     }
   }, [API_URL])
 
+  // Check for auth bypass on startup
+  const verifyBypass = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/config/public`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.auth_bypass_available && data.auth_bypass_player_id) {
+        console.warn('[AUTH BYPASS] Active — spoofing player ID:', data.auth_bypass_player_id)
+        setAuthBypass(data.auth_bypass_player_id)
+        // Verify admin access via bypass
+        const pingRes = await api.get('/api/admin/ping')
+        if (pingRes.ok) {
+          setBackendVerified(true)
+          setIsAuthorized(true)
+          // Create a minimal User-like object for the navbar
+          const meRes = await api.get('/api/admin/me')
+          if (meRes.ok) {
+            const meData = await meRes.json()
+            setMe(meData)
+            // Set a synthetic user for display
+            setUser({ email: meData.email || 'bypass@test' } as User)
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Auth bypass check failed:', err)
+    }
+  }, [API_URL])
+
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -195,7 +225,8 @@ function App() {
       }
     }
     fetchStatus()
-  }, [API_URL])
+    verifyBypass()
+  }, [API_URL, verifyBypass])
 
   useEffect(() => {
     if (!auth) return
@@ -203,7 +234,8 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         checkAuthorization(currentUser)
-      } else {
+      } else if (!isAuthBypassed()) {
+        // Only reset state if bypass is NOT active
         setUser(null)
         setMe(null)
         setIsAuthorized(null)
@@ -214,6 +246,12 @@ function App() {
   }, [checkAuthorization])
 
   const handleLogin = async () => {
+    // Auth bypass: skip Firebase SSO entirely
+    if (isAuthBypassed()) {
+      verifyBypass()
+      return
+    }
+
     if (!auth || !googleProvider) return
     try {
       await signInWithPopup(auth, googleProvider)

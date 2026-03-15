@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
-import { api } from './api'
+import { api, setAuthBypass, isAuthBypassed } from './api'
 import { NavBar } from './components/NavBar'
 import { SplashPage } from './components/SplashPage'
 import { AboutPage } from './components/AboutPage'
@@ -214,22 +214,7 @@ function App() {
   const location = useLocation()
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-
-  // Fetch public config (maintenance mode, announcements)
-  useEffect(() => {
-    const fetchPublicConfig = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/config/public`)
-        if (res.ok) {
-          const data: PublicConfig = await res.json()
-          setPublicConfig(data)
-        }
-      } catch (err) {
-        console.error("Failed to fetch public config:", err)
-      }
-    }
-    fetchPublicConfig()
-  }, [API_URL])
+  const isLoggedIn = !!user || isAuthBypassed()
 
   // Health checks (public endpoints — no auth needed)
   useEffect(() => {
@@ -287,11 +272,41 @@ function App() {
     }
   }, [])
 
+  // Fetch public config (maintenance mode, announcements, auth bypass)
+  useEffect(() => {
+    const fetchPublicConfig = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/config/public`)
+        if (res.ok) {
+          const data = await res.json()
+          setPublicConfig(data as PublicConfig)
+
+          // Auth bypass: if backend says bypass is available, activate it
+          if (data.auth_bypass_available && data.auth_bypass_player_id) {
+            console.warn('[AUTH BYPASS] Active — spoofing player ID:', data.auth_bypass_player_id)
+            setAuthBypass(data.auth_bypass_player_id)
+            // Trigger backend verification as the spoofed user
+            verifyUserWithBackend()
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch public config:", err)
+      }
+    }
+    fetchPublicConfig()
+  }, [API_URL, verifyUserWithBackend])
+
   // Firebase auth listener + backend verification
   useEffect(() => {
     if (!auth) return
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser && isAuthBypassed()) {
+        // Don't reset state when bypass is active — Firebase reports no user but bypass handles auth
+        setAuthLoading(false)
+        return
+      }
+
       setUser(currentUser)
       setBackendUser(null)
       setBackendError(null)
@@ -309,7 +324,7 @@ function App() {
   // Auto-redirect: after login, send to /game if character exists, else /profile.
   // Only fires from "/" — never forcibly bounces the user away from /profile.
   useEffect(() => {
-    if (!authLoading && user && backendUser && !showOnboarding) {
+    if (!authLoading && isLoggedIn && backendUser && !showOnboarding) {
       if (location.pathname === '/') {
         if (character) {
           navigate('/game', { replace: true })
@@ -318,9 +333,15 @@ function App() {
         }
       }
     }
-  }, [authLoading, user, backendUser, character, location.pathname, navigate, showOnboarding])
+  }, [authLoading, isLoggedIn, backendUser, character, location.pathname, navigate, showOnboarding])
 
   const handleLogin = async () => {
+    // Auth bypass: skip Firebase SSO entirely
+    if (isAuthBypassed()) {
+      verifyUserWithBackend()
+      return
+    }
+
     if (!auth || !googleProvider) {
       alert("Firebase is not configured correctly.")
       return
@@ -354,8 +375,6 @@ function App() {
       navigate('/')
     }
   }
-
-  const isLoggedIn = !!user
 
   // Maintenance mode — full-screen overlay, blocks everything
   if (publicConfig?.['ops.maintenance_mode']) {

@@ -13,6 +13,7 @@ from models import (
     Book, Chapter, Scene, StoryBeat, SceneGameplayData,
     Entity, EntityGameplayData, StatDefinition,
     Artifact, PlayerCollection, BossCompletion,
+    EntityType,
 )
 
 logger = logging.getLogger(__name__)
@@ -392,7 +393,8 @@ async def get_encountered_enemies(
     enemies = session.exec(
         select(Entity, EntityGameplayData)
         .join(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
-        .where(Entity.entity_type == "enemy")
+        .join(EntityType, Entity.entity_type_id == EntityType.id)
+        .where(EntityType.name == "enemy")
     ).all()
 
     return [

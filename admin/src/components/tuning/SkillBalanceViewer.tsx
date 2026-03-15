@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
-import { computeSkillBalance, SkillBalanceRow } from './tuning-utils'
+import type { SkillBalanceRow } from './tuning-utils'
+import { computeSkillBalance } from './tuning-utils'
 import { SkillBalanceTable } from './SkillBalanceTable'
 import { CoefficientPanel } from './CoefficientPanel'
 import './tuning.css'

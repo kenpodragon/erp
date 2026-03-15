@@ -4,7 +4,7 @@ import os
 import logging
 
 from fastapi import APIRouter, Depends
-from sqlmodel import Session, select, text
+from sqlmodel import Session, text
 
 from db import get_session
 import config_cache
@@ -70,4 +70,14 @@ def get_public_config(session: Session = Depends(get_session)):
             result[key] = raw.lower() in ("true", "1", "yes")
         else:
             result[key] = raw
+
+    # Auth bypass availability (double-gated: .env + DB)
+    env_allows = os.getenv("ALLOW_AUTH_BYPASS", "").lower() == "true"
+    db_allows = config_cache.get_config_bool("ops.auth_bypass_enabled", False)
+    if env_allows and db_allows:
+        result["auth_bypass_available"] = True
+        result["auth_bypass_player_id"] = config_cache.get_config("ops.auth_bypass_player_id", "")
+    else:
+        result["auth_bypass_available"] = False
+
     return result

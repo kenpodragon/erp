@@ -137,8 +137,49 @@ def verify_firebase_token(token: str) -> dict:
 # Core Token Validation
 # ---------------------------------------------------------------------------
 
-async def get_decoded_token(request: Request) -> dict:
-    """Base dependency to extract and verify Firebase token."""
+async def get_decoded_token(
+    request: Request,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Base dependency to extract and verify Firebase token.
+
+    Supports an optional auth bypass for local testing / E2E.  The bypass
+    is double-gated:
+      1. .env  ALLOW_AUTH_BYPASS=true
+      2. DB    ops.auth_bypass_enabled=true  (server_configs)
+
+    When both are active the backend accepts an ``X-Spoof-Player-Id``
+    header (or falls back to ``ops.auth_bypass_player_id``) and returns
+    a synthetic decoded-token dict for that player.
+    """
+
+    # --- Auth bypass check (double-gated) ---
+    if os.getenv("ALLOW_AUTH_BYPASS", "").lower() == "true":
+        config_cache.refresh_if_stale(session)
+        if config_cache.get_config_bool("ops.auth_bypass_enabled", False):
+            spoof_id = request.headers.get("x-spoof-player-id") or \
+                       config_cache.get_config("ops.auth_bypass_player_id", "")
+            if spoof_id:
+                try:
+                    player = session.exec(
+                        select(Player).where(Player.id == int(spoof_id))
+                    ).first()
+                    if player:
+                        logger.warning(
+                            "AUTH BYPASS: spoofing player %s (%s) — request %s %s",
+                            player.id, player.email, request.method,
+                            request.url.path,
+                        )
+                        return {
+                            "uid": player.firebase_uid,
+                            "email": player.email,
+                            "auth_time": int(datetime.now(timezone.utc).timestamp()),
+                            "spoofed": True,
+                        }
+                except (ValueError, TypeError):
+                    pass  # invalid id — fall through to normal auth
+
+    # --- Normal Firebase token verification ---
     auth_header = request.headers.get("authorization", "")
     if not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail={"error": "Invalid or expired token"})

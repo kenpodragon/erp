@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
-import { SkillBalanceRow, formatGold } from './tuning-utils'
+import type { SkillBalanceRow } from './tuning-utils'
+import { formatGold } from './tuning-utils'
 
 interface SkillBalanceTableProps {
   skills: SkillBalanceRow[]
