@@ -3,9 +3,51 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (5.8 UI Polish & Debug Cleanup complete)*
+*Updated: 2026-03-15 (5.9 Initial Remediation & E2E Testing Revamp complete)*
 
 ## REC_5: Administrative Systems
+
+ - [x] **5.9 — Initial Remediation & E2E Testing Revamp (COMPLETE)** *(Ref: `docs/recs/5.9_TESTING_REVAMP.md` | Session State: `docs/E2E_SESSION_STATE.md`)*
+   - [x] **Phase 0: Infrastructure**
+     - [x] 0.1 — Auth Bypass System: DB-driven spoof toggle double-gated (`.env` `ALLOW_AUTH_BYPASS` + DB `ops.auth_bypass_enabled`). Backend `get_decoded_token()` in `auth.py` accepts `X-Spoof-Player-Id` header. Admin UI panel in `ServerConfig.tsx` with test player creation. Frontend/admin `api.ts` auto-attaches spoof header. Migration 061 (`auth_bypass_enabled`, `auth_bypass_player_id` server_config keys). Test player E2ETestBot (ID 2) created with `is_system_admin + is_game_admin`.
+     - [x] 0.2 — DB Dump/Restore Script: `tools/db_dump_restore.py` (dump/restore/list via `pg_dump`/`pg_restore`). Pre-E2E backup at `db/backups/erp_backup_pre_e2e_testing.dump`.
+     - [x] 0.3 — Playwright Config Enhancement: Added `admin` project to `testing/playwright.config.ts` (matches `admin-*.spec.ts`, baseURL `:5174`). `PLAYWRIGHT_FRONTEND_URL`/`PLAYWRIGHT_ADMIN_URL` env var overrides.
+     - [x] 0.4 — Shared Test Helpers: `testing/helpers/auth.ts` (`loginAsTestUser`, `loginAsAdmin`, `bypassOnboarding`), `testing/helpers/navigation.ts` (`navigateToTab`, `navigateToAdminPage`, `waitForContentLoad`, `captureConsoleErrors`), `testing/helpers/api-mocks.ts` (`mockStripeCheckout`, `mockSubscriptionCreate`, `mockActiveSubscription`, `mockNoSubscription`, `mockDonationCreate`, `mockAllStripe`).
+   - [x] **Phase 1: MCP Browser Smoke Testing** — All pages verified with 0 console errors
+     - [x] 1.1 — Frontend (12 routes): Splash, about, terms, privacy, license, support (guest), profile (SKIP — no Firebase User), Game tabs (Map, Skills, Home, Shop, Ascendant, Chat) all OK.
+     - [x] 1.2 — Admin (17 routes): Dashboard, Players, Players/:id, World Builder, Config, Finance, Support, Game Configs (141), Atmospheres (21), SFX Configs (17), Artifacts (50), Achievements (90+), Asset Registry (196), Chat Manager, Audit Log, Dev Audit (17 open), Access Control (SKIP — owner-only gate).
+     - [x] 1.3 — 7 bugs found and fixed:
+       1. `Entity.entity_type` → `entity_type_id` FK join in `backend/routes/game.py:395`
+       2. `SkillBalanceRow` import — `verbatimModuleSyntax` requires `import type`
+       3. `verifyUserWithBackend`/`isLoggedIn` temporal dead zone in `frontend/App.tsx`
+       4. `onAuthStateChanged` resetting bypass — added `isAuthBypassed()` guard
+       5. Finance revenue-chart SQL — `CAST(:cutoff AS date)`, removed non-existent `order_type`, fixed donations join
+       6. `OverviewTab.tsx` `formatNumber` null safety
+       7. `PlayerFinanceWidget.tsx` crash — `formatShards()` null safety + field name mismatch (`shard_balance`→`balance`, `type`→`source_type`)
+   - [x] **Phase 2: Automated Playwright Specs** — 119 tests across 19 spec files
+     - [x] 2.1 `smoke.spec.ts` (10 tests) — Backend health+hello, frontend statics, admin login+dashboard
+     - [x] 2.2 `onboarding.spec.ts` (7 tests) — Splash, terms, about, auth bypass auto-login, support
+     - [x] 2.3 `story-mode.spec.ts` (8 tests) — Map, scene entry, combat/narrative UI, post-battle, hub return
+     - [x] 2.4 `idle_training.spec.ts` (6 tests) — Skills tab, action table, training, active mode, locked/unlocked
+     - [x] 2.5 `character_progression.spec.ts` (5 tests) — Stats, prerequisites, items, equip pipeline
+     - [x] 2.6 `audio.spec.ts` (8 tests) — Settings, volume sliders, mute, AudioContext, persistence
+     - [x] 2.7 `economy_discovery.spec.ts` (5 tests) — Chat tab, connection status, codex, reduce-motion
+     - [x] 2.8 `home-base.spec.ts` (6 tests) — Sub-tabs, Akashic Log hierarchy+search, collections, achievements, leaderboard
+     - [x] 2.9 `shop-shards.spec.ts` (5 tests) — Packages, checkout mock, transaction history, shard balance
+     - [x] 2.10 `subscription.spec.ts` (6 tests) — Promo, checkout, active subscriber, cancel/reactivate, badge
+     - [x] 2.11 `emporium.spec.ts` (5 tests) — Cosmetic categories, item cards, insufficient shards, boosters
+     - [x] 2.12 `donations.spec.ts` (5 tests) — Tiers, custom amount, checkout mock, patron status
+     - [x] 2.13 `marketplace.spec.ts` (6 tests) — Browse, listings, my listings, NPC vendor, trade history
+     - [x] 2.14 `admin-players.spec.ts` (6 tests) — Player list, search, detail, edit/ban, force logout, character
+     - [x] 2.15 `admin-content.spec.ts` (6 tests) — World builder tabs, narrative editor, atmosphere, SFX, artifacts
+     - [x] 2.16 `admin-scaling.spec.ts` (6 tests) — Game configs (141+), search, tabs, editable values
+     - [x] 2.17 `admin-audit.spec.ts` (6 tests) — Audit log table+filters, dev audit status cards+filters
+     - [x] 2.18 `admin-assets.spec.ts` (7 tests) — 196 assets, 16 categories, search, pagination, orphan detection
+     - [x] 2.19 `admin-finance.spec.ts` (5 tests) — Overview, revenue chart, tabs, player finance widget
+   - [x] **Phase 3: Systematic Requirement Verification** — 50/52 items verified (96%)
+     - [x] REC 1 Onboarding (6/6), REC 2.0–2.2 Game Loop (11/11), REC 2.3 Idle Training (4/5 — offline report deferred), REC 2.4 Character (5/5), REC 2.5 Audio (4/4), REC 2.6 Economy/Chat (5/6 — welcome modal deferred), REC 2.7 Home Base (5/5), REC 3.1–3.5 Monetization (5/5), REC 3.6+5.1–5.8 Admin (12/12)
+     - 2 gaps deferred to 5.10 live user testing: offline training report (needs test tooling), welcome/changelog modal (needs version trigger)
+   - [x] **Phase 4: Fix Issues Found** — 7 bugs fixed (sessions 1-2), 0 new bugs (session 3), regression specs in place
 
  - [x] **5.8 — UI Polish & Debug Cleanup (COMPLETE)**
    - [x] 5.8.1 — Debug Control Gating: StoryMode debug buttons (SUPER CLICK toggle, RESET SESSION) gated behind `player?.is_game_admin` check in both normal and boss combat modes. Added `is_game_admin` to Player interfaces in `MainGameLayout.tsx` and `StoryMode.tsx`. Deleted orphaned `DatabaseStatus.tsx` (never routed, exposed raw DB table names).

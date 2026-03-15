@@ -1,41 +1,13 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { loginAsTestUser } from './helpers/auth';
+import { navigateToTab, captureConsoleErrors } from './helpers/navigation';
+import { mockSubscriptionCreate } from './helpers/api-mocks';
 
 /**
  * 3.2 E2E — Subscription: Elysium Ascendant
  * Covers: non-subscriber view, subscribe click, cancel/reactivate modals, subscriber indicators.
- * Requires Docker stack (frontend + backend + DB) via docker-compose-testing.yaml.
+ * Uses auth bypass (E2ETestBot, ID 2) — no onboarding needed.
  */
-
-async function bypassOnboarding(page: Page) {
-  const beginBtn = page.getByRole('button', { name: /Begin Your Ascent/i }).first();
-  await expect(beginBtn).toBeVisible({ timeout: 15000 });
-  await beginBtn.click();
-
-  await expect(page.getByText('Welcome to Elysium Rising')).toBeVisible({ timeout: 10000 });
-  await page.locator('.terms-container').evaluate((el) => {
-    el.scrollTop = el.scrollHeight;
-  });
-  await page.getByRole('checkbox').check();
-  await page.getByRole('button', { name: /I Accept/i }).click();
-
-  await expect(page.getByText('Set Up Your Profile')).toBeVisible({ timeout: 10000 });
-  await page.getByRole('button', { name: /Skip for Now/i }).click();
-
-  await expect(page.getByText('Create Your Character')).toBeVisible({ timeout: 10000 });
-  await page.getByRole('textbox').fill('SubTest' + Math.floor(Math.random() * 10000));
-  await page.locator('.class-card').first().click();
-  await page.getByRole('button', { name: /Create Character/i }).click();
-
-  await expect(page.getByRole('button', { name: /Begin Adventure/i })).toBeVisible({ timeout: 10000 });
-  await page.getByRole('button', { name: /Begin Adventure/i }).click();
-}
-
-async function navigateToAscendant(page: Page) {
-  const ascendantTab = page.locator('.sidebar-tab-btn').filter({ hasText: 'Ascendant' });
-  await expect(ascendantTab).toBeVisible({ timeout: 10000 });
-  await ascendantTab.click();
-  await expect(page.locator('.sub-page')).toBeVisible({ timeout: 10000 });
-}
 
 // Mock status response for an active subscriber
 const activeSubscriberStatus = {
@@ -62,7 +34,6 @@ const activeSubscriberStatus = {
   ],
 };
 
-// Mock status response for a canceling subscriber
 const cancelingSubscriberStatus = {
   ...activeSubscriberStatus,
   subscription: {
@@ -72,13 +43,18 @@ const cancelingSubscriberStatus = {
   },
 };
 
+async function navigateToAscendant(page: import('@playwright/test').Page) {
+  await navigateToTab(page, 'Ascendant');
+  await expect(page.locator('.sub-page')).toBeVisible({ timeout: 10000 });
+}
+
 test.describe('3.2 Subscription — Non-Subscriber View', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await bypassOnboarding(page);
+    await loginAsTestUser(page);
   });
 
   test('subscription page renders promo, plan cards, and loyalty progress', async ({ page }) => {
+    const errors = captureConsoleErrors(page);
     await navigateToAscendant(page);
 
     // Page title
@@ -98,10 +74,11 @@ test.describe('3.2 Subscription — Non-Subscriber View', () => {
     await expect(page.getByText('Loyalty Progress')).toBeVisible();
     await expect(page.getByText('Streak Bonuses')).toBeVisible();
     await expect(page.getByText('Lifetime Titles')).toBeVisible();
+
+    expect(errors.length).toBe(0);
   });
 
   test('subscribe button triggers checkout API call', async ({ page }) => {
-    // Intercept the create endpoint to avoid needing real Stripe keys
     let createCalled = false;
     let requestBody: Record<string, unknown> = {};
     await page.route('**/api/subscriptions/create', async (route) => {
@@ -118,19 +95,16 @@ test.describe('3.2 Subscription — Non-Subscriber View', () => {
       });
     });
 
-    // Also intercept the Stripe redirect so the page doesn't navigate away
     await page.route('https://checkout.stripe.com/**', (route) => {
       route.fulfill({ status: 200, body: '<html><body>Stripe Checkout Mock</body></html>' });
     });
 
     await navigateToAscendant(page);
 
-    // Click the monthly plan subscribe button
     const subscribeButtons = page.locator('.sub-card button');
     await expect(subscribeButtons.first()).toBeVisible();
     await subscribeButtons.first().click();
 
-    // Verify the API was called with the correct plan key
     expect(createCalled).toBe(true);
     expect(requestBody.plan_key).toBe('ascendant_monthly');
   });
@@ -138,7 +112,6 @@ test.describe('3.2 Subscription — Non-Subscriber View', () => {
 
 test.describe('3.2 Subscription — Active Subscriber View', () => {
   test.beforeEach(async ({ page }) => {
-    // Intercept subscription status to return active subscriber
     await page.route('**/api/subscriptions/status', (route) => {
       route.fulfill({
         status: 200,
@@ -146,11 +119,11 @@ test.describe('3.2 Subscription — Active Subscriber View', () => {
         body: JSON.stringify(activeSubscriberStatus),
       });
     });
-    await page.goto('/');
-    await bypassOnboarding(page);
+    await loginAsTestUser(page);
   });
 
   test('active subscriber sees status card, boosts, and action buttons', async ({ page }) => {
+    const errors = captureConsoleErrors(page);
     await navigateToAscendant(page);
 
     // Status card
@@ -163,7 +136,6 @@ test.describe('3.2 Subscription — Active Subscriber View', () => {
 
     // Boost display
     await expect(page.getByText('Active Boosts')).toBeVisible();
-    await expect(page.getByText('1.20x')).toBeTruthy();
     await expect(page.getByText('Monthly Shards')).toBeVisible();
 
     // Action buttons (switch + cancel)
@@ -174,27 +146,30 @@ test.describe('3.2 Subscription — Active Subscriber View', () => {
     await expect(page.getByText('Stipend History')).toBeVisible();
     await expect(page.getByText('2026-03')).toBeVisible();
 
-    // Loyalty progress with earned milestones
+    // Loyalty progress
     await expect(page.getByText('Loyalty Progress')).toBeVisible();
+
+    expect(errors.length).toBe(0);
   });
 
   test('cancel modal opens, confirms, and updates status', async ({ page }) => {
-    // Intercept cancel endpoint
     let cancelCalled = false;
     await page.route('**/api/subscriptions/cancel', async (route) => {
       cancelCalled = true;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ status: 'canceling', period_end: activeSubscriberStatus.subscription.current_period_end, message: 'Subscription will cancel at period end' }),
+        body: JSON.stringify({
+          status: 'canceling',
+          period_end: activeSubscriberStatus.subscription.current_period_end,
+          message: 'Subscription will cancel at period end',
+        }),
       });
     });
 
-    // After cancel, status endpoint returns canceling state
     let statusCallCount = 0;
     await page.route('**/api/subscriptions/status', async (route) => {
       statusCallCount++;
-      // First call returns active, subsequent calls return canceling (post-cancel refresh)
       const body = statusCallCount <= 1 ? activeSubscriberStatus : cancelingSubscriberStatus;
       await route.fulfill({
         status: 200,
@@ -208,22 +183,17 @@ test.describe('3.2 Subscription — Active Subscriber View', () => {
     // Open cancel modal
     await page.getByRole('button', { name: /Cancel Subscription/i }).click();
 
-    // Verify modal content
     const modal = page.locator('.sub-modal');
     await expect(modal).toBeVisible();
     await expect(modal.getByText('Cancel Subscription')).toBeVisible();
     await expect(modal.getByText(/benefits will remain active/i)).toBeVisible();
-
-    // Can dismiss with "Keep Subscription"
     await expect(modal.getByRole('button', { name: /Keep Subscription/i })).toBeVisible();
 
     // Confirm cancel
     await modal.getByRole('button', { name: /Confirm Cancel/i }).click();
-
-    // Verify cancel API was called
     expect(cancelCalled).toBe(true);
 
-    // After refresh, status should show "Canceling" and "Reactivate" button
+    // Status should show "Canceling"
     await expect(page.locator('.sub-status-badge')).toContainText('Canceling');
     await expect(page.getByRole('button', { name: /Reactivate Subscription/i })).toBeVisible();
   });
@@ -244,7 +214,6 @@ test.describe('3.2 Subscription — Cancel & Reactivate Flow', () => {
     let statusCallCount = 0;
     await page.route('**/api/subscriptions/status', async (route) => {
       statusCallCount++;
-      // First call returns canceling, after reactivate returns active
       const body = statusCallCount <= 1 ? cancelingSubscriberStatus : activeSubscriberStatus;
       await route.fulfill({
         status: 200,
@@ -253,20 +222,15 @@ test.describe('3.2 Subscription — Cancel & Reactivate Flow', () => {
       });
     });
 
-    await page.goto('/');
-    await bypassOnboarding(page);
+    await loginAsTestUser(page);
     await navigateToAscendant(page);
 
-    // Should see canceling status with reactivate button
     await expect(page.locator('.sub-status-badge')).toContainText('Canceling');
     await expect(page.getByRole('button', { name: /Reactivate Subscription/i })).toBeVisible();
 
-    // Click reactivate
     await page.getByRole('button', { name: /Reactivate Subscription/i }).click();
-
     expect(reactivateCalled).toBe(true);
 
-    // Status should refresh to active
     await expect(page.locator('.sub-status-badge')).toContainText('Active');
     await expect(page.getByRole('button', { name: /Cancel Subscription/i })).toBeVisible();
   });
@@ -274,7 +238,6 @@ test.describe('3.2 Subscription — Cancel & Reactivate Flow', () => {
 
 test.describe('3.2 Subscription — Subscriber Indicators', () => {
   test('subscriber badge visible in chat tab', async ({ page }) => {
-    // Mock subscriber status
     await page.route('**/api/subscriptions/status', (route) => {
       route.fulfill({
         status: 200,
@@ -283,19 +246,12 @@ test.describe('3.2 Subscription — Subscriber Indicators', () => {
       });
     });
 
-    await page.goto('/');
-    await bypassOnboarding(page);
+    await loginAsTestUser(page);
 
-    // Navigate to chat tab
-    const chatTab = page.locator('.sidebar-tab-btn').filter({ hasText: 'Chat' });
-    await expect(chatTab).toBeVisible({ timeout: 10000 });
-    await chatTab.click();
+    await navigateToTab(page, 'Chat');
 
-    // Chat should load — look for the chat container
     const chatContainer = page.locator('.chat-tab, .chat-panel, .chat-container').first();
     if (await chatContainer.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // If WebSocket connects and chat renders, the subscriber badge (★) should appear
-      // on the player's own messages or profile indicator
       const starBadge = page.locator('.chat-badge-ascendant, .ascendant-badge, text=★').first();
       if (await starBadge.isVisible({ timeout: 3000 }).catch(() => false)) {
         await expect(starBadge).toBeVisible();

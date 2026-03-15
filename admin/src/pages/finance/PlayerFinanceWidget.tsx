@@ -8,19 +8,21 @@ import './MarketplaceDisputes.css'
 
 interface ShardSummary {
   player_id: number
-  player_name: string
-  shard_balance: number
+  player_name?: string
+  balance: number
+  shard_balance?: number
   total_earned: number
   total_spent: number
   recent_transactions: RecentTransaction[]
-  has_subscription: boolean
-  marketplace_trades_count: number
-  donations_count: number
+  has_subscription?: boolean
+  marketplace_trades_count?: number
+  donations_count?: number
 }
 
 interface RecentTransaction {
   id: number
-  type: string
+  type?: string
+  source_type?: string
   amount: number
   balance_after: number
   description: string
@@ -35,8 +37,8 @@ interface Props {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function formatShards(n: number): string {
-  return n.toLocaleString('en-US')
+function formatShards(n: number | undefined | null): string {
+  return (n ?? 0).toLocaleString('en-US')
 }
 
 /* ------------------------------------------------------------------ */
@@ -102,8 +104,8 @@ export default function PlayerFinanceWidget({ playerId }: Props) {
     const amt = parseInt(adjustAmount, 10)
     if (isNaN(amt) || amt <= 0) return null
     return showAdjust === 'debit'
-      ? summary.shard_balance - amt
-      : summary.shard_balance + amt
+      ? summary.balance - amt
+      : summary.balance + amt
   }
 
   /* ---------------------------------------------------------------- */
@@ -122,7 +124,7 @@ export default function PlayerFinanceWidget({ playerId }: Props) {
       <div className="pfw-balance-row">
         <div className="pfw-balance">
           <span className="pfw-balance-label">Shard Balance</span>
-          <span className="pfw-balance-value">{formatShards(summary.shard_balance)}</span>
+          <span className="pfw-balance-value">{formatShards(summary.balance)}</span>
         </div>
         <div className="pfw-balance-actions">
           <button
@@ -192,10 +194,10 @@ export default function PlayerFinanceWidget({ playerId }: Props) {
       {/* Quick links */}
       <div className="pfw-links">
         {summary.has_subscription && <span className="pfw-link-badge">Active Subscription</span>}
-        {summary.marketplace_trades_count > 0 && (
+        {(summary.marketplace_trades_count ?? 0) > 0 && (
           <span className="pfw-link-badge">{summary.marketplace_trades_count} Marketplace Trades</span>
         )}
-        {summary.donations_count > 0 && (
+        {(summary.donations_count ?? 0) > 0 && (
           <span className="pfw-link-badge">{summary.donations_count} Donations</span>
         )}
       </div>
@@ -210,7 +212,7 @@ export default function PlayerFinanceWidget({ playerId }: Props) {
             {summary.recent_transactions.map(txn => (
               <div key={txn.id} className="pfw-txn">
                 <div className="pfw-txn-left">
-                  <span className={`pfw-txn-type ${txn.type}`}>{txn.type}</span>
+                  <span className={`pfw-txn-type ${txn.source_type || txn.type || ''}`}>{txn.source_type || txn.type || '—'}</span>
                   <span className="pfw-txn-desc">{txn.description}</span>
                 </div>
                 <div className="pfw-txn-right">
