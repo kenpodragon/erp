@@ -15,6 +15,7 @@ const TICK_INTERVAL_MS = 2000;
 
 interface Player {
   id: number;
+  is_game_admin?: boolean;
   settings?: {
     narration_wpm: number;
     narration_font_size: number;
@@ -436,15 +437,17 @@ const StoryMode: React.FC<StoryModeProps> = ({
             playSFX={playSFX}
             reduceMotion={reduceMotion}
           />
-          <div className="story-controls-bar">
-            <button
-              className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
-              onClick={() => setDebugSuperClick(!debugSuperClick)}
-              title="One-click kills (Debug Only)"
-            >
-              SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
-            </button>
-          </div>
+          {player?.is_game_admin && (
+            <div className="story-controls-bar">
+              <button
+                className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
+                onClick={() => setDebugSuperClick(!debugSuperClick)}
+                title="One-click kills (Admin Only)"
+              >
+                SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          )}
         </div>
 
         <button className="story-exit-btn" onClick={handleExit} title="Retreat">RETREAT</button>
@@ -518,14 +521,18 @@ const StoryMode: React.FC<StoryModeProps> = ({
             >
               AUTO PROGRESS: {autoProgress ? 'ON' : 'OFF'}
             </button>
-            <button
-              className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
-              onClick={() => setDebugSuperClick(!debugSuperClick)}
-              title="One-click kills (Debug Only)"
-            >
-              SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
-            </button>
-            <button className="debug-btn" onClick={handleResetLevel}>RESET SESSION (DEBUG)</button>
+            {player?.is_game_admin && (
+              <>
+                <button
+                  className={`debug-toggle-btn ${debugSuperClick ? 'active' : ''}`}
+                  onClick={() => setDebugSuperClick(!debugSuperClick)}
+                  title="One-click kills (Admin Only)"
+                >
+                  SUPER CLICK: {debugSuperClick ? 'ON' : 'OFF'}
+                </button>
+                <button className="debug-btn" onClick={handleResetLevel}>RESET SESSION (ADMIN)</button>
+              </>
+            )}
           </div>
         </div>
       </div>

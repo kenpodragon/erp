@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react'
 import './scaling-editor.css'
+import AdminTabs from '../AdminTabs'
 
 const VisualWeightEditor = lazy(() => import('./VisualWeightEditor'))
 const WavePresetManager = lazy(() => import('./WavePresetManager'))
@@ -37,17 +38,7 @@ export default function ScalingEditor() {
 
   return (
     <div className="editor-panel">
-      <div className="scaling-tabs">
-        {SUB_TABS.map(t => (
-          <button
-            key={t.key}
-            className={`scaling-tab ${activeTab === t.key ? 'scaling-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <AdminTabs tabs={SUB_TABS} activeTab={activeTab} onTabChange={(k) => setActiveTab(k as SubTab)} variant="secondary" />
       <Suspense fallback={<div className="editor-loading">Loading...</div>}>
         {renderContent()}
       </Suspense>

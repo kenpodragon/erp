@@ -321,7 +321,7 @@ function setupDefaultMocks() {
 
 async function switchTab(tabName: string) {
   const tabs = screen.getAllByRole('button')
-  const tabBtn = tabs.find(btn => btn.textContent === tabName && btn.classList.contains('finance-tab'))
+  const tabBtn = tabs.find(btn => btn.textContent === tabName && btn.classList.contains('admin-tab'))
   if (tabBtn) fireEvent.click(tabBtn)
 }
 

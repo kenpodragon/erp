@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import './App.css'
@@ -21,6 +21,96 @@ import AchievementEditor from './pages/AchievementEditor'
 import FinanceDashboard from './pages/FinanceDashboard'
 import AssetRegistry from './pages/AssetRegistry'
 import DevAudit from './pages/DevAudit'
+
+/* ── Nav Dropdown (hover-based grouped menu) ── */
+function NavDropdown({ label, children, activePaths }: {
+  label: string;
+  children: React.ReactNode;
+  activePaths: string[];
+}) {
+  const location = useLocation();
+  const isGroupActive = activePaths.some(p => location.pathname.startsWith(p));
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = () => { if (closeTimer.current) clearTimeout(closeTimer.current); setOpen(true); };
+  const handleLeave = () => { closeTimer.current = setTimeout(() => setOpen(false), 150); };
+
+  return (
+    <div className="nav-dropdown" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <button className={`admin-nav-link nav-dropdown-trigger ${isGroupActive ? 'active' : ''}`}>
+        {label} <span className="nav-caret">▾</span>
+      </button>
+      {open && (
+        <div className="nav-dropdown-menu" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Admin Navbar ── */
+function AdminNavbar({ user, me, apiOnline, dbOnline, health, onLogout }: {
+  user: User;
+  me: MeInfo | null;
+  apiOnline: boolean;
+  dbOnline: boolean;
+  health: HealthData | null;
+  onLogout: () => void;
+}) {
+  return (
+    <nav className="admin-navbar">
+      <div className="admin-brand">
+        <span className="brand-erp">ERP</span>
+        <span className="brand-admin">Admin</span>
+      </div>
+
+      <div className="admin-nav-links">
+        <NavLink to="/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
+
+        <NavDropdown label="Players" activePaths={['/players', '/support', '/chat']}>
+          <NavLink to="/players" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Player List</NavLink>
+          <NavLink to="/support" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Support Tickets</NavLink>
+          <NavLink to="/chat" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Chat Manager</NavLink>
+        </NavDropdown>
+
+        <NavDropdown label="Content" activePaths={['/world-builder', '/atmospheres', '/sfx-configs', '/asset-registry']}>
+          <NavLink to="/world-builder" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>World Builder</NavLink>
+          <NavLink to="/atmospheres" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Atmospheres</NavLink>
+          <NavLink to="/sfx-configs" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Sound Effects</NavLink>
+          <NavLink to="/asset-registry" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Asset Registry</NavLink>
+        </NavDropdown>
+
+        <NavDropdown label="Game" activePaths={['/game-configs', '/artifacts', '/achievements']}>
+          <NavLink to="/game-configs" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
+          <NavLink to="/artifacts" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Artifacts</NavLink>
+          <NavLink to="/achievements" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Achievements</NavLink>
+        </NavDropdown>
+
+        <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
+
+        <NavDropdown label="System" activePaths={['/config', '/audit-log', '/dev-audit', '/access-control']}>
+          <NavLink to="/config" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Server Config</NavLink>
+          <NavLink to="/audit-log" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
+          <NavLink to="/dev-audit" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Dev Audit</NavLink>
+          {me?.is_owner && (
+            <NavLink to="/access-control" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Access Control</NavLink>
+          )}
+        </NavDropdown>
+      </div>
+
+      <div className="admin-nav-right">
+        <div className="nav-status">
+          <span>API <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}>●</span></span>
+          <span>DB <span className={`status-dot ${health ? (dbOnline ? 'online' : 'offline') : 'loading'}`}>●</span></span>
+        </div>
+        <span className="admin-email">{user.email}</span>
+        <button className="btn-logout" onClick={onLogout}>Logout</button>
+      </div>
+    </nav>
+  );
+}
 
 interface HealthData {
   status: string;
@@ -178,41 +268,14 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <nav className="admin-navbar">
-          <div className="admin-brand">
-            <span className="brand-erp">ERP</span>
-            <span className="brand-admin">Admin</span>
-          </div>
-
-          <div className="admin-nav-links">
-            <NavLink to="/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
-            <NavLink to="/players" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Players</NavLink>
-            <NavLink to="/support" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Support</NavLink>
-            <NavLink to="/config" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Server Config</NavLink>
-            <NavLink to="/game-configs" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Game Configs</NavLink>
-            <NavLink to="/world-builder" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>World Builder</NavLink>
-            <NavLink to="/atmospheres" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audio</NavLink>
-            <NavLink to="/artifacts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Artifacts</NavLink>
-            <NavLink to="/achievements" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Achievements</NavLink>
-            <NavLink to="/asset-registry" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Assets</NavLink>
-            <NavLink to="/chat" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Chat</NavLink>
-            <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
-            <NavLink to="/audit-log" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Audit Log</NavLink>
-            <NavLink to="/dev-audit" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Dev Audit</NavLink>
-            {me?.is_owner && (
-              <NavLink to="/access-control" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Access</NavLink>
-            )}
-          </div>
-
-          <div className="admin-nav-right">
-            <div className="nav-status">
-              <span>API <span className={`status-dot ${apiOnline ? 'online' : 'offline'}`}>●</span></span>
-              <span>DB <span className={`status-dot ${health ? (dbOnline ? 'online' : 'offline') : 'loading'}`}>●</span></span>
-            </div>
-            <span className="admin-email">{user.email}</span>
-            <button className="btn-logout" onClick={handleLogout}>Logout</button>
-          </div>
-        </nav>
+        <AdminNavbar
+          user={user}
+          me={me}
+          apiOnline={apiOnline}
+          dbOnline={dbOnline}
+          health={health}
+          onLogout={handleLogout}
+        />
 
         <div className="admin-content-wrapper">
           <Routes>
@@ -224,7 +287,7 @@ function App() {
             <Route path="/config" element={<div className="admin-content"><ServerConfig /></div>} />
             <Route path="/game-configs" element={<div className="admin-content"><GameConfigs /></div>} />
             <Route path="/world-builder/*" element={<div className="admin-content"><WorldBuilder /></div>} />
-            <Route path="/content" element={<div className="admin-content"><ContentEditor /></div>} />
+            <Route path="/content" element={<Navigate to="/world-builder" replace />} />
             <Route path="/atmospheres" element={<div className="admin-content"><AtmosphereEditor /></div>} />
             <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />
             <Route path="/artifacts" element={<div className="admin-content"><ArtifactEditor /></div>} />

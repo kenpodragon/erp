@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import './FinanceDashboard.css'
+import AdminTabs from '../components/AdminTabs'
 import OverviewTab from './finance/OverviewTab'
 import TransactionsTab from './finance/TransactionsTab'
 import ShardEconomyTab from './finance/ShardEconomyTab'
@@ -69,17 +70,11 @@ export default function FinanceDashboard() {
             Refresh
           </button>
         </div>
-        <div className="finance-tabs">
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              className={`finance-tab ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <AdminTabs
+          tabs={TABS.map(t => ({ key: t, label: t }))}
+          activeTab={activeTab}
+          onTabChange={(key) => setActiveTab(key as TabName)}
+        />
       </header>
 
       <div className="finance-tab-content">

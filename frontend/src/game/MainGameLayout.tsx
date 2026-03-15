@@ -25,6 +25,7 @@ interface Player {
   custom_avatar_url: string | null;
   avatar_preset_key: string | null;
   created_at: string;
+  is_game_admin?: boolean;
   settings?: {
     audio_enabled: boolean;
     music_volume: number;

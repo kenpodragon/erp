@@ -250,28 +250,33 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] Location Editor (sensory metadata, aliases, atmosphere associations)
     - [x] Semantic Tag Manager (AI-enriched metadata, analytics, bulk rename)
     - [x] World Builder top-level page (Narrative Editor + Content Editor + Classification under one roof)
-- [ ] **5.4 Banner & Scaling Editor (Visual & Difficulty Tuning):** [5.4_BANNER_SCALING_EDITOR.md](5.4_BANNER_SCALING_EDITOR.md) | [Design](5.4_BANNER_SCALING_EDITOR_DESIGN.md) | [Schema](5.4_BANNER_SCALING_EDITOR_SCHEMA.md)
-    - [ ] Visual Weight Editor (stat_weights JSONB on visual_behaviors per behavior)
-    - [ ] Wave Presets (named JSONB configs with book/chapter assignment inheritance chain)
-    - [ ] Difficulty Curves (multi-dimension per-chapter multipliers, book FK assignment)
-    - [ ] Chapter Scaling Preview (comparison mode — two configs side-by-side, client-side computation)
-    - [ ] Difficulty Presets (bundle game_configs snapshot + curve FK + wave preset FK for A/B testing)
-    - [ ] WorldBuilder fourth tab: "Scaling & Difficulty" with 5 sub-tabs
-- [ ] **5.5 Content Management & Live Tuning:** [5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md](5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md) | [Design](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_DESIGN.md) | [Schema](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_SCHEMA.md)
-    - [ ] GameConfigs page reorganization (category tabs, type-inferred inputs, enhanced search)
-    - [ ] Drop Rate Manager (specialized tab — artifact/item drop sliders, rarity distribution bars, preview)
-    - [ ] Skill Balance Viewer (specialized tab — read-only cross-reference with computed costs/cooldowns)
-    - [ ] Economy Tuning Panel (specialized tab — essence XP step-function visualization, salvage rates, subscription boosts)
-    - [ ] *Note: HP/Gold Scaler merged into 5.4 Scaling Preview. Narrative Timing stays in generic GameConfigs (single key).*
+- [x] **5.4 Banner & Scaling Editor (Visual & Difficulty Tuning):** [5.4_BANNER_SCALING_EDITOR.md](5.4_BANNER_SCALING_EDITOR.md) | [Design](5.4_BANNER_SCALING_EDITOR_DESIGN.md) | [Schema](5.4_BANNER_SCALING_EDITOR_SCHEMA.md)
+    - [x] Visual Weight Editor (stat_weights JSONB on visual_behaviors per behavior)
+    - [x] Wave Presets (named JSONB configs with book/chapter assignment inheritance chain)
+    - [x] Difficulty Curves (multi-dimension per-chapter multipliers, book FK assignment)
+    - [x] Chapter Scaling Preview (comparison mode — two configs side-by-side, client-side computation)
+    - [x] Difficulty Presets (bundle game_configs snapshot + curve FK + wave preset FK for A/B testing)
+    - [x] WorldBuilder fourth tab: "Scaling & Difficulty" with 5 sub-tabs
+- [x] **5.5 Content Management & Live Tuning:** [5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md](5.5_CONTENT_MANAGEMENT_LIVE_TUNING.md) | [Design](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_DESIGN.md) | [Schema](5.5_CONTENT_MANAGEMENT_LIVE_TUNING_SCHEMA.md)
+    - [x] GameConfigs page reorganization (category tabs, type-inferred inputs, enhanced search)
+    - [x] Drop Rate Manager (specialized tab — artifact/item drop sliders, rarity distribution bars, preview)
+    - [x] Skill Balance Viewer (specialized tab — read-only cross-reference with computed costs/cooldowns)
+    - [x] Economy Tuning Panel (specialized tab — essence XP step-function visualization, salvage rates, subscription boosts)
+    - [x] *Note: HP/Gold Scaler merged into 5.4 Scaling Preview. Narrative Timing stays in generic GameConfigs (single key).*
 - [x] **Finance Dashboard:** View Stripe logs, transaction history, and metrics. Issue refunds. Cancel subs for users. *(Implemented in 3.6)*
-- [ ] **5.6 Dev Content Audit Dashboard:** [5.6_DEV_CONTENT_AUDIT.md](5.6_DEV_CONTENT_AUDIT.md) | [Design](5.6_DEV_CONTENT_AUDIT_DESIGN.md) | [Schema](5.6_DEV_CONTENT_AUDIT_SCHEMA.md)
-    - [ ] Audit table viewer (paginated, filterable by dynamic audit_type + status + entity_type + date range)
-    - [ ] Status management (open → acknowledged → in_progress → resolved → wont_fix) with bulk updates
-    - [ ] Deep-link fix actions (routes to relevant editor with flagged entity pre-selected)
-    - [ ] Summary cards (counts by status + per-type breakdown)
-    - [ ] Backend fallback instrumentation (atmosphere + lore text paths; sprite/SFX deferred to C_ scanner)
-    - [ ] *Note: Severity flagging skipped (audit_type sufficient). Proactive scanning deferred to C_ generators.*
+- [x] **5.6 Dev Content Audit Dashboard:** [5.6_DEV_CONTENT_AUDIT.md](5.6_DEV_CONTENT_AUDIT.md) | [Design](5.6_DEV_CONTENT_AUDIT_DESIGN.md) | [Schema](5.6_DEV_CONTENT_AUDIT_SCHEMA.md)
+    - [x] Audit table viewer (paginated, filterable by dynamic audit_type + status + entity_type + date range)
+    - [x] Status management (open → acknowledged → in_progress → resolved → wont_fix) with bulk updates
+    - [x] Deep-link fix actions (routes to relevant editor with flagged entity pre-selected)
+    - [x] Summary cards (counts by status + per-type breakdown)
+    - [x] Backend fallback instrumentation (atmosphere + lore text paths; sprite/SFX deferred to C_ scanner)
+    - [x] *Note: Severity flagging skipped (audit_type sufficient). Proactive scanning deferred to C_ generators.*
 - [x] **5.7 Asset Registry & Sprite Management:** *(Implemented — see 5.0)*
+- [x] **5.8 UI Polish & Debug Cleanup:**
+    - [x] Debug controls (SUPER CLICK, RESET SESSION) gated behind `is_game_admin`; orphaned DatabaseStatus removed
+    - [x] Admin navbar reorganized from 15 flat links to 6 grouped dropdown categories
+    - [x] Global heading hierarchy, standardized page containers, shared `AdminTabs` component
+    - [x] Orphaned `/content` route redirected; SFX Configs exposed in navigation
 - [x] **5.3 Entity Type & Classification Management:** [5.3_ENTITY_CLASSIFICATION.md](5.3_ENTITY_CLASSIFICATION.md) | [Design](5.3_ENTITY_CLASSIFICATION_DESIGN.md) | [Schema](5.3_ENTITY_CLASSIFICATION_SCHEMA.md)
     - [x] Entity type normalization (VARCHAR → lookup table FK, 9 types, admin CRUD, 3,936 entities migrated)
     - [x] Entity family normalization (VARCHAR → lookup table FK, metadata, stat templates)
@@ -280,8 +285,7 @@ The primary goal of ERP is to provide an immersive environment where players **r
     - [x] Stat block templates (family base + attack type multipliers, preview/apply workflow)
     - [x] Bulk classification assignment (6 actions) + classification audit view (6 summary cards, CSV export)
     - [x] WorldBuilder integration (third tab: Classification with 6 sub-tabs)
-- [ ] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
-- [ ] Work on the outstanding C requirements (generators) and flesh out with any other generators that might be needed from across the application (sanity check for C generators to be built next)
+- [x] Update the lore descriptions. Hide the debug button bits (ADMIN can see them). 
 
 ## 6. Technical & Infrastructure
 - [x] **Backend (Python/FastAPI):** High-performance, async API.
@@ -346,6 +350,10 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.
 
 ## C. Story Mode Asset Generators
+- [ ] Work on the outstanding C requirements (generators) and flesh out with any other generators that might be needed from across the application (sanity check for C generators to be built next).
+- [ ] Identify any and all missing assets, stat blocks, and other components in the DB that need to be updated (including sprites, backgrounds, music, etc...).
+- [ ] Ensure there is a generator below that will enable those components to be created. 
+- [ ] Ensure there is documentation and useage guides for all generators (including A, B and the C below).
 **Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
 - [x] **8 Bit Music Generator:** Completed in REC 2.5 (`tools/generate_8bit_music.py`)
 - [x] **Sound Effect Generator:** Completed in REC 2.5 (`tools/generate_8bit_sfx.py`)
@@ -354,3 +362,16 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
 - [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...
 - [ ] Visual achievement badge icons on leaderboard rank card. *(Deferred — requires achievement icon assets)* From 2.7
+
+## D. System usage instructions
+- [ ] Review the set up guides and instructions.
+- [ ] Server setup and installation locally vs in the cloud. (necessary API keys for the server and the generators, where those bits go.)
+- [ ] Update the .env files (remove anything that's not neede any more)
+- [ ] Content generation and import (loading your boook)
+- [ ] Generating all the other pieces (assets)
+- [ ] End user guide (how to use all the game systems, all the interfaces, FAQ for end users how to play)
+- [ ] Admin guide (how to setup config and go through all the screens)
+- [ ] Update the announcement.md bits.
+- [ ] Updatea README.md (about the entire system)
+- [ ] Update the user help and tutorials with all the new components.
+- [ ] Update the documentation (since this is now done), to be something deliverable as an end product (move all the stuff to a development archived folder as needed)

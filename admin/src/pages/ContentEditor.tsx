@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 import './ContentEditor.css'
+import AdminTabs from '../components/AdminTabs'
 
 type EntityType = 'stats' | 'classes' | 'skills' | 'benefits' | 'items' | 'gear_slots'
 
@@ -530,31 +531,20 @@ export default function ContentEditor() {
   return (
     <div className="content-editor">
       {/* Top-level tabs — always visible */}
-      <div className="ce-tabs">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            className={`ce-tab ${activeTab === t.key ? 'ce-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <AdminTabs
+        tabs={TABS.map(t => ({ key: t.key, label: t.label }))}
+        activeTab={activeTab}
+        onTabChange={(key) => setActiveTab(key as EntityType)}
+      />
 
       {/* Sub-tabs for item components */}
       {activeTab === 'items' && (
-        <div className="ce-sub-tabs">
-          {COMPONENT_TYPES.map(ct => (
-            <button
-              key={ct}
-              className={`ce-sub-tab ${activeComp === ct ? 'ce-sub-tab--active' : ''}`}
-              onClick={() => { setActiveComp(ct); setSelected(null); setCreating(false) }}
-            >
-              {ct.replace('_', ' ')}
-            </button>
-          ))}
-        </div>
+        <AdminTabs
+          tabs={COMPONENT_TYPES.map(ct => ({ key: ct, label: ct.replace('_', ' ') }))}
+          activeTab={activeComp}
+          onTabChange={(ct) => { setActiveComp(ct); setSelected(null); setCreating(false) }}
+          variant="secondary"
+        />
       )}
 
       <div className="ce-toolbar">

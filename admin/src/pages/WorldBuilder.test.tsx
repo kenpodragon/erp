@@ -41,7 +41,7 @@ describe('WorldBuilder', () => {
 
     // The Narrative Editor tab should have the active class
     const narrativeTab = screen.getByText('Narrative Editor')
-    expect(narrativeTab.className).toContain('wb-top-tab--active')
+    expect(narrativeTab.className).toContain('admin-tab--active')
   })
 
   it('can switch between Narrative Editor and Content Editor tabs', async () => {
@@ -63,7 +63,7 @@ describe('WorldBuilder', () => {
 
     // The Content Editor tab should be active
     const contentTab = screen.getByText('Content Editor')
-    expect(contentTab.className).toContain('wb-top-tab--active')
+    expect(contentTab.className).toContain('admin-tab--active')
 
     // Switch back to Narrative Editor
     fireEvent.click(screen.getByText('Narrative Editor'))

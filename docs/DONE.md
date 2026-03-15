@@ -3,9 +3,16 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (5.6 Dev Content Audit Dashboard complete)*
+*Updated: 2026-03-15 (5.8 UI Polish & Debug Cleanup complete)*
 
 ## REC_5: Administrative Systems
+
+ - [x] **5.8 — UI Polish & Debug Cleanup (COMPLETE)**
+   - [x] 5.8.1 — Debug Control Gating: StoryMode debug buttons (SUPER CLICK toggle, RESET SESSION) gated behind `player?.is_game_admin` check in both normal and boss combat modes. Added `is_game_admin` to Player interfaces in `MainGameLayout.tsx` and `StoryMode.tsx`. Deleted orphaned `DatabaseStatus.tsx` (never routed, exposed raw DB table names).
+   - [x] 5.8.2 — Admin Navigation Reorganization: Replaced 15 flat navbar links with 6 grouped items using hover-based `NavDropdown` component: Dashboard (direct), Players (Player List, Support Tickets, Chat Manager), Content (World Builder, Atmospheres, Sound Effects, Asset Registry), Game (Game Configs, Artifacts, Achievements), Finance (direct), System (Server Config, Audit Log, Dev Audit, Access Control). Dropdown CSS with smooth hover transitions, active group highlighting, 150ms close delay.
+   - [x] 5.8.3 — Styling Standardization: Global admin heading hierarchy (h1 1.6rem white, h2 1.2rem info-blue, h3 1rem #ccc, h4 0.85rem muted uppercase) in `App.css`. Page container `max-width` standardized to 1200px (1400px for table-heavy pages via `:has()` selector). Added CSS variables to `index.css`: 5 rarity colors (`--color-rarity-*`), 4 shared button colors (`--color-btn-*`), 2 panel background colors (`--color-panel-*`).
+   - [x] 5.8.4 — Shared Tab Component: Created `AdminTabs.tsx` + `AdminTabs.css` — reusable tab bar with `primary`/`secondary` variants. Migrated 6 pages: FinanceDashboard (8 tabs), WorldBuilder (4 tabs), ContentEditor (6 primary + item sub-tabs), NarrativeEditor, ClassificationEditor, ScalingEditor (all secondary variant). Eliminated 5 independent tab implementations (`finance-tab`, `wb-top-tab`, `ce-tab`, `cls-tab`, `ne-tab`, `scaling-tab`).
+   - [x] 5.8.5 — Duplication Cleanup: Redirected orphaned `/content` route to `/world-builder`. Exposed previously hidden SFX Configs page in Content dropdown. Updated test assertions (WorldBuilder.test.tsx, FinanceDashboard.test.tsx) for new `admin-tab` class names. All 352 admin tests + 364 frontend tests passing (7 pre-existing PixiJS/scrollTo failures unchanged).
 
  - [x] **5.6 — Dev Content Audit Dashboard (COMPLETE)** *(Ref: `docs/recs/5.6_DEV_CONTENT_AUDIT.md` | [Design](docs/recs/5.6_DEV_CONTENT_AUDIT_DESIGN.md) | [Schema](docs/recs/5.6_DEV_CONTENT_AUDIT_SCHEMA.md))*
    - [x] 5.6.0 — Requirements, design, and schema documentation (3 docs created, migration 060 planned)

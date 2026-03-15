@@ -32,6 +32,7 @@ interface PlayerProfile {
   custom_avatar_url: string | null;
   terms_accepted_at: string | null;
   created_at: string;
+  is_game_admin?: boolean;
   settings?: {
     audio_enabled: boolean;
     music_volume: number;
@@ -174,7 +175,7 @@ const ProfilePage = ({
   apiMessage, health, authEnabled, user, backendUser, character, verifyUserWithBackend, setCharacter, handleLogout, backendError
 }: ProfilePageProps) => (
   <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem 2rem' }}>
-    <StatusBar apiMessage={apiMessage} health={health} />
+    {backendUser?.is_game_admin && <StatusBar apiMessage={apiMessage} health={health} />}
     {!authEnabled ? (
       <p style={{ color: 'orange', textAlign: 'center' }}>Firebase configuration missing. Check your .env file.</p>
     ) : !user ? (

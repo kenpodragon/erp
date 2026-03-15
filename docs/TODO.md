@@ -2,10 +2,7 @@
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development. When tackling tasks, be sure to go through the requirements definition process first. Ask probing questions, fill out details, ensure everything from teh main requirements document is covered. Once several loops have clarified, move onto design (and repeat ask questions, create, iterate). Finally move onto the schema. If these are small enough they can be in the same file. Once all are done do at least 2 passes to ensure everything is in sync and add any final clarifying quesitons. Then start the planning, and update TODO with the expanded development tasks per sub-requirement.
 
 - [ ] **5.0 — Administrative Systems** *(Ref: `docs/recs/5.0_ADMIN_SYSTEMS.md`)*
-    - [ ] **5.8 — UI Polish & Debug Cleanup** *(incremental throughout; final pass at end)*
-        - [ ] Hide debug controls behind ADMIN role check
-        - [ ] Lore description updates via Audit Dashboard (5.6) + Content Editor (5.2)
-        - [ ] Admin navigation & consistent styling for all new pages
+    - [ ] **5.9 Initial Remediation and initial end to end testing**
         - [ ] End to end testing and defferred items. Spin up the local host servers and begin functionality testing everything. Start off by creating a DB dump of everything - create or update the db_dump_import python script (so we can revert any changes to the DB). Then go requriement by requirement and ensure things on the front end are working as expected. Ensure there are no server errors and that things are properly being displayed.
 
 - [ ] **Deferred Items (require live Stripe, Docker stack, or depend on future modules)**
@@ -41,4 +38,4 @@
 
 ---
 
-*Updated: 2026-03-15 (5.6 Dev Content Audit Dashboard complete. Moved to DONE.md.)*
+*Updated: 2026-03-15 (5.8 UI Polish & Debug Cleanup complete.)*

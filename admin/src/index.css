@@ -58,6 +58,21 @@
   --color-stat-agi: #33cc33;
   --color-stat-int: #3366ff;
 
+  /* ── Rarity Colors ── */
+  --color-rarity-common: #aaaaaa;
+  --color-rarity-uncommon: #2ecc71;
+  --color-rarity-rare: #3498db;
+  --color-rarity-epic: #9b59b6;
+  --color-rarity-legendary: #f1c40f;
+
+  /* ── Shared UI Colors ── */
+  --color-btn-primary: #2563eb;
+  --color-btn-primary-hover: #3b7bff;
+  --color-btn-danger: #991b1b;
+  --color-btn-danger-hover: #b91c1c;
+  --color-panel-bg: #1a1a2e;
+  --color-panel-bg-alt: #2a2a4e;
+
   /* ── Typography ── */
   --font-display: 'Garamond', 'Times New Roman', serif;
   --font-body: system-ui, Avenir, Helvetica, Arial, sans-serif;

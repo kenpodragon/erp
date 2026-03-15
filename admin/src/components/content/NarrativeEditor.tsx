@@ -1,5 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react'
 import '../content/content-editor.css'
+import AdminTabs from '../AdminTabs'
 
 const BookEditor = lazy(() => import('./BookEditor'))
 const ChapterEditor = lazy(() => import('./ChapterEditor'))
@@ -95,17 +96,7 @@ export default function NarrativeEditor() {
 
   return (
     <div className="ne-container">
-      <div className="ne-tabs">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            className={`ne-tab ${activeTab === tab.key ? 'ne-tab--active' : ''}`}
-            onClick={() => handleTabChange(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <AdminTabs tabs={TABS} activeTab={activeTab} onTabChange={(k) => handleTabChange(k as TabKey)} variant="secondary" />
       {renderTab()}
     </div>
   )

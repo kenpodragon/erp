@@ -3,11 +3,19 @@ import '../components/content/content-editor.css'
 import '../components/classification/classification-editor.css'
 import '../components/scaling/scaling-editor.css'
 import './WorldBuilder.css'
+import AdminTabs from '../components/AdminTabs'
 
 import NarrativeEditor from '../components/content/NarrativeEditor'
 const ContentEditor = lazy(() => import('./ContentEditor'))
 import ClassificationEditor from '../components/classification/ClassificationEditor'
 const ScalingEditor = lazy(() => import('../components/scaling/ScalingEditor'))
+
+const WB_TABS = [
+  { key: 'narrative', label: 'Narrative Editor' },
+  { key: 'content', label: 'Content Editor' },
+  { key: 'classification', label: 'Classification' },
+  { key: 'scaling', label: 'Scaling & Difficulty' },
+]
 
 type TopTab = 'narrative' | 'content' | 'classification' | 'scaling'
 
@@ -16,32 +24,11 @@ export default function WorldBuilder() {
 
   return (
     <div className="wb-page">
-      <div className="wb-top-tabs">
-        <button
-          className={`wb-top-tab ${activeTop === 'narrative' ? 'wb-top-tab--active' : ''}`}
-          onClick={() => setActiveTop('narrative')}
-        >
-          Narrative Editor
-        </button>
-        <button
-          className={`wb-top-tab ${activeTop === 'content' ? 'wb-top-tab--active' : ''}`}
-          onClick={() => setActiveTop('content')}
-        >
-          Content Editor
-        </button>
-        <button
-          className={`wb-top-tab ${activeTop === 'classification' ? 'wb-top-tab--active' : ''}`}
-          onClick={() => setActiveTop('classification')}
-        >
-          Classification
-        </button>
-        <button
-          className={`wb-top-tab ${activeTop === 'scaling' ? 'wb-top-tab--active' : ''}`}
-          onClick={() => setActiveTop('scaling')}
-        >
-          Scaling &amp; Difficulty
-        </button>
-      </div>
+      <AdminTabs
+        tabs={WB_TABS}
+        activeTab={activeTop}
+        onTabChange={(key) => setActiveTop(key as TopTab)}
+      />
 
       {activeTop === 'narrative' ? (
         <NarrativeEditor />

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './classification-editor.css'
+import AdminTabs from '../AdminTabs'
 import EntityTypeManager from './EntityTypeManager'
 import EntityFamilyManager from './EntityFamilyManager'
 import AttackTypeManager from './AttackTypeManager'
@@ -40,17 +41,7 @@ export default function ClassificationEditor() {
 
   return (
     <div className="editor-panel">
-      <div className="cls-tabs">
-        {SUB_TABS.map(t => (
-          <button
-            key={t.key}
-            className={`cls-tab ${activeTab === t.key ? 'cls-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <AdminTabs tabs={SUB_TABS} activeTab={activeTab} onTabChange={(k) => setActiveTab(k as SubTab)} variant="secondary" />
       {renderContent()}
     </div>
   )
