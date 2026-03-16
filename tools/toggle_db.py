@@ -6,6 +6,9 @@ Usage:
     python tools/toggle_db.py docker      # Use Docker compose PostgreSQL service
     python tools/toggle_db.py sync        # Dump localhost -> rebuild Docker -> switch to Docker
     python tools/toggle_db.py status      # Show which DB is currently active
+
+Also comments/uncomments the postgres service and depends_on block in docker-compose.yml
+so there's no dangling container when using localhost.
 """
 
 import re
@@ -15,10 +18,14 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BACKEND_ENV = PROJECT_ROOT / "backend" / ".env"
+COMPOSE_FILE = PROJECT_ROOT / "docker-compose.yml"
 
+
+# ---------------------------------------------------------------------------
+# backend/.env helpers
+# ---------------------------------------------------------------------------
 
 def read_env():
-    """Read backend/.env as raw text."""
     if not BACKEND_ENV.exists():
         print(f"ERROR: {BACKEND_ENV} not found")
         sys.exit(1)
@@ -26,18 +33,15 @@ def read_env():
 
 
 def write_env(content):
-    """Write backend/.env."""
     BACKEND_ENV.write_text(content, encoding="utf-8")
 
 
 def get_env_value(content, key):
-    """Extract a value from .env content."""
     match = re.search(rf"^{re.escape(key)}=(.+)$", content, re.MULTILINE)
     return match.group(1).strip() if match else None
 
 
 def set_database_url(content, new_url):
-    """Replace DATABASE_URL= line (the active connection) with new_url."""
     return re.sub(
         r"^DATABASE_URL=.+$",
         f"DATABASE_URL={new_url}",
@@ -48,33 +52,133 @@ def set_database_url(content, new_url):
 
 
 def detect_active(content):
-    """Determine which DB is currently active based on DATABASE_URL."""
     active = get_env_value(content, "DATABASE_URL")
     docker = get_env_value(content, "DATABASE_URL_DOCKER")
     localhost = get_env_value(content, "DATABASE_URL_LOCALHOST")
-
     if active == docker:
         return "docker"
     elif active == localhost:
         return "localhost"
-    else:
-        return "unknown"
+    return "unknown"
 
 
 def print_status(content):
-    """Print the current active database."""
     active_url = get_env_value(content, "DATABASE_URL")
     mode = detect_active(content)
+    label = {
+        "docker": "DOCKER (compose service)",
+        "localhost": "LOCALHOST (host machine)",
+    }.get(mode, "UNKNOWN")
+    print(f"Active DB:      {label}")
+    print(f"URL:            {active_url}")
 
-    label = {"docker": "DOCKER (compose service)", "localhost": "LOCALHOST (host machine)"}.get(
-        mode, "UNKNOWN"
-    )
-    print(f"Active DB:  {label}")
-    print(f"URL:        {active_url}")
+    compose_state = "enabled" if is_compose_postgres_enabled() else "disabled"
+    print(f"Compose postgres: {compose_state}")
 
+
+# ---------------------------------------------------------------------------
+# docker-compose.yml helpers
+# ---------------------------------------------------------------------------
+
+def read_compose():
+    if not COMPOSE_FILE.exists():
+        print(f"ERROR: {COMPOSE_FILE} not found")
+        sys.exit(1)
+    return COMPOSE_FILE.read_text(encoding="utf-8")
+
+
+def write_compose(content):
+    COMPOSE_FILE.write_text(content, encoding="utf-8")
+
+
+def is_compose_postgres_enabled():
+    content = read_compose()
+    # If the postgres block is commented out, the line after DOCKER_DB_START will start with #
+    match = re.search(r"# DOCKER_DB_START\n(.*)", content)
+    if match:
+        return not match.group(1).strip().startswith("#")
+    return True
+
+
+def comment_block(content, start_marker, end_marker):
+    """Comment out lines between start_marker and end_marker (exclusive of markers).
+
+    Prepends '# ' right after existing leading whitespace, preserving indent level.
+    e.g. '    ports:' -> '    # ports:'
+    """
+    lines = content.split("\n")
+    result = []
+    inside = False
+    for line in lines:
+        if start_marker in line:
+            result.append(line)
+            inside = True
+            continue
+        if end_marker in line:
+            inside = False
+            result.append(line)
+            continue
+        if inside and line.strip():
+            # Already commented? skip
+            stripped = line.lstrip()
+            if stripped.startswith("#"):
+                result.append(line)
+            else:
+                indent = line[: len(line) - len(stripped)]
+                result.append(f"{indent}# {stripped}")
+        else:
+            result.append(line)
+    return "\n".join(result)
+
+
+def uncomment_block(content, start_marker, end_marker):
+    """Uncomment lines between start_marker and end_marker (exclusive of markers).
+
+    Removes the first '# ' after leading whitespace, restoring original indent.
+    e.g. '    # ports:' -> '    ports:'
+    """
+    lines = content.split("\n")
+    result = []
+    inside = False
+    for line in lines:
+        if start_marker in line:
+            result.append(line)
+            inside = True
+            continue
+        if end_marker in line:
+            inside = False
+            result.append(line)
+            continue
+        if inside and line.strip():
+            # Remove '# ' comment prefix preserving indent
+            uncommented = re.sub(r"^(\s*)# ", r"\1", line, count=1)
+            result.append(uncommented)
+        else:
+            result.append(line)
+    return "\n".join(result)
+
+
+def enable_compose_postgres():
+    """Uncomment postgres service and depends_on in docker-compose.yml."""
+    content = read_compose()
+    content = uncomment_block(content, "# DOCKER_DB_START", "# DOCKER_DB_END")
+    content = uncomment_block(content, "# DOCKER_DB_DEPENDS_START", "# DOCKER_DB_DEPENDS_END")
+    write_compose(content)
+
+
+def disable_compose_postgres():
+    """Comment out postgres service and depends_on in docker-compose.yml."""
+    content = read_compose()
+    content = comment_block(content, "# DOCKER_DB_START", "# DOCKER_DB_END")
+    content = comment_block(content, "# DOCKER_DB_DEPENDS_START", "# DOCKER_DB_DEPENDS_END")
+    write_compose(content)
+
+
+# ---------------------------------------------------------------------------
+# Toggle logic
+# ---------------------------------------------------------------------------
 
 def switch_to(mode):
-    """Switch DATABASE_URL to the specified mode."""
     content = read_env()
     key = f"DATABASE_URL_{mode.upper()}"
     target_url = get_env_value(content, key)
@@ -89,20 +193,26 @@ def switch_to(mode):
         print_status(content)
         return
 
+    # Update .env
     updated = set_database_url(content, target_url)
     write_env(updated)
 
-    print(f"Switched DATABASE_URL to {mode}.")
-    print_status(updated)
-
+    # Update docker-compose.yml
     if mode == "docker":
-        print("\nReminder: Run 'docker-compose up -d' to ensure the Docker DB is running.")
+        enable_compose_postgres()
+        print("Switched DATABASE_URL to docker.")
+        print("Enabled postgres service in docker-compose.yml.")
+        print_status(updated)
+        print("\nRun 'docker-compose up -d' to start all services including postgres.")
     else:
-        print("\nReminder: Ensure your local PostgreSQL is running on port 5432.")
+        disable_compose_postgres()
+        print("Switched DATABASE_URL to localhost.")
+        print("Disabled postgres service in docker-compose.yml (commented out).")
+        print_status(updated)
+        print("\nEnsure your local PostgreSQL is running on port 5432.")
 
 
 def sync():
-    """Dump localhost, rebuild Docker image, switch to Docker."""
     print("=== Step 1/3: Dumping localhost database ===")
     refresh_script = PROJECT_ROOT / "tools" / "refresh_dump.py"
     result = subprocess.run(
@@ -113,11 +223,11 @@ def sync():
         print("ERROR: Dump failed.")
         sys.exit(1)
 
+    # Enable postgres in compose before rebuilding
+    enable_compose_postgres()
+
     print("\n=== Step 2/3: Rebuilding Docker image ===")
-    result = subprocess.run(
-        ["docker-compose", "down", "postgres"],
-        cwd=str(PROJECT_ROOT),
-    )
+    subprocess.run(["docker-compose", "down", "postgres"], cwd=str(PROJECT_ROOT))
     result = subprocess.run(
         ["docker-compose", "build", "--no-cache", "postgres"],
         cwd=str(PROJECT_ROOT),
@@ -135,7 +245,13 @@ def sync():
         sys.exit(1)
 
     print("\n=== Step 3/3: Switching to Docker DB ===")
-    switch_to("docker")
+    # Don't call switch_to to avoid double-enable; just update .env
+    content = read_env()
+    target_url = get_env_value(content, "DATABASE_URL_DOCKER")
+    updated = set_database_url(content, target_url)
+    write_env(updated)
+    print("Switched DATABASE_URL to docker.")
+    print_status(updated)
     print("\nSync complete! Docker DB now mirrors localhost.")
 
 

@@ -1,18 +1,20 @@
 services:
-  postgres:
-    build:
-      context: ./db
-      dockerfile: deploy/Dockerfile
-    ports:
-      - "5433:5432"
-    env_file:
-      - ./db/deploy/.env
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erp_app_user -d erp_production"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+  # DOCKER_DB_START
+  # postgres:
+    # build:
+      # context: ./db
+      # dockerfile: deploy/Dockerfile
+    # ports:
+      # - "5433:5432"
+    # env_file:
+      # - ./db/deploy/.env
+    # healthcheck:
+      # test: ["CMD-SHELL", "pg_isready -U erp_app_user -d erp_production"]
+      # interval: 5s
+      # timeout: 5s
+      # retries: 10
+      # start_period: 10s
+  # DOCKER_DB_END
 
   backend:
     build:
@@ -25,9 +27,11 @@ services:
       - ./backend:/app
     environment:
       - ENVIRONMENT=development
-    depends_on:
-      postgres:
-        condition: service_healthy
+    # DOCKER_DB_DEPENDS_START
+    # depends_on:
+      # postgres:
+        # condition: service_healthy
+    # DOCKER_DB_DEPENDS_END
 
   frontend:
     build:

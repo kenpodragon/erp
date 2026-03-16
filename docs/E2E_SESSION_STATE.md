@@ -5,19 +5,46 @@
 ---
 
 ## Environment Setup
-- **Docker stack:** `docker-compose up --build -d` from project root
-- **Services:** backend (`:8000`), frontend (`:5173`), admin (`:5174`)
-- **Auth bypass:** `ALLOW_AUTH_BYPASS=true` in `backend/.env` + `ops.auth_bypass_enabled=true` in DB
-- **Players:**
-  - **Player A (Primary):** "Awakened" (ID 5), character "Seeker" (Vessel class, Lv. 1), is_game_admin=true
-  - **Player B (Secondary):** TBD — created during Session 4 for marketplace testing
-  - **Admin User:** E2ETestBot (ID 2) — existing admin with character "TestHero"
-- **DB Backups:**
-  - **Pre-testing baseline:** `db/backups/erp_backup_pre_e2e_user_testing.dump` (5.3MB) — taken Session 1
-  - **Restore test:** VERIFIED — drop+restore, counts match (2 players, 3936 entities, 724 scenes, 141 configs)
-  - **Mid-testing checkpoints:** Optional dumps between sessions if state gets complex
-- **Playwright MCP:** Available for interactive browser testing against localhost
-- **Stripe:** Test-mode transactions (use Stripe test card `4242 4242 4242 4242`)
+
+### Docker Stack
+```bash
+# Start all services (backend, frontend, admin, postgres)
+docker-compose up --build -d
+
+# Verify services
+# backend :8000, frontend :5173, admin :5174, postgres :5433 (host) / :5432 (internal)
+```
+
+### Database
+Backend connects to **localhost PostgreSQL** (host machine, port 5432) via `host.docker.internal`. The Docker postgres container on port 5433 exists for future isolated testing but is **not used during active development or E2E testing**.
+
+To switch to the Docker DB later: `python tools/toggle_db.py docker` (see `docs/inst/TOOLS.md`).
+
+### Auth Bypass
+- `ALLOW_AUTH_BYPASS=true` in `backend/.env`
+- `ops.auth_bypass_enabled=true` in DB `server_config` table
+- `ops.auth_bypass_player_id=2` (default spoofed player)
+- Frontend auto-detects bypass via `/api/config/public` and auto-logs in
+- Override per-request with header: `X-Spoof-Player-Id: <id>`
+
+### Test Players
+- **Player A (Primary):** "Awakened" (ID 5), character "Seeker" (Vessel class, Lv. 1), is_game_admin=true
+- **Player B (Secondary):** TBD — created during Session 4 for marketplace testing
+- **Admin User:** E2ETestBot (ID 2) — existing admin with character "TestHero"
+
+### DB Backups
+- **Pre-testing baseline:** `db/backups/erp_backup_pre_e2e_user_testing.dump` (5.3MB) — taken Session 1
+- **Docker dump:** `db/deploy/dump.sql` (15.4MB) — full localhost snapshot, baked into Docker image
+- **Restore test:** VERIFIED — drop+restore, counts match (4 players, 3936 entities, 724 scenes, 141 configs)
+- **Mid-testing checkpoints:** Optional dumps between sessions if state gets complex
+
+### Interactive Browser Testing
+- **Playwright MCP:** Available for interactive browser testing via `mcp__playwright__browser_*` tools
+- **Playwright CLI:** `cd testing && node node_modules/@playwright/test/cli.js test <spec> --project=frontend --reporter=line`
+- **Install browsers:** `cd testing && node node_modules/@playwright/test/cli.js install chromium`
+
+### Stripe
+- Test-mode transactions (use Stripe test card `4242 4242 4242 4242`)
 
 ---
 
@@ -693,6 +720,10 @@ Use this prompt to continue in a new session:
 ```
 Read docs/E2E_SESSION_STATE.md and docs/TODO.md to understand current progress.
 We are doing End-to-End User Testing. Check the session state for which session we're on
-and what's been completed. Docker stack should be running. Auth bypass enabled.
+and what's been completed. Start the Docker stack with `docker-compose up --build -d`.
+Backend uses localhost PostgreSQL (host machine, port 5432) — not the Docker DB.
+Auth bypass is enabled. Use the Playwright MCP tools (browser_navigate, browser_click,
+browser_snapshot, browser_run_code) for interactive browser testing. For automated tests,
+run specs from the testing/ directory. See docs/inst/TOOLS.md for all tool scripts.
 Continue from the current checkpoint.
 ```

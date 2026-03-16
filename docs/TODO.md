@@ -1,13 +1,38 @@
 # ERP Project Kickstart TODO
 **Note:** When a whole section or sub-task is completed, move it to `DONE.md` to keep this file focused on active development.
 
-**E2E Testing Environment:** Docker dev stack runs via `docker-compose up --build -d` from project root. Services: backend (`:8000`), frontend (`:5173`), admin (`:5174`). Auth bypass enabled via `ALLOW_AUTH_BYPASS=true` in `backend/.env` + `ops.auth_bypass_enabled=true` in DB (toggle in Admin → Server Config). Test players: Awakened/Seeker (ID 5, Vessel), E2ETestBot (ID 2, admin). DB backups via `pg_dump`/`pg_restore` with localhost. Session state tracked in `docs/E2E_SESSION_STATE.md`.
 
 ---
 
 ## End-to-End User Testing
 **Full session plan and tracking:** `docs/E2E_SESSION_STATE.md`
+**GOAL** Test all user functionality, ensure everything in the RECS has been completed and works on the front end, test out end user actual interaction (both front end and admin). Test scenarios, and capture screenshots and flows to build out the user manuals.
 **Output:** User manuals in `docs/user_manuals/end_user/` and `docs/user_manuals/admin/`
+
+### How to Run E2E Testing
+
+**1. Start the stack:**
+```bash
+docker-compose up --build -d          # Starts: postgres, backend, frontend, admin
+```
+Backend connects to **localhost PostgreSQL** (host machine, port 5432) — not the Docker postgres container. The Docker postgres service exists for future isolated testing but is not used during development. See `docs/inst/TOOLS.md` for `toggle_db.py` and `refresh_dump.py` if you need to switch to the Docker DB later.
+
+**2. Auth bypass:** Enabled via `ALLOW_AUTH_BYPASS=true` in `backend/.env` + `ops.auth_bypass_enabled=true` in DB `server_config`. Frontend auto-detects and auto-logs in as player ID from `ops.auth_bypass_player_id`. Override per-request: `X-Spoof-Player-Id: <id>`.
+
+**4. Interactive browser testing (Playwright MCP):**
+Use `mcp__playwright__browser_navigate`, `browser_click`, `browser_snapshot`, `browser_run_code` etc. to interactively walk through the app, inspect UI state, click elements, and verify behavior without writing test files.
+
+**5. Playwright test specs (automated):**
+```bash
+cd testing
+node node_modules/@playwright/test/cli.js install chromium   # First time only
+node node_modules/@playwright/test/cli.js test story-mode.spec.ts --project=frontend --reporter=line
+```
+Existing specs: `onboarding.spec.ts`, `story-mode.spec.ts`, `home-base.spec.ts`, `smoke.spec.ts`, `character_progression.spec.ts`, `admin-content.spec.ts`. Helpers in `testing/helpers/auth.ts` (login, bypass onboarding) and `testing/helpers/navigation.ts` (tab nav, content load waits).
+
+**6. Test players:** Awakened/Seeker (ID 5, Vessel), E2ETestBot (ID 2, admin). See `docs/E2E_SESSION_STATE.md` for full environment details.
+
+**7. Tools reference:** See `docs/inst/TOOLS.md` for `toggle_db.py`, `refresh_dump.py`, and all other tool scripts.
 
 ### Bugs Found & Fixed During E2E Testing
 - [x] **Bug #1** — Vessel class `lore_blurb` em dash encoding (`â€"` → `—`) — DB fix
@@ -158,4 +183,4 @@
 
 ---
 
-*Updated: 2026-03-16 (Sessions 1-2 in progress. 4 bugs found and fixed. See E2E_SESSION_STATE.md for full details.)*
+*Updated: 2026-03-16 (Docker PostgreSQL migration complete. E2E Sessions 1-2 in progress. 4 bugs found and fixed + 2 discovery endpoint fixes. See E2E_SESSION_STATE.md for full details. See docs/inst/TOOLS.md for tool scripts.)*
