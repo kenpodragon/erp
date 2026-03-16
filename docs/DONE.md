@@ -3,7 +3,13 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (Test suite remediation complete — 818 passed, 0 failed)*
+*Updated: 2026-03-16*
+
+## Docker PostgreSQL Migration (DB Deploy)
+
+- [x] **PostgreSQL Docker Migration** — Dockerized PostgreSQL 17 container integrated into `docker-compose.yml` (port 5433). Init scripts create `erp_app_user` + `erp_production` DB from SQL scripts (001/002/003) or from a `pg_dump` snapshot. `tools/refresh_dump.py` dumps localhost to `db/deploy/dump.sql`; `tools/toggle_db.py` toggles `backend/.env` between localhost and Docker. Fixed `backend/routes/discovery.py`: `PlayerProgress.current_chapter_id` → `chapter_number`, Etheric Registry + Discovery Library response shapes aligned to frontend contracts. See `docs/inst/TOOLS.md` for usage.
+
+---
 
 ## Deferred Items & Hardening (Phases A–D)
 
