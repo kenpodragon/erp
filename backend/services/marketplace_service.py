@@ -535,6 +535,15 @@ def buy_listing(
     session.add(trade)
     session.flush()  # get trade.id
 
+    # 11b. Alt account detection (non-blocking — logs warning for admin review)
+    try:
+        from services.alt_detection_service import check_shared_stripe_customer, log_alt_warning
+        shared_cid = check_shared_stripe_customer(buyer_id, listing.seller_id, session)
+        if shared_cid:
+            log_alt_warning(buyer_id, listing.seller_id, shared_cid, trade.id, session)
+    except Exception:
+        pass  # never block a trade on detection failure
+
     # 12. Recalculate seller stats (item removed)
     seller_character = _get_player_character(listing.seller_id, session)
     if seller_character:

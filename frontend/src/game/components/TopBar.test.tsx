@@ -63,4 +63,10 @@ describe('TopBar Component', () => {
     expect(canvas).toBeDefined();
     expect(canvas?.tagName.toLowerCase()).toBe('canvas');
   });
+
+  it('does not render booster section when no boosters active', () => {
+    renderTopBar({ player: mockPlayer, character: mockCharacter });
+    const boosters = document.querySelector('.topbar-boosters');
+    expect(boosters).toBeNull();
+  });
 });

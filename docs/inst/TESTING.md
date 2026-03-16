@@ -74,8 +74,117 @@ You can run specific tests using the dedicated testing compose file:
 
 ---
 
+## 🔓 E2E Auth Bypass System
+
+For E2E testing without Firebase SSO, the project includes a double-gated auth bypass system.
+
+### Setup
+1. **Enable in backend `.env`:**
+   ```
+   ALLOW_AUTH_BYPASS=true
+   ```
+2. **Enable in database** (via Admin → Server Config, or SQL):
+   ```sql
+   UPDATE server_config SET value = 'true' WHERE key = 'ops.auth_bypass_enabled';
+   UPDATE server_config SET value = '2' WHERE key = 'ops.auth_bypass_player_id';
+   ```
+3. **Create a test player** via Admin → Server Config → Auth Bypass panel → "Create Test Player".
+
+### How It Works
+- Backend `get_decoded_token()` in `auth.py` checks both gates before accepting `X-Spoof-Player-Id` header.
+- Frontend/Admin apps auto-detect bypass via `GET /api/config/public` and attach the spoof header on all API calls.
+- Both gates must be active — production `.env` never has `ALLOW_AUTH_BYPASS=true`.
+- All bypass requests are logged to `activity_events`.
+
+### Shared Test Helpers
+Located in `testing/helpers/`:
+| File | Exports |
+|------|---------|
+| `auth.ts` | `loginAsTestUser(page)`, `loginAsAdmin(page)`, `bypassOnboarding(page)` |
+| `navigation.ts` | `navigateToTab(page, tab)`, `navigateToAdminPage(page, path)`, `waitForContentLoad(page)`, `captureConsoleErrors(page)` |
+| `api-mocks.ts` | `mockStripeCheckout(page)`, `mockSubscriptionCreate(page)`, `mockActiveSubscription(page)`, `mockNoSubscription(page)`, `mockDonationCreate(page)`, `mockAllStripe(page)` |
+
+### DB Backup/Restore
+Before destructive E2E testing, create a backup:
+```bash
+python tools/db_dump_restore.py dump     # Creates timestamped dump in db/backups/
+python tools/db_dump_restore.py list     # List available backups
+python tools/db_dump_restore.py restore <file>  # Restore from backup
+```
+
+---
+
+## 💳 Stripe Testing
+
+### Mocked Tests (No Stripe Keys Required)
+The Playwright specs in `testing/` use `page.route()` to intercept Stripe API calls. This allows testing the full checkout UI flow without real Stripe keys. Use the helpers in `testing/helpers/api-mocks.ts`:
+```typescript
+import { mockStripeCheckout } from './helpers/api-mocks';
+
+test('buy shards', async ({ page }) => {
+  await mockStripeCheckout(page);  // Intercepts /api/payments/create-checkout
+  // ... click buy button, verify redirect
+});
+```
+
+### Live Stripe Tests (Test Keys Required)
+For integration tests that verify real Stripe API calls, webhook delivery, and payment processing:
+
+1. **Prerequisites:**
+   - Stripe test keys in `backend/.env` (see `docs/inst/INIT_INFRA.md` §5.1)
+   - Stripe CLI running: `stripe listen --forward-to localhost:8000/api/webhooks/stripe`
+   - Docker stack running: `docker-compose up --build -d`
+
+2. **Trigger test events:**
+   ```bash
+   stripe trigger checkout.session.completed
+   stripe trigger customer.subscription.created
+   stripe trigger charge.dispute.created
+   ```
+
+3. **Test cards:** Use `4242 4242 4242 4242` for success, `4000 0000 0000 9995` for insufficient funds. See `INIT_INFRA.md` §5.1 for the full list.
+
+---
+
+## 📋 Playwright Config
+
+The Playwright config at `testing/playwright.config.ts` defines two projects:
+
+| Project | Base URL | Test Pattern | Description |
+|---------|----------|--------------|-------------|
+| `frontend` | `http://localhost:5173` | Everything except `admin-*.spec.ts` | Player-facing app tests |
+| `admin` | `http://localhost:5174` | `admin-*.spec.ts` | Admin dashboard tests |
+
+Override URLs with env vars: `PLAYWRIGHT_FRONTEND_URL`, `PLAYWRIGHT_ADMIN_URL`.
+
+### Current Spec Files (119 tests across 19 files)
+| Spec | Tests | Coverage |
+|------|-------|----------|
+| `smoke.spec.ts` | 10 | Backend health, frontend statics, admin bypass |
+| `onboarding.spec.ts` | 7 | Splash, terms, about, auth bypass, support |
+| `story-mode.spec.ts` | 8 | Map, combat, narrative, post-battle |
+| `idle_training.spec.ts` | 6 | Skills, training, active mode |
+| `character_progression.spec.ts` | 5 | Stats, prerequisites, items, equipment |
+| `audio.spec.ts` | 8 | Settings, volume, mute, AudioContext |
+| `economy_discovery.spec.ts` | 5 | Chat, codex, reduce-motion |
+| `home-base.spec.ts` | 6 | Akashic Log, collections, leaderboard |
+| `shop-shards.spec.ts` | 5 | Packages, checkout mock |
+| `subscription.spec.ts` | 6 | Promo, cancel/reactivate |
+| `emporium.spec.ts` | 5 | Cosmetics, item cards |
+| `donations.spec.ts` | 5 | Tiers, checkout mock |
+| `marketplace.spec.ts` | 6 | Browse, listings, salvage |
+| `admin-players.spec.ts` | 6 | Player list, detail, edit/ban |
+| `admin-content.spec.ts` | 6 | World builder, atmosphere, SFX, artifacts |
+| `admin-scaling.spec.ts` | 6 | Game configs, tabs |
+| `admin-audit.spec.ts` | 6 | Audit log, dev audit |
+| `admin-assets.spec.ts` | 7 | Asset registry, categories, pagination |
+| `admin-finance.spec.ts` | 5 | Finance dashboard, player widget |
+
+---
+
 ## 📈 Coverage Requirements
 -   **API Endpoints:** 100% of public and authenticated endpoints must have at least one integration test covering the "Happy Path".
 -   **Bug Fixes:** Every bug fix must be accompanied by a regression test that reproduces the failure before the fix is applied.
 -   **UI Components:** Major layout components and all forms must have a basic rendering smoke test.
 -   **Critical Paths:** Login and Onboarding flows must be covered by E2E tests.
+-   **Payment Flows:** All Stripe-integrated flows must have both mocked E2E tests (no keys needed) and live integration tests (test keys required).

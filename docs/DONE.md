@@ -3,7 +3,31 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (5.9 Initial Remediation & E2E Testing Revamp complete)*
+*Updated: 2026-03-15 (Deferred items Phases A-D complete)*
+
+## Deferred Items & Hardening (Phases A–D)
+
+ - [x] **Phase A: Bug Fixes**
+   - [x] Bug #1 — Bottom battle bar: respawn x -100→50, enemy zIndex 4→7 (`BottomAnimatedBanner.tsx`)
+   - [x] Bug #2 — Boss farm mode exit: added `!isBossSession` guards to `handleExit()` and auto-farmMode (`StoryMode.tsx`)
+
+ - [x] **Phase B: Backend Hardening**
+   - [x] B.1 — Rate Limiting: new `backend/services/rate_limiter.py` (sliding-window, Depends-based). Applied to 5 marketplace endpoints (browse 30/min, buy/list/salvage/bulk-salvage 10/min). 7 unit tests.
+   - [x] B.2 — Alt Account Detection: new `backend/services/alt_detection_service.py`. Checks shared `stripe_customer_id` on marketplace buy. Logs `marketplace_alt_warning` to `activity_events`. Admin endpoint `GET /api/admin/finance/alt-warnings`. 7 unit tests.
+
+ - [x] **Phase C: Frontend Test Gaps**
+   - [x] C.1 — Booster overlap: new `BoosterPanel.test.tsx` (7 Vitest tests)
+   - [x] C.2 — Active booster top bar: added test to `TopBar.test.tsx` (5 total)
+   - [x] C.3 — World Builder integration: verified in 5.9 + CascadingPicker tests passing
+
+ - [x] **Phase D: Live Stripe E2E (25 integration tests)**
+   - [x] D.1 Shard Purchasing (5 tests): packages, checkout (real Stripe), payment status, transactions
+   - [x] D.2 Subscription (3 tests): status, checkout creation, invalid plan rejection
+   - [x] D.3 Dispute (2 tests): dispute flag in packages, non-disputed checkout succeeds
+   - [x] D.4 Donation (4 tests): create session (real Stripe), too-low rejection, status, leaderboard
+   - [x] D.5 Emporium (5 tests): catalog, collection, boosters, insufficient shards, missing body
+   - [x] D.6 Marketplace (6 tests): browse, filtered, my-listings, trade history, rate limit 429
+   - Bugs fixed: `PaymentOrder.created_at` default (was None), marketplace browse arg mismatch
 
 ## REC_5: Administrative Systems
 

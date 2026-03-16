@@ -9,6 +9,7 @@ from sqlmodel import Session
 
 from db import get_session
 from auth import get_current_player
+from services.rate_limiter import rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ async def browse_listings(
     sort: str = Query("price_asc"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    _rl=Depends(rate_limit("marketplace_browse", 30)),
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -99,7 +101,7 @@ async def browse_listings(
     }
 
     try:
-        return marketplace_service.get_browse_listings(player.id, filters, session)
+        return marketplace_service.get_browse_listings(filters, page, page_size, session)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -111,6 +113,7 @@ async def browse_listings(
 @router.post("/list")
 async def create_listing(
     body: CreateListingRequest,
+    _rl=Depends(rate_limit("marketplace_list", 10)),
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -139,6 +142,7 @@ async def create_listing(
 @router.post("/buy")
 async def buy_listing(
     body: BuyRequest,
+    _rl=Depends(rate_limit("marketplace_buy", 10)),
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -302,6 +306,7 @@ async def mark_notifications_read(
 @router.post("/salvage")
 async def salvage_item(
     body: SalvageRequest,
+    _rl=Depends(rate_limit("marketplace_salvage", 10)),
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):
@@ -327,6 +332,7 @@ async def salvage_item(
 @router.post("/salvage-bulk")
 async def salvage_bulk(
     body: BulkSalvageRequest,
+    _rl=Depends(rate_limit("marketplace_salvage", 10)),
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
 ):

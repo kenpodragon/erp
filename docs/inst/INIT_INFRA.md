@@ -82,22 +82,96 @@ To automate deployment to Cloud Run.
    - `ADMIN_ENV`: (contents of your admin/.env)
 
 ## 5. Stripe Payments
-Stripe handles microtransactions, subscriptions, and donations.
+Stripe handles microtransactions (shard purchasing), subscriptions (Elysium Ascendant), donations, and marketplace shard transfers.
 
 - **Account Signup:** [Stripe Dashboard](https://dashboard.stripe.com/register)
-- **Setup Steps:**
- 1. **Activate Account:** Complete the business activation to process live payments (or use Test Mode for development).
-  2. **API Keys:**
-     - Go to Developers > API keys.
-     - Copy the **Publishable key** (for Frontend).
-     - Copy the **Secret key** (for Backend).
-  3. **Webhook Setup:**
-     - Go to Developers > Webhooks.
-     - Add an endpoint for your backend (e.g., `https://api.elysium-rising.com/v1/payments/webhook`).
-     - Select events like `checkout.session.completed` and `customer.subscription.deleted`.
-     - Copy the **Webhook Secret** for Backend verification.
-  4. **Products & Prices:**
-     - Create Products in the Stripe Dashboard for subscriptions and microtransactions to get their `Price IDs`.
+
+### 5.1 Test Mode Setup (Local Development)
+Use Stripe's Test Mode for all local development. No real charges are made.
+
+1. **Create/Access Account:**
+   - Go to [dashboard.stripe.com](https://dashboard.stripe.com) and sign in (or create a free account).
+   - Toggle **Test mode** using the switch in the top-right corner of the dashboard.
+
+2. **Get Test API Keys:**
+   - Go to **Developers → API keys**.
+   - Copy the **Publishable key** (`pk_test_...`) — used by Frontend for Stripe.js.
+   - Copy the **Secret key** (`sk_test_...`) — used by Backend for API calls.
+   - Add to `backend/.env`:
+     ```
+     STRIPE_SECRET_KEY=sk_test_YOUR_KEY_HERE
+     ```
+
+3. **Local Webhook Forwarding (Stripe CLI):**
+   - Install the Stripe CLI:
+     - **Windows (winget):** `winget install Stripe.StripeCLI`
+     - **Windows (npm):** `npm install -g stripe`
+     - **Windows (manual):** Download zip from [github.com/stripe/stripe-cli/releases](https://github.com/stripe/stripe-cli/releases) → extract `stripe.exe` → add to PATH
+     - **Mac:** `brew install stripe/stripe-cli/stripe`
+     - **Linux:** See [docs](https://stripe.com/docs/stripe-cli#install)
+   - Authenticate:
+     ```bash
+     stripe login
+     ```
+     This opens a browser window to authorize the CLI with your Stripe account.
+   - Start webhook forwarding:
+     ```bash
+     stripe listen --forward-to localhost:8000/api/webhooks/stripe
+     ```
+     The CLI will output a webhook signing secret: `whsec_...`. Copy it.
+   - Add to `backend/.env`:
+     ```
+     STRIPE_WEBHOOK_SECRET=whsec_YOUR_CLI_SECRET_HERE
+     ```
+   - **Keep the CLI running** in a separate terminal while testing payment flows.
+
+4. **Verify Integration:**
+   ```bash
+   # Test that the backend can create a checkout session
+   curl -X POST http://localhost:8000/api/payments/checkout \
+     -H "Content-Type: application/json" \
+     -H "X-Spoof-Player-Id: 2" \
+     -d '{"package_id": 1}'
+
+   # Trigger a test webhook event
+   stripe trigger checkout.session.completed
+   ```
+
+5. **Test Credit Cards:**
+   Stripe provides test card numbers for different scenarios:
+   | Card Number | Scenario |
+   |-------------|----------|
+   | `4242 4242 4242 4242` | Successful payment |
+   | `4000 0000 0000 0002` | Card declined |
+   | `4000 0000 0000 9995` | Insufficient funds |
+   | `4000 0000 0000 0259` | Dispute/chargeback |
+
+   Use any future expiry date, any 3-digit CVC, and any billing ZIP.
+
+### 5.2 Production Setup
+1. **Activate Account:** Complete the business activation form in the Stripe Dashboard to process live payments.
+2. **API Keys:**
+   - Go to **Developers → API keys** (with Test mode OFF).
+   - Copy the live **Publishable key** (`pk_live_...`) and **Secret key** (`sk_live_...`).
+3. **Webhook Setup:**
+   - Go to **Developers → Webhooks → Add endpoint**.
+   - URL: `https://api.elysium-rising.com/api/webhooks/stripe`
+   - Select events:
+     - `checkout.session.completed` (shard purchases, donations)
+     - `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` (subscriptions)
+     - `invoice.paid`, `invoice.payment_failed` (recurring billing)
+     - `charge.dispute.created`, `charge.dispute.closed` (disputes)
+   - Copy the **Webhook Secret** (`whsec_...`) for Backend verification.
+4. **Products & Prices:**
+   - Create Products in the Stripe Dashboard for subscription plans to get their `Price IDs`.
+   - The backend uses `shard_packages` and `subscription_plans` DB tables — seed these with Stripe Price IDs.
+
+### 5.3 Environment Variables Summary
+| Variable | Location | Example | Description |
+|----------|----------|---------|-------------|
+| `STRIPE_SECRET_KEY` | `backend/.env` | `sk_test_...` or `sk_live_...` | Backend API key |
+| `STRIPE_WEBHOOK_SECRET` | `backend/.env` | `whsec_...` | Webhook signature verification |
+| `FRONTEND_URL` | `backend/.env` | `http://localhost:5173` | Redirect URL after checkout |
 
 ## 6. Local Development & Cloud Deployment
 

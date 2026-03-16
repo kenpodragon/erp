@@ -657,3 +657,31 @@ async def marketplace_anomalies(
 ):
     """Detect high-price listings, rapid relists, and wash trade suspicion."""
     return detect_marketplace_anomalies(session)
+
+
+@router.get("/alt-warnings")
+async def get_alt_warnings(
+    request: Request,
+    token: dict = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    """List recent marketplace alt account warnings (shared Stripe customer ID)."""
+    rows = session.execute(
+        text(
+            "SELECT ae.id, ae.player_id, ae.event_data, ae.created_at "
+            "FROM activity_events ae "
+            "WHERE ae.event_type = 'marketplace_alt_warning' "
+            "ORDER BY ae.created_at DESC LIMIT 100"
+        )
+    ).fetchall()
+    return {
+        "warnings": [
+            {
+                "id": r.id,
+                "player_id": r.player_id,
+                "event_data": r.event_data,
+                "created_at": str(r.created_at),
+            }
+            for r in rows
+        ]
+    }

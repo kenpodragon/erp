@@ -141,7 +141,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
           // we don't want the user to go through the 'Scene Complete' flow again.
           // BUT the user wants the popup to show even on replays.
           // So we only set farmMode if it's a resume of an ALREADY farming session.
-          if (session.wavesComplete && session.narrativeProgressPct >= 100 && !session.isReplay) {
+          if (session.wavesComplete && session.narrativeProgressPct >= 100 && !session.isReplay && !session.isBossSession) {
             setFarmMode(true);
           }
         } else {
@@ -377,7 +377,7 @@ const StoryMode: React.FC<StoryModeProps> = ({
 
   const handleExit = async () => {
     await flushTick();
-    if (farmMode) {
+    if (farmMode && !storySession?.isBossSession) {
       setShowSummary(true);
     } else {
       exitScene();

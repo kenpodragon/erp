@@ -265,7 +265,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       setDeathTimer(prev => prev + dt);
       setScrollSpeed(0);
       if (deathTimer > 180) { 
-        setPlayer(prev => ({ ...prev, isDead: false, hp: prev.maxHp, x: -100, vengeance: true, animState: 'walking' }));
+        setPlayer(prev => ({ ...prev, isDead: false, hp: prev.maxHp, x: 50, vengeance: true, animState: 'walking' }));
         setDeathTimer(0);
       }
       return; 
@@ -460,14 +460,14 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           )}
         </pixiContainer>
 
-        {/* Enemies */}
-        <pixiContainer zIndex={4}>
+        {/* Enemies — zIndex 7 so approaching enemies render in front of player (zIndex 5) */}
+        <pixiContainer zIndex={7}>
           {enemies.map(en => (
-            <EnemySprite 
-              key={en.id} 
-              enemy={en} 
-              textures={textures} 
-              time={time} 
+            <EnemySprite
+              key={en.id}
+              enemy={en}
+              textures={textures}
+              time={time}
             />
           ))}
         </pixiContainer>

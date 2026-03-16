@@ -1,6 +1,6 @@
 """Stripe payment models: Shard Packages, Payment Orders, Webhook Events."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Any
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column
@@ -51,7 +51,7 @@ class PaymentOrder(SQLModel, table=True):
     shards_credited: int = Field(default=0)
     shards_refunded: int = Field(default=0)
     is_first_purchase: bool = Field(default=False)
-    created_at: Optional[datetime] = Field(default=None)
+    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = Field(default=None)
     refunded_at: Optional[datetime] = Field(default=None)
     expired_at: Optional[datetime] = Field(default=None)
