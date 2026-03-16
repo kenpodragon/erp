@@ -7,6 +7,7 @@ from models import (
     Book, Chapter, Scene, SceneGameplayData,
     Entity, EntityGameplayData, DevContentAudit,
 )
+from models.classification import EntityType
 from datetime import datetime, timezone
 
 
@@ -207,9 +208,14 @@ class TestAtmosphereEndpoint:
         scene = seed_story_hierarchy["scene"]
         atm = seed_story_hierarchy["atmospheres"]
 
+        boss_type = EntityType(name="boss", display_name="Boss")
+        session.add(boss_type)
+        session.commit()
+        session.refresh(boss_type)
+
         entity = Entity(
             canonical_name="Test Boss",
-            entity_type="boss",
+            entity_type_id=boss_type.id,
             created_at=datetime.now(timezone.utc),
         )
         session.add(entity)

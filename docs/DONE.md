@@ -3,7 +3,7 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-15 (Deferred items Phases A-D complete)*
+*Updated: 2026-03-15 (Test suite remediation complete — 818 passed, 0 failed)*
 
 ## Deferred Items & Hardening (Phases A–D)
 
@@ -28,6 +28,12 @@ This document tracks the completed development phases for the Elysium Rising mmo
    - [x] D.5 Emporium (5 tests): catalog, collection, boosters, insufficient shards, missing body
    - [x] D.6 Marketplace (6 tests): browse, filtered, my-listings, trade history, rate limit 429
    - Bugs fixed: `PaymentOrder.created_at` default (was None), marketplace browse arg mismatch
+
+ - [x] **Test Suite Remediation (COMPLETE)** — 818 passed, 0 failed, 0 errors (was 766/35/17)
+   - Fixed 7 test files for Entity `entity_type`→`entity_type_id` FK migration (058): `test_2_6_features.py`, `test_admin_content.py`, `test_story_mode.py`, `test_story_mode_enemies.py`, `test_achievement_system.py`, `test_audio.py`, `test_idle_training.py`
+   - Fixed real service bug: `admin_content_service.py` `auto_populate_wave_config()` using stale `ent.entity_type` string field → FK lookup
+   - Fixed `test_achievement_system.py` missing `cumulative_subscription_months` migration column in SQLite fixture
+   - Fixed `test_idle_training.py` expected value for granular essence drain simulation (15000→705)
 
 ## REC_5: Administrative Systems
 

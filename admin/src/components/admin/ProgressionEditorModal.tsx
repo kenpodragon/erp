@@ -14,7 +14,7 @@ interface ProgressionEditorModalProps {
 
 interface Scene {
   id: number
-  sort_order: number
+  scene_number: number
   title: string
   scene_type: string
 }
@@ -65,7 +65,7 @@ function countScenesBetween(
   for (const book of books) {
     for (const chapter of book.chapters) {
       for (const scene of chapter.scenes) {
-        const pos = { book: book.book_number, chapter: chapter.chapter_number, scene: scene.sort_order }
+        const pos = { book: book.book_number, chapter: chapter.chapter_number, scene: scene.scene_number }
         const afterFrom = compareTuples(pos, from) === 'advancing'
         const beforeOrAtTo = compareTuples(pos, to) !== 'advancing'
 
@@ -167,7 +167,7 @@ export default function ProgressionEditorModal({
       const firstChapter = book.chapters[0]
       setSelectedChapter(firstChapter.chapter_number)
       if (firstChapter.scenes.length > 0) {
-        setSelectedScene(firstChapter.scenes[0].sort_order)
+        setSelectedScene(firstChapter.scenes[0].scene_number)
       }
     }
   }
@@ -176,7 +176,7 @@ export default function ProgressionEditorModal({
     setSelectedChapter(chapterNum)
     const chapter = chapters.find(c => c.chapter_number === chapterNum)
     if (chapter && chapter.scenes.length > 0) {
-      setSelectedScene(chapter.scenes[0].sort_order)
+      setSelectedScene(chapter.scenes[0].scene_number)
     }
   }
 
@@ -336,8 +336,8 @@ export default function ProgressionEditorModal({
               onChange={e => setSelectedScene(Number(e.target.value))}
             >
               {scenes.map(scene => (
-                <option key={scene.id} value={scene.sort_order}>
-                  Scene {scene.sort_order}: {scene.title}
+                <option key={scene.id} value={scene.scene_number}>
+                  Scene {scene.scene_number}: {scene.title}
                 </option>
               ))}
             </select>

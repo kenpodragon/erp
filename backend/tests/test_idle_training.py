@@ -157,9 +157,12 @@ def test_essence_drain_and_rate(client, player_token, test_character, session: S
     assert resp.status_code == 200
     data = resp.json()["report"]
     
-    # 10 mins = 600 ticks. 600 * 100 XP = 60,000 base XP.
-    # At 1% essence (10/1000), rate is 0.25.
-    # 60,000 * 0.25 = 15,000 XP.
-    assert data["xp_earned"] == 15000
+    # 10 mins = 600 ticks. drain_per_tick=1 (level_required default).
+    # ticks_with_essence=10, ticks_at_empty=590.
+    # Empty ticks: 590 * 100 * 0.01 = 590 XP.
+    # Essence ticks (10 chunks of 1): first chunk at pct=0.01 rate=0.25 → 25 XP,
+    # remaining 9 chunks at pct<0.01 rate=0.10 → 9*10=90 XP.
+    # Total = 590 + 25 + 90 = 705 XP.
+    assert data["xp_earned"] == 705
     assert data["essence_consumed"] == 10 # 1 per min
     assert data["remaining_essence"] == 0

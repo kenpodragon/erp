@@ -4,6 +4,7 @@ import pytest
 from datetime import datetime, timezone
 from decimal import Decimal
 from sqlmodel import Session
+from sqlalchemy import text
 
 from models import Player, PlayerCharacter, CharacterClass, PlayerSettings
 from models.home_base import (
@@ -16,6 +17,26 @@ from services.achievement_service import (
     evaluate_achievements, get_player_cumulative_stats,
     update_achievement_progress,
 )
+
+
+# ---------------------------------------------------------------------------
+# Add migration-only columns for SQLite test DB
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def add_migration_columns(session: Session):
+    """Add columns that exist in production (via migrations) but not in SQLModel defs."""
+    migration_cols = [
+        ("players", "cumulative_subscription_months INTEGER DEFAULT 0"),
+        ("players", "display_name VARCHAR(100)"),
+        ("players", "account_flag VARCHAR(20) DEFAULT NULL"),
+    ]
+    for table, col in migration_cols:
+        try:
+            session.execute(text(f"ALTER TABLE {table} ADD COLUMN {col}"))
+        except Exception:
+            pass
+    session.commit()
 
 
 # ---------------------------------------------------------------------------

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from models import (
     Book, Chapter, Scene, Entity, EntitySceneAppearance, Player
 )
+from models.classification import EntityType
 from db import get_session
 from auth import get_current_player
 
@@ -32,13 +33,19 @@ def test_get_enemies_pool(client: TestClient, session: Session, test_player: Pla
     session.add(sc2)
     session.commit()
     
+    # Setup Entity Type
+    et = EntityType(name="enemy", display_name="Enemy")
+    session.add(et)
+    session.commit()
+    session.refresh(et)
+
     # Setup Entities
     # Entity 1: Introduced in Scene 1
-    e1 = Entity(canonical_name="Enemy 1", entity_type="enemy", first_appearance_scene_id=sc1.id)
+    e1 = Entity(canonical_name="Enemy 1", entity_type_id=et.id, first_appearance_scene_id=sc1.id)
     # Entity 2: Introduced in Scene 2
-    e2 = Entity(canonical_name="Enemy 2", entity_type="enemy", first_appearance_scene_id=sc2.id)
+    e2 = Entity(canonical_name="Enemy 2", entity_type_id=et.id, first_appearance_scene_id=sc2.id)
     # Entity 3: Boss in Scene 1
-    e3 = Entity(canonical_name="Boss 1", entity_type="enemy", first_appearance_scene_id=sc1.id)
+    e3 = Entity(canonical_name="Boss 1", entity_type_id=et.id, first_appearance_scene_id=sc1.id)
     
     session.add(e1)
     session.add(e2)

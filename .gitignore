@@ -481,6 +481,7 @@ blob-report/
 
 # ERP DB Exports
 erp_export*
+db/deploy/dump.sql
 backend/uploads/
 
 # Test SQLite databases (in-memory now, but ignore any file-based stragglers)

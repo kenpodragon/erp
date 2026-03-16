@@ -15,6 +15,7 @@ from models.story_mode import (
     CharacterSkillLevel, EntitySceneAppearance, DevContentAudit,
 )
 from models.gameplay import Skill, Entity, EntityGameplayData
+from models.classification import EntityType
 
 
 # ---------------------------------------------------------------------------
@@ -69,8 +70,17 @@ def test_beats(session: Session, test_scene: Scene) -> list[StoryBeat]:
 
 
 @pytest.fixture
-def test_entity(session: Session) -> Entity:
-    e = Entity(canonical_name="Shadow Wraith", entity_type="enemy",
+def test_entity_type(session: Session) -> EntityType:
+    et = EntityType(name="enemy", display_name="Enemy")
+    session.add(et)
+    session.commit()
+    session.refresh(et)
+    return et
+
+
+@pytest.fixture
+def test_entity(session: Session, test_entity_type: EntityType) -> Entity:
+    e = Entity(canonical_name="Shadow Wraith", entity_type_id=test_entity_type.id,
                base_description="A wraith from the void.",
                created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc))
     session.add(e)

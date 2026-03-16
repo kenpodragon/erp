@@ -392,7 +392,7 @@ const CombatContent: React.FC<InnerProps> = ({
     statusText = `${modeLabel} | CHALLENGE: MINI-BOSS`;
   } else if (extraWavesMode) {
     // Check if we are farming because of narrative delay or explicit farm mode
-    const isNarrativeDelay = session.wavesComplete && !session.previouslyCompleted && narrativeProgressPct < 100;
+    const isNarrativeDelay = session.wavesComplete && !session.previouslyCompleted && session.narrativeProgressPct < 100;
     
     if (isNarrativeDelay) {
       statusText = `More mobs appear! You must finish the story before clearing this level. | Mob ${monstersInZone}/${MONSTERS_PER_ZONE}`;

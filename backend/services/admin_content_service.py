@@ -15,6 +15,7 @@ from models import (
     Book, Chapter, Scene, StoryBeat, Location,
     SceneGameplayData, Entity, EntityGameplayData,
     Atmosphere, AssetRegistryEntry,
+    EntityType,
 )
 from models.content import Background, SceneWaveConfig, EntityBeatAppearance
 from models.story_mode import EntitySceneAppearance
@@ -1344,8 +1345,9 @@ def auto_populate_wave_config(
         ent = session.get(Entity, esa.entity_id)
         if not ent:
             continue
-        # Only include non-player entities
-        if ent.entity_type in ("ally", "player", "npc"):
+        # Only include combatable entities (exclude ally, player, npc types)
+        et = session.get(EntityType, ent.entity_type_id) if ent.entity_type_id else None
+        if et and et.name in ("ally", "player", "npc"):
             continue
         gd = session.exec(
             select(EntityGameplayData).where(EntityGameplayData.entity_id == ent.id)

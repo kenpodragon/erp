@@ -17,6 +17,7 @@ from models import (
     SceneGameplayData, Entity, EntityGameplayData,
     Atmosphere, AttackType, EntityAttackType,
     AdminAuditLog, AssetRegistryEntry,
+    EntityType, EntityFamily,
 )
 from models.story_mode import EntitySceneAppearance
 from models.content import (
@@ -77,8 +78,37 @@ def _make_beat(session, scene_id, beat_number=1, sort_order=1):
     return sb
 
 
+def _ensure_entity_type(session, name="enemy"):
+    """Get-or-create an EntityType row and return its id."""
+    from sqlmodel import select
+    et = session.exec(select(EntityType).where(EntityType.name == name)).first()
+    if et:
+        return et.id
+    et = EntityType(name=name, display_name=name.title(), sort_order=0,
+                    created_at=_now(), updated_at=_now())
+    session.add(et)
+    session.commit()
+    session.refresh(et)
+    return et.id
+
+
+def _ensure_entity_family(session, name):
+    """Get-or-create an EntityFamily row and return its id."""
+    from sqlmodel import select
+    ef = session.exec(select(EntityFamily).where(EntityFamily.name == name)).first()
+    if ef:
+        return ef.id
+    ef = EntityFamily(name=name, display_name=name.title(), sort_order=0,
+                      created_at=_now(), updated_at=_now())
+    session.add(ef)
+    session.commit()
+    session.refresh(ef)
+    return ef.id
+
+
 def _make_entity(session, name="Goblin", entity_type="enemy"):
-    e = Entity(canonical_name=name, entity_type=entity_type,
+    entity_type_id = _ensure_entity_type(session, entity_type)
+    e = Entity(canonical_name=name, entity_type_id=entity_type_id,
                created_at=_now(), updated_at=_now())
     session.add(e)
     session.commit()
@@ -414,24 +444,28 @@ class TestEntityCRUD:
         _make_entity(session, "Goblin", "enemy")
         _make_entity(session, "Orc", "enemy")
         _make_entity(session, "Sage", "npc")
+        enemy_type_id = _ensure_entity_type(session, "enemy")
         r = admin_client.get(f"{BASE}/entities",
-                             params={"entity_type": "enemy"})
+                             params={"entity_type_id": enemy_type_id})
         assert r.status_code == 200
         data = r.json()
         assert data["total"] == 2
 
     def test_list_entity_families(self, admin_client, session):
+        gob_id = _ensure_entity_family(session, "goblinoid")
+        orc_id = _ensure_entity_family(session, "orcish")
         e1 = _make_entity(session, "Goblin", "enemy")
-        e1.entity_family = "goblinoid"
+        e1.entity_family_id = gob_id
         e2 = _make_entity(session, "Orc", "enemy")
-        e2.entity_family = "orcish"
+        e2.entity_family_id = orc_id
         session.add_all([e1, e2])
         session.commit()
         r = admin_client.get(f"{BASE}/entities/families")
         assert r.status_code == 200
         families = r.json()
-        assert "goblinoid" in families
-        assert "orcish" in families
+        family_names = [f["name"] for f in families]
+        assert "goblinoid" in family_names
+        assert "orcish" in family_names
 
     def test_get_entity_detail(self, admin_client, session):
         entity = _make_entity(session)
@@ -451,15 +485,16 @@ class TestEntityCRUD:
         assert data["aliases"][0]["alias"] == "Little Goblin"
 
     def test_create_entity(self, admin_client, session):
+        enemy_type_id = _ensure_entity_type(session, "enemy")
         r = admin_client.post(f"{BASE}/entities", json={
             "canonical_name": "Shadow Wolf",
-            "entity_type": "enemy",
+            "entity_type_id": enemy_type_id,
             "base_description": "A dark wolf from the void",
         })
         assert r.status_code == 201
         data = r.json()
         assert data["canonical_name"] == "Shadow Wolf"
-        assert data["entity_type"] == "enemy"
+        assert data["entity_type_id"] == enemy_type_id
 
     def test_update_entity(self, admin_client, session):
         entity = _make_entity(session)

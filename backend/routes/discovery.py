@@ -133,7 +133,7 @@ def _compute_rank(encounters: int, kills: int) -> str:
 # 1. GET /entities — paginated entity registry
 # ---------------------------------------------------------------------------
 
-@router.get("/entities", response_model=list[EntitySummary])
+@router.get("/entities")
 def get_entity_registry(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -151,10 +151,10 @@ def get_entity_registry(
     progress = session.exec(
         select(PlayerProgress).where(PlayerProgress.player_id == player_id)
     ).first()
-    current_chapter_id = progress.current_chapter_id if progress else None
+    current_chapter_number = progress.chapter_number if progress else None
 
     # Build base query — join EntityType and EntityFamily for display info
-    stmt = (
+    base_stmt = (
         select(
             Entity,
             EntityGameplayData,
@@ -173,41 +173,52 @@ def get_entity_registry(
     )
 
     if family:
-        stmt = stmt.where(EntityFamily.name == family)
+        base_stmt = base_stmt.where(EntityFamily.name == family)
 
-    stmt = stmt.offset((page - 1) * per_page).limit(per_page)
+    # Get total count
+    from sqlalchemy import func as sa_func
+    count_stmt = select(sa_func.count()).select_from(Entity).join(EntityType, Entity.entity_type_id == EntityType.id)
+    if family:
+        count_stmt = count_stmt.outerjoin(EntityFamily, Entity.entity_family_id == EntityFamily.id).where(EntityFamily.name == family)
+    total = session.exec(count_stmt).one()
 
+    # Get all family names for filter tabs
+    family_stmt = select(EntityFamily.name).distinct().order_by(EntityFamily.name)
+    all_families = [r for r in session.exec(family_stmt).all()]
+
+    # Paginated results
+    stmt = base_stmt.offset((page - 1) * per_page).limit(per_page)
     rows = session.exec(stmt).all()
 
-    results: list[EntitySummary] = []
+    results: list[dict] = []
     for entity, gameplay, discovery, entity_type, entity_family in rows:
         # Visibility logic
         if discovery and discovery.encounters > 0:
             visibility = "revealed"
-        elif current_chapter_id and entity.first_appearance_scene_id:
-            # Entity is visible as grey if player has reached or passed the chapter
+        elif current_chapter_number and entity.first_appearance_scene_id:
             visibility = "grey"
         else:
             visibility = "mist"
 
-        results.append(
-            EntitySummary(
-                entity_id=entity.id,
-                canonical_name=entity.canonical_name if visibility != "mist" else "???",
-                entity_type_id=entity.entity_type_id if visibility != "mist" else None,
-                entity_type_name=entity_type.name if visibility != "mist" else None,
-                entity_family_id=entity.entity_family_id if visibility != "mist" else None,
-                entity_family_name=entity_family.name if entity_family and visibility != "mist" else None,
-                sprite_key=gameplay.sprite_key if gameplay and visibility == "revealed" else None,
-                encounters=discovery.encounters if discovery else 0,
-                kills=discovery.kills if discovery else 0,
-                rank=discovery.rank if discovery else "E",
-                is_new=discovery.is_new if discovery else False,
-                visibility=visibility,
-            )
-        )
+        results.append({
+            "entity_id": entity.id,
+            "name": entity.canonical_name if visibility != "mist" else "???",
+            "family": entity_family.name if entity_family and visibility != "mist" else None,
+            "sprite_key": gameplay.sprite_key if gameplay and visibility == "revealed" else None,
+            "encounter_count": discovery.encounters if discovery else 0,
+            "kill_count": discovery.kills if discovery else 0,
+            "discovery_rank": discovery.rank if discovery else "E",
+            "discovery_state": visibility,
+            "is_new": discovery.is_new if discovery else False,
+        })
 
-    return results
+    return {
+        "entities": results,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "families": all_families,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -281,7 +292,7 @@ def get_entity_detail(
 # 3. GET /library — discovered skills/items grouped by type
 # ---------------------------------------------------------------------------
 
-@router.get("/library", response_model=LibraryResponse)
+@router.get("/library")
 def get_library(
     token: dict = Depends(get_current_player),
     session: Session = Depends(get_session),
@@ -296,19 +307,23 @@ def get_library(
         )
     ).all()
 
-    groups: dict[str, list[LibraryItem]] = {}
+    # Frontend expects fixed keys: skills, prefixes, suffixes, qualities, effects
+    CATEGORY_KEYS = ["skills", "prefixes", "suffixes", "qualities", "effects"]
+    result: dict[str, list[dict]] = {k: [] for k in CATEGORY_KEYS}
+
     for log in logs:
-        item = LibraryItem(
-            discovery_type=log.discovery_type,
-            reference_id=log.reference_id,
-            discovered_at=log.discovered_at,
-            is_new=log.is_new,
-        )
-        groups.setdefault(log.discovery_type, []).append(item)
+        entry = {
+            "id": log.reference_id,
+            "name": log.discovery_type,
+            "description": None,
+            "is_new": log.is_new,
+            "category": log.discovery_type,
+        }
+        # Map discovery_type to the appropriate category key
+        category = log.discovery_type if log.discovery_type in CATEGORY_KEYS else "effects"
+        result[category].append(entry)
 
-    counts = {dtype: len(items) for dtype, items in groups.items()}
-
-    return LibraryResponse(groups=groups, counts=counts)
+    return result
 
 
 # ---------------------------------------------------------------------------

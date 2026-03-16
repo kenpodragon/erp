@@ -12,7 +12,7 @@ from sqlmodel import Session, select
 from models import (
     Player, CharacterClass, PlayerCharacter, PlayerProgress,
     Scene, Chapter, Book, Entity, EntityGameplayData, Skill,
-    ActivityEvent,
+    ActivityEvent, EntityType, EntityFamily,
 )
 from models.discovery import PlayerEntityDiscovery, PlayerDiscoveryLog
 from models.chat import ChatChannel
@@ -95,10 +95,34 @@ def test_scene(session: Session, test_chapter: Chapter) -> Scene:
 
 
 @pytest.fixture
-def test_entity(session: Session) -> Entity:
+def test_entity_type(session: Session) -> EntityType:
+    et = EntityType(
+        name="enemy", display_name="Enemy", sort_order=0,
+        created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
+    )
+    session.add(et)
+    session.commit()
+    session.refresh(et)
+    return et
+
+
+@pytest.fixture
+def test_entity_family(session: Session) -> EntityFamily:
+    ef = EntityFamily(
+        name="goblin", display_name="Goblin", sort_order=0,
+        created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
+    )
+    session.add(ef)
+    session.commit()
+    session.refresh(ef)
+    return ef
+
+
+@pytest.fixture
+def test_entity(session: Session, test_entity_type: EntityType, test_entity_family: EntityFamily) -> Entity:
     e = Entity(
-        canonical_name="Goblin Scout", entity_type="enemy",
-        entity_family="goblin",
+        canonical_name="Goblin Scout", entity_type_id=test_entity_type.id,
+        entity_family_id=test_entity_family.id,
         base_description="A sneaky goblin scout lurking in the shadows.",
         created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
     )
@@ -348,7 +372,7 @@ class TestRareSpawnEngine:
         result = _check_rare_spawn(session, 100, test_chapter.id)
         assert result is None
 
-    def test_spawn_with_guaranteed_chance(self, session: Session, test_chapter):
+    def test_spawn_with_guaranteed_chance(self, session: Session, test_chapter, test_entity_type):
         from routes.story_mode import _check_rare_spawn
         # Set base chance to 1 (100%)
         session.add(GameConfig(key="rare_spawn_base_chance", value_json=1.0, description="test"))
@@ -356,7 +380,7 @@ class TestRareSpawnEngine:
 
         # Need an entity with NO scene appearances and no first_appearance_scene_id
         rare_entity = Entity(
-            canonical_name="Rare Beast", entity_type="enemy",
+            canonical_name="Rare Beast", entity_type_id=test_entity_type.id,
             first_appearance_scene_id=None,
             created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
         )
@@ -369,7 +393,7 @@ class TestRareSpawnEngine:
         assert result["canonical_name"] == "Rare Beast"
 
     def test_spawn_returns_none_when_no_rare_pool(
-        self, session: Session, test_chapter, test_scene
+        self, session: Session, test_chapter, test_scene, test_entity_type
     ):
         from routes.story_mode import _check_rare_spawn
         from models.story_mode import EntitySceneAppearance
@@ -377,7 +401,7 @@ class TestRareSpawnEngine:
         session.add(GameConfig(key="rare_spawn_base_chance", value_json=1.0, description="test"))
         # Create entity WITH scene appearance (not rare)
         entity = Entity(
-            canonical_name="Common Entity", entity_type="enemy",
+            canonical_name="Common Entity", entity_type_id=test_entity_type.id,
             created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
         )
         session.add(entity)
@@ -498,11 +522,11 @@ class TestDiscoveryEntitiesEndpoint:
         entity_ids = [e["entity_id"] for e in data]
         assert test_entity.id in entity_ids
 
-    def test_pagination(self, full_client, session: Session):
+    def test_pagination(self, full_client, session: Session, test_entity_type):
         # Seed multiple entities
         for i in range(5):
             session.add(Entity(
-                canonical_name=f"Entity_{i}", entity_type="enemy",
+                canonical_name=f"Entity_{i}", entity_type_id=test_entity_type.id,
                 created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc),
             ))
         session.commit()
@@ -513,12 +537,12 @@ class TestDiscoveryEntitiesEndpoint:
         assert len(data) <= 2
 
     def test_family_filter(self, full_client, test_entity, session: Session):
-        # test_entity has family="goblin"
+        # test_entity has family="goblin" via entity_family_id FK
         resp = full_client.get("/api/game/registry/entities?family=goblin")
         assert resp.status_code == 200
         data = resp.json()
         assert all(
-            e["entity_family"] == "goblin" or e["entity_family"] is None
+            e["entity_family_name"] == "goblin" or e["entity_family_name"] is None
             for e in data
         )
 
