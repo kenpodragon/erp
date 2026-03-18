@@ -26,7 +26,7 @@ async function fetchBgDefinition(assetKey: string): Promise<BackgroundRenderer.R
 
   const promise = (async () => {
     try {
-      const res = await api.get(`/api/admin/assets/batch?keys=${encodeURIComponent(assetKey)}`);
+      const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(assetKey)}`);
       if (res.ok) {
         const data = await res.json();
         const items = Array.isArray(data) ? data : (data.items || []);
@@ -101,7 +101,7 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
       const loaded: Record<string, Texture> = {};
       for (let i = 1; i <= 4; i++) {
         for (const layer of ['far', 'mid'] as const) {
-          const assetKey = `bg_${i}_${layer}`;
+          const assetKey = `bg_ch${i}_${layer}`;
           const def = await fetchBgDefinition(assetKey);
           let canvas: HTMLCanvasElement;
 
@@ -152,7 +152,7 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
   if (Object.keys(textures).length === 0) return null;
 
   const renderLayer = (chId: number, type: 'far' | 'mid', alpha: number) => {
-    const tex = textures[`bg_${chId}_${type}`];
+    const tex = textures[`bg_ch${chId}_${type}`];
     if (!tex) return null;
     const factor = type === 'far' ? FAR_FACTOR : MID_FACTOR;
     return (

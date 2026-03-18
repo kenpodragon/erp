@@ -85,7 +85,7 @@ export default function ShardAdjustModal({ onClose, onSuccess }: ShardAdjustModa
     try {
       const body = {
         player_id: player.player_id,
-        mode,
+        adjust_type: mode,
         amount: parsedAmount,
         reason: reason.trim(),
       }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../api';
+import AssetIcon from '../AssetIcon';
 
 interface CollectionItem {
   id: number;
@@ -148,7 +149,7 @@ const MyCollection: React.FC<Props> = ({ onEquipChange }) => {
               <div key={item.id} className={`collection-item ${item.equipped ? 'equipped' : ''}`}>
                 <div className="collection-item-icon">
                   {item.icon_asset_key
-                    ? <img src={item.icon_asset_key} alt={item.name} />
+                    ? <AssetIcon assetKey={item.icon_asset_key} category="ui_icon" alt={item.name} fallback={<span className="collection-item-icon-fallback">{'\u25C6'}</span>} />
                     : <span className="collection-item-icon-fallback">{'\u25C6'}</span>
                   }
                 </div>

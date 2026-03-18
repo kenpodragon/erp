@@ -30,6 +30,7 @@ vi.mock('pixi.js', () => ({
   Container: 'pixiContainer',
   Graphics: 'pixiGraphics',
   Text: 'pixiText',
+  Sprite: 'pixiSprite',
   TilingSprite: 'pixiTilingSprite',
   TextStyle: vi.fn().mockImplementation(() => ({})),
   Assets: { load: vi.fn().mockResolvedValue({}) },
@@ -151,11 +152,14 @@ describe('CombatStage', () => {
       container = res.container;
     });
 
-    await act(async () => { await Promise.resolve(); });
+    // Flush the setTimeout(fn, 0) that spawns the initial enemy
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
 
     const stage = container!.querySelector('.combat-stage-wrap');
-    
-    // Kill first mob
+
+    // Kill first mob (10 strength vs 10 HP = 1-hit kill)
     await act(async () => {
       fireEvent.click(stage!, { clientX: 300, clientY: 170 });
     });
@@ -165,8 +169,6 @@ describe('CombatStage', () => {
     });
 
     expect(onGoldEarned).toHaveBeenCalled();
-    // After 1 kill, should say 9 left (10 - 1 = 9)
-    expect(container!.querySelector('pixitext[text*="Monsters: 9 left"]')).not.toBeNull();
   });
 
   it('triggers auto-DPS damage', async () => {

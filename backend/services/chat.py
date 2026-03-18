@@ -58,7 +58,16 @@ class ConnectionManager:
 
     async def connect(self, player_id: int, websocket: WebSocket):
         await websocket.accept()
-        if player_id not in self.active_connections:
+        # Close stale connections for this player before adding the new one
+        if player_id in self.active_connections:
+            stale = self.active_connections[player_id]
+            self.active_connections[player_id] = []
+            for old_ws in stale:
+                try:
+                    await old_ws.close(code=4010, reason="Replaced by new connection")
+                except Exception:
+                    pass
+        else:
             self.active_connections[player_id] = []
         self.active_connections[player_id].append(websocket)
 

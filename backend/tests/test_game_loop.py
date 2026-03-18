@@ -219,3 +219,68 @@ def test_stat_definitions_endpoint(client: TestClient, session: Session, player_
     assert response.status_code == 200
     data = response.json()
     assert any(s["name"] == "strength" for s in data)
+
+
+# ---------------------------------------------------------------------------
+# /api/game/audit — frontend missing-asset reporting
+# ---------------------------------------------------------------------------
+
+def test_audit_missing_asset_creates_record(client: TestClient, session: Session):
+    """POST /api/game/audit with missing_asset creates a dev_content_audit row."""
+    from models.story_mode import DevContentAudit
+
+    response = client.post("/api/game/audit", json={
+        "audit_type": "missing_asset",
+        "asset_key": "enemy_test_sprite",
+        "category": "entity_sprite",
+        "source": "frontend_renderer",
+    })
+    assert response.status_code == 204
+
+    row = session.exec(
+        select(DevContentAudit)
+        .where(DevContentAudit.audit_type == "missing_asset")
+        .where(DevContentAudit.entity_name == "enemy_test_sprite")
+    ).first()
+    assert row is not None
+    assert row.missing_field == "entity_sprite"
+    assert row.entity_type == "asset"
+
+
+def test_audit_missing_asset_deduplicates(client: TestClient, session: Session):
+    """Duplicate POST for same asset_key should not create a second row."""
+    from models.story_mode import DevContentAudit
+
+    payload = {
+        "audit_type": "missing_asset",
+        "asset_key": "bg_99_far",
+        "category": "background",
+        "source": "frontend_renderer",
+    }
+    client.post("/api/game/audit", json=payload)
+    client.post("/api/game/audit", json=payload)
+
+    rows = session.exec(
+        select(DevContentAudit)
+        .where(DevContentAudit.audit_type == "missing_asset")
+        .where(DevContentAudit.entity_name == "bg_99_far")
+    ).all()
+    assert len(rows) == 1
+
+
+def test_audit_ignores_non_missing_asset(client: TestClient, session: Session):
+    """POST with audit_type != 'missing_asset' should be a no-op."""
+    from models.story_mode import DevContentAudit
+
+    response = client.post("/api/game/audit", json={
+        "audit_type": "something_else",
+        "asset_key": "whatever",
+        "category": "entity_sprite",
+    })
+    assert response.status_code == 204
+
+    row = session.exec(
+        select(DevContentAudit)
+        .where(DevContentAudit.entity_name == "whatever")
+    ).first()
+    assert row is None

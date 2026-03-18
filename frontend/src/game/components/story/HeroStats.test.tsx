@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import HeroStats from './HeroStats';
 import type { StorySession } from '../../GameContext';
+import { api } from '../../../api';
 
 // Mock the sub-components to isolate HeroStats tests
 vi.mock('./CharacterStatPanel', () => ({
@@ -36,6 +37,14 @@ const baseSession: StorySession = {
 };
 
 describe('HeroStats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (api.get as any).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ stat_total: { strength: 0 }, owned_artifacts: [], curated_collection: { total: 0, owned: 0, undiscovered: [] }, generated_count: 0 }),
+    });
+  });
+
   it('renders the COMBAT STATS title', () => {
     render(<HeroStats session={baseSession} />);
     expect(screen.getByText('COMBAT STATS')).toBeDefined();

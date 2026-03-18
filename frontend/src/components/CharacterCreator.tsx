@@ -455,11 +455,9 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ existingChar
                       </div>
                     )}
 
-                    {/* Card body: lore + stats */}
+                    {/* Card body: name + lore + stats */}
                     <div style={{ padding: '0.75rem' }}>
-                      {!presetKey && (
-                        <div style={{ fontWeight: 'bold', color: accentColor, marginBottom: '0.4rem' }}>{cls.name}</div>
-                      )}
+                      <div style={{ fontWeight: 'bold', color: accentColor, marginBottom: '0.4rem', fontSize: '1rem' }}>{cls.name}</div>
                       {cls.lore_blurb && (
                         <p style={{ fontSize: '0.75rem', color: '#999', margin: '0 0 0.6rem', lineHeight: 1.4 }}>
                           {cls.lore_blurb}

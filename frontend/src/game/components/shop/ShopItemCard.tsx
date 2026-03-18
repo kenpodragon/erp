@@ -1,4 +1,5 @@
 import React from 'react';
+import AssetIcon from '../AssetIcon';
 
 export interface ShopItemData {
   id: number;
@@ -69,7 +70,7 @@ const ShopItemCard: React.FC<Props> = ({ item, balance, onPurchase }) => {
     >
       <div className="sic-icon">
         {item.icon_asset_key
-          ? <img src={item.icon_asset_key} alt={item.name} className="sic-icon-img" />
+          ? <AssetIcon assetKey={item.icon_asset_key} category="ui_icon" alt={item.name} className="sic-icon-img" fallback={<span className="sic-icon-fallback">{CATEGORY_ICONS[item.category] || '\u25C6'}</span>} />
           : <span className="sic-icon-fallback">{CATEGORY_ICONS[item.category] || '\u25C6'}</span>
         }
       </div>

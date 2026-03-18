@@ -100,12 +100,14 @@ export function render(definition: RenderDefinition): RenderResult {
       case 'cloud':
         drawClouds(ctx, el, width, height, rand);
         break;
+      case 'building':
       case 'buildings':
         drawBuildings(ctx, el, width, height, rand);
         break;
       case 'nebula':
         drawNebula(ctx, el, width, height, rand);
         break;
+      case 'pipe':
       case 'pipes':
         drawPipes(ctx, el, width, height, rand);
         break;
@@ -174,10 +176,20 @@ function drawBuildings(
   height: number,
   rand: () => number,
 ) {
-  const count = el.count || 5;
   const color = el.color || '#111122';
-
   ctx.fillStyle = color;
+
+  // Explicit single building (from DB definitions with x, width, height)
+  if (el.x !== undefined && el.width !== undefined && el.height !== undefined) {
+    const bw = el.width as number;
+    const bh = el.height as number;
+    const bx = el.x as number;
+    ctx.fillRect(bx, height - bh, bw, bh);
+    return;
+  }
+
+  // Random batch (legacy plural 'buildings' with count)
+  const count = el.count || 5;
   for (let i = 0; i < count; i++) {
     const bw = 20 + rand() * 40;
     const bh = 30 + rand() * 60;
@@ -214,11 +226,21 @@ function drawPipes(
   height: number,
   rand: () => number,
 ) {
-  const count = el.count || 3;
   const color = el.color || '#333344';
-
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = (el.width as number) || 2;
+
+  // Explicit single pipe (from DB definitions with x1, y1, x2, y2)
+  if (el.x1 !== undefined && el.y1 !== undefined && el.x2 !== undefined && el.y2 !== undefined) {
+    ctx.beginPath();
+    ctx.moveTo(el.x1 as number, el.y1 as number);
+    ctx.lineTo(el.x2 as number, el.y2 as number);
+    ctx.stroke();
+    return;
+  }
+
+  // Random batch (legacy plural 'pipes' with count)
+  const count = el.count || 3;
   for (let i = 0; i < count; i++) {
     const x1 = rand() * width;
     const y1 = rand() * height;

@@ -3,6 +3,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import NarrativeBlock from './NarrativeBlock';
 import { api } from '../../../api';
 
+// Mock AssetIcon to render a plain <img> so image tests work without AssetProvider
+vi.mock('../AssetIcon', () => ({
+  default: (props: any) => {
+    const { assetKey, alt, className, draggable, onContextMenu } = props;
+    return <img src={assetKey} alt={alt} className={className} draggable={draggable} onContextMenu={onContextMenu} />;
+  },
+}));
+
 const mockBeats = {
   beats: [
     { id: 1, beat_number: 1, text: 'Beat 1', display_delay_seconds: 1, word_count: 1, image_path: null },

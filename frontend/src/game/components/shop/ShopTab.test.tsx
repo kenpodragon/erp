@@ -75,7 +75,7 @@ describe('ShopTab', () => {
     expect(buyBtn.className).toContain('active');
   });
 
-  it('shows "Spend Shards" tab as disabled', async () => {
+  it('shows "Elysium Emporium" tab after loading', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(mockPackagesResponse),
@@ -84,12 +84,11 @@ describe('ShopTab', () => {
     render(<ShopTab player={mockPlayer} onPlayerUpdate={vi.fn()} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Spend Shards/)).toBeTruthy();
+      expect(screen.getByText(/Elysium Emporium/)).toBeTruthy();
     });
 
-    const spendBtn = screen.getByText(/Spend Shards/);
-    expect(spendBtn).toBeDisabled();
-    expect(spendBtn.className).toContain('disabled');
+    const emporiumBtn = screen.getByText(/Elysium Emporium/);
+    expect(emporiumBtn.className).toContain('shop-tab-btn');
   });
 
   it('handles loading state', () => {

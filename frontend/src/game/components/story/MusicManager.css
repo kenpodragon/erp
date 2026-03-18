@@ -5,6 +5,27 @@
   padding: 0 0.25rem;
 }
 
+.music-play-pause-btn {
+  background: none;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #daa520;
+  font-size: 0.85rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.music-play-pause-btn:hover {
+  border-color: #daa520;
+  color: #fff;
+}
+
 .music-state-label {
   font-size: 0.7rem;
   color: #888;

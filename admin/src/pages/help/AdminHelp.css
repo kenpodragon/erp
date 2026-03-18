@@ -1,0 +1,263 @@
+.admin-help-layout {
+  min-height: 100vh;
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+.admin-help-header {
+  text-align: center;
+  padding: 1.5rem 1rem 1rem;
+  border-bottom: 1px solid #21262d;
+}
+
+.admin-help-header h1 {
+  font-size: 1.6rem;
+  color: #58a6ff;
+  margin: 0 0 0.4rem;
+}
+
+.admin-help-header p {
+  color: #8b949e;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.admin-help-body {
+  display: flex;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: calc(100vh - 120px);
+}
+
+/* ── Sidebar ── */
+
+.help-sidebar {
+  width: 240px;
+  min-width: 240px;
+  border-right: 1px solid #21262d;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.help-search {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.help-search input {
+  width: 100%;
+  padding: 0.45rem 2rem 0.45rem 0.7rem;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 0.85rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.help-search input:focus {
+  border-color: #58a6ff;
+}
+
+.help-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+}
+
+.help-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.help-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #8b949e;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.help-nav-item:hover {
+  background: #161b22;
+  color: #c9d1d9;
+}
+
+.help-nav-item.active {
+  background: #161b22;
+  color: #58a6ff;
+  font-weight: 600;
+}
+
+.help-nav-icon {
+  font-size: 1rem;
+  width: 1.4rem;
+  text-align: center;
+}
+
+/* ── Content ── */
+
+.help-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+}
+
+.help-content-title {
+  font-size: 1.3rem;
+  color: #58a6ff;
+  margin: 0 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-entry {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #161b22;
+}
+
+.help-entry:last-child {
+  border-bottom: none;
+}
+
+.help-entry h3 {
+  font-size: 0.95rem;
+  color: #c9d1d9;
+  margin: 0 0 0.4rem;
+}
+
+.help-answer {
+  color: #8b949e;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.help-answer strong {
+  color: #58a6ff;
+}
+
+.help-answer code {
+  background: #161b22;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.84rem;
+}
+
+.help-no-results {
+  color: #484f58;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+mark {
+  background: rgba(88, 166, 255, 0.2);
+  color: #fff;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+/* ── Screenshot ── */
+
+.help-screenshot {
+  margin-top: 0.75rem;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.help-screenshot:hover {
+  border-color: #58a6ff;
+}
+
+.help-screenshot img {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+.help-screenshot-hint {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.65rem;
+  color: #8b949e;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.help-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.help-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.help-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .admin-help-body {
+    flex-direction: column;
+  }
+
+  .help-sidebar {
+    width: 100%;
+    min-width: unset;
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #21262d;
+  }
+
+  .help-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

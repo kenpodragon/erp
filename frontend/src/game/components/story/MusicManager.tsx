@@ -475,9 +475,28 @@ const MusicManager: React.FC<MusicManagerProps> = ({ musicState, sceneId, bossEn
     crossFadeToState(musicState, atmosphereRef.current, CROSSFADE_DURATION);
   }, [musicState, crossFadeToState]);
 
+  const [paused, setPaused] = useState(false);
+
+  const handlePlayPause = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    if (paused) {
+      ctx.resume().then(() => { setPaused(false); setIsPlaying(true); });
+    } else {
+      ctx.suspend().then(() => { setPaused(true); setIsPlaying(false); });
+    }
+  }, [paused]);
+
   return (
     <div className="music-manager">
-      <div className={`music-wave-mini ${isPlaying ? 'music-wave-mini--active' : ''}`}>
+      <button
+        className="music-play-pause-btn"
+        onClick={handlePlayPause}
+        title={paused ? 'Resume Music' : 'Pause Music'}
+      >
+        {paused ? '\u25B6' : '\u23F8'}
+      </button>
+      <div className={`music-wave-mini ${isPlaying && !paused ? 'music-wave-mini--active' : ''}`}>
         {Array.from({ length: 3 }, (_, i) => (
           <div key={i} className="music-wave-bar" style={{ animationDelay: `${i * 0.12}s` }} />
         ))}

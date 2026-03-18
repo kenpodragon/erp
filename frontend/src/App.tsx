@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
 import { api, setAuthBypass, isAuthBypassed } from './api'
+import { chatClient } from './game/services/chatClient'
 import { NavBar } from './components/NavBar'
 import { SplashPage } from './components/SplashPage'
 import { AboutPage } from './components/AboutPage'
@@ -12,6 +13,7 @@ import { ProfileDashboard } from './components/ProfileDashboard'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { SupportCenter } from './components/SupportCenter'
 import MainGameLayout from './game/MainGameLayout'
+import PlayerGuide from './pages/guide/PlayerGuide'
 import './App.css'
 
 interface HealthData {
@@ -168,17 +170,20 @@ interface ProfilePageProps {
   setCharacter: (c: Character | null) => void;
   handleLogout: () => void;
   backendError: string | null;
+  configLoaded: boolean;
 }
 
 // Profile page content
 const ProfilePage = ({
-  apiMessage, health, authEnabled, user, backendUser, character, verifyUserWithBackend, setCharacter, handleLogout, backendError
+  apiMessage, health, authEnabled, user, backendUser, character, verifyUserWithBackend, setCharacter, handleLogout, backendError, configLoaded
 }: ProfilePageProps) => (
   <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem 2rem' }}>
     {backendUser?.is_game_admin && <StatusBar apiMessage={apiMessage} health={health} />}
     {!authEnabled ? (
       <p style={{ color: 'orange', textAlign: 'center' }}>Firebase configuration missing. Check your .env file.</p>
-    ) : !user ? (
+    ) : !configLoaded ? (
+      <p style={{ color: '#aaa', textAlign: 'center' }}>Loading…</p>
+    ) : !user && !isAuthBypassed() ? (
       <Navigate to="/" replace />
     ) : backendUser ? (
       <ProfileDashboard
@@ -285,6 +290,7 @@ function App() {
           if (data.auth_bypass_available && data.auth_bypass_player_id) {
             console.warn('[AUTH BYPASS] Active — spoofing player ID:', data.auth_bypass_player_id)
             setAuthBypass(data.auth_bypass_player_id)
+            chatClient.bypassPlayerId = data.auth_bypass_player_id
             // Trigger backend verification as the spoofed user
             verifyUserWithBackend()
           }
@@ -468,6 +474,7 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/license" element={<LicensePage />} />
           <Route path="/support" element={isLoggedIn ? <SupportCenter /> : <GuestSupportPage />} />
+          <Route path="/guide" element={<PlayerGuide />} />
           <Route path="/profile" element={
             <ProfilePage
               apiMessage={apiMessage}
@@ -480,6 +487,7 @@ function App() {
               setCharacter={setCharacter}
               handleLogout={handleLogout}
               backendError={backendError}
+              configLoaded={publicConfig !== null}
             />
           } />
           <Route path="/game/*" element={

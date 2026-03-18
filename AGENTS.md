@@ -13,6 +13,8 @@ To build a high-fidelity, narrative-driven incremental game that serves as a gat
 - **Payments:** Stripe.
 - **DevOps:** Docker, **Google Cloud Build**, Google Cloud Run.
 
+**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+
 ## 🧪 Testing Mandates
 All code changes must be verified locally before pushing to the cloud. **Refer to `@docs/inst/TESTING.md` for the full guide.**
 - **Backend:** Tests reside in `/backend/tests`. Use `pytest`. Every new feature or bug fix requires a corresponding test case.
@@ -21,12 +23,12 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 - **Local Runner:** Use `testing/run_tests.bat` (Windows) or `testing/run_tests.sh` (Linux/Mac) to verify the entire stack in isolated Docker containers.
 
 ## 📝 Documentation & Process Mandates
-- **Document Splitting:** Core features must have separate **Requirements** (`recs/*_RECS.md`) and **Schema** (`recs/*_SCHEMA.md`) files within the `docs/recs/` directory.
+- **Document Splitting:** Core features must have separate **Requirements** (`recs/*_RECS.md`) and **Schema** (`recs/*_SCHEMA.md`) files within the `docs/done/recs/` directory.
 - **Code-Doc Sync:** Any functional change in the codebase **must** be reflected in the corresponding requirements document.
 - **Task Lifecycle:**
     - **Active Work:** All in-progress tasks must be marked as unchecked in `docs/TODO.md`.
-    - **Completion:** When a task is finished, check it off in both `docs/TODO.md` and the specific feature requirements in `docs/recs/`.
-    - **Finalization:** Move **entire blocks/sections** of functionality from `docs/TODO.md` to `docs/DONE.md` only when the entire phase or feature set is 100% complete and verified.
+    - **Completion:** When a task is finished, check it off in both `docs/TODO.md` and the specific feature requirements in `docs/done/recs/`.
+    - **Finalization:** Move **entire blocks/sections** of functionality from `docs/TODO.md` to `docs/done/DONE.md` only when the entire phase or feature set is 100% complete and verified.
 
 ## 📁 Directory Structure & Ownership
 - `/backend`: API, Game Logic, DB Models, Stripe Webhooks.
@@ -45,7 +47,7 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 When in doubt, consult these files in order:
 1. `AGENTS.md`: Core mandates and structure (This file).
 2. `@docs/TODO.md`: What is being built *now*.
-3. `@docs/DONE.md`: Everything that's been done so far.
+3. `@docs/done/DONE.md`: Everything that's been done so far.
 4. `@docs/ROADMAP.md`: High-level project phases.
 5. `@docs/recs/0_REQUIREMENTS.md`: What needs to be built.
 6. `@docs/ARCHITECTURE.md`: How it is built.
@@ -60,7 +62,7 @@ When in doubt, consult these files in order:
 1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.
 2. **Surgical Updates:** When modifying requirements or TODOs, maintain the existing formatting and checkbox status.
 3. **Security:** Never expose secrets. Assume any variable starting with `STRIPE_`, `FIREBASE_`, or `DB_` is sensitive.
-4. **Validation:** Every feature implementation must be accompanied by an update to the `TODO.md`, verification of the technical requirements in `docs/recs/`, and checking off completed items.
+4. **Validation:** Every feature implementation must be accompanied by an update to the `TODO.md`, verification of the technical requirements in `docs/done/recs/`, and checking off completed items.
 5. **Testing First:** Run `testing/run_tests.bat` before pushing to `main`. If you add a feature, you **must** add a corresponding test in the appropriate test directory.
 6. **SQL Migrations:** When applying `.sql` files to production, follow the procedure in `@docs/inst/DB_MIGRATIONS.md` (using `psql` and connection strings pulled from `backend/.env`).
 7. **Database Mandate:** ALWAYS PULL database connection strings directly from `/backend/.env`. NEVER hardcode, log, or print these values. Use `psql` with these variables for all migrations and direct scripts.
@@ -383,3 +385,137 @@ npm install -g @contextstream/mcp-server@latest
 
 For comprehensive long-form rules, import `@./.contextstream/rules.md` where supported.
 </contextstream>
+
+<!-- rtk-instructions v2 -->
+# RTK (Rust Token Killer) - Token-Optimized Commands
+
+## Golden Rule
+
+**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+
+**Important**: Even in command chains with `&&`, use `rtk`:
+```bash
+# ❌ Wrong
+git add . && git commit -m "msg" && git push
+
+# ✅ Correct
+rtk git add . && rtk git commit -m "msg" && rtk git push
+```
+
+## RTK Commands by Workflow
+
+### Build & Compile (80-90% savings)
+```bash
+rtk cargo build         # Cargo build output
+rtk cargo check         # Cargo check output
+rtk cargo clippy        # Clippy warnings grouped by file (80%)
+rtk tsc                 # TypeScript errors grouped by file/code (83%)
+rtk lint                # ESLint/Biome violations grouped (84%)
+rtk prettier --check    # Files needing format only (70%)
+rtk next build          # Next.js build with route metrics (87%)
+```
+
+### Test (90-99% savings)
+```bash
+rtk cargo test          # Cargo test failures only (90%)
+rtk vitest run          # Vitest failures only (99.5%)
+rtk playwright test     # Playwright failures only (94%)
+rtk test <cmd>          # Generic test wrapper - failures only
+```
+
+### Git (59-80% savings)
+```bash
+rtk git status          # Compact status
+rtk git log             # Compact log (works with all git flags)
+rtk git diff            # Compact diff (80%)
+rtk git show            # Compact show (80%)
+rtk git add             # Ultra-compact confirmations (59%)
+rtk git commit          # Ultra-compact confirmations (59%)
+rtk git push            # Ultra-compact confirmations
+rtk git pull            # Ultra-compact confirmations
+rtk git branch          # Compact branch list
+rtk git fetch           # Compact fetch
+rtk git stash           # Compact stash
+rtk git worktree        # Compact worktree
+```
+
+Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
+
+### GitHub (26-87% savings)
+```bash
+rtk gh pr view <num>    # Compact PR view (87%)
+rtk gh pr checks        # Compact PR checks (79%)
+rtk gh run list         # Compact workflow runs (82%)
+rtk gh issue list       # Compact issue list (80%)
+rtk gh api              # Compact API responses (26%)
+```
+
+### JavaScript/TypeScript Tooling (70-90% savings)
+```bash
+rtk pnpm list           # Compact dependency tree (70%)
+rtk pnpm outdated       # Compact outdated packages (80%)
+rtk pnpm install        # Compact install output (90%)
+rtk npm run <script>    # Compact npm script output
+rtk npx <cmd>           # Compact npx command output
+rtk prisma              # Prisma without ASCII art (88%)
+```
+
+### Files & Search (60-75% savings)
+```bash
+rtk ls <path>           # Tree format, compact (65%)
+rtk read <file>         # Code reading with filtering (60%)
+rtk grep <pattern>      # Search grouped by file (75%)
+rtk find <pattern>      # Find grouped by directory (70%)
+```
+
+### Analysis & Debug (70-90% savings)
+```bash
+rtk err <cmd>           # Filter errors only from any command
+rtk log <file>          # Deduplicated logs with counts
+rtk json <file>         # JSON structure without values
+rtk deps                # Dependency overview
+rtk env                 # Environment variables compact
+rtk summary <cmd>       # Smart summary of command output
+rtk diff                # Ultra-compact diffs
+```
+
+### Infrastructure (85% savings)
+```bash
+rtk docker ps           # Compact container list
+rtk docker images       # Compact image list
+rtk docker logs <c>     # Deduplicated logs
+rtk kubectl get         # Compact resource list
+rtk kubectl logs        # Deduplicated pod logs
+```
+
+### Network (65-70% savings)
+```bash
+rtk curl <url>          # Compact HTTP responses (70%)
+rtk wget <url>          # Compact download output (65%)
+```
+
+### Meta Commands
+```bash
+rtk gain                # View token savings statistics
+rtk gain --history      # View command history with savings
+rtk discover            # Analyze Claude Code sessions for missed RTK usage
+rtk proxy <cmd>         # Run command without filtering (for debugging)
+rtk init                # Add RTK instructions to CLAUDE.md
+rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
+```
+
+## Token Savings Overview
+
+| Category | Commands | Typical Savings |
+|----------|----------|-----------------|
+| Tests | vitest, playwright, cargo test | 90-99% |
+| Build | next, tsc, lint, prettier | 70-87% |
+| Git | status, log, diff, add, commit | 59-80% |
+| GitHub | gh pr, gh run, gh issue | 26-87% |
+| Package Managers | pnpm, npm, npx | 70-90% |
+| Files | ls, read, grep, find | 60-75% |
+| Infrastructure | docker, kubectl | 85% |
+| Network | curl, wget | 65-70% |
+
+Overall average: **60-90% token reduction** on common development operations.
+<!-- /rtk-instructions -->

@@ -1,6 +1,6 @@
 """Marketplace models: listings, trades, notifications, price history (3.5)."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Any
 from sqlmodel import SQLModel, Field
 from sqlalchemy import Column
@@ -36,7 +36,7 @@ class MarketplaceListing(SQLModel, table=True):
     sold_at: Optional[datetime] = Field(default=None)
     cancelled_at: Optional[datetime] = Field(default=None)
     expired_at: Optional[datetime] = Field(default=None)
-    updated_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # =============================================================================

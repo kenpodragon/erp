@@ -53,7 +53,6 @@ const StoryMode: React.FC<StoryModeProps> = ({
   const tickTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const [isLoading, setIsLoading] = React.useState(true);
-  const [farmMode, setFarmMode] = React.useState(false);
   const [gameConfigs, setGameConfigs] = React.useState<Record<string, unknown>>({});
   const [forceOdometerUpdate, setForceOdometerUpdate] = React.useState(false);
   const [autoProgress, setAutoProgress] = React.useState(true);
@@ -79,12 +78,9 @@ const StoryMode: React.FC<StoryModeProps> = ({
     unlocks: string[];
   } | null>(null);
 
-  // Sync farmMode with external if needed
-  useEffect(() => {
-    if (externalFarmMode !== farmMode) {
-      setFarmMode(externalFarmMode);
-    }
-  }, [externalFarmMode]);
+  // farmMode is controlled by the parent (MainGameLayout) — no local copy
+  const farmMode = externalFarmMode;
+  const setFarmMode = (val: boolean) => onFarmModeChange?.(val);
 
   const setShowSummary = (val: boolean) => {
     onShowSummaryChange?.(val);

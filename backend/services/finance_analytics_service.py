@@ -233,9 +233,9 @@ def get_subscription_metrics(session: Session) -> dict:
 
     plan_split = session.execute(
         text(
-            "SELECT plan_id, COUNT(*) AS cnt "
+            "SELECT plan_key, COUNT(*) AS cnt "
             "FROM player_subscriptions WHERE status = 'active' "
-            "GROUP BY plan_id"
+            "GROUP BY plan_key"
         )
     ).fetchall()
 
@@ -272,17 +272,16 @@ def get_subscription_metrics(session: Session) -> dict:
 
     conversion_rate = round(active / max(total_players, 1) * 100, 2)
 
-    # MRR: sum of active subscription amounts (price_cents / 100)
-    mrr_cents = session.execute(
-        text(
-            "SELECT COALESCE(SUM(price_cents), 0) FROM player_subscriptions "
-            "WHERE status = 'active'"
-        )
-    ).scalar() or 0
+    # MRR: estimate from active count × plan price (plan prices not stored on sub row)
+    # Use a fixed mapping since price_cents is not on player_subscriptions
+    plan_prices = {"ascendant_monthly": 499, "ascendant_annual": 3999}
+    mrr_cents = sum(
+        plan_prices.get(str(r.plan_key), 499) * r.cnt for r in plan_split
+    )
 
     return {
         "active_count": active,
-        "plan_split": {str(r.plan_id): r.cnt for r in plan_split},
+        "plan_split": {str(r.plan_key): r.cnt for r in plan_split},
         "past_due": past_due,
         "churn_30d": {
             "voluntary": voluntary_churn,
@@ -327,7 +326,7 @@ def get_shop_analytics(session: Session) -> dict:
     active_boosters = session.execute(
         text(
             "SELECT COUNT(*) FROM player_active_boosters "
-            "WHERE expires_at > NOW()"
+            "WHERE status = 'active'"
         )
     ).scalar() or 0
 
@@ -415,7 +414,7 @@ def get_donation_analytics(session: Session) -> dict:
             "  COUNT(DISTINCT player_id) AS total_donors, "
             "  COALESCE(SUM(CASE WHEN created_at >= :cutoff THEN amount_cents ELSE 0 END), 0) AS total_30d, "
             "  COALESCE(AVG(amount_cents), 0) AS avg_amount "
-            "FROM donations WHERE status = 'completed'"
+            "FROM donations"
         ),
         {"cutoff": cutoff_30d},
     ).fetchone()
@@ -423,20 +422,19 @@ def get_donation_analytics(session: Session) -> dict:
     # Tier distribution
     tiers = session.execute(
         text(
-            "SELECT tier, COUNT(*) AS cnt, COALESCE(SUM(amount_cents), 0) AS total_cents "
-            "FROM donations WHERE status = 'completed' "
-            "GROUP BY tier ORDER BY total_cents DESC"
+            "SELECT patron_tier AS tier, COUNT(*) AS cnt, COALESCE(SUM(amount_cents), 0) AS total_cents "
+            "FROM donations WHERE patron_tier IS NOT NULL "
+            "GROUP BY patron_tier ORDER BY total_cents DESC"
         )
     ).fetchall()
 
     # Top 10 donors
     top_donors = session.execute(
         text(
-            "SELECT d.player_id, p.display_name, SUM(d.amount_cents) AS total_cents, COUNT(*) AS donation_count "
+            "SELECT d.player_id, p.alias AS display_name, SUM(d.amount_cents) AS total_cents, COUNT(*) AS donation_count "
             "FROM donations d "
             "JOIN players p ON p.id = d.player_id "
-            "WHERE d.status = 'completed' "
-            "GROUP BY d.player_id, p.display_name "
+            "GROUP BY d.player_id, p.alias "
             "ORDER BY total_cents DESC LIMIT 10"
         )
     ).fetchall()
@@ -445,7 +443,7 @@ def get_donation_analytics(session: Session) -> dict:
     repeat_donors = session.execute(
         text(
             "SELECT COUNT(*) FROM ( "
-            "  SELECT player_id FROM donations WHERE status = 'completed' "
+            "  SELECT player_id FROM donations "
             "  GROUP BY player_id HAVING COUNT(*) >= 2 "
             ") r"
         )

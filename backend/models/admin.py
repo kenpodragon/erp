@@ -74,7 +74,7 @@ class AdminEssenceAdjustment(SQLModel, table=True):
     balance_before: float = Field(nullable=False)
     balance_after: float = Field(nullable=False)
     reason: str = Field(max_length=500, nullable=False)
-    created_at: Optional[datetime] = Field(default=None)
+    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class AdminWhitelistIP(SQLModel, table=True):

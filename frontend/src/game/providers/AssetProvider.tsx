@@ -53,7 +53,7 @@ export const AssetProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setIsLoading(true);
     try {
       const queryKeys = needed.join(',');
-      const res = await api.get(`/api/admin/assets/batch?keys=${encodeURIComponent(queryKeys)}`);
+      const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(queryKeys)}`);
       if (res.ok) {
         const data = await res.json();
         // The batch endpoint returns an array of asset objects

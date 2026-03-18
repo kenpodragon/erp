@@ -94,6 +94,7 @@ class PlayerArtifact(SQLModel, table=True):
     acquired_from: Optional[str] = Field(default=None, max_length=100)
     is_new: bool = Field(default=True)
     acquired_at: Optional[datetime] = Field(default=None)
+    marketplace_listing_id: Optional[int] = Field(default=None)
 
 
 # =============================================================================

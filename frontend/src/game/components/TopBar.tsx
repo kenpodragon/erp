@@ -84,7 +84,7 @@ function formatBoosterTimeShort(seconds: number): string {
 }
 
 const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) => {
-  const { state, playSFX, setReduceMotion } = useGame();
+  const { state, playSFX, setReduceMotion, updateAudioSettings } = useGame();
   const [showSettings, setShowSettings] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings);
@@ -116,9 +116,9 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
   const handleMuteToggle = useCallback(() => {
     const next = { ...audioSettings, masterMuted: !audioSettings.masterMuted };
     setAudioSettings(next);
-    saveAudioSettingsLocal(next);
+    updateAudioSettings(next);
     api.patch('/api/players/me/settings', { master_muted: next.masterMuted }).catch(() => {});
-  }, [audioSettings]);
+  }, [audioSettings, updateAudioSettings]);
 
   // Local state for sliders during editing
   const [localSettings, setLocalSettings] = useState({
@@ -245,6 +245,9 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
         <button className="settings-btn" title="Game Settings" onClick={() => { playSFX('sfx_ui_click'); setShowSettings(true); }}>
           {'\u2699\uFE0F'}
         </button>
+        <a href="/guide" target="_blank" rel="noopener noreferrer" className="settings-btn" title="Player Guide" style={{ textDecoration: 'none' }}>
+          {'?'}
+        </a>
       </div>
 
       {showSettings && (
@@ -293,7 +296,7 @@ const TopBar: React.FC<TopBarProps> = ({ player, character, onPlayerUpdate }) =>
         open={showAudioSettings}
         onClose={() => setShowAudioSettings(false)}
         settings={audioSettings}
-        onChange={setAudioSettings}
+        onChange={(s: AudioSettings) => { setAudioSettings(s); updateAudioSettings(s); }}
       />
     </header>
   );

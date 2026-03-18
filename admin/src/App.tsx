@@ -22,6 +22,7 @@ import AchievementEditor from './pages/AchievementEditor'
 import FinanceDashboard from './pages/FinanceDashboard'
 import AssetRegistry from './pages/AssetRegistry'
 import DevAudit from './pages/DevAudit'
+import AdminHelp from './pages/help/AdminHelp'
 
 /* ── Nav Dropdown (hover-based grouped menu) ── */
 function NavDropdown({ label, children, activePaths }: {
@@ -90,6 +91,7 @@ function AdminNavbar({ user, me, apiOnline, dbOnline, health, onLogout }: {
         </NavDropdown>
 
         <NavLink to="/finance" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Finance</NavLink>
+        <NavLink to="/help" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>Help</NavLink>
 
         <NavDropdown label="System" activePaths={['/config', '/audit-log', '/dev-audit', '/access-control']}>
           <NavLink to="/config" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Server Config</NavLink>
@@ -335,6 +337,7 @@ function App() {
             <Route path="/finance" element={<div className="admin-content"><FinanceDashboard /></div>} />
             <Route path="/audit-log" element={<div className="admin-content"><AuditLog /></div>} />
             <Route path="/dev-audit" element={<div className="admin-content"><DevAudit /></div>} />
+            <Route path="/help" element={<div className="admin-content"><AdminHelp /></div>} />
             {me?.is_owner && (
               <Route path="/access-control" element={<div className="admin-content"><AccessControl /></div>} />
             )}

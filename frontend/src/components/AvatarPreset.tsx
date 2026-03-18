@@ -49,7 +49,7 @@ async function fetchDefinition(presetKey: string): Promise<CachedDefinition | nu
   const promise = (async () => {
     try {
       // Try batch endpoint first (single key)
-      const res = await api.get(`/api/admin/assets/batch?keys=${encodeURIComponent(assetKey)}`);
+      const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(assetKey)}`);
       if (res.ok) {
         const data = await res.json();
         const items = Array.isArray(data) ? data : (data.items || []);

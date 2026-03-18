@@ -6,6 +6,7 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../../../api';
+import AssetIcon from '../AssetIcon';
 import './NarrativeBlock.css';
 
 interface Beat {
@@ -181,12 +182,14 @@ const NarrativeBlock: React.FC<Props> = ({ sceneId, onComplete, wpm = 200, onWpm
               style={{ fontSize: `${fontSize}px` }}
             >
               {beat.image_path ? (
-                <img
-                  src={beat.image_path}
+                <AssetIcon
+                  assetKey={beat.image_path}
+                  category="narrative_image"
                   alt={`Story beat ${beat.beat_number}`}
                   className="narrative-image"
                   draggable={false}
                   onContextMenu={e => e.preventDefault()}
+                  fallback={<p>{beat.text}</p>}
                 />
               ) : (
                 <p>{beat.text}</p>

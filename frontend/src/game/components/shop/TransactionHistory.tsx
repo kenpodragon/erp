@@ -128,9 +128,9 @@ const TransactionHistory: React.FC = () => {
                   </td>
                   <td className="tx-desc">{tx.description}</td>
                   <td className={`tx-amount ${tx.shard_amount >= 0 ? 'positive' : 'negative'}`}>
-                    {tx.shard_amount >= 0 ? '+' : ''}{tx.shard_amount.toLocaleString()}
+                    {(tx.shard_amount ?? 0) >= 0 ? '+' : ''}{(tx.shard_amount ?? 0).toLocaleString()}
                   </td>
-                  <td className="tx-balance">{tx.balance_after.toLocaleString()}</td>
+                  <td className="tx-balance">{(tx.balance_after ?? 0).toLocaleString()}</td>
                   <td className="tx-actions">
                     {tx.refund_eligible && (
                       <button

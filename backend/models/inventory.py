@@ -113,6 +113,7 @@ class PlayerInventory(SQLModel, table=True):
     equipped_slot: Optional[str] = Field(max_length=50)
     quantity: int = Field(default=1)
     acquired_at: Optional[datetime] = Field(default=None)
+    marketplace_listing_id: Optional[int] = Field(default=None)
 
 
 class Artifact(SQLModel, table=True):

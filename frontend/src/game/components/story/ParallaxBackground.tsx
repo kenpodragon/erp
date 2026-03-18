@@ -23,7 +23,7 @@ async function fetchBgDef(assetKey: string): Promise<BackgroundRenderer.RenderDe
   if (bgDefFailed.has(assetKey)) return null;
 
   try {
-    const res = await api.get(`/api/admin/assets/batch?keys=${encodeURIComponent(assetKey)}`);
+    const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(assetKey)}`);
     if (res.ok) {
       const data = await res.json();
       const items = Array.isArray(data) ? data : (data.items || []);
@@ -82,8 +82,8 @@ const ParallaxBackground: React.FC<ParallaxBackgroundProps> = ({ width, height, 
     const bgNum = ((chapterId - 1) % 4) + 1;
 
     const load = async () => {
-      const farKey = `bg_${bgNum}_far`;
-      const midKey = `bg_${bgNum}_mid`;
+      const farKey = `bg_ch${bgNum}_far`;
+      const midKey = `bg_ch${bgNum}_mid`;
 
       const [farDef, midDef] = await Promise.all([
         fetchBgDef(farKey),

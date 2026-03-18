@@ -261,12 +261,12 @@ async def shard_adjust(
     # Log to activity_events
     session.execute(
         text(
-            "INSERT INTO activity_events (event_type, description, metadata, created_at) "
-            "VALUES ('admin_shard_adjust', :desc, :meta, NOW())"
+            "INSERT INTO activity_events (player_id, event_type, event_data, created_at) "
+            "VALUES (:player_id, 'admin_shard_adjust', CAST(:event_data AS jsonb), NOW())"
         ),
         {
-            "desc": f"Admin {admin_email} {body.adjust_type}ed {body.amount} shards to player {body.player_id}",
-            "meta": f'{{"player_id": {body.player_id}, "adjust_type": "{body.adjust_type}", "amount": {body.amount}, "reason": "{body.reason}"}}',
+            "player_id": body.player_id,
+            "event_data": f'{{"admin_email": "{admin_email}", "adjust_type": "{body.adjust_type}", "amount": {body.amount}, "reason": "{body.reason}"}}',
         },
     )
     session.commit()

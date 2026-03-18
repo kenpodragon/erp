@@ -1,5 +1,6 @@
 """Chat WebSocket and REST endpoints (REC 2.6.4)."""
 
+import os
 import logging
 import asyncio
 from datetime import datetime, timezone
@@ -9,7 +10,8 @@ from sqlmodel import Session, select
 
 from db import engine, get_session
 from auth import verify_firebase_token
-from models import Player, PlayerCharacter
+from models import Player, PlayerCharacter, ServerConfig
+from models.player import PlayerSettings
 from models.chat import ChatChannel
 from models.story_mode import GameConfig
 from services.chat import manager
@@ -35,24 +37,49 @@ async def chat_websocket(
     token: str = Query(...),
 ):
     """WebSocket endpoint for real-time chat."""
-    # Authenticate via JWT token in query param
-    try:
-        decoded = verify_firebase_token(token)
-    except Exception:
-        await websocket.close(code=4001, reason="Invalid token")
-        return
+    player = None
 
-    # Look up player
-    with Session(engine) as session:
-        player = session.exec(
-            select(Player).where(Player.firebase_uid == decoded["uid"])
-        ).first()
+    # Auth bypass for WebSocket (mirrors HTTP bypass in auth.py)
+    if token.startswith("bypass:") and os.getenv("ALLOW_AUTH_BYPASS", "").lower() == "true":
+        spoof_id_str = token.split(":", 1)[1]
+        with Session(engine) as session:
+            bypass_cfg = session.exec(
+                select(ServerConfig).where(ServerConfig.key == "ops.auth_bypass_enabled")
+            ).first()
+            if bypass_cfg and str(bypass_cfg.value).lower() in ("true", "1"):
+                try:
+                    player = session.exec(
+                        select(Player).where(Player.id == int(spoof_id_str))
+                    ).first()
+                except (ValueError, TypeError):
+                    pass
         if not player:
-            await websocket.close(code=4002, reason="Player not found")
+            await websocket.close(code=4001, reason="Invalid bypass token")
+            return
+    else:
+        # Normal Firebase token verification
+        try:
+            decoded = verify_firebase_token(token)
+        except Exception:
+            await websocket.close(code=4001, reason="Invalid token")
             return
 
-        player_id = player.id
-        player_name = player.alias or player.google_display_name or "Anonymous"
+        with Session(engine) as session:
+            player = session.exec(
+                select(Player).where(Player.firebase_uid == decoded["uid"])
+            ).first()
+
+    if not player:
+        await websocket.close(code=4002, reason="Player not found")
+        return
+
+    # Capture player_id while still in scope (scalar is safe on detached instance)
+    player_id = player.id
+
+    # Look up player info in a fresh session
+    with Session(engine) as session:
+        p = session.get(Player, player_id)
+        player_name = (p.alias or p.google_display_name or "Anonymous") if p else "Anonymous"
         player_level = 1
 
         # Get character info
@@ -63,8 +90,10 @@ async def chat_websocket(
             player_name = char.character_name or player_name
             player_level = char.level or 1
 
-        # Check if muted
-        ps = player.settings
+        # Check if muted (query directly to avoid detached-instance error)
+        ps = session.exec(
+            select(PlayerSettings).where(PlayerSettings.player_id == player_id)
+        ).first()
         if ps and ps.chat_muted:
             muted_until = ps.chat_muted_until
             if muted_until is None or muted_until > datetime.now(timezone.utc).isoformat():

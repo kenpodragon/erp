@@ -3,8 +3,9 @@
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field as PydField
+from sqlmodel import Session, col, select
 
 from db import get_session
 from auth import get_current_player
@@ -15,6 +16,8 @@ from models import (
     Artifact, PlayerCollection, BossCompletion,
     EntityType,
 )
+from models.story_mode import DevContentAudit
+from models.asset_registry import AssetRegistryEntry
 
 logger = logging.getLogger(__name__)
 
@@ -403,3 +406,83 @@ async def get_encountered_enemies(
             "gameplay_data": gd.model_dump()
         } for e, gd in enemies
     ]
+
+
+# ---------------------------------------------------------------------------
+# Public asset batch endpoint (player-facing, no admin auth required)
+# ---------------------------------------------------------------------------
+
+@router.get("/assets/batch")
+def public_asset_batch(
+    keys: str = Query(..., description="Comma-separated asset keys"),
+    session: Session = Depends(get_session),
+):
+    """Fetch asset render definitions by key.  No auth — assets are not secret."""
+    key_list = [k.strip() for k in keys.split(",") if k.strip()]
+    if not key_list or len(key_list) > 50:
+        return {"items": []}
+
+    items = session.exec(
+        select(AssetRegistryEntry).where(
+            AssetRegistryEntry.asset_key.in_(key_list)  # type: ignore[union-attr]
+        )
+    ).all()
+
+    return {
+        "items": [
+            {
+                "asset_key": item.asset_key,
+                "category": item.category,
+                "render_definition": item.render_definition,
+                "display_name": item.display_name,
+                "tags": item.tags,
+            }
+            for item in items
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# Frontend audit reporting (fire-and-forget from AssetRenderer)
+# ---------------------------------------------------------------------------
+
+class FrontendAuditReport(BaseModel):
+    audit_type: str = PydField(max_length=50)
+    asset_key: str = PydField(max_length=150)
+    category: str = PydField(max_length=50)
+    source: str = PydField(default="frontend_renderer", max_length=50)
+
+
+@router.post("/audit", status_code=204)
+def report_frontend_audit(
+    body: FrontendAuditReport,
+    session: Session = Depends(get_session),
+):
+    """Accept missing-asset reports from the frontend renderer.
+
+    Deduplicates on (audit_type, entity_name) so repeated renders of the
+    same missing asset don't create duplicate rows.  No auth required —
+    this is a best-effort content-pipeline signal.
+    """
+    if body.audit_type != "missing_asset":
+        return
+
+    existing = session.exec(
+        select(DevContentAudit)
+        .where(DevContentAudit.audit_type == "missing_asset")
+        .where(DevContentAudit.entity_name == body.asset_key)
+        .where(col(DevContentAudit.status).notin_(["resolved", "wont_fix"]))
+    ).first()
+    if existing:
+        return
+
+    audit = DevContentAudit(
+        audit_type="missing_asset",
+        entity_type="asset",
+        entity_name=body.asset_key,
+        missing_field=body.category,
+        logged_at=datetime.now(timezone.utc),
+    )
+    session.add(audit)
+    session.commit()
+    logger.info("Audit logged: missing_asset asset_key=%s category=%s", body.asset_key, body.category)

@@ -21,12 +21,54 @@ vi.mock('./firebase', () => ({
   googleProvider: {},
 }))
 
+// Default mock response factory for api calls
+const mockResponse = (data: any = {}) => Promise.resolve({
+  ok: true,
+  json: () => Promise.resolve(data),
+});
+
 // Mock API
 vi.mock('./api', () => ({
   api: {
-    get: vi.fn(),
-    post: vi.fn(),
-    patch: vi.fn(),
+    get: vi.fn(() => mockResponse()),
+    post: vi.fn(() => mockResponse()),
+    patch: vi.fn(() => mockResponse()),
   },
   apiEvents: new EventTarget(),
+  isAuthBypassed: vi.fn(() => false),
+  setAuthBypass: vi.fn(),
 }))
+
+// Mock chatClient
+vi.mock('./game/services/chatClient', () => ({
+  chatClient: {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    send: vi.fn(),
+    onMessage: vi.fn(),
+    offMessage: vi.fn(),
+  },
+}))
+
+// Mock @pixi/react to avoid react-reconciler resolution issues in jsdom
+vi.mock('@pixi/react', () => ({
+  Application: ({ children }: any) => children,
+  extend: vi.fn(),
+  useTick: vi.fn(),
+  TilingSprite: ({ children }: any) => children,
+}))
+
+// Mock pixi.js
+vi.mock('pixi.js', () => ({
+  Container: vi.fn(),
+  Graphics: vi.fn(),
+  Text: vi.fn(),
+  Sprite: vi.fn(),
+  TilingSprite: vi.fn(),
+  TextStyle: vi.fn().mockImplementation(() => ({})),
+  Assets: { load: vi.fn().mockResolvedValue({}) },
+  Texture: vi.fn(),
+}))
+
+// Mock scrollTo for jsdom (used by NarrativeBlock)
+Element.prototype.scrollTo = vi.fn() as any;

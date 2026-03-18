@@ -122,7 +122,12 @@ const CombatContent: React.FC<InnerProps> = ({
   const AUTO_DPS_TICK_MS = Number(gameConfigs['auto_dps_tick_ms'] ?? AUTO_DPS_TICK_MS_DEFAULT);
 
   const [enemy, setEnemy] = useState<Enemy | null>(null);
-  const [isFightingBoss, setIsFightingBoss] = useState(false);
+  const [isFightingBoss, _setIsFightingBoss] = useState(false);
+  const isFightingBossRef = useRef(false);
+  const setIsFightingBoss = (val: boolean) => { isFightingBossRef.current = val; _setIsFightingBoss(val); };
+  // Ref mirrors for values used inside setWaveCount updater (avoids stale closures)
+  const currentZoneRef = useRef(session.currentZone);
+  currentZoneRef.current = session.currentZone;
   const [dmgNumbers, setDmgNumbers] = useState<DamageNumber[]>([]);
   const [deathParticles, setDeathParticles] = useState<DeathParticle[]>([]);
   const [shockwaves, setShockwaves] = useState<Shockwave[]>([]);
@@ -195,36 +200,38 @@ const CombatContent: React.FC<InnerProps> = ({
   const advanceWave = useCallback(() => {
     setWaveCount(prev => {
       const next = prev + 1;
-      if (isFightingBoss) {
+      // Use refs for synchronous read — React state may not have flushed yet
+      const zone = currentZoneRef.current;
+      if (isFightingBossRef.current) {
         // Just killed the boss
         setIsFightingBoss(false);
-        const wasRequiredZone = session.currentZone >= requiredWaves;
+        const wasRequiredZone = zone >= requiredWaves;
         if (wasRequiredZone && !extraWavesMode) {
           onWavesComplete();
         }
-        
-        onZoneAdvance(session.currentZone + 1);
-        return 0; 
+
+        onZoneAdvance(zone + 1);
+        return 0;
       } else {
         if (next < MONSTERS_PER_ZONE) {
           // Progress to next normal mob
-          setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
+          setTimeout(() => spawnEnemy(enemyPool, zone, false), 600);
           return next;
         } else {
           // Just finished 10 mobs
           if (autoProgress) {
             setIsFightingBoss(true);
-            setTimeout(() => spawnEnemy(enemyPool, session.currentZone, true), 600);
+            setTimeout(() => spawnEnemy(enemyPool, zone, true), 600);
             return MONSTERS_PER_ZONE;
           } else {
             // "Ready" state - keep waveCount at 10, spawn another normal mob for farming
-            setTimeout(() => spawnEnemy(enemyPool, session.currentZone, false), 600);
+            setTimeout(() => spawnEnemy(enemyPool, zone, false), 600);
             return MONSTERS_PER_ZONE;
           }
         }
       }
     });
-  }, [isFightingBoss, session.currentZone, requiredWaves, extraWavesMode, onWavesComplete, autoProgress, onZoneAdvance, enemyPool, spawnEnemy, MONSTERS_PER_ZONE]);
+  }, [requiredWaves, extraWavesMode, onWavesComplete, autoProgress, onZoneAdvance, enemyPool, spawnEnemy, MONSTERS_PER_ZONE]);
 
   const handleChallengeBoss = useCallback(() => {
     if (isFightingBoss) return;
