@@ -1,73 +1,102 @@
-# React + TypeScript + Vite
+# Elysium Rising — Admin Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Internal management dashboard for the Elysium Rising MMORPG. Built with React + TypeScript + Vite.
 
-Currently, two official plugins are available:
+## What This Is
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The admin dashboard is the primary internal tool for:
 
-## React Compiler
+- **Game Config Management** — Tune scaling parameters (XP multipliers, drop rates, progression curves) in real time via the `game_configs` table.
+- **Player Management** — Browse player accounts, inspect character state, manage roles, and review account history.
+- **Content Editing** — Manage lore content, enemies, chapters, and in-game items.
+- **Analytics** — Monitor active sessions, player progression, payment events, and support tickets.
+- **Support** — Review and act on support tickets raised by players.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This dashboard is internal-only. It is never exposed to end users.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Setup
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Docker + Docker Compose
+- A valid `backend/.env` with database and Firebase credentials
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Start the full stack
+
+```bash
+docker-compose up --build -d
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Service | URL |
+|---------|-----|
+| Admin Dashboard | http://localhost:5174 |
+| Player Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Local dev (without Docker)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd admin
+npm install
+npm run dev
 ```
+
+The admin dev server starts on `http://localhost:5174` by default. It proxies API requests to the backend at `http://localhost:8000`.
+
+### Environment variables
+
+The admin app reads from `admin/.env.local` for local overrides. The key variable:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+---
+
+## Authentication
+
+- **Production:** Firebase JWT via Google SSO. Admin users must have `is_admin = true` in the `players` table.
+- **Development:** Set `DEV_AUTH_BYPASS=true` in `backend/.env` and pass `X-Dev-Player-Id: <player_uuid>` headers to skip Firebase token validation. The role check (`is_admin`) is still enforced.
+
+See [`docs/API_GUIDE.md`](docs/API_GUIDE.md) for full auth details and curl examples.
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`docs/API_GUIDE.md`](docs/API_GUIDE.md) | Auth flow, key endpoints, curl examples for debugging and config tuning |
+| [`docs/inst/API_REFERENCE.md`](../docs/inst/API_REFERENCE.md) | Full API reference — Section 21 covers all admin endpoints |
+| [`db/data_dictionary.md`](../db/data_dictionary.md) | Database schema reference |
+| [`docs/inst/TESTING.md`](../docs/inst/TESTING.md) | Testing guide |
+
+---
+
+## Testing
+
+Component and unit tests use Vitest + React Testing Library. Test files are named `*.test.tsx` and live next to their components.
+
+```bash
+cd admin
+npm run test
+```
+
+For full stack E2E tests, use the unified test runner from the project root:
+
+```bash
+testing/run_tests.bat   # Windows
+testing/run_tests.sh    # Linux/Mac
+```
+
+---
+
+## Tech Stack
+
+- React 18 + TypeScript
+- Vite (dev server + build)
+- Vanilla CSS (no CSS frameworks)
+- Firebase Auth (Google SSO)
+- Vitest + React Testing Library (unit/component tests)

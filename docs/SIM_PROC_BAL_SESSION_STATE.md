@@ -96,7 +96,61 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 
 ---
 
-## Session Plan
+## Simulation Toolkit
+
+**Status:** Design & planning complete. Implementation next.
+
+Sessions 1-4 from the original manual plan are now automated by the simulation toolkit.
+- **Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
+- **Plan:** `docs/plans/2026-03-20-simulation-toolkit-plan.md`
+- **Toolkit location:** `tools/sim/`
+
+### Toolkit Layers
+1. **Math Model** (`tools/sim/math_model.py`) — Offline formula crunching: zone progression, economy, XP curves, wall detection, min power gating, boss DPS checks. Replaces manual Sessions 1 & 4.
+2. **API Bot** (`tools/sim/api_bot.py`) — Automated player simulation against live server. 5 profiles (casual, power_gamer, idle_only, no_autoskills, new_user). Replaces manual Sessions 2 & 3.
+3. **Browser Bot** (`tools/sim/browser_bot.py`) — Playwright headless for stability testing, pacing validation, load testing with Docker resource scaling.
+4. **Results & Iteration** (`tools/sim/results/`) — Structured collection, comparison tool, config override mechanism, migration 062 generator.
+
+### Implementation Progress
+
+#### Phase 1: API Documentation
+- [ ] Scan all backend routes → generate `docs/inst/API_REFERENCE.md`
+- [ ] Create `admin/docs/API_GUIDE.md` and update `admin/README.md`
+
+#### Phase 2: Math Model
+- [ ] Scaffold `tools/sim/` directory, profiles, requirements
+- [ ] Build config/formula module with tests
+- [ ] Build simulation engine (zone, economy, XP, walls, bosses, archetypes)
+- [ ] Content data snapshot from DB
+
+#### Phase 3: API Bot
+- [ ] Build async API client wrapping all game endpoints
+- [ ] Build bot runner with profile-driven behavior
+- [ ] Build comparison tool (diff two runs)
+
+#### Phase 4: Browser Bot
+- [ ] Sustained play stability (20 CPS for hours)
+- [ ] Pacing validation (Ch1 first-play vs replay timing)
+- [ ] Load testing (Docker resource scaling matrix)
+- [ ] Endurance farming (4-8 hour continuous)
+
+#### Phase 5: Results & Migration
+- [ ] Migration 062 generator
+- [ ] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`)
+- [ ] TODO.md updates
+
+#### Phase 6: First Iteration Run
+- [ ] Run math model baseline for all profiles
+- [ ] Run API bot validation → compare to math model → calibrate
+- [ ] First tuning pass → iterate until casual projects ~60 hours
+- [ ] Generate migration 062 with final tuned configs
+
+### Original Session Plan (Reference)
+
+The original manual sessions are preserved below for reference. The toolkit automates most of this work.
+
+<details>
+<summary>Click to expand original manual session plan</summary>
 
 ### Session 1: Baseline Measurement & Math Modeling
 **Goal:** Build a spreadsheet/script model of the current progression curve. Calculate theoretical times without playing.
@@ -172,13 +226,7 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 **Goal:** Adjust scaling parameters to hit design targets.
 
 - [ ] **5.0** Identify misaligned curves from Sessions 1-4
-  - Zone HP too steep? Too shallow?
-  - Essence conversion too generous? Too stingy?
-  - Character level curve too slow? Too fast?
-  - Boss HP vs player power mismatch?
 - [ ] **5.1** Propose new config values
-  - Document current → proposed for each config key
-  - Explain rationale (e.g., "HP scaling 1.55→1.45 because Zone 15+ stalls for casual players")
 - [ ] **5.2** Create migration 062 with updated game_configs
 - [ ] **5.3** Re-run simulations with new values — verify targets met
 
@@ -187,32 +235,50 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 
 - [ ] **6.0** Measure average words per scene across all chapters
 - [ ] **6.1** At WPM 200: does combat always finish before narrative? Vice versa?
-  - The dual-condition gate means BOTH must complete
-  - If combat finishes 2 minutes early, player waits → bad feel
-  - If narrative finishes 2 minutes early, easy combat zones waste time
 - [ ] **6.2** Calculate ideal wave count per scene to match narrative length
-  - May need per-scene wave_count overrides instead of global default
 - [ ] **6.3** Propose WPM-aware wave scaling formula
 
-### Session 7: Music Loop & Audio Timing (from TODO)
-**Goal:** Extend music loops to 2-3 minutes and verify timing.
-
-- [ ] **7.0** Measure current loop durations for all 21 atmospheres
-- [ ] **7.1** Redesign music definition schemas for longer sequences
-- [ ] **7.2** Update `generate_8bit_music.py` for longer compositions
-- [ ] **7.3** Regenerate all atmosphere music
-- [ ] **7.4** Verify in-game: no jarring loop restarts
+### Session 7: Music Loop & Audio Timing (from TODO — separate workstream)
+- See `docs/TODO.md` Music Loop section
 
 ### Session 8: Final Verification & Documentation
-**Goal:** Validate all changes with end-to-end playthrough.
-
-- [ ] **8.0** Fresh-start playthrough: Chapter 1-5 with new scaling
-  - Verify pacing feels right
-  - Verify boss difficulty appropriate
-  - Verify farm mode useful but not required
+- [ ] **8.0** Fresh-start playthrough with new scaling
 - [ ] **8.1** Update game_configs documentation
 - [ ] **8.2** Update Player Guide with any changed mechanics
 - [ ] **8.3** Final migration script reviewed and committed
+
+</details>
+
+---
+
+## Known Issues (from brainstorming session 2026-03-20)
+- **Chapter 1 replay too fast** — farm mode triggers almost immediately on replay because wave HP is trivial for a returning player. Needs investigation: is this a scaling issue or a replay-specific pacing issue?
+- **Narrative vs combat mismatch** — dual-condition gate means both narrative and waves must complete. If one finishes way before the other, the player either waits or has dead time. Math model content timeline (5.3.4) will quantify this.
+- **No autoskills wall** — a player who never trains idle skills should eventually hit a wall but shouldn't be stuck in Book 1 forever. Min power gating analysis (5.3.7) will identify where this wall occurs.
+- **Endless farming diminishing returns** — farming should be viable indefinitely but cannot shortcut progression. A player farming wave 2 for 10 hours shouldn't be able to skip to Book 3.
+
+---
+
+## API Surface (discovered 2026-03-20)
+
+Key endpoints for simulation (full reference pending in `docs/inst/API_REFERENCE.md`):
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/game/story/session/start` | POST | Create/resume combat session |
+| `/api/game/story/session/{id}/tick` | POST | Batch combat tick (clicks + elapsed time) |
+| `/api/game/story/session/{id}/upgrade` | POST | Purchase in-session upgrade |
+| `/api/game/story/session/{id}/skill` | POST | Activate skill |
+| `/api/game/story/session/{id}/narrative` | POST | Update narrative progress |
+| `/api/game/story/session/{id}/complete` | POST | Finalize session → essence conversion |
+| `/api/game/story/configs` | GET | Game config values for combat engine |
+| `/api/game/training/start` | POST | Begin idle training |
+| `/api/game/training/stop` | POST | Stop idle training |
+| `/api/game/training/status` | GET | Current training state |
+| `/api/game/training/offline-report` | GET | Offline gains report |
+| `/api/game/character/stats` | GET | Computed stat block |
+| `/api/game/character/level` | GET | Level, XP, XP-to-next |
+| `/api/game/map` | GET | Full book/chapter/scene hierarchy |
 
 ---
 
@@ -243,7 +309,13 @@ SELECT * FROM player_story_progress WHERE player_id = 5;
 
 ## Resume Prompt
 ```
-Read docs/SIM_PROC_BAL_SESSION_STATE.md and docs/TODO.md.
-We are doing Simulation & Progression Balancing. Check session state for current progress.
-Start the Docker stack. Use the math models and in-game testing to tune scaling parameters.
+Read these files in order:
+1. docs/SIM_PROC_BAL_SESSION_STATE.md — current state and progress
+2. docs/specs/2026-03-20-simulation-toolkit-design.md — full spec
+3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
+
+We are building the Simulation & Progression Balancing Toolkit.
+Use superpowers:subagent-driven-development to execute the plan task-by-task.
+Start with Phase 1 (API Documentation) — scan all backend routes and generate docs/inst/API_REFERENCE.md.
+The Docker stack should already be running. If not, start it: docker-compose up --build -d
 ```

@@ -3,16 +3,56 @@
 
 ---
 
+## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
+```
+Read these files in order:
+1. docs/SIM_PROC_BAL_SESSION_STATE.md — current state and progress
+2. docs/specs/2026-03-20-simulation-toolkit-design.md — full spec
+3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
+
+We are building the Simulation & Progression Balancing Toolkit.
+Use superpowers:subagent-driven-development to execute the plan task-by-task.
+Start with Phase 1 (API Documentation) — scan all backend routes and generate docs/inst/API_REFERENCE.md.
+The Docker stack should already be running. If not, start it: docker-compose up --build -d
+```
+
+---
+
 ## Simulation & Progression Balancing
-*(Separate from E2E User Testing — long-duration timing tests with stopwatch metrics)*
-- [ ] Needs full breakdown and plan with session tracking
-- [ ] Test timing on Books and idle skill training — ramp feel, challenge, skill impact
-- [ ] Compare clicking + WPM display speed vs 1x reading speed → capture metrics (stopwatch)
-- [ ] Test regular progression (default stats/no gear vs max stats/max gear)
-- [ ] By Book 2: player should be at a specific level with specific passive skills — validate
-- [ ] Target: 2 hours/day active play → complete game in 30 calendar days (60 hours total for 3 books)
-- [ ] Analyze power-gamer path: 24/7 optimized farming, all boosts, max speed
-- [ ] Produce initial scaling defaults → migration 062 SQL script
+*(Automated via simulation toolkit — see spec & plan below)*
+- [x] Full breakdown and plan with session tracking
+  - Spec: `docs/specs/2026-03-20-simulation-toolkit-design.md`
+  - Plan: `docs/plans/2026-03-20-simulation-toolkit-plan.md`
+  - Session state: `docs/SIM_PROC_BAL_SESSION_STATE.md`
+- [ ] **Phase 1:** Generate API documentation (`docs/inst/API_REFERENCE.md`, `admin/docs/API_GUIDE.md`)
+- [ ] **Phase 2:** Build math model (`tools/sim/math_model.py`) — formulas, archetypes, wall detection, boss gating
+- [ ] **Phase 3:** Build API bot (`tools/sim/api_bot.py`) — automated player simulation against live server
+- [ ] **Phase 4:** Build browser bot (`tools/sim/browser_bot.py`) — stability, pacing, load testing
+- [ ] **Phase 5:** Results tooling, migration generator, toolkit guide
+- [ ] **Phase 6:** First iteration run — baseline → validate → tune until casual hits 60hr target
+- [ ] Produce final scaling defaults → migration 062 SQL script
+
+**Resume prompt for new session:**
+```
+Read these files in order:
+1. docs/SIM_PROC_BAL_SESSION_STATE.md — current state and progress
+2. docs/specs/2026-03-20-simulation-toolkit-design.md — full spec
+3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
+
+We are building the Simulation & Progression Balancing Toolkit.
+Use superpowers:subagent-driven-development to execute the plan task-by-task.
+Start with Phase 1 (API Documentation) — scan all backend routes and generate docs/inst/API_REFERENCE.md.
+The Docker stack should already be running. If not, start it: docker-compose up --build -d
+```
+
+---
+
+## ⚠️ CRITICAL: Post-Simulation Spoofing Lockdown
+*(Must be done IMMEDIATELY after simulation testing is complete)*
+- [ ] **Turn off user spoofing** — disable all dev/test auth bypass mechanisms
+- [ ] **Verify spoofing is fully disabled** — test all external routes to confirm no spoofing endpoints are exposed
+- [ ] **Security audit** — ensure no spoofing-related env vars, headers, or query params leak to production
+- [ ] Remove or gate behind `DEV_ONLY` flag any admin spoofing utilities
 
 ---
 
@@ -72,4 +112,4 @@
 
 ---
 
-*Updated: 2026-03-18 (E2E testing complete — moved to DONE.md. Simulation & Progression Balancing is next active work.)*
+*Updated: 2026-03-20 (Simulation toolkit spec & plan complete. Implementation is next active work.)*
