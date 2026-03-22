@@ -5,6 +5,48 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-22*
 
+## Simulation Toolkit Phases 5-6 + Progression Balancing — COMPLETE (2026-03-22)
+
+**Toolkit guide:** `docs/inst/SIM_TOOLKIT_GUIDE.md`
+
+### Phase 5: Results & Migration Tooling
+- [x] Migration generator (`tools/sim/generate_migration.py`) — reads config_overrides.json, outputs SQL (9 tests)
+- [x] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`) — full usage guide for all 3 layers + iteration workflow
+- [x] TODO.md and session state updates
+
+### Phase 6: First Iteration Run — Casual 59.53h (Target: 60h)
+- [x] Fixed math model: legacy `zone_hp(1.55x)` → `scene_hp(1.012x)` matching server `/enemies` endpoint
+- [x] Two tuning passes: baseline 2,977h → v1 43.59h (too fast) → v2 **59.53h** (on target)
+- [x] API bot validation: 5/5 scenes completed, 0 errors, ~31s/scene combat
+- [x] Migration 062 generated and applied to dev DB (`db/062_balanced_game_configs.sql`)
+
+**Config Changes (Migration 062):**
+
+| Config Key | Old | New | Reason |
+|-----------|-----|-----|--------|
+| `char_level_xp_factor` | 1000 | 80 | XP curve 50x too steep |
+| `char_xp_per_scene_base` | 50 | 200 | More XP per scene |
+| `gold_to_essence_base_rate` | 1000 | 200 | Cheaper essence conversion |
+| `gold_to_essence_growth_factor` | 1.07 | 1.01 | Flatter economy curve |
+| `idle_essence_drain_per_minute` | 1 | 0.5 | Sustain idle training longer |
+| `upgrade_cost_scaling` | 1.07 | 1.03 | Gentler upgrade cost growth |
+
+**All Profile Results:**
+
+| Profile | Hours | Target | Status |
+|---------|-------|--------|--------|
+| Casual | 59.53h | 60h | On target |
+| Power Gamer | 24.62h active | 56-80h / 7-10 days | On target |
+| No Autoskills | 256h | Walls, not stuck | As designed |
+| New User | 2,926h | Very slow | Expected (30min/day) |
+| Idle Only | inf | Can't clear content | By design |
+
+### Test Summary
+- 30 tests total (7 config + 14 math_model + 9 migration generator)
+- All passing as of commit `5657d48`
+
+---
+
 ## Simulation Toolkit Phases 1-4 + Combat Scaling — COMPLETE (2026-03-22)
 
 **Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`

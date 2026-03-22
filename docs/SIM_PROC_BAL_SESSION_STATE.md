@@ -354,14 +354,14 @@ SELECT * FROM player_story_progress WHERE player_id = 5;
 
 ## Resume Prompt
 ```
-Read these files in order:
-1. docs/SIM_PROC_BAL_SESSION_STATE.md — current state and progress
-2. docs/specs/2026-03-20-simulation-toolkit-design.md — full spec
-3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
+Simulation & Progression Balancing is COMPLETE (Phases 1-6).
+Casual: 59.53h (target: 60h). Migration 062 applied. API bot validated.
+Toolkit guide: docs/inst/SIM_TOOLKIT_GUIDE.md
+Full results: docs/done/DONE.md
 
-We are building the Simulation & Progression Balancing Toolkit.
-Phases 1-4 are complete. Combat scaling is implemented and entity data is seeded.
-Continue with Phase 5 (Results tooling, migration generator, toolkit guide).
-Then Phase 6 (First iteration run — baseline → validate → tune until casual hits 60hr target).
-The Docker stack should already be running. If not, start it: docker-compose up --build -d
+If re-tuning is needed in the future:
+1. Edit tools/sim/results/config_overrides.json
+2. Run: cd tools/sim && python math_model.py --all --config results/config_overrides.json
+3. Validate: python api_bot.py --profile casual --max-scenes 5
+4. Generate: python generate_migration.py
 ```

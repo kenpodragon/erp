@@ -5,24 +5,14 @@
 
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
-Simulation & Progression Balancing is COMPLETE (Phases 1-6).
-Casual: 59.53h (target: 60h). Migration 062 applied. API bot validated.
+Read docs/TODO.md for active work.
 
-Next priority: Spoofing Lockdown (see CRITICAL section below).
-After that: remaining TODO items (combat scaling polish, music loops, etc).
+Simulation & Progression Balancing is COMPLETE (Phases 1-6, see done/DONE.md).
+Progression toolkit: docs/inst/SIM_TOOLKIT_GUIDE.md
+
+Next priority: Spoofing Lockdown (CRITICAL security — see TODO.md).
+After that: combat scaling polish, music loops, banner visuals, generators, cloud deployment.
 ```
-
----
-
-## Simulation & Progression Balancing
-*(Phases 1-6 complete — see `done/DONE.md`. Toolkit: `docs/inst/SIM_TOOLKIT_GUIDE.md`)*
-- [x] **Phase 5:** Results tooling, migration generator, toolkit guide
-- [x] **Phase 6:** First iteration run — casual hits **59.53h** (target: 60h)
-  - [x] Math model baseline (scene-based HP fix + XP tuning)
-  - [x] Two tuning passes (v1: 43.59h too fast → v2: 59.53h on target)
-  - [x] Generate migration 062 (`db/062_balanced_game_configs.sql`)
-  - [x] Apply migration 062 to dev DB (6 UPDATEs verified)
-  - [x] API bot validation (5/5 scenes, 0 errors, ~31s/scene combat)
 
 ---
 
@@ -102,4 +92,4 @@ After that: remaining TODO items (combat scaling polish, music loops, etc).
 
 ---
 
-*Updated: 2026-03-22 (Simulation toolkit COMPLETE. Casual 59.53h. Migration 062 applied. API bot validated. Next: spoofing lockdown.)*
+*Updated: 2026-03-22 (Simulation toolkit COMPLETE — moved to DONE.md. Next: spoofing lockdown.)*
