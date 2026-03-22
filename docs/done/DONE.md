@@ -5,6 +5,31 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-22*
 
+## Spoofing Lockdown + Combat Scaling Alignment — COMPLETE (2026-03-22)
+
+### Spoofing Lockdown (25 files, -812 lines)
+- [x] Removed double-gated auth bypass from `backend/auth.py` (`get_decoded_token()`)
+- [x] Removed WebSocket bypass from `backend/routes/chat.py`
+- [x] Removed bypass fields from `backend/routes/public.py` (`/api/config/public`)
+- [x] Removed 3 admin bypass endpoints from `backend/routes/admin_config.py` (status, create-test-player, set-player)
+- [x] Removed `AuthBypassPanel` (~230 lines) from `admin/src/pages/ServerConfig.tsx`
+- [x] Removed `setAuthBypass`/`isAuthBypassed`/`X-Spoof-Player-Id` from frontend + admin `api.ts`, `App.tsx`, `chatClient.ts`
+- [x] Removed `ALLOW_AUTH_BYPASS` from `.env.example`, seed data, docs (TESTING.md, API_REFERENCE.md, INIT_INFRA.md, admin API_GUIDE.md, admin README.md)
+- [x] Updated E2E auth helpers (`testing/helpers/auth.ts`) — bypass-based login removed, `bypassOnboarding` renamed to `completeOnboarding`
+- [x] Updated sim toolkit `api_client.py` — removed spoof header
+
+### Combat Scaling Alignment
+- [x] Idle training HP now uses story mode formula: `100 * 1.012^(skillLevel-1) * 1.08^(wave-1)` with 8x boss multiplier (was hardcoded `100 * 1.25^(w-1)` with no skill level scaling)
+- [x] Boss HP computed server-side from DB entity `base_hp` × scene position multiplier × `boss_config.hp_multiplier`, returned as `boss_base_hp` in session start response
+- [x] Added `max_enemy_hp` column to `scene_gameplay_data` — per-scene HP cap override (NULL = global formula)
+- [x] Migration 063: seeded early game HP caps (Book 1 Ch1-3: 25, Ch4-8: 40, Ch9-15: 60, Ch16+: 100, Book 2 early: 120)
+- [x] Enemies endpoint uses per-scene `max_enemy_hp` override when set
+
+### Admin Enhancement
+- [x] Players list: replaced character count column with character name, level, and story progress (Book/Chapter/Scene)
+
+---
+
 ## Simulation Toolkit Phases 5-6 + Progression Balancing — COMPLETE (2026-03-22)
 
 **Toolkit guide:** `docs/inst/SIM_TOOLKIT_GUIDE.md`

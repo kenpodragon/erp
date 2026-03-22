@@ -5,33 +5,25 @@
 
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
-Read docs/TODO.md for active work.
+Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
 
-Simulation & Progression Balancing is COMPLETE (Phases 1-6, see done/DONE.md).
-Progression toolkit: docs/inst/SIM_TOOLKIT_GUIDE.md
+Completed (2026-03-22):
+- Simulation & Progression Balancing (Phases 1-6)
+- Spoofing Lockdown (full stack auth bypass removal)
+- Combat Scaling Alignment (idle training + boss HP + per-scene max_enemy_hp)
+- Admin Players list enhancement (character name, level, story progress)
 
-Spoofing Lockdown is COMPLETE (2026-03-22).
-Next priority: combat scaling polish, music loops, banner visuals, generators, cloud deployment.
+Next priority: banner visuals, entity sprites, generators, cloud deployment.
 ```
 
 ---
 
 ## Combat Scaling — Remaining Work
 
-### Per-scene max HP override (optional, low priority)
-- [ ] **Per-scene or per-chapter `max_enemy_hp` override** — the global formula-based cap (`max_scene_base_hp` × `scene_hp_multiplier`, implemented in backend) works as a safety net. Boss scenes or special encounters may eventually need custom overrides. Options: column on `chapters` table, or per-scene override in `scene_gameplay_data`. Not urgent — global cap is sufficient for now.
-
 ### Entity sprite population
 - [ ] **Replace default sprite keys** — all entities currently use type-based defaults (`enemy_creature`, `enemy_manifestation`, etc). Need real sprite assignments or a sprite generation pipeline.
 
 ---
-
-## ~~⚠️ CRITICAL: Post-Simulation Spoofing Lockdown~~ ✅ COMPLETE
-*(Completed 2026-03-22)*
-- [x] **Turn off user spoofing** — removed auth bypass from `backend/auth.py`, `backend/routes/chat.py`, `backend/routes/public.py`
-- [x] **Verify spoofing is fully disabled** — removed `X-Spoof-Player-Id` header support, `bypass:` WebSocket token, and all frontend/admin bypass logic
-- [x] **Security audit** — removed `ALLOW_AUTH_BYPASS` env var usage, `ops.auth_bypass_enabled`/`ops.auth_bypass_player_id` config exposure from public endpoint
-- [x] Removed all spoofing utilities from frontend (`api.ts`, `App.tsx`, `chatClient.ts`) and admin (`api.ts`, `App.tsx`)
 
 ---
 
@@ -87,4 +79,4 @@ Next priority: combat scaling polish, music loops, banner visuals, generators, c
 
 ---
 
-*Updated: 2026-03-22 (Simulation toolkit COMPLETE — moved to DONE.md. Next: spoofing lockdown.)*
+*Updated: 2026-03-22 (Spoofing lockdown + combat scaling alignment COMPLETE. Next: banner visuals, generators, cloud.)*

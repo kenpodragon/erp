@@ -1,5 +1,7 @@
 # Simulation & Progression Balancing — Session State
 
+**Status:** ✅ COMPLETE (2026-03-22). All 6 phases done. Combat scaling aligned across story mode and idle training. See `done/DONE.md` for full history.
+
 **Purpose:** Track the design, planning, and execution of progression balancing for Elysium Rising. This is a simulation-driven effort to tune all scaling parameters so the game feels right for both casual and power-gamer play patterns.
 
 ---
