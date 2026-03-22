@@ -110,7 +110,7 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 
 ## Simulation Toolkit
 
-**Status:** Phases 1-3 complete. Phase 4 (Browser Bot) next.
+**Status:** Phases 1-4 complete (Phase 4 OBE). Combat scaling implemented + entity data seeded. Phase 5-6 next.
 
 Sessions 1-4 from the original manual plan are now automated by the simulation toolkit.
 - **Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
@@ -334,8 +334,8 @@ Read these files in order:
 3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
 
 We are building the Simulation & Progression Balancing Toolkit.
-Phases 1 (API Docs), 2 (Math Model), and 3 (API Bot) are complete.
-Use superpowers:subagent-driven-development to execute the plan task-by-task.
-Continue with Phase 4 (Browser Bot) — build the Playwright headless bot for stability, pacing, and load testing.
+Phases 1-4 are complete. Combat scaling is implemented and entity data is seeded.
+Continue with Phase 5 (Results tooling, migration generator, toolkit guide).
+Then Phase 6 (First iteration run — baseline → validate → tune until casual hits 60hr target).
 The Docker stack should already be running. If not, start it: docker-compose up --build -d
 ```

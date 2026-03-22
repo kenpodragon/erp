@@ -1,0 +1,15 @@
+{
+  "name": "no_autoskills",
+  "description": "Active clicking but never trains idle skills",
+  "cps_range": [8, 12],
+  "wpm": 200,
+  "upgrade_strategy": "buy_when_affordable",
+  "use_skills": false,
+  "skill_timing": "none",
+  "session_length_minutes": 120,
+  "sessions_per_day": 1,
+  "idle_training": false,
+  "idle_hours_per_day": 0,
+  "subscription_tier": null,
+  "boosters": []
+}

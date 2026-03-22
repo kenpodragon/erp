@@ -1,0 +1,15 @@
+{
+  "name": "idle_only",
+  "description": "No active play, just idle training, reconnects every 8h",
+  "cps_range": [0, 0],
+  "wpm": 0,
+  "upgrade_strategy": "none",
+  "use_skills": false,
+  "skill_timing": "none",
+  "session_length_minutes": 0,
+  "sessions_per_day": 0,
+  "idle_training": true,
+  "idle_hours_per_day": 24,
+  "subscription_tier": null,
+  "boosters": []
+}

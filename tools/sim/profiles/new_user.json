@@ -1,0 +1,15 @@
+{
+  "name": "new_user",
+  "description": "Confused new player, slow clicks, bad upgrade decisions",
+  "cps_range": [2, 5],
+  "wpm": 200,
+  "upgrade_strategy": "random",
+  "use_skills": false,
+  "skill_timing": "none",
+  "session_length_minutes": 30,
+  "sessions_per_day": 1,
+  "idle_training": false,
+  "idle_hours_per_day": 0,
+  "subscription_tier": null,
+  "boosters": []
+}

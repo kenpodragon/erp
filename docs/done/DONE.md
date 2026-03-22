@@ -3,7 +3,46 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-18*
+*Updated: 2026-03-22*
+
+## Simulation Toolkit Phases 1-4 + Combat Scaling — COMPLETE (2026-03-22)
+
+**Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
+**Plan:** `docs/plans/2026-03-20-simulation-toolkit-plan.md`
+**Session state:** `docs/SIM_PROC_BAL_SESSION_STATE.md`
+
+### Phase 1: API Documentation
+- [x] Scanned all backend routes → generated `docs/inst/API_REFERENCE.md`
+- [x] Created `admin/docs/API_GUIDE.md` and updated `admin/README.md`
+
+### Phase 2: Math Model
+- [x] Scaffolded `tools/sim/` directory, profiles (5 archetypes), requirements
+- [x] Built config/formula module with tests (9 formula functions, 5 tests)
+- [x] Built simulation engine — zone, economy, XP, walls, bosses, archetypes (14 tests)
+- [x] Content data snapshot from DB (3 books, 580 scenes, 18 skills, 72 configs)
+
+### Phase 3: API Bot
+- [x] Async API client (`tools/sim/api_client.py`) — 20 endpoints, httpx async, retry/backoff, metrics (7 tests)
+- [x] Profile-driven bot runner (`tools/sim/api_bot.py`) — tick loop, 4 upgrade strategies, narrative pacing (7 tests)
+- [x] Run comparison tool (`tools/sim/results/compare.py`) — config/summary/zone/wall diffs, severity flags, design target verdicts (7 tests)
+- [x] Integration tested: 3/3 scenes completed, 0 errors against live Docker stack
+- [x] Browser validated: API bot produces identical server-side results to frontend (Playwright MCP)
+
+### Phase 4: Browser Bot — OBE
+- [x] ~~Browser bot~~ **OBE** — browser validation confirmed API bot faithfully replicates all frontend gameplay mechanics. Separate browser bot unnecessary. See `tools/sim/browser_validation.py`.
+
+### Combat Scaling Fix (discovered during browser validation)
+- [x] **Bug 1 — No inter-scene HP scaling:** Frontend ignored server `base_hp` and recalculated locally via `zoneHp()`. Fixed CombatStage.tsx to use server values. Backend now applies exponential scene scaling (`1.012^(scene_position-1)`) to all entity HP/gold.
+- [x] **Bug 2 — No mob HP variation:** Confirmed data gap (only 4/3,936 entities had `entity_gameplay_data`). Code path verified working. Seeded all entities via migration 061 with tiered base_hp by entity type (environment 5-10, creature 20-50, enemy 40-80, etc).
+- [x] **Max HP cap:** Added `max_scene_base_hp` game_config (default 500) — prevents data errors from making early scenes impossible.
+- [x] New game_configs: `scene_hp_scaling_base` (1.012), `scene_gold_scaling_base` (1.008), `max_scene_base_hp` (500)
+- [x] Migration: `db/061_seed_entity_gameplay_data.sql`
+
+### Test Summary
+- 40 tests total across sim toolkit (19 Phase 2 + 21 Phase 3)
+- All passing as of commit `603ea0b`
+
+---
 
 ## E2E User Testing — COMPLETE (Sessions 1-11)
 

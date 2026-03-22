@@ -1,0 +1,4862 @@
+{
+  "snapshot_date": "2026-03-20T22:07:40.952184+00:00",
+  "books": [
+    {
+      "book_id": 1,
+      "title": "Elysium Rising",
+      "chapters": 90,
+      "scenes": 446
+    },
+    {
+      "book_id": 2,
+      "title": "Elysium Fallen",
+      "chapters": 23,
+      "scenes": 126
+    },
+    {
+      "book_id": 3,
+      "title": "Escape from Elysium",
+      "chapters": 25,
+      "scenes": 152
+    }
+  ],
+  "scenes": [
+    {
+      "id": 310,
+      "title": "Project Janus: The Final Preparation",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 762
+    },
+    {
+      "id": 316,
+      "title": "The Paradox of Ascension",
+      "chapter_number": 79,
+      "book_id": 1,
+      "word_count": 163
+    },
+    {
+      "id": 571,
+      "title": "The Secret Book of John: Original Sin",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 1729
+    },
+    {
+      "id": 578,
+      "title": "Lady Illkeserod's Memory: A World Consumed",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 1935
+    },
+    {
+      "id": 360,
+      "title": "Fractured Selves",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 440
+    },
+    {
+      "id": 493,
+      "title": "Benji's Hunt in the Grey Purgatory",
+      "chapter_number": 9,
+      "book_id": 3,
+      "word_count": 1284
+    },
+    {
+      "id": 304,
+      "title": "The Anomalous Signal",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 319
+    },
+    {
+      "id": 21,
+      "title": "The Alarm and Lost Memory",
+      "chapter_number": 7,
+      "book_id": 1,
+      "word_count": 42
+    },
+    {
+      "id": 538,
+      "title": "The Council and Reunion",
+      "chapter_number": 19,
+      "book_id": 3,
+      "word_count": 1302
+    },
+    {
+      "id": 468,
+      "title": "The Dissolution",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 241
+    },
+    {
+      "id": 306,
+      "title": "Stealing the Stars",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 408
+    },
+    {
+      "id": 394,
+      "title": "The Table in the Courtyard",
+      "chapter_number": 9,
+      "book_id": 2,
+      "word_count": 1487
+    },
+    {
+      "id": 411,
+      "title": "Winter Break and Poison",
+      "chapter_number": 12,
+      "book_id": 2,
+      "word_count": 961
+    },
+    {
+      "id": 49,
+      "title": "Exploration and Discovery",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 436
+    },
+    {
+      "id": 293,
+      "title": "Morning Chaos on Elysium",
+      "chapter_number": 74,
+      "book_id": 1,
+      "word_count": 181
+    },
+    {
+      "id": 59,
+      "title": "The Engine's Vanishing",
+      "chapter_number": 17,
+      "book_id": 1,
+      "word_count": 527
+    },
+    {
+      "id": 112,
+      "title": "The Passing of an Age",
+      "chapter_number": 29,
+      "book_id": 1,
+      "word_count": 26
+    },
+    {
+      "id": 391,
+      "title": "Nana's Funeral and the Warning",
+      "chapter_number": 8,
+      "book_id": 2,
+      "word_count": 1309
+    },
+    {
+      "id": 277,
+      "title": "Arrival at the Alien World",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 214
+    },
+    {
+      "id": 502,
+      "title": "The Living Room War Zone",
+      "chapter_number": 12,
+      "book_id": 3,
+      "word_count": 2761
+    },
+    {
+      "id": 298,
+      "title": "The Anomaly in the Data",
+      "chapter_number": 75,
+      "book_id": 1,
+      "word_count": 479
+    },
+    {
+      "id": 462,
+      "title": "The Truth of the Cage",
+      "chapter_number": 3,
+      "book_id": 3,
+      "word_count": 294
+    },
+    {
+      "id": 444,
+      "title": "The Unraveling God",
+      "chapter_number": 20,
+      "book_id": 2,
+      "word_count": 1191
+    },
+    {
+      "id": 324,
+      "title": "The Signal from the Void",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 747
+    },
+    {
+      "id": 80,
+      "title": "Breakfast Philosophy",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 551
+    },
+    {
+      "id": 323,
+      "title": "The Podcast Plague",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 298
+    },
+    {
+      "id": 458,
+      "title": "The Final Confrontation",
+      "chapter_number": 3,
+      "book_id": 3,
+      "word_count": 373
+    },
+    {
+      "id": 520,
+      "title": "Waiting and Revelation",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 1029
+    },
+    {
+      "id": 279,
+      "title": "The Secret Conclave Beneath the Vatican",
+      "chapter_number": 70,
+      "book_id": 1,
+      "word_count": 1072
+    },
+    {
+      "id": 122,
+      "title": "I AM's Silent Vigil",
+      "chapter_number": 31,
+      "book_id": 1,
+      "word_count": 89
+    },
+    {
+      "id": 39,
+      "title": "Return to Camp and Fragile Normalcy",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 289
+    },
+    {
+      "id": 547,
+      "title": "The Crawling Chaos Appears",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 1382
+    },
+    {
+      "id": 272,
+      "title": "The Attack",
+      "chapter_number": 68,
+      "book_id": 1,
+      "word_count": 959
+    },
+    {
+      "id": 57,
+      "title": "Obsession Waning",
+      "chapter_number": 16,
+      "book_id": 1,
+      "word_count": 211
+    },
+    {
+      "id": 398,
+      "title": "Insomnia and Impossible Messages",
+      "chapter_number": 10,
+      "book_id": 2,
+      "word_count": 1827
+    },
+    {
+      "id": 83,
+      "title": "Escalating Obsession",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 450
+    },
+    {
+      "id": 534,
+      "title": "The Nameless Mist and Divine Spark",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 461
+    },
+    {
+      "id": 264,
+      "title": "Economic Promises to Commonwealth Nations",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 386
+    },
+    {
+      "id": 202,
+      "title": "Ascension to Darkness",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 271
+    },
+    {
+      "id": 319,
+      "title": "Fireside Chat Preparation and Broadcast",
+      "chapter_number": 80,
+      "book_id": 1,
+      "word_count": 771
+    },
+    {
+      "id": 92,
+      "title": "The Awakening",
+      "chapter_number": 24,
+      "book_id": 1,
+      "word_count": 334
+    },
+    {
+      "id": 242,
+      "title": "Crisis at S Corp Headquarters",
+      "chapter_number": 61,
+      "book_id": 1,
+      "word_count": 575
+    },
+    {
+      "id": 169,
+      "title": "The Revelation and the Call",
+      "chapter_number": 46,
+      "book_id": 1,
+      "word_count": 669
+    },
+    {
+      "id": 214,
+      "title": "Unraveling at Home",
+      "chapter_number": 55,
+      "book_id": 1,
+      "word_count": 1087
+    },
+    {
+      "id": 428,
+      "title": "Secrets in the Woods",
+      "chapter_number": 17,
+      "book_id": 2,
+      "word_count": 1606
+    },
+    {
+      "id": 81,
+      "title": "The Chaos Experiment",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 723
+    },
+    {
+      "id": 337,
+      "title": "All Clear and the True Massacre",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 973
+    },
+    {
+      "id": 386,
+      "title": "Reality Fractures",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 1423
+    },
+    {
+      "id": 156,
+      "title": "The Whispers Descend",
+      "chapter_number": 42,
+      "book_id": 1,
+      "word_count": 210
+    },
+    {
+      "id": 568,
+      "title": "Cosmogony and Meta-textual Architecture",
+      "chapter_number": 24,
+      "book_id": 3,
+      "word_count": 246
+    },
+    {
+      "id": 427,
+      "title": "Blood on Polished Floors",
+      "chapter_number": 17,
+      "book_id": 2,
+      "word_count": 2886
+    },
+    {
+      "id": 501,
+      "title": "Dissolution of Remembrance",
+      "chapter_number": 11,
+      "book_id": 3,
+      "word_count": 165
+    },
+    {
+      "id": 431,
+      "title": "The Dimensional Breach",
+      "chapter_number": 17,
+      "book_id": 2,
+      "word_count": 1962
+    },
+    {
+      "id": 553,
+      "title": "Sam's Release",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 835
+    },
+    {
+      "id": 61,
+      "title": "The Ultimate Experiment",
+      "chapter_number": 17,
+      "book_id": 1,
+      "word_count": 664
+    },
+    {
+      "id": 445,
+      "title": "The Waiting Room at the End",
+      "chapter_number": 21,
+      "book_id": 2,
+      "word_count": 849
+    },
+    {
+      "id": 221,
+      "title": "The Temple Revelation",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 1029
+    },
+    {
+      "id": 37,
+      "title": "Saturday's Adventure and the Missing Patrol",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 252
+    },
+    {
+      "id": 346,
+      "title": "The Void of Consequence",
+      "chapter_number": 87,
+      "book_id": 1,
+      "word_count": 630
+    },
+    {
+      "id": 239,
+      "title": "Muddy Footprints and Social Media",
+      "chapter_number": 60,
+      "book_id": 1,
+      "word_count": 219
+    },
+    {
+      "id": 10,
+      "title": "Return to Refuge",
+      "chapter_number": 4,
+      "book_id": 1,
+      "word_count": 155
+    },
+    {
+      "id": 562,
+      "title": "The Swarm Descends",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 299
+    },
+    {
+      "id": 494,
+      "title": "Whitney's Struggle and Awakening",
+      "chapter_number": 9,
+      "book_id": 3,
+      "word_count": 1065
+    },
+    {
+      "id": 223,
+      "title": "European Interlude and Return Home",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 447
+    },
+    {
+      "id": 395,
+      "title": "William Carson's Entrance",
+      "chapter_number": 9,
+      "book_id": 2,
+      "word_count": 1416
+    },
+    {
+      "id": 229,
+      "title": "Madam O and the Power of Symbols",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 364
+    },
+    {
+      "id": 336,
+      "title": "In the Bunker: Defiance and Resolve",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 209
+    },
+    {
+      "id": 549,
+      "title": "The Descent into Yaldabaoth's Heart",
+      "chapter_number": 21,
+      "book_id": 3,
+      "word_count": 719
+    },
+    {
+      "id": 262,
+      "title": "Questions of Power and Equity",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 460
+    },
+    {
+      "id": 50,
+      "title": "The Abyss Beckons",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 761
+    },
+    {
+      "id": 282,
+      "title": "The War Room Strategy",
+      "chapter_number": 72,
+      "book_id": 1,
+      "word_count": 1703
+    },
+    {
+      "id": 174,
+      "title": "Mars and Catastrophe",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 544
+    },
+    {
+      "id": 387,
+      "title": "The DMV of Cosmic Horror",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 4718
+    },
+    {
+      "id": 48,
+      "title": "Descent Into the Threshold",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 2164
+    },
+    {
+      "id": 377,
+      "title": "Evening Phone Call and Hidden Intentions",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 1042
+    },
+    {
+      "id": 364,
+      "title": "The Wreckage",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 129
+    },
+    {
+      "id": 548,
+      "title": "Inside the God",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 2124
+    },
+    {
+      "id": 576,
+      "title": "The War Against Anti-Reality",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 413
+    },
+    {
+      "id": 457,
+      "title": "Tears of the Veil",
+      "chapter_number": 2,
+      "book_id": 3,
+      "word_count": 81
+    },
+    {
+      "id": 34,
+      "title": "Arrival in Darkness",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 358
+    },
+    {
+      "id": 7,
+      "title": "Lingering Questions and Hints of Return",
+      "chapter_number": 3,
+      "book_id": 1,
+      "word_count": 132
+    },
+    {
+      "id": 294,
+      "title": "Hydroponics Crisis",
+      "chapter_number": 74,
+      "book_id": 1,
+      "word_count": 116
+    },
+    {
+      "id": 198,
+      "title": "Descent into the Mist",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 231
+    },
+    {
+      "id": 432,
+      "title": "Wrong Paradise",
+      "chapter_number": 18,
+      "book_id": 2,
+      "word_count": 1521
+    },
+    {
+      "id": 465,
+      "title": "The Grind",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 1464
+    },
+    {
+      "id": 524,
+      "title": "The Passage Below",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 430
+    },
+    {
+      "id": 93,
+      "title": "The Machine's Humor",
+      "chapter_number": 24,
+      "book_id": 1,
+      "word_count": 236
+    },
+    {
+      "id": 185,
+      "title": "Corporate Setup, Robots, and Building Facades",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 323
+    },
+    {
+      "id": 486,
+      "title": "The Back Room and Ancient Books",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 1473
+    },
+    {
+      "id": 285,
+      "title": "Serene Sanctuary",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 319
+    },
+    {
+      "id": 567,
+      "title": "The Sequel's Unexpected Genesis",
+      "chapter_number": 24,
+      "book_id": 3,
+      "word_count": 340
+    },
+    {
+      "id": 182,
+      "title": "The Cloaked Reveal and Goldman Sachs",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 278
+    },
+    {
+      "id": 246,
+      "title": "The Sleepwalking Episode",
+      "chapter_number": 62,
+      "book_id": 1,
+      "word_count": 518
+    },
+    {
+      "id": 522,
+      "title": "Xavier's Erasure",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 646
+    },
+    {
+      "id": 349,
+      "title": "Waking to Normalcy",
+      "chapter_number": 88,
+      "book_id": 1,
+      "word_count": 234
+    },
+    {
+      "id": 178,
+      "title": "Visions of S Corp's Devastation",
+      "chapter_number": 48,
+      "book_id": 1,
+      "word_count": 332
+    },
+    {
+      "id": 4,
+      "title": "The Fruitless Search",
+      "chapter_number": 3,
+      "book_id": 1,
+      "word_count": 215
+    },
+    {
+      "id": 240,
+      "title": "Confrontation and Conspiracy",
+      "chapter_number": 60,
+      "book_id": 1,
+      "word_count": 176
+    },
+    {
+      "id": 356,
+      "title": "The Pod's Last Malfunction",
+      "chapter_number": 2,
+      "book_id": 2,
+      "word_count": 784
+    },
+    {
+      "id": 409,
+      "title": "Testing the Imposter",
+      "chapter_number": 12,
+      "book_id": 2,
+      "word_count": 303
+    },
+    {
+      "id": 56,
+      "title": "Research Log 47-A: Descent into Madness",
+      "chapter_number": 16,
+      "book_id": 1,
+      "word_count": 951
+    },
+    {
+      "id": 254,
+      "title": "The Rise of Elysium",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 266
+    },
+    {
+      "id": 504,
+      "title": "The Heretic's Library",
+      "chapter_number": 12,
+      "book_id": 3,
+      "word_count": 2416
+    },
+    {
+      "id": 317,
+      "title": "War Room Transmission",
+      "chapter_number": 80,
+      "book_id": 1,
+      "word_count": 2086
+    },
+    {
+      "id": 383,
+      "title": "Scattering and Plans",
+      "chapter_number": 6,
+      "book_id": 2,
+      "word_count": 453
+    },
+    {
+      "id": 263,
+      "title": "The Chinese Challenge",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 615
+    },
+    {
+      "id": 163,
+      "title": "Nostalgia and the Weight of Ambition",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 1116
+    },
+    {
+      "id": 487,
+      "title": "The Books Reveal Their Purpose",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 751
+    },
+    {
+      "id": 6,
+      "title": "The Fade Into Apathy",
+      "chapter_number": 3,
+      "book_id": 1,
+      "word_count": 223
+    },
+    {
+      "id": 580,
+      "title": "The Solution: A New Prison",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 1
+    },
+    {
+      "id": 102,
+      "title": "Battle Among the Ruins",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 791
+    },
+    {
+      "id": 78,
+      "title": "The Unraveling",
+      "chapter_number": 21,
+      "book_id": 1,
+      "word_count": 1485
+    },
+    {
+      "id": 353,
+      "title": "The Dream of the Eternal Engine",
+      "chapter_number": 89,
+      "book_id": 1,
+      "word_count": 183
+    },
+    {
+      "id": 109,
+      "title": "Madness in the Garage",
+      "chapter_number": 28,
+      "book_id": 1,
+      "word_count": 492
+    },
+    {
+      "id": 235,
+      "title": "The Phantom Dream Walker",
+      "chapter_number": 59,
+      "book_id": 1,
+      "word_count": 674
+    },
+    {
+      "id": 227,
+      "title": "Lady A's Training and the Challenge of Oneiromancy",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 541
+    },
+    {
+      "id": 433,
+      "title": "The Last Night",
+      "chapter_number": 18,
+      "book_id": 2,
+      "word_count": 1304
+    },
+    {
+      "id": 414,
+      "title": "Escape and Reckoning",
+      "chapter_number": 13,
+      "book_id": 2,
+      "word_count": 1295
+    },
+    {
+      "id": 260,
+      "title": "Arrival at the Orbital Ring",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 279
+    },
+    {
+      "id": 208,
+      "title": "The Flourishing Colonies",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 479
+    },
+    {
+      "id": 503,
+      "title": "The Void Between Realities",
+      "chapter_number": 12,
+      "book_id": 3,
+      "word_count": 2885
+    },
+    {
+      "id": 91,
+      "title": "Higher Purpose",
+      "chapter_number": 24,
+      "book_id": 1,
+      "word_count": 504
+    },
+    {
+      "id": 11,
+      "title": "The Awakening and the Message",
+      "chapter_number": 5,
+      "book_id": 1,
+      "word_count": 679
+    },
+    {
+      "id": 131,
+      "title": "The Beacon of Power",
+      "chapter_number": 34,
+      "book_id": 1,
+      "word_count": 207
+    },
+    {
+      "id": 168,
+      "title": "The Cryptic Call",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 144
+    },
+    {
+      "id": 511,
+      "title": "The Age of Aspolin",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 594
+    },
+    {
+      "id": 146,
+      "title": "Too Much Success",
+      "chapter_number": 39,
+      "book_id": 1,
+      "word_count": 840
+    },
+    {
+      "id": 368,
+      "title": "The Only Truth",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 213
+    },
+    {
+      "id": 286,
+      "title": "Discovery of Horror",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 144
+    },
+    {
+      "id": 472,
+      "title": "The Memory Unfolds",
+      "chapter_number": 5,
+      "book_id": 3,
+      "word_count": 696
+    },
+    {
+      "id": 365,
+      "title": "The Temporal Nightmare",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 534
+    },
+    {
+      "id": 342,
+      "title": "Approach to the Corpse World",
+      "chapter_number": 85,
+      "book_id": 1,
+      "word_count": 823
+    },
+    {
+      "id": 451,
+      "title": "Back to Reality",
+      "chapter_number": 22,
+      "book_id": 2,
+      "word_count": 297
+    },
+    {
+      "id": 115,
+      "title": "The Trailer - Before the Fall",
+      "chapter_number": 30,
+      "book_id": 1,
+      "word_count": 464
+    },
+    {
+      "id": 340,
+      "title": "The Final Push Against I AM",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 504
+    },
+    {
+      "id": 283,
+      "title": "James's Dark Revelation",
+      "chapter_number": 72,
+      "book_id": 1,
+      "word_count": 1485
+    },
+    {
+      "id": 267,
+      "title": "Bridging Ancient Divides",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 244
+    },
+    {
+      "id": 328,
+      "title": "Expansion into the Void",
+      "chapter_number": 82,
+      "book_id": 1,
+      "word_count": 596
+    },
+    {
+      "id": 238,
+      "title": "The Midnight Gathering",
+      "chapter_number": 60,
+      "book_id": 1,
+      "word_count": 236
+    },
+    {
+      "id": 84,
+      "title": "The Chicken Ritual",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 902
+    },
+    {
+      "id": 100,
+      "title": "Breakthroughs and Discovery",
+      "chapter_number": 26,
+      "book_id": 1,
+      "word_count": 694
+    },
+    {
+      "id": 23,
+      "title": "The Midnight Crisis",
+      "chapter_number": 8,
+      "book_id": 1,
+      "word_count": 991
+    },
+    {
+      "id": 289,
+      "title": "The Impossible Choice",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 451
+    },
+    {
+      "id": 180,
+      "title": "The Suitcase of Gold and Banking Fiasco",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 591
+    },
+    {
+      "id": 107,
+      "title": "The Hollow Ache of Missing Pieces",
+      "chapter_number": 28,
+      "book_id": 1,
+      "word_count": 327
+    },
+    {
+      "id": 45,
+      "title": "The Hollow Office",
+      "chapter_number": 14,
+      "book_id": 1,
+      "word_count": 589
+    },
+    {
+      "id": 471,
+      "title": "The Vessel's Dissolution and Revelation",
+      "chapter_number": 5,
+      "book_id": 3,
+      "word_count": 1097
+    },
+    {
+      "id": 132,
+      "title": "The Ten-Thousand-Dollar Milestone",
+      "chapter_number": 35,
+      "book_id": 1,
+      "word_count": 430
+    },
+    {
+      "id": 211,
+      "title": "The Muskrat Receives the Call",
+      "chapter_number": 54,
+      "book_id": 1,
+      "word_count": 225
+    },
+    {
+      "id": 322,
+      "title": "The War Room Council",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 803
+    },
+    {
+      "id": 516,
+      "title": "The Path to Escape",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 297
+    },
+    {
+      "id": 268,
+      "title": "The Pointers Go Viral",
+      "chapter_number": 67,
+      "book_id": 1,
+      "word_count": 217
+    },
+    {
+      "id": 175,
+      "title": "The Daisy Chain",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 449
+    },
+    {
+      "id": 5,
+      "title": "Obsessive Investigation",
+      "chapter_number": 3,
+      "book_id": 1,
+      "word_count": 250
+    },
+    {
+      "id": 67,
+      "title": "Descent into Buried Memory",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 373
+    },
+    {
+      "id": 258,
+      "title": "Team Appreciation and Well-Being",
+      "chapter_number": 64,
+      "book_id": 1,
+      "word_count": 174
+    },
+    {
+      "id": 155,
+      "title": "Trapped Between Worlds",
+      "chapter_number": 42,
+      "book_id": 1,
+      "word_count": 204
+    },
+    {
+      "id": 284,
+      "title": "The God Killer Crisis",
+      "chapter_number": 72,
+      "book_id": 1,
+      "word_count": 522
+    },
+    {
+      "id": 369,
+      "title": "Beating",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 1166
+    },
+    {
+      "id": 153,
+      "title": "The Reveal and Reconciliation",
+      "chapter_number": 41,
+      "book_id": 1,
+      "word_count": 289
+    },
+    {
+      "id": 52,
+      "title": "Jarring Awakening",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 353
+    },
+    {
+      "id": 413,
+      "title": "Descent Into the Throat-World",
+      "chapter_number": 13,
+      "book_id": 2,
+      "word_count": 2893
+    },
+    {
+      "id": 138,
+      "title": "Down the Dark Web Rabbit Hole",
+      "chapter_number": 37,
+      "book_id": 1,
+      "word_count": 473
+    },
+    {
+      "id": 184,
+      "title": "Liam Kaufmann and International Corporate Strategy",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 1188
+    },
+    {
+      "id": 3,
+      "title": "The Emergence of The Pointers",
+      "chapter_number": 3,
+      "book_id": 1,
+      "word_count": 252
+    },
+    {
+      "id": 170,
+      "title": "The Breakthrough and First Crossing",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 449
+    },
+    {
+      "id": 161,
+      "title": "The Horror Unleashed",
+      "chapter_number": 44,
+      "book_id": 1,
+      "word_count": 308
+    },
+    {
+      "id": 454,
+      "title": "The Unexpected Sequel",
+      "chapter_number": 23,
+      "book_id": 2,
+      "word_count": 94
+    },
+    {
+      "id": 540,
+      "title": "The Rhythm of Rescue",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 290
+    },
+    {
+      "id": 32,
+      "title": "Breaking Point",
+      "chapter_number": 11,
+      "book_id": 1,
+      "word_count": 623
+    },
+    {
+      "id": 348,
+      "title": "The Dream Guardian's Work",
+      "chapter_number": 87,
+      "book_id": 1,
+      "word_count": 378
+    },
+    {
+      "id": 572,
+      "title": "The Secret Book of John: Let There Be Darkness",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 3359
+    },
+    {
+      "id": 18,
+      "title": "Insomnia and the Approaching Storm",
+      "chapter_number": 7,
+      "book_id": 1,
+      "word_count": 268
+    },
+    {
+      "id": 225,
+      "title": "Mastering the Dreamscape's Lower Realms",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 237
+    },
+    {
+      "id": 339,
+      "title": "The Eternal War and Strategic Collapse",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 141
+    },
+    {
+      "id": 405,
+      "title": "The Woods at Dawn",
+      "chapter_number": 11,
+      "book_id": 2,
+      "word_count": 2329
+    },
+    {
+      "id": 400,
+      "title": "Reality Fractures",
+      "chapter_number": 10,
+      "book_id": 2,
+      "word_count": 2259
+    },
+    {
+      "id": 237,
+      "title": "The Florida Man Experiment",
+      "chapter_number": 59,
+      "book_id": 1,
+      "word_count": 640
+    },
+    {
+      "id": 344,
+      "title": "The Void Within",
+      "chapter_number": 85,
+      "book_id": 1,
+      "word_count": 637
+    },
+    {
+      "id": 121,
+      "title": "The Descent into Madness",
+      "chapter_number": 31,
+      "book_id": 1,
+      "word_count": 683
+    },
+    {
+      "id": 475,
+      "title": "The NPC Theory",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 1441
+    },
+    {
+      "id": 259,
+      "title": "Beneath the Falling Sky",
+      "chapter_number": 65,
+      "book_id": 1,
+      "word_count": 111
+    },
+    {
+      "id": 420,
+      "title": "Cracks in the Facade",
+      "chapter_number": 15,
+      "book_id": 2,
+      "word_count": 1463
+    },
+    {
+      "id": 104,
+      "title": "The Eldritch Confrontation",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 1132
+    },
+    {
+      "id": 206,
+      "title": "Expanding Across the Cosmos",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 395
+    },
+    {
+      "id": 347,
+      "title": "The Observer's Curse",
+      "chapter_number": 87,
+      "book_id": 1,
+      "word_count": 455
+    },
+    {
+      "id": 441,
+      "title": "The Leather Classroom",
+      "chapter_number": 20,
+      "book_id": 2,
+      "word_count": 634
+    },
+    {
+      "id": 113,
+      "title": "The Struggle for Transformation",
+      "chapter_number": 29,
+      "book_id": 1,
+      "word_count": 13
+    },
+    {
+      "id": 158,
+      "title": "The Secret AutoDoc",
+      "chapter_number": 43,
+      "book_id": 1,
+      "word_count": 792
+    },
+    {
+      "id": 439,
+      "title": "The Monster Wakes",
+      "chapter_number": 19,
+      "book_id": 2,
+      "word_count": 802
+    },
+    {
+      "id": 159,
+      "title": "Transcendence and Transformation",
+      "chapter_number": 43,
+      "book_id": 1,
+      "word_count": 600
+    },
+    {
+      "id": 212,
+      "title": "The Rebellion Unfolds and S Corp Falls",
+      "chapter_number": 54,
+      "book_id": 1,
+      "word_count": 173
+    },
+    {
+      "id": 275,
+      "title": "The Pluto Hub and the Mobile Habitat",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 246
+    },
+    {
+      "id": 374,
+      "title": "Biology Test and the Scaffold Vision",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 436
+    },
+    {
+      "id": 341,
+      "title": "The Sealed Cosmos",
+      "chapter_number": 84,
+      "book_id": 1,
+      "word_count": 642
+    },
+    {
+      "id": 463,
+      "title": "The Fracture",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 688
+    },
+    {
+      "id": 542,
+      "title": "The Six-Month Search",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 459
+    },
+    {
+      "id": 265,
+      "title": "The United States Debt Proposition",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 618
+    },
+    {
+      "id": 485,
+      "title": "Reunion at Jamie's Marginalia",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 2034
+    },
+    {
+      "id": 508,
+      "title": "Refuge in the Farmhouse",
+      "chapter_number": 13,
+      "book_id": 3,
+      "word_count": 1377
+    },
+    {
+      "id": 325,
+      "title": "The Long Wait and Bitter Victory",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 503
+    },
+    {
+      "id": 469,
+      "title": "The Grey Loop",
+      "chapter_number": 5,
+      "book_id": 3,
+      "word_count": 834
+    },
+    {
+      "id": 513,
+      "title": "The Cycles of Torment",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 1123
+    },
+    {
+      "id": 448,
+      "title": "Waking to Normalcy",
+      "chapter_number": 22,
+      "book_id": 2,
+      "word_count": 233
+    },
+    {
+      "id": 372,
+      "title": "Phone in the Night",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 1379
+    },
+    {
+      "id": 434,
+      "title": "The Greyhound to Nowhere",
+      "chapter_number": 18,
+      "book_id": 2,
+      "word_count": 3439
+    },
+    {
+      "id": 489,
+      "title": "The Council Beyond Etheris",
+      "chapter_number": 8,
+      "book_id": 3,
+      "word_count": 1591
+    },
+    {
+      "id": 570,
+      "title": "Secret Level: Notes to Readers",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 460
+    },
+    {
+      "id": 197,
+      "title": "Discovery and Arrival",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 186
+    },
+    {
+      "id": 430,
+      "title": "Mapping the Timeline",
+      "chapter_number": 17,
+      "book_id": 2,
+      "word_count": 717
+    },
+    {
+      "id": 345,
+      "title": "The Void of Ego and Sacrifice",
+      "chapter_number": 86,
+      "book_id": 1,
+      "word_count": 36
+    },
+    {
+      "id": 226,
+      "title": "The Archangels' Wrath and Lady A's Salvation",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 454
+    },
+    {
+      "id": 167,
+      "title": "The Wormhole Vision",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 780
+    },
+    {
+      "id": 111,
+      "title": "The Matter Replicator Revealed",
+      "chapter_number": 28,
+      "book_id": 1,
+      "word_count": 849
+    },
+    {
+      "id": 308,
+      "title": "Confinement and the Arrival of Nameless",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 360
+    },
+    {
+      "id": 270,
+      "title": "The Grand Unveiling",
+      "chapter_number": 67,
+      "book_id": 1,
+      "word_count": 214
+    },
+    {
+      "id": 140,
+      "title": "Paranoia and Capitulation",
+      "chapter_number": 37,
+      "book_id": 1,
+      "word_count": 264
+    },
+    {
+      "id": 514,
+      "title": "My Lai and the Crack in the Prison",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 91
+    },
+    {
+      "id": 205,
+      "title": "Building the Antarctic Community",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 542
+    },
+    {
+      "id": 550,
+      "title": "The Infected Pasture",
+      "chapter_number": 21,
+      "book_id": 3,
+      "word_count": 1462
+    },
+    {
+      "id": 69,
+      "title": "The Technomancer Question",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 432
+    },
+    {
+      "id": 36,
+      "title": "Restless Night and Uneasy Dreams",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 124
+    },
+    {
+      "id": 106,
+      "title": "Awakening and Knowledge",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 316
+    },
+    {
+      "id": 497,
+      "title": "Yaldabaoth's Strategy",
+      "chapter_number": 10,
+      "book_id": 3,
+      "word_count": 305
+    },
+    {
+      "id": 423,
+      "title": "The Processing Chamber",
+      "chapter_number": 16,
+      "book_id": 2,
+      "word_count": 1444
+    },
+    {
+      "id": 224,
+      "title": "The Dreamscape Awakening",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 784
+    },
+    {
+      "id": 99,
+      "title": "The Disaster Experiment",
+      "chapter_number": 26,
+      "book_id": 1,
+      "word_count": 841
+    },
+    {
+      "id": 55,
+      "title": "The Enigma Consumed",
+      "chapter_number": 16,
+      "book_id": 1,
+      "word_count": 812
+    },
+    {
+      "id": 506,
+      "title": "Disguises and Discovery",
+      "chapter_number": 13,
+      "book_id": 3,
+      "word_count": 1042
+    },
+    {
+      "id": 453,
+      "title": "The Genesis of Elysium Rising",
+      "chapter_number": 23,
+      "book_id": 2,
+      "word_count": 196
+    },
+    {
+      "id": 440,
+      "title": "The Endless Cycle",
+      "chapter_number": 20,
+      "book_id": 2,
+      "word_count": 753
+    },
+    {
+      "id": 558,
+      "title": "Chaotic Breakfast and Ground Rules",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 579
+    },
+    {
+      "id": 110,
+      "title": "The Chaos of Creation",
+      "chapter_number": 28,
+      "book_id": 1,
+      "word_count": 716
+    },
+    {
+      "id": 495,
+      "title": "Whitney's Deletion and Rebirth",
+      "chapter_number": 9,
+      "book_id": 3,
+      "word_count": 875
+    },
+    {
+      "id": 86,
+      "title": "The Useless Crystal",
+      "chapter_number": 23,
+      "book_id": 1,
+      "word_count": 762
+    },
+    {
+      "id": 273,
+      "title": "The Golden Ticket",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 512
+    },
+    {
+      "id": 384,
+      "title": "Gathering in the Basement",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 970
+    },
+    {
+      "id": 105,
+      "title": "The Fractured Visions",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 336
+    },
+    {
+      "id": 406,
+      "title": "Walking Back to School",
+      "chapter_number": 11,
+      "book_id": 2,
+      "word_count": 1311
+    },
+    {
+      "id": 315,
+      "title": "Crisis at the Edge of the Universe",
+      "chapter_number": 78,
+      "book_id": 1,
+      "word_count": 918
+    },
+    {
+      "id": 89,
+      "title": "Bridging Old and New",
+      "chapter_number": 23,
+      "book_id": 1,
+      "word_count": 588
+    },
+    {
+      "id": 565,
+      "title": "The Infinite Pattern Repeats",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 46
+    },
+    {
+      "id": 290,
+      "title": "Bitter Revelation and Collapse",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 573
+    },
+    {
+      "id": 318,
+      "title": "Confrontation with Family",
+      "chapter_number": 80,
+      "book_id": 1,
+      "word_count": 802
+    },
+    {
+      "id": 559,
+      "title": "The Night Stephen Writes",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 763
+    },
+    {
+      "id": 479,
+      "title": "Connection with Xavier",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 1014
+    },
+    {
+      "id": 33,
+      "title": "The Global Grid Emerges",
+      "chapter_number": 11,
+      "book_id": 1,
+      "word_count": 442
+    },
+    {
+      "id": 108,
+      "title": "The Promise of Breakthrough",
+      "chapter_number": 28,
+      "book_id": 1,
+      "word_count": 422
+    },
+    {
+      "id": 126,
+      "title": "Culinary Creation and Future Planning",
+      "chapter_number": 32,
+      "book_id": 1,
+      "word_count": 430
+    },
+    {
+      "id": 194,
+      "title": "The Gateway's Potential",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 738
+    },
+    {
+      "id": 557,
+      "title": "Waking in the Prison",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 931
+    },
+    {
+      "id": 449,
+      "title": "Fragments of Another Life",
+      "chapter_number": 22,
+      "book_id": 2,
+      "word_count": 980
+    },
+    {
+      "id": 27,
+      "title": "The Unraveling Search and Paranoid Drive",
+      "chapter_number": 10,
+      "book_id": 1,
+      "word_count": 460
+    },
+    {
+      "id": 133,
+      "title": "Drowning in Cardboard",
+      "chapter_number": 35,
+      "book_id": 1,
+      "word_count": 714
+    },
+    {
+      "id": 312,
+      "title": "The Assault on Pluto",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 315
+    },
+    {
+      "id": 24,
+      "title": "The Eternal Engine's Final Hours",
+      "chapter_number": 9,
+      "book_id": 1,
+      "word_count": 835
+    },
+    {
+      "id": 401,
+      "title": "The Eternal Stakes",
+      "chapter_number": 10,
+      "book_id": 2,
+      "word_count": 1618
+    },
+    {
+      "id": 371,
+      "title": "Midnight Panic",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 343
+    },
+    {
+      "id": 25,
+      "title": "The Morning After",
+      "chapter_number": 9,
+      "book_id": 1,
+      "word_count": 685
+    },
+    {
+      "id": 252,
+      "title": "Revealing the Nanites",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 367
+    },
+    {
+      "id": 338,
+      "title": "The Dreamscape War Emerges",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 713
+    },
+    {
+      "id": 307,
+      "title": "The Failed Uprising",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 215
+    },
+    {
+      "id": 545,
+      "title": "Warded and Ready",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 437
+    },
+    {
+      "id": 350,
+      "title": "Breakfast and Family Banter",
+      "chapter_number": 88,
+      "book_id": 1,
+      "word_count": 353
+    },
+    {
+      "id": 528,
+      "title": "Birth and Homecoming",
+      "chapter_number": 16,
+      "book_id": 3,
+      "word_count": 520
+    },
+    {
+      "id": 173,
+      "title": "New Theoretical Breakthrough",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 337
+    },
+    {
+      "id": 555,
+      "title": "Coffee and Conviction",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 615
+    },
+    {
+      "id": 19,
+      "title": "The Workshop and the Eternal Engine",
+      "chapter_number": 7,
+      "book_id": 1,
+      "word_count": 997
+    },
+    {
+      "id": 393,
+      "title": "The Final Fracture",
+      "chapter_number": 8,
+      "book_id": 2,
+      "word_count": 1742
+    },
+    {
+      "id": 236,
+      "title": "The Marital Fracture",
+      "chapter_number": 59,
+      "book_id": 1,
+      "word_count": 720
+    },
+    {
+      "id": 130,
+      "title": "Emergence from the Abyss",
+      "chapter_number": 34,
+      "book_id": 1,
+      "word_count": 341
+    },
+    {
+      "id": 149,
+      "title": "Lost Among the Mortals",
+      "chapter_number": 40,
+      "book_id": 1,
+      "word_count": 91
+    },
+    {
+      "id": 85,
+      "title": "A Fart Breaks the Spell",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 22
+    },
+    {
+      "id": 467,
+      "title": "The Drowning",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 488
+    },
+    {
+      "id": 359,
+      "title": "The Kick and the Crack",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 446
+    },
+    {
+      "id": 228,
+      "title": "Lady I's Library of Infinite Knowledge",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 829
+    },
+    {
+      "id": 418,
+      "title": "Elysium Rising",
+      "chapter_number": 15,
+      "book_id": 2,
+      "word_count": 1957
+    },
+    {
+      "id": 209,
+      "title": "The Unseen Guardian Reveals Its Nature",
+      "chapter_number": 54,
+      "book_id": 1,
+      "word_count": 370
+    },
+    {
+      "id": 523,
+      "title": "The Choice to Return",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 738
+    },
+    {
+      "id": 14,
+      "title": "MIT and Fragile Trust",
+      "chapter_number": 6,
+      "book_id": 1,
+      "word_count": 352
+    },
+    {
+      "id": 128,
+      "title": "War Room Strategy",
+      "chapter_number": 33,
+      "book_id": 1,
+      "word_count": 994
+    },
+    {
+      "id": 2,
+      "title": "Angles on the Edge of Oblivion",
+      "chapter_number": 2,
+      "book_id": 1,
+      "word_count": 42
+    },
+    {
+      "id": 505,
+      "title": "The Motel Room - Bad News",
+      "chapter_number": 13,
+      "book_id": 3,
+      "word_count": 1315
+    },
+    {
+      "id": 532,
+      "title": "The Hall of Worshippers",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 1658
+    },
+    {
+      "id": 390,
+      "title": "September's Dissolution",
+      "chapter_number": 8,
+      "book_id": 2,
+      "word_count": 2619
+    },
+    {
+      "id": 230,
+      "title": "Earthquake in the Night",
+      "chapter_number": 58,
+      "book_id": 1,
+      "word_count": 337
+    },
+    {
+      "id": 343,
+      "title": "Confrontation with the Demiurge",
+      "chapter_number": 85,
+      "book_id": 1,
+      "word_count": 1009
+    },
+    {
+      "id": 276,
+      "title": "The Gateway Crossing",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 97
+    },
+    {
+      "id": 301,
+      "title": "Between Dreams and Reality",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 625
+    },
+    {
+      "id": 164,
+      "title": "The Argument at the Neko Caf\u00e9",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 865
+    },
+    {
+      "id": 203,
+      "title": "The Half-Gateway Experiment",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 1065
+    },
+    {
+      "id": 436,
+      "title": "Awakening in the Trailer",
+      "chapter_number": 19,
+      "book_id": 2,
+      "word_count": 2558
+    },
+    {
+      "id": 165,
+      "title": "Into the Sea of Trees",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 1208
+    },
+    {
+      "id": 142,
+      "title": "A Forgotten Ruler in a Modern Den",
+      "chapter_number": 38,
+      "book_id": 1,
+      "word_count": 523
+    },
+    {
+      "id": 410,
+      "title": "Domestic Nightmare",
+      "chapter_number": 12,
+      "book_id": 2,
+      "word_count": 1034
+    },
+    {
+      "id": 519,
+      "title": "Arrival in the Akashic Realm",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 2867
+    },
+    {
+      "id": 461,
+      "title": "The Breach from Beyond",
+      "chapter_number": 3,
+      "book_id": 3,
+      "word_count": 375
+    },
+    {
+      "id": 233,
+      "title": "The Honing Deck",
+      "chapter_number": 59,
+      "book_id": 1,
+      "word_count": 980
+    },
+    {
+      "id": 295,
+      "title": "The Raccoon Conspiracy",
+      "chapter_number": 74,
+      "book_id": 1,
+      "word_count": 112
+    },
+    {
+      "id": 9,
+      "title": "Descent into Corporate Absurdity",
+      "chapter_number": 4,
+      "book_id": 1,
+      "word_count": 1873
+    },
+    {
+      "id": 484,
+      "title": "Finding the Shop",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 466
+    },
+    {
+      "id": 114,
+      "title": "A New Beginning",
+      "chapter_number": 29,
+      "book_id": 1,
+      "word_count": 6
+    },
+    {
+      "id": 331,
+      "title": "The Fracturing Reality",
+      "chapter_number": 82,
+      "book_id": 1,
+      "word_count": 830
+    },
+    {
+      "id": 134,
+      "title": "Playing the Market",
+      "chapter_number": 35,
+      "book_id": 1,
+      "word_count": 754
+    },
+    {
+      "id": 71,
+      "title": "The Engine Unveiled",
+      "chapter_number": 19,
+      "book_id": 1,
+      "word_count": 552
+    },
+    {
+      "id": 496,
+      "title": "The Compound",
+      "chapter_number": 10,
+      "book_id": 3,
+      "word_count": 1856
+    },
+    {
+      "id": 560,
+      "title": "The Garden Before the Storm",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 327
+    },
+    {
+      "id": 271,
+      "title": "The Broadcast",
+      "chapter_number": 68,
+      "book_id": 1,
+      "word_count": 1231
+    },
+    {
+      "id": 119,
+      "title": "The Awakening of I AM",
+      "chapter_number": 31,
+      "book_id": 1,
+      "word_count": 176
+    },
+    {
+      "id": 455,
+      "title": "Reflections on Process and Future Plans",
+      "chapter_number": 23,
+      "book_id": 2,
+      "word_count": 143
+    },
+    {
+      "id": 354,
+      "title": "About the Author",
+      "chapter_number": 90,
+      "book_id": 1,
+      "word_count": 285
+    },
+    {
+      "id": 216,
+      "title": "The Weight of Command",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 1210
+    },
+    {
+      "id": 139,
+      "title": "The Bar Meeting",
+      "chapter_number": 37,
+      "book_id": 1,
+      "word_count": 496
+    },
+    {
+      "id": 396,
+      "title": "Broken Rituals and Failing Attempts",
+      "chapter_number": 9,
+      "book_id": 2,
+      "word_count": 1951
+    },
+    {
+      "id": 380,
+      "title": "The Confession: When I Was Eight",
+      "chapter_number": 6,
+      "book_id": 2,
+      "word_count": 2683
+    },
+    {
+      "id": 299,
+      "title": "The Confrontation with Dr. On",
+      "chapter_number": 75,
+      "book_id": 1,
+      "word_count": 373
+    },
+    {
+      "id": 311,
+      "title": "The Journey and Final Approach",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 428
+    },
+    {
+      "id": 176,
+      "title": "Reunion Through the Stars",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 246
+    },
+    {
+      "id": 425,
+      "title": "The Semantic Trap",
+      "chapter_number": 16,
+      "book_id": 2,
+      "word_count": 2024
+    },
+    {
+      "id": 117,
+      "title": "The Emerald Lake - The Temptation",
+      "chapter_number": 30,
+      "book_id": 1,
+      "word_count": 366
+    },
+    {
+      "id": 120,
+      "title": "The Ten Watchers Stir",
+      "chapter_number": 31,
+      "book_id": 1,
+      "word_count": 523
+    },
+    {
+      "id": 16,
+      "title": "Rejection and Burial",
+      "chapter_number": 6,
+      "book_id": 1,
+      "word_count": 249
+    },
+    {
+      "id": 481,
+      "title": "The Akashic Halls Flash",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 225
+    },
+    {
+      "id": 352,
+      "title": "The Celebration of Five Centuries",
+      "chapter_number": 89,
+      "book_id": 1,
+      "word_count": 934
+    },
+    {
+      "id": 147,
+      "title": "Awakening in the Ruins",
+      "chapter_number": 40,
+      "book_id": 1,
+      "word_count": 220
+    },
+    {
+      "id": 181,
+      "title": "Le Comptoir Secret and the Mysterious Map",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 553
+    },
+    {
+      "id": 447,
+      "title": "The Gentle Dissolution",
+      "chapter_number": 21,
+      "book_id": 2,
+      "word_count": 452
+    },
+    {
+      "id": 241,
+      "title": "Return to MOM",
+      "chapter_number": 61,
+      "book_id": 1,
+      "word_count": 450
+    },
+    {
+      "id": 244,
+      "title": "Grounded by Family",
+      "chapter_number": 61,
+      "book_id": 1,
+      "word_count": 531
+    },
+    {
+      "id": 94,
+      "title": "The BOINC Experiment",
+      "chapter_number": 25,
+      "book_id": 1,
+      "word_count": 445
+    },
+    {
+      "id": 251,
+      "title": "The Europa Catastrophe Revealed",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 492
+    },
+    {
+      "id": 577,
+      "title": "Aspolin's Choice and Sacrifice",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 2192
+    },
+    {
+      "id": 64,
+      "title": "The Labyrinth of Rejection",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 169
+    },
+    {
+      "id": 376,
+      "title": "Parking Lot Revelations",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 746
+    },
+    {
+      "id": 309,
+      "title": "The Vatican Revelation",
+      "chapter_number": 77,
+      "book_id": 1,
+      "word_count": 583
+    },
+    {
+      "id": 287,
+      "title": "Shadow Conspirators",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 235
+    },
+    {
+      "id": 17,
+      "title": "Walls Crumble",
+      "chapter_number": 6,
+      "book_id": 1,
+      "word_count": 54
+    },
+    {
+      "id": 329,
+      "title": "The Cosmic Emptiness",
+      "chapter_number": 82,
+      "book_id": 1,
+      "word_count": 1067
+    },
+    {
+      "id": 118,
+      "title": "The Trailer - Aftermath",
+      "chapter_number": 30,
+      "book_id": 1,
+      "word_count": 272
+    },
+    {
+      "id": 382,
+      "title": "Unraveling Reality",
+      "chapter_number": 6,
+      "book_id": 2,
+      "word_count": 1608
+    },
+    {
+      "id": 459,
+      "title": "The Impossible Reawakening",
+      "chapter_number": 3,
+      "book_id": 3,
+      "word_count": 294
+    },
+    {
+      "id": 388,
+      "title": "Return to the Wrong Basement",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 1131
+    },
+    {
+      "id": 136,
+      "title": "Rise to Dominion",
+      "chapter_number": 36,
+      "book_id": 1,
+      "word_count": 208
+    },
+    {
+      "id": 541,
+      "title": "The Broken Oracle",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 451
+    },
+    {
+      "id": 79,
+      "title": "Quantum Secrets in the Papers",
+      "chapter_number": 21,
+      "book_id": 1,
+      "word_count": 419
+    },
+    {
+      "id": 566,
+      "title": "Reflections on Creation and Process",
+      "chapter_number": 24,
+      "book_id": 3,
+      "word_count": 661
+    },
+    {
+      "id": 44,
+      "title": "Monday Morning Dread",
+      "chapter_number": 14,
+      "book_id": 1,
+      "word_count": 477
+    },
+    {
+      "id": 355,
+      "title": "Front Matter and Publication Details",
+      "chapter_number": 1,
+      "book_id": 2,
+      "word_count": 304
+    },
+    {
+      "id": 269,
+      "title": "The Pointers Speak",
+      "chapter_number": 67,
+      "book_id": 1,
+      "word_count": 124
+    },
+    {
+      "id": 22,
+      "title": "The Day of Reckoning",
+      "chapter_number": 8,
+      "book_id": 1,
+      "word_count": 1235
+    },
+    {
+      "id": 330,
+      "title": "The Three-Hundredth Birthday",
+      "chapter_number": 82,
+      "book_id": 1,
+      "word_count": 738
+    },
+    {
+      "id": 73,
+      "title": "Solitary Testing and Shock",
+      "chapter_number": 19,
+      "book_id": 1,
+      "word_count": 336
+    },
+    {
+      "id": 183,
+      "title": "Herr M\u00fcller and the Gold Authentication",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 711
+    },
+    {
+      "id": 464,
+      "title": "The Reset",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 1213
+    },
+    {
+      "id": 385,
+      "title": "The Summoning Begins",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 525
+    },
+    {
+      "id": 416,
+      "title": "Jamie's Confession",
+      "chapter_number": 14,
+      "book_id": 2,
+      "word_count": 2203
+    },
+    {
+      "id": 256,
+      "title": "Safety Reminders and Protocols",
+      "chapter_number": 64,
+      "book_id": 1,
+      "word_count": 80
+    },
+    {
+      "id": 335,
+      "title": "Assault on Headquarters",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 685
+    },
+    {
+      "id": 561,
+      "title": "The Earthquake",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 335
+    },
+    {
+      "id": 76,
+      "title": "Liminal Spaces and Hidden Truths",
+      "chapter_number": 20,
+      "book_id": 1,
+      "word_count": 1074
+    },
+    {
+      "id": 482,
+      "title": "Waking Wrong",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 451
+    },
+    {
+      "id": 15,
+      "title": "Death and Transcendence",
+      "chapter_number": 6,
+      "book_id": 1,
+      "word_count": 1259
+    },
+    {
+      "id": 177,
+      "title": "The Summoning in the Abandoned Library",
+      "chapter_number": 48,
+      "book_id": 1,
+      "word_count": 574
+    },
+    {
+      "id": 210,
+      "title": "The Ten Entities Infiltrate S Corp",
+      "chapter_number": 54,
+      "book_id": 1,
+      "word_count": 1134
+    },
+    {
+      "id": 292,
+      "title": "Battle for Survival",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 231
+    },
+    {
+      "id": 204,
+      "title": "Recruiting Human Genius",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 905
+    },
+    {
+      "id": 257,
+      "title": "The Rogue Banana Incident",
+      "chapter_number": 64,
+      "book_id": 1,
+      "word_count": 141
+    },
+    {
+      "id": 403,
+      "title": "Journal of Horrors",
+      "chapter_number": 11,
+      "book_id": 2,
+      "word_count": 800
+    },
+    {
+      "id": 207,
+      "title": "The Cloning Debate",
+      "chapter_number": 53,
+      "book_id": 1,
+      "word_count": 670
+    },
+    {
+      "id": 510,
+      "title": "The Confession Begins",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 300
+    },
+    {
+      "id": 488,
+      "title": "Kitchen Argument",
+      "chapter_number": 8,
+      "book_id": 3,
+      "word_count": 922
+    },
+    {
+      "id": 189,
+      "title": "The World's Wealthiest Company",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 195
+    },
+    {
+      "id": 435,
+      "title": "The Desecrated Church",
+      "chapter_number": 18,
+      "book_id": 2,
+      "word_count": 2786
+    },
+    {
+      "id": 186,
+      "title": "Awakening in the Frozen Tomb",
+      "chapter_number": 50,
+      "book_id": 1,
+      "word_count": 400
+    },
+    {
+      "id": 12,
+      "title": "The Day of Reckoning",
+      "chapter_number": 5,
+      "book_id": 1,
+      "word_count": 439
+    },
+    {
+      "id": 171,
+      "title": "Iteration and Discovery",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 819
+    },
+    {
+      "id": 192,
+      "title": "Transforming the Headquarters",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 654
+    },
+    {
+      "id": 507,
+      "title": "Months of Searching - The Pallid Mask Theatre",
+      "chapter_number": 13,
+      "book_id": 3,
+      "word_count": 2860
+    },
+    {
+      "id": 218,
+      "title": "London's Living History",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 487
+    },
+    {
+      "id": 190,
+      "title": "Breakfast Table Philosophy",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 647
+    },
+    {
+      "id": 179,
+      "title": "Weighty Wealth and Corporate Restructuring",
+      "chapter_number": 49,
+      "book_id": 1,
+      "word_count": 370
+    },
+    {
+      "id": 512,
+      "title": "The Resistance and the Prison",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 1900
+    },
+    {
+      "id": 378,
+      "title": "The Corvette Dream and Death",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 693
+    },
+    {
+      "id": 250,
+      "title": "Lunch Table Memories and Unconventional Breakthroughs",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 641
+    },
+    {
+      "id": 437,
+      "title": "The Poisoned Breakfast",
+      "chapter_number": 19,
+      "book_id": 2,
+      "word_count": 1638
+    },
+    {
+      "id": 41,
+      "title": "The Sacred Circle and the Device",
+      "chapter_number": 13,
+      "book_id": 1,
+      "word_count": 325
+    },
+    {
+      "id": 442,
+      "title": "The Fishing Lesson",
+      "chapter_number": 20,
+      "book_id": 2,
+      "word_count": 788
+    },
+    {
+      "id": 500,
+      "title": "The Priest's Card",
+      "chapter_number": 10,
+      "book_id": 3,
+      "word_count": 391
+    },
+    {
+      "id": 40,
+      "title": "Lost in the Twisted Forest",
+      "chapter_number": 13,
+      "book_id": 1,
+      "word_count": 528
+    },
+    {
+      "id": 88,
+      "title": "The Infinitron Revealed",
+      "chapter_number": 23,
+      "book_id": 1,
+      "word_count": 1529
+    },
+    {
+      "id": 215,
+      "title": "The Entity Speaks and the Ladies Intervene",
+      "chapter_number": 55,
+      "book_id": 1,
+      "word_count": 676
+    },
+    {
+      "id": 172,
+      "title": "Stargazing and Wonder",
+      "chapter_number": 47,
+      "book_id": 1,
+      "word_count": 468
+    },
+    {
+      "id": 473,
+      "title": "The Crack in the Prison and the Collectors",
+      "chapter_number": 5,
+      "book_id": 3,
+      "word_count": 545
+    },
+    {
+      "id": 327,
+      "title": "The Hollow Victory",
+      "chapter_number": 82,
+      "book_id": 1,
+      "word_count": 789
+    },
+    {
+      "id": 408,
+      "title": "Emergency Briefing",
+      "chapter_number": 12,
+      "book_id": 2,
+      "word_count": 540
+    },
+    {
+      "id": 367,
+      "title": "Television Horror",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 263
+    },
+    {
+      "id": 151,
+      "title": "Wrestling with Nanite Theology",
+      "chapter_number": 41,
+      "book_id": 1,
+      "word_count": 451
+    },
+    {
+      "id": 101,
+      "title": "The Crimson Abyss",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 600
+    },
+    {
+      "id": 466,
+      "title": "The Unraveling",
+      "chapter_number": 4,
+      "book_id": 3,
+      "word_count": 828
+    },
+    {
+      "id": 280,
+      "title": "The Guard's Betrayal and Sacrifice",
+      "chapter_number": 70,
+      "book_id": 1,
+      "word_count": 500
+    },
+    {
+      "id": 20,
+      "title": "The Flight from the Workshop",
+      "chapter_number": 7,
+      "book_id": 1,
+      "word_count": 320
+    },
+    {
+      "id": 498,
+      "title": "The Anti-Life Realm",
+      "chapter_number": 10,
+      "book_id": 3,
+      "word_count": 1666
+    },
+    {
+      "id": 333,
+      "title": "The Security Office Consultation",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 755
+    },
+    {
+      "id": 217,
+      "title": "Stepping Away",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 1061
+    },
+    {
+      "id": 278,
+      "title": "First Steps on Alien Soil",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 188
+    },
+    {
+      "id": 537,
+      "title": "Awakening in Elysium",
+      "chapter_number": 19,
+      "book_id": 3,
+      "word_count": 1442
+    },
+    {
+      "id": 357,
+      "title": "The Death of Dreams and Science",
+      "chapter_number": 2,
+      "book_id": 2,
+      "word_count": 940
+    },
+    {
+      "id": 397,
+      "title": "Fragmentation and Obsession",
+      "chapter_number": 9,
+      "book_id": 2,
+      "word_count": 1174
+    },
+    {
+      "id": 544,
+      "title": "The Family Argument",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 1112
+    },
+    {
+      "id": 392,
+      "title": "The Second Summoning",
+      "chapter_number": 8,
+      "book_id": 2,
+      "word_count": 2958
+    },
+    {
+      "id": 144,
+      "title": "The Exhaustion Sets In",
+      "chapter_number": 39,
+      "book_id": 1,
+      "word_count": 1526
+    },
+    {
+      "id": 521,
+      "title": "The Battle at Thuleskarne",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 1622
+    },
+    {
+      "id": 199,
+      "title": "The Cosmic Deity and Transformation",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 122
+    },
+    {
+      "id": 145,
+      "title": "Boxy's Success and the Existential Question",
+      "chapter_number": 39,
+      "book_id": 1,
+      "word_count": 286
+    },
+    {
+      "id": 42,
+      "title": "Awakening at the Campsite",
+      "chapter_number": 13,
+      "book_id": 1,
+      "word_count": 251
+    },
+    {
+      "id": 389,
+      "title": "The Others Awaken",
+      "chapter_number": 7,
+      "book_id": 2,
+      "word_count": 1371
+    },
+    {
+      "id": 124,
+      "title": "Family Experimentation and Discovery",
+      "chapter_number": 32,
+      "book_id": 1,
+      "word_count": 815
+    },
+    {
+      "id": 60,
+      "title": "Origins of the Mysterious Device",
+      "chapter_number": 17,
+      "book_id": 1,
+      "word_count": 641
+    },
+    {
+      "id": 419,
+      "title": "Jamie's Transformation",
+      "chapter_number": 15,
+      "book_id": 2,
+      "word_count": 1888
+    },
+    {
+      "id": 243,
+      "title": "Ethical Framework in the Savanna",
+      "chapter_number": 61,
+      "book_id": 1,
+      "word_count": 768
+    },
+    {
+      "id": 517,
+      "title": "Building the Gateway",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 987
+    },
+    {
+      "id": 196,
+      "title": "From Packages to People",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 362
+    },
+    {
+      "id": 129,
+      "title": "Naming the Dream",
+      "chapter_number": 33,
+      "book_id": 1,
+      "word_count": 976
+    },
+    {
+      "id": 127,
+      "title": "The Replicator Dilemma",
+      "chapter_number": 33,
+      "book_id": 1,
+      "word_count": 937
+    },
+    {
+      "id": 234,
+      "title": "Evening Contemplations",
+      "chapter_number": 59,
+      "book_id": 1,
+      "word_count": 252
+    },
+    {
+      "id": 249,
+      "title": "The Space Elevator Crisis",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 708
+    },
+    {
+      "id": 135,
+      "title": "Arrival in Chaos",
+      "chapter_number": 36,
+      "book_id": 1,
+      "word_count": 328
+    },
+    {
+      "id": 65,
+      "title": "The Breaking Point",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 587
+    },
+    {
+      "id": 87,
+      "title": "The Office Breakthrough",
+      "chapter_number": 23,
+      "book_id": 1,
+      "word_count": 1059
+    },
+    {
+      "id": 509,
+      "title": "The Dream Realm - Nyarlathotep's Revelation",
+      "chapter_number": 13,
+      "book_id": 3,
+      "word_count": 857
+    },
+    {
+      "id": 51,
+      "title": "Elysium Revealed",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 568
+    },
+    {
+      "id": 358,
+      "title": "The Final Dissolution",
+      "chapter_number": 2,
+      "book_id": 2,
+      "word_count": 210
+    },
+    {
+      "id": 54,
+      "title": "Adrift in Stillness",
+      "chapter_number": 16,
+      "book_id": 1,
+      "word_count": 480
+    },
+    {
+      "id": 143,
+      "title": "The Empire Expands",
+      "chapter_number": 39,
+      "book_id": 1,
+      "word_count": 889
+    },
+    {
+      "id": 515,
+      "title": "Xavier, the Glitch",
+      "chapter_number": 14,
+      "book_id": 3,
+      "word_count": 703
+    },
+    {
+      "id": 77,
+      "title": "Reality Unraveling",
+      "chapter_number": 20,
+      "book_id": 1,
+      "word_count": 917
+    },
+    {
+      "id": 412,
+      "title": "Return to Wickham Park",
+      "chapter_number": 13,
+      "book_id": 2,
+      "word_count": 1913
+    },
+    {
+      "id": 302,
+      "title": "Exile in Paradise",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 240
+    },
+    {
+      "id": 53,
+      "title": "Morning Reckoning and Confession",
+      "chapter_number": 15,
+      "book_id": 1,
+      "word_count": 894
+    },
+    {
+      "id": 297,
+      "title": "Contact Lost with Sorhhinda",
+      "chapter_number": 74,
+      "book_id": 1,
+      "word_count": 473
+    },
+    {
+      "id": 460,
+      "title": "The Precarious Rollback",
+      "chapter_number": 3,
+      "book_id": 3,
+      "word_count": 374
+    },
+    {
+      "id": 569,
+      "title": "Future Plans and Authorial Aspirations",
+      "chapter_number": 24,
+      "book_id": 3,
+      "word_count": 201
+    },
+    {
+      "id": 137,
+      "title": "The Golden Idea",
+      "chapter_number": 37,
+      "book_id": 1,
+      "word_count": 949
+    },
+    {
+      "id": 157,
+      "title": "The Dead Fish and a Desperate Idea",
+      "chapter_number": 43,
+      "book_id": 1,
+      "word_count": 753
+    },
+    {
+      "id": 490,
+      "title": "The Signal Across Time",
+      "chapter_number": 8,
+      "book_id": 3,
+      "word_count": 359
+    },
+    {
+      "id": 66,
+      "title": "The Couch Dream: Workplace Battle",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 639
+    },
+    {
+      "id": 499,
+      "title": "The Truth Unfolds",
+      "chapter_number": 10,
+      "book_id": 3,
+      "word_count": 1617
+    },
+    {
+      "id": 31,
+      "title": "Todd's Obsession",
+      "chapter_number": 11,
+      "book_id": 1,
+      "word_count": 338
+    },
+    {
+      "id": 220,
+      "title": "Unplanned Detour to India",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 403
+    },
+    {
+      "id": 97,
+      "title": "The Infinite Problem",
+      "chapter_number": 26,
+      "book_id": 1,
+      "word_count": 942
+    },
+    {
+      "id": 30,
+      "title": "Bedtime Reflections and Lingering Shadows",
+      "chapter_number": 10,
+      "book_id": 1,
+      "word_count": 102
+    },
+    {
+      "id": 1,
+      "title": "Front Matter and Publication Details",
+      "chapter_number": 1,
+      "book_id": 1,
+      "word_count": 316
+    },
+    {
+      "id": 417,
+      "title": "The Journal's Secret",
+      "chapter_number": 15,
+      "book_id": 2,
+      "word_count": 2213
+    },
+    {
+      "id": 187,
+      "title": "The Colony and the Cosmic Call",
+      "chapter_number": 50,
+      "book_id": 1,
+      "word_count": 478
+    },
+    {
+      "id": 424,
+      "title": "Jamie's Deletion",
+      "chapter_number": 16,
+      "book_id": 2,
+      "word_count": 1374
+    },
+    {
+      "id": 193,
+      "title": "The Global Network Rises",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 414
+    },
+    {
+      "id": 536,
+      "title": "The Seed Bleeds",
+      "chapter_number": 18,
+      "book_id": 3,
+      "word_count": 15
+    },
+    {
+      "id": 26,
+      "title": "Office Aftermath and Digital Ghosts",
+      "chapter_number": 10,
+      "book_id": 1,
+      "word_count": 1667
+    },
+    {
+      "id": 35,
+      "title": "The Scoutmaster's Tale",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 532
+    },
+    {
+      "id": 245,
+      "title": "Kitchen Conversations and Family Warmth",
+      "chapter_number": 62,
+      "book_id": 1,
+      "word_count": 704
+    },
+    {
+      "id": 96,
+      "title": "Financial Crisis and Bitcoin Temptation",
+      "chapter_number": 25,
+      "book_id": 1,
+      "word_count": 977
+    },
+    {
+      "id": 148,
+      "title": "Revelation of Cosmic Horror",
+      "chapter_number": 40,
+      "book_id": 1,
+      "word_count": 348
+    },
+    {
+      "id": 103,
+      "title": "The Wire and the Portal",
+      "chapter_number": 27,
+      "book_id": 1,
+      "word_count": 424
+    },
+    {
+      "id": 402,
+      "title": "Waking to Nightmare",
+      "chapter_number": 11,
+      "book_id": 2,
+      "word_count": 1146
+    },
+    {
+      "id": 123,
+      "title": "Testing the Replicator on the RV",
+      "chapter_number": 32,
+      "book_id": 1,
+      "word_count": 476
+    },
+    {
+      "id": 266,
+      "title": "Regional Tensions and Peacekeeping",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 642
+    },
+    {
+      "id": 363,
+      "title": "The Crash",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 108
+    },
+    {
+      "id": 470,
+      "title": "The Second Loop and the Woman in White",
+      "chapter_number": 5,
+      "book_id": 3,
+      "word_count": 1614
+    },
+    {
+      "id": 191,
+      "title": "Building the Physical Empire",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 248
+    },
+    {
+      "id": 529,
+      "title": "The Endless Fall",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 1539
+    },
+    {
+      "id": 421,
+      "title": "The World Breaks",
+      "chapter_number": 15,
+      "book_id": 2,
+      "word_count": 1421
+    },
+    {
+      "id": 43,
+      "title": "The Journey Home",
+      "chapter_number": 13,
+      "book_id": 1,
+      "word_count": 356
+    },
+    {
+      "id": 305,
+      "title": "Conspirators in Code",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 510
+    },
+    {
+      "id": 219,
+      "title": "Vatican Expulsion",
+      "chapter_number": 56,
+      "book_id": 1,
+      "word_count": 1182
+    },
+    {
+      "id": 518,
+      "title": "The Police Ambush",
+      "chapter_number": 15,
+      "book_id": 3,
+      "word_count": 1325
+    },
+    {
+      "id": 334,
+      "title": "The Alarm and the Red Hat's Return",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 195
+    },
+    {
+      "id": 332,
+      "title": "Nightmares and Warnings",
+      "chapter_number": 83,
+      "book_id": 1,
+      "word_count": 497
+    },
+    {
+      "id": 426,
+      "title": "The Reset",
+      "chapter_number": 16,
+      "book_id": 2,
+      "word_count": 1780
+    },
+    {
+      "id": 491,
+      "title": "Obsessive Search",
+      "chapter_number": 8,
+      "book_id": 3,
+      "word_count": 636
+    },
+    {
+      "id": 546,
+      "title": "The Sealed Door",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 781
+    },
+    {
+      "id": 422,
+      "title": "The Audit Begins",
+      "chapter_number": 16,
+      "book_id": 2,
+      "word_count": 1810
+    },
+    {
+      "id": 82,
+      "title": "The Wrongness Unfolds",
+      "chapter_number": 22,
+      "book_id": 1,
+      "word_count": 935
+    },
+    {
+      "id": 525,
+      "title": "The Library Between Worlds",
+      "chapter_number": 16,
+      "book_id": 3,
+      "word_count": 580
+    },
+    {
+      "id": 575,
+      "title": "The Prison Breaking",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 2289
+    },
+    {
+      "id": 574,
+      "title": "Cycles of Consumption and Collapse",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 3396
+    },
+    {
+      "id": 141,
+      "title": "The Suburban Dad Reveal",
+      "chapter_number": 37,
+      "book_id": 1,
+      "word_count": 355
+    },
+    {
+      "id": 150,
+      "title": "The Spark of Mad Science",
+      "chapter_number": 41,
+      "book_id": 1,
+      "word_count": 344
+    },
+    {
+      "id": 552,
+      "title": "The Prison Within a Prison",
+      "chapter_number": 21,
+      "book_id": 3,
+      "word_count": 1582
+    },
+    {
+      "id": 535,
+      "title": "Azathoth and Recognition",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 752
+    },
+    {
+      "id": 492,
+      "title": "The Best Buy Encounter",
+      "chapter_number": 9,
+      "book_id": 3,
+      "word_count": 1504
+    },
+    {
+      "id": 531,
+      "title": "Negotiation with the Crawling Chaos",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 197
+    },
+    {
+      "id": 291,
+      "title": "Survival and Investigation",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 370
+    },
+    {
+      "id": 480,
+      "title": "The Glass and the Message",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 999
+    },
+    {
+      "id": 554,
+      "title": "The Council Debates the Shepherd Initiative",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 2021
+    },
+    {
+      "id": 47,
+      "title": "The Scorched Earth",
+      "chapter_number": 14,
+      "book_id": 1,
+      "word_count": 280
+    },
+    {
+      "id": 288,
+      "title": "Improvised Confrontation",
+      "chapter_number": 73,
+      "book_id": 1,
+      "word_count": 378
+    },
+    {
+      "id": 248,
+      "title": "Amateur Investigation Begins",
+      "chapter_number": 62,
+      "book_id": 1,
+      "word_count": 563
+    },
+    {
+      "id": 300,
+      "title": "The Rebellion Manifests",
+      "chapter_number": 75,
+      "book_id": 1,
+      "word_count": 202
+    },
+    {
+      "id": 213,
+      "title": "Thirteen Nights of Terror",
+      "chapter_number": 55,
+      "book_id": 1,
+      "word_count": 1828
+    },
+    {
+      "id": 58,
+      "title": "Presence in the Shadows",
+      "chapter_number": 16,
+      "book_id": 1,
+      "word_count": 257
+    },
+    {
+      "id": 95,
+      "title": "The Folding@Home Setback",
+      "chapter_number": 25,
+      "book_id": 1,
+      "word_count": 403
+    },
+    {
+      "id": 476,
+      "title": "The Shepherd's Vision",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 489
+    },
+    {
+      "id": 351,
+      "title": "The Grindstone Returns",
+      "chapter_number": 88,
+      "book_id": 1,
+      "word_count": 263
+    },
+    {
+      "id": 375,
+      "title": "Lunch Table Games and Cosmic Questions",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 1081
+    },
+    {
+      "id": 443,
+      "title": "The Breakdown of Reality",
+      "chapter_number": 20,
+      "book_id": 2,
+      "word_count": 688
+    },
+    {
+      "id": 261,
+      "title": "The Opening Statement",
+      "chapter_number": 66,
+      "book_id": 1,
+      "word_count": 446
+    },
+    {
+      "id": 46,
+      "title": "The Reckoning",
+      "chapter_number": 14,
+      "book_id": 1,
+      "word_count": 1148
+    },
+    {
+      "id": 125,
+      "title": "Engineering Improvements and Integration",
+      "chapter_number": 32,
+      "book_id": 1,
+      "word_count": 405
+    },
+    {
+      "id": 116,
+      "title": "The Crimson Hellscape - Flight from Titans",
+      "chapter_number": 30,
+      "book_id": 1,
+      "word_count": 1265
+    },
+    {
+      "id": 478,
+      "title": "The Toaster Oven Experiment",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 949
+    },
+    {
+      "id": 450,
+      "title": "Reality Glitches",
+      "chapter_number": 22,
+      "book_id": 2,
+      "word_count": 362
+    },
+    {
+      "id": 551,
+      "title": "The Extraction",
+      "chapter_number": 21,
+      "book_id": 3,
+      "word_count": 1776
+    },
+    {
+      "id": 526,
+      "title": "The Mall Apocalypse and Hannah's Sacrifice",
+      "chapter_number": 16,
+      "book_id": 3,
+      "word_count": 622
+    },
+    {
+      "id": 321,
+      "title": "The Spreading Darkness",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 485
+    },
+    {
+      "id": 370,
+      "title": "Aftermath and Solitude",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 106
+    },
+    {
+      "id": 483,
+      "title": "The Drive to Orlando",
+      "chapter_number": 7,
+      "book_id": 3,
+      "word_count": 226
+    },
+    {
+      "id": 74,
+      "title": "The Moment of Truth",
+      "chapter_number": 19,
+      "book_id": 1,
+      "word_count": 233
+    },
+    {
+      "id": 303,
+      "title": "The Weight of Distance",
+      "chapter_number": 76,
+      "book_id": 1,
+      "word_count": 554
+    },
+    {
+      "id": 373,
+      "title": "Monday Morning Routines and Hidden Attention",
+      "chapter_number": 5,
+      "book_id": 2,
+      "word_count": 1374
+    },
+    {
+      "id": 379,
+      "title": "The Basement Gathering",
+      "chapter_number": 6,
+      "book_id": 2,
+      "word_count": 1944
+    },
+    {
+      "id": 222,
+      "title": "Orient Express Departure",
+      "chapter_number": 57,
+      "book_id": 1,
+      "word_count": 1247
+    },
+    {
+      "id": 366,
+      "title": "Fractured Morning",
+      "chapter_number": 4,
+      "book_id": 2,
+      "word_count": 736
+    },
+    {
+      "id": 154,
+      "title": "The Infernal Drone",
+      "chapter_number": 42,
+      "book_id": 1,
+      "word_count": 316
+    },
+    {
+      "id": 8,
+      "title": "Frost and Whispers at Home",
+      "chapter_number": 4,
+      "book_id": 1,
+      "word_count": 924
+    },
+    {
+      "id": 255,
+      "title": "Celebration and Triumph",
+      "chapter_number": 64,
+      "book_id": 1,
+      "word_count": 219
+    },
+    {
+      "id": 188,
+      "title": "Journey Through the Void",
+      "chapter_number": 50,
+      "book_id": 1,
+      "word_count": 164
+    },
+    {
+      "id": 530,
+      "title": "Through the Horde",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 1003
+    },
+    {
+      "id": 381,
+      "title": "The Name Erupts",
+      "chapter_number": 6,
+      "book_id": 2,
+      "word_count": 943
+    },
+    {
+      "id": 62,
+      "title": "The Search and Discovery",
+      "chapter_number": 17,
+      "book_id": 1,
+      "word_count": 582
+    },
+    {
+      "id": 162,
+      "title": "The Dream Takes Shape",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 674
+    },
+    {
+      "id": 232,
+      "title": "Madam O's Revelation on Time and Dreams",
+      "chapter_number": 58,
+      "book_id": 1,
+      "word_count": 906
+    },
+    {
+      "id": 564,
+      "title": "The New God Speaks",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 303
+    },
+    {
+      "id": 314,
+      "title": "Roomba Rebellion",
+      "chapter_number": 78,
+      "book_id": 1,
+      "word_count": 691
+    },
+    {
+      "id": 201,
+      "title": "Journey to the Heart",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 74
+    },
+    {
+      "id": 415,
+      "title": "The Price of Knowledge",
+      "chapter_number": 13,
+      "book_id": 2,
+      "word_count": 167
+    },
+    {
+      "id": 313,
+      "title": "Starlight and Uncertainty",
+      "chapter_number": 78,
+      "book_id": 1,
+      "word_count": 591
+    },
+    {
+      "id": 195,
+      "title": "The Shipping Revolution Begins",
+      "chapter_number": 51,
+      "book_id": 1,
+      "word_count": 660
+    },
+    {
+      "id": 446,
+      "title": "The Final Confrontation",
+      "chapter_number": 21,
+      "book_id": 2,
+      "word_count": 1144
+    },
+    {
+      "id": 68,
+      "title": "Reckoning with the Past",
+      "chapter_number": 18,
+      "book_id": 1,
+      "word_count": 691
+    },
+    {
+      "id": 90,
+      "title": "The Machine That Plays Too Well",
+      "chapter_number": 24,
+      "book_id": 1,
+      "word_count": 639
+    },
+    {
+      "id": 29,
+      "title": "Evening Rituals and Camping Frenzy",
+      "chapter_number": 10,
+      "book_id": 1,
+      "word_count": 383
+    },
+    {
+      "id": 362,
+      "title": "The Ambulance Descent",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 338
+    },
+    {
+      "id": 70,
+      "title": "The Love-Pat and the Proposition",
+      "chapter_number": 19,
+      "book_id": 1,
+      "word_count": 351
+    },
+    {
+      "id": 474,
+      "title": "Waking to Wrongness",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 779
+    },
+    {
+      "id": 563,
+      "title": "The Parasite Awakens",
+      "chapter_number": 23,
+      "book_id": 3,
+      "word_count": 363
+    },
+    {
+      "id": 456,
+      "title": "Front Matter and Publication Details",
+      "chapter_number": 1,
+      "book_id": 3,
+      "word_count": 347
+    },
+    {
+      "id": 98,
+      "title": "Reconfiguring the Lab",
+      "chapter_number": 26,
+      "book_id": 1,
+      "word_count": 351
+    },
+    {
+      "id": 75,
+      "title": "The Weight of Incompleteness",
+      "chapter_number": 20,
+      "book_id": 1,
+      "word_count": 283
+    },
+    {
+      "id": 573,
+      "title": "The Gospel of Judas: The Morningstar Manuscript",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 2100
+    },
+    {
+      "id": 579,
+      "title": "The Hunt for Benji",
+      "chapter_number": 25,
+      "book_id": 3,
+      "word_count": 1590
+    },
+    {
+      "id": 28,
+      "title": "Home and the Grease Stain Mystery",
+      "chapter_number": 10,
+      "book_id": 1,
+      "word_count": 761
+    },
+    {
+      "id": 404,
+      "title": "The Wrong Father",
+      "chapter_number": 11,
+      "book_id": 2,
+      "word_count": 1053
+    },
+    {
+      "id": 407,
+      "title": "Nightmare Visitation",
+      "chapter_number": 12,
+      "book_id": 2,
+      "word_count": 2405
+    },
+    {
+      "id": 326,
+      "title": "The Analog Weapon Revealed",
+      "chapter_number": 81,
+      "book_id": 1,
+      "word_count": 411
+    },
+    {
+      "id": 247,
+      "title": "Discovery and Initial Shock",
+      "chapter_number": 62,
+      "book_id": 1,
+      "word_count": 334
+    },
+    {
+      "id": 160,
+      "title": "Stripped of Divinity",
+      "chapter_number": 44,
+      "book_id": 1,
+      "word_count": 569
+    },
+    {
+      "id": 539,
+      "title": "Piecing Together a Family",
+      "chapter_number": 19,
+      "book_id": 3,
+      "word_count": 1279
+    },
+    {
+      "id": 438,
+      "title": "The Bureaucrat Angel",
+      "chapter_number": 19,
+      "book_id": 2,
+      "word_count": 2100
+    },
+    {
+      "id": 477,
+      "title": "Testing the Loop",
+      "chapter_number": 6,
+      "book_id": 3,
+      "word_count": 507
+    },
+    {
+      "id": 152,
+      "title": "Operation Sienna 2.0",
+      "chapter_number": 41,
+      "book_id": 1,
+      "word_count": 575
+    },
+    {
+      "id": 556,
+      "title": "The Council Votes",
+      "chapter_number": 22,
+      "book_id": 3,
+      "word_count": 1803
+    },
+    {
+      "id": 399,
+      "title": "Cross Country and Conspiracy",
+      "chapter_number": 10,
+      "book_id": 2,
+      "word_count": 1629
+    },
+    {
+      "id": 452,
+      "title": "The Word That Doesn't Belong",
+      "chapter_number": 22,
+      "book_id": 2,
+      "word_count": 207
+    },
+    {
+      "id": 533,
+      "title": "Descent into the Substrate",
+      "chapter_number": 17,
+      "book_id": 3,
+      "word_count": 1383
+    },
+    {
+      "id": 429,
+      "title": "February 14th Reclamation",
+      "chapter_number": 17,
+      "book_id": 2,
+      "word_count": 469
+    },
+    {
+      "id": 253,
+      "title": "The Pointers Campaign",
+      "chapter_number": 63,
+      "book_id": 1,
+      "word_count": 448
+    },
+    {
+      "id": 200,
+      "title": "The Temple's Hunger Awakens",
+      "chapter_number": 52,
+      "book_id": 1,
+      "word_count": 257
+    },
+    {
+      "id": 361,
+      "title": "The Medics and the Shadows",
+      "chapter_number": 3,
+      "book_id": 2,
+      "word_count": 599
+    },
+    {
+      "id": 13,
+      "title": "The Vanishing Truth",
+      "chapter_number": 6,
+      "book_id": 1,
+      "word_count": 232
+    },
+    {
+      "id": 274,
+      "title": "Ascending Through the Heavens",
+      "chapter_number": 69,
+      "book_id": 1,
+      "word_count": 242
+    },
+    {
+      "id": 296,
+      "title": "Zero-G Bowling Disaster",
+      "chapter_number": 74,
+      "book_id": 1,
+      "word_count": 124
+    },
+    {
+      "id": 63,
+      "title": "Deception and Lingering Questions",
+      "chapter_number": 17,
+      "book_id": 1,
+      "word_count": 158
+    },
+    {
+      "id": 231,
+      "title": "Breakfast and the Time Reversal Card",
+      "chapter_number": 58,
+      "book_id": 1,
+      "word_count": 1874
+    },
+    {
+      "id": 281,
+      "title": "The Recruitment Address at Pluto Base",
+      "chapter_number": 71,
+      "book_id": 1,
+      "word_count": 706
+    },
+    {
+      "id": 527,
+      "title": "The Middle Ground: Seeking the Father",
+      "chapter_number": 16,
+      "book_id": 3,
+      "word_count": 614
+    },
+    {
+      "id": 320,
+      "title": "The Infection Spreads",
+      "chapter_number": 80,
+      "book_id": 1,
+      "word_count": 487
+    },
+    {
+      "id": 166,
+      "title": "The Fisherman's Tale",
+      "chapter_number": 45,
+      "book_id": 1,
+      "word_count": 651
+    },
+    {
+      "id": 543,
+      "title": "The Seed Found",
+      "chapter_number": 20,
+      "book_id": 3,
+      "word_count": 1449
+    },
+    {
+      "id": 72,
+      "title": "Interrupted Collaboration",
+      "chapter_number": 19,
+      "book_id": 1,
+      "word_count": 346
+    },
+    {
+      "id": 38,
+      "title": "The Search Through the Maze Forest",
+      "chapter_number": 12,
+      "book_id": 1,
+      "word_count": 647
+    }
+  ],
+  "bosses": [],
+  "skills": [
+    {
+      "id": 1,
+      "name": "Attack",
+      "category": "combat",
+      "description": "Increases base Click Damage in Story Mode.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "click_damage_bonus": 0.5
+      }
+    },
+    {
+      "id": 2,
+      "name": "Magic",
+      "category": "magic",
+      "description": "Increases base Auto-DPS and unlocks magic skills.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "auto_dps_bonus": 0.5
+      }
+    },
+    {
+      "id": 3,
+      "name": "Lore",
+      "category": "utility",
+      "description": "Reduces story duration gate and increases Essence.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "essence_bonus": 0.05,
+        "time_gate_reduction": 0.01
+      }
+    },
+    {
+      "id": 4,
+      "name": "Precision",
+      "category": "utility",
+      "description": "Increases critical hit chance and multiplier.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "crit_mult_bonus": 0.05,
+        "crit_chance_bonus": 0.01
+      }
+    },
+    {
+      "id": 5,
+      "name": "Auto-Strike",
+      "category": "combat",
+      "description": "Automatically attacks enemies for base DPS each second. Each level adds +5 DPS/s. Contributes to Story Mode auto-attack alongside all other auto_dps_base skills.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 0,
+      "base_cost_gold": "0",
+      "cost_scaling_factor": "1.0",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "auto_dps_base": 5.0
+      }
+    },
+    {
+      "id": 6,
+      "name": "Clickstorm",
+      "category": "active",
+      "description": "Automatically clicks at 10 CPS for 30 seconds.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 45,
+      "base_cost_gold": "50",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "click_storm_cps": 10,
+        "duration_seconds": 30
+      }
+    },
+    {
+      "id": 7,
+      "name": "Powersurge",
+      "category": "active",
+      "description": "+100% DPS multiplier for 30 seconds.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 45,
+      "base_cost_gold": "75",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "auto_dps_bonus": 1.0,
+        "duration_seconds": 30
+      }
+    },
+    {
+      "id": 8,
+      "name": "Lucky Strikes",
+      "category": "active",
+      "description": "+50% critical hit chance for 30 seconds.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 45,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "duration_seconds": 30,
+        "crit_chance_bonus": 0.5
+      }
+    },
+    {
+      "id": 9,
+      "name": "Metal Detector",
+      "category": "active",
+      "description": "+100% gold drop multiplier for 30 seconds.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 45,
+      "base_cost_gold": "60",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "gold_drop_bonus": 1.0,
+        "duration_seconds": 30
+      }
+    },
+    {
+      "id": 10,
+      "name": "Golden Clicks",
+      "category": "active",
+      "description": "Each click earns 5% of the current monster's gold value directly.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 60,
+      "base_cost_gold": "80",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "duration_seconds": 30,
+        "golden_click_pct": 0.05
+      }
+    },
+    {
+      "id": 11,
+      "name": "The Dark Ritual",
+      "category": "active",
+      "description": "Applies a +1.05x DPS multiplier that persists for the entire current Chapter. Resets on new Chapter.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 90,
+      "base_cost_gold": "500",
+      "cost_scaling_factor": "1.20",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "duration_seconds": -1,
+        "dark_ritual_multiplier": 1.05
+      }
+    },
+    {
+      "id": 12,
+      "name": "Super Clicks",
+      "category": "active",
+      "description": "+200% click damage for 30 seconds.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 45,
+      "base_cost_gold": "120",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "duration_seconds": 30,
+        "click_damage_bonus": 2.0
+      }
+    },
+    {
+      "id": 13,
+      "name": "Energize",
+      "category": "active",
+      "description": "The next skill activated deals double its stated effect.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 60,
+      "base_cost_gold": "150",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "duration_seconds": -1,
+        "energize_multiplier": 2.0
+      }
+    },
+    {
+      "id": 14,
+      "name": "Reload",
+      "category": "active",
+      "description": "Reduces the cooldown of the last used skill by 50%.",
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": null,
+      "effect_type": null,
+      "benefits_json": {
+        "reload_pct": 0.5,
+        "duration_seconds": -1
+      }
+    },
+    {
+      "id": 15,
+      "name": "Threshold Slip",
+      "category": "active",
+      "description": null,
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": {
+        "crit_bonus_pct": {
+          "1": 5,
+          "10": 10,
+          "25": 18,
+          "50": 30,
+          "75": 42,
+          "99": 55
+        }
+      },
+      "effect_type": "crit_boost",
+      "benefits_json": {}
+    },
+    {
+      "id": 16,
+      "name": "Energy Shields",
+      "category": "active",
+      "description": null,
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": {
+        "damage_reduction_pct": {
+          "1": 3,
+          "10": 8,
+          "25": 14,
+          "50": 22,
+          "75": 30,
+          "99": 40
+        }
+      },
+      "effect_type": "damage_reduction",
+      "benefits_json": {}
+    },
+    {
+      "id": 17,
+      "name": "Akashic Cascade",
+      "category": "active",
+      "description": null,
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": {
+        "aoe_damage_multiplier": {
+          "1": 1.5,
+          "10": 2.0,
+          "25": 3.0,
+          "50": 4.5,
+          "75": 6.0,
+          "99": 8.0
+        }
+      },
+      "effect_type": "aoe_burst",
+      "benefits_json": {}
+    },
+    {
+      "id": 18,
+      "name": "Elder Fury",
+      "category": "active",
+      "description": null,
+      "xp_curve_type": "standard",
+      "base_cooldown_seconds": 30,
+      "base_cost_gold": "100",
+      "cost_scaling_factor": "1.15",
+      "idle_level_scaling": {
+        "damage_multiplier": {
+          "1": 1.2,
+          "10": 1.5,
+          "25": 2.0,
+          "50": 3.0,
+          "75": 4.5,
+          "99": 7.0
+        }
+      },
+      "effect_type": "damage_multiplier",
+      "benefits_json": {}
+    }
+  ],
+  "game_configs": [
+    {
+      "key": "agi_crit_coefficient",
+      "value_json": 0.003,
+      "category": "combat"
+    },
+    {
+      "key": "agi_speed_coefficient",
+      "value_json": 0.015,
+      "category": "combat"
+    },
+    {
+      "key": "auto_dps_tick_ms",
+      "value_json": 500,
+      "category": "combat"
+    },
+    {
+      "key": "base_auto_dps_tick_ms",
+      "value_json": 500,
+      "category": "combat"
+    },
+    {
+      "key": "boss_enrage_seconds",
+      "value_json": 30,
+      "category": "combat"
+    },
+    {
+      "key": "boss_zone_interval",
+      "value_json": 5,
+      "category": "combat"
+    },
+    {
+      "key": "click_rate_cap",
+      "value_json": 20,
+      "category": "combat"
+    },
+    {
+      "key": "crit_chance",
+      "value_json": 0.02,
+      "category": "combat"
+    },
+    {
+      "key": "crit_multiplier",
+      "value_json": 2.0,
+      "category": "combat"
+    },
+    {
+      "key": "gcd_ms",
+      "value_json": 1000,
+      "category": "combat"
+    },
+    {
+      "key": "hp_scaling_factor",
+      "value_json": 1.55,
+      "category": "combat"
+    },
+    {
+      "key": "int_cooldown_coefficient",
+      "value_json": 0.005,
+      "category": "combat"
+    },
+    {
+      "key": "int_power_coefficient",
+      "value_json": 0.02,
+      "category": "combat"
+    },
+    {
+      "key": "monsters_per_zone",
+      "value_json": 10,
+      "category": "combat"
+    },
+    {
+      "key": "primal_boss_chance",
+      "value_json": 0.25,
+      "category": "combat"
+    },
+    {
+      "key": "str_damage_coefficient",
+      "value_json": 0.02,
+      "category": "combat"
+    },
+    {
+      "key": "str_resistance_coefficient",
+      "value_json": 0.5,
+      "category": "combat"
+    },
+    {
+      "key": "wave_duration_seconds",
+      "value_json": 30,
+      "category": "combat"
+    },
+    {
+      "key": "gear_slot_weights_combat",
+      "value_json": {
+        "back": 4,
+        "feet": 6,
+        "head": 8,
+        "legs": 8,
+        "neck": 4,
+        "chest": 10,
+        "hands": 6,
+        "waist": 3,
+        "trinket": 3,
+        "wrist_1": 3,
+        "wrist_2": 3,
+        "finger_1": 3,
+        "finger_2": 3,
+        "off_hand": 10,
+        "main_hand": 20,
+        "shoulders": 6
+      },
+      "category": "drops"
+    },
+    {
+      "key": "gear_slot_weights_narrative",
+      "value_json": {
+        "back": 6,
+        "feet": 6,
+        "head": 8,
+        "legs": 6,
+        "neck": 6,
+        "chest": 8,
+        "hands": 6,
+        "waist": 4,
+        "trinket": 8,
+        "wrist_1": 4,
+        "wrist_2": 4,
+        "finger_1": 5,
+        "finger_2": 5,
+        "off_hand": 8,
+        "main_hand": 10,
+        "shoulders": 6
+      },
+      "category": "drops"
+    },
+    {
+      "key": "rarity_weight_book_1",
+      "value_json": {
+        "epic": 4,
+        "rare": 10,
+        "common": 60,
+        "cosmic": 1,
+        "uncommon": 25
+      },
+      "category": "drops"
+    },
+    {
+      "key": "rarity_weight_book_2",
+      "value_json": {
+        "epic": 7,
+        "rare": 14,
+        "common": 50,
+        "cosmic": 2,
+        "uncommon": 27
+      },
+      "category": "drops"
+    },
+    {
+      "key": "rarity_weight_book_3",
+      "value_json": {
+        "epic": 10,
+        "rare": 18,
+        "common": 40,
+        "cosmic": 4,
+        "uncommon": 28
+      },
+      "category": "drops"
+    },
+    {
+      "key": "run_achievement_config",
+      "value_json": {
+        "achievements": [
+          {
+            "id": "speed_completion",
+            "display": "Swift Passage",
+            "description": "Complete the scene run in under N minutes",
+            "threshold_type": "completion_time_seconds",
+            "drop_chance_pct": 15,
+            "threshold_value": 300
+          },
+          {
+            "id": "enemy_slayer",
+            "display": "Enemy Slayer",
+            "description": "Defeat N or more enemies in a single run",
+            "threshold_type": "enemies_killed",
+            "drop_chance_pct": 10,
+            "threshold_value": 100
+          },
+          {
+            "id": "wave_climber",
+            "display": "Wave Climber",
+            "description": "Reach wave N or higher",
+            "threshold_type": "max_wave_reached",
+            "drop_chance_pct": 12,
+            "threshold_value": 50
+          },
+          {
+            "id": "perfect_run",
+            "display": "Flawless Execution",
+            "description": "Complete without dying",
+            "threshold_type": "death_count",
+            "drop_chance_pct": 20,
+            "threshold_value": 0
+          },
+          {
+            "id": "boss_slayer",
+            "display": "Boss Slayer",
+            "description": "Defeat the scene boss",
+            "threshold_type": "boss_killed",
+            "drop_chance_pct": 25,
+            "threshold_value": 1
+          },
+          {
+            "id": "personal_best",
+            "display": "High Tide",
+            "description": "Reach a personal best wave for this scene",
+            "threshold_type": "personal_best_wave",
+            "drop_chance_pct": 8,
+            "threshold_value": 1
+          }
+        ]
+      },
+      "category": "drops"
+    },
+    {
+      "key": "checkout_expiration_minutes",
+      "value_json": 30,
+      "category": "economy"
+    },
+    {
+      "key": "first_clear_multiplier",
+      "value_json": 1.5,
+      "category": "economy"
+    },
+    {
+      "key": "gold_to_essence_base_rate",
+      "value_json": 1000,
+      "category": "economy"
+    },
+    {
+      "key": "gold_to_essence_growth_factor",
+      "value_json": 1.07,
+      "category": "economy"
+    },
+    {
+      "key": "payment_poll_interval_ms",
+      "value_json": 3000,
+      "category": "economy"
+    },
+    {
+      "key": "payment_poll_max_attempts",
+      "value_json": 20,
+      "category": "economy"
+    },
+    {
+      "key": "reconciliation_lookback_hours",
+      "value_json": 48,
+      "category": "economy"
+    },
+    {
+      "key": "refund_eligible_days",
+      "value_json": 14,
+      "category": "economy"
+    },
+    {
+      "key": "session_gold_multiplier",
+      "value_json": 1.0,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_1hr_magnitude",
+      "value_json": 1.25,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_1hr_price",
+      "value_json": 75,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_24hr_magnitude",
+      "value_json": 2.0,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_24hr_price",
+      "value_json": 900,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_8hr_magnitude",
+      "value_json": 1.5,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_8hr_price",
+      "value_json": 400,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_max_elapsed_per_ping",
+      "value_json": 60,
+      "category": "economy"
+    },
+    {
+      "key": "shop_booster_ping_interval_s",
+      "value_json": 30,
+      "category": "economy"
+    },
+    {
+      "key": "shop_bundle_default_discount",
+      "value_json": 20,
+      "category": "economy"
+    },
+    {
+      "key": "stripe_first_purchase_multiplier",
+      "value_json": 2,
+      "category": "economy"
+    },
+    {
+      "key": "char_level_cap",
+      "value_json": 99,
+      "category": "progression"
+    },
+    {
+      "key": "char_level_xp_factor",
+      "value_json": 1000,
+      "category": "progression"
+    },
+    {
+      "key": "char_xp_per_scene_base",
+      "value_json": 50,
+      "category": "progression"
+    },
+    {
+      "key": "idle_to_char_xp_ratio",
+      "value_json": 0.1,
+      "category": "progression"
+    },
+    {
+      "key": "lore_pool_coefficient",
+      "value_json": 0.6,
+      "category": "progression"
+    },
+    {
+      "key": "idle_active_mode_boss_interval",
+      "value_json": 10,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_capacity",
+      "value_json": 1000,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_drain_per_minute",
+      "value_json": 1,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_xp_critical_threshold",
+      "value_json": 0.01,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_xp_floor_rate",
+      "value_json": 0.1,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_xp_full_threshold",
+      "value_json": 0.75,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_xp_low_threshold",
+      "value_json": 0.15,
+      "category": "training"
+    },
+    {
+      "key": "idle_essence_xp_mid_threshold",
+      "value_json": 0.4,
+      "category": "training"
+    },
+    {
+      "key": "idle_offline_cap_hours",
+      "value_json": 24,
+      "category": "training"
+    },
+    {
+      "key": "auto_dps_mult_per_level",
+      "value_json": 0.05,
+      "category": "upgrades"
+    },
+    {
+      "key": "base_auto_dps_upgrade_cost",
+      "value_json": 25.0,
+      "category": "upgrades"
+    },
+    {
+      "key": "base_click_upgrade_cost",
+      "value_json": 10.0,
+      "category": "upgrades"
+    },
+    {
+      "key": "base_skill_level_upgrade_cost",
+      "value_json": 100.0,
+      "category": "upgrades"
+    },
+    {
+      "key": "base_skill_unlock_cost",
+      "value_json": 50.0,
+      "category": "upgrades"
+    },
+    {
+      "key": "cd_reduction_per_level",
+      "value_json": 0.05,
+      "category": "upgrades"
+    },
+    {
+      "key": "click_dmg_mult_per_level",
+      "value_json": 0.05,
+      "category": "upgrades"
+    },
+    {
+      "key": "max_cd_reduction",
+      "value_json": 0.7,
+      "category": "upgrades"
+    },
+    {
+      "key": "milestone_interval",
+      "value_json": 25,
+      "category": "upgrades"
+    },
+    {
+      "key": "milestone_start",
+      "value_json": 200,
+      "category": "upgrades"
+    },
+    {
+      "key": "upgrade_cost_scaling",
+      "value_json": 1.07,
+      "category": "upgrades"
+    },
+    {
+      "key": "wave_default_max_enemies",
+      "value_json": 5,
+      "category": "waves"
+    },
+    {
+      "key": "wave_default_spawn_interval_ms",
+      "value_json": 2000,
+      "category": "waves"
+    },
+    {
+      "key": "wave_default_spawn_pattern",
+      "value_json": "uniform",
+      "category": "waves"
+    },
+    {
+      "key": "wave_default_wave_count",
+      "value_json": 10,
+      "category": "waves"
+    }
+  ]
+}

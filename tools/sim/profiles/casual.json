@@ -1,0 +1,15 @@
+{
+  "name": "casual",
+  "description": "Average player, 2hr/day, moderate clicking, uses skills",
+  "cps_range": [8, 12],
+  "wpm": 200,
+  "upgrade_strategy": "buy_when_affordable",
+  "use_skills": true,
+  "skill_timing": "on_cooldown",
+  "session_length_minutes": 120,
+  "sessions_per_day": 1,
+  "idle_training": true,
+  "idle_hours_per_day": 22,
+  "subscription_tier": null,
+  "boosters": []
+}

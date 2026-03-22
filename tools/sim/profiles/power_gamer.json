@@ -1,0 +1,15 @@
+{
+  "name": "power_gamer",
+  "description": "Optimized play, 8hr/day, max CPS, all boosts",
+  "cps_range": [20, 20],
+  "wpm": 600,
+  "upgrade_strategy": "optimal",
+  "use_skills": true,
+  "skill_timing": "perfect",
+  "session_length_minutes": 480,
+  "sessions_per_day": 1,
+  "idle_training": true,
+  "idle_hours_per_day": 16,
+  "subscription_tier": "ascendant",
+  "boosters": ["essence_2x"]
+}
