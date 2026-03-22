@@ -1,16 +1,18 @@
 """Phase D — Stripe E2E integration tests.
 
-These tests hit the LIVE running backend at localhost:8000 using httpx,
-authenticated via the X-Spoof-Player-Id header (E2ETestBot, player 2).
+These tests hit the LIVE running backend at localhost:8000 using httpx.
 They exercise real Stripe test-mode APIs and require:
 
   1. Docker stack running (backend at localhost:8000)
   2. Stripe CLI webhook listener:
        stripe listen --forward-to localhost:8000/api/webhooks/stripe
   3. Stripe test key configured in backend/.env
+  4. Valid Firebase auth token (auth bypass was removed 2026-03-22)
 
 Run with:
     pytest backend/tests/test_stripe_e2e.py -m integration -v
+
+TODO: Update HEADERS to use a real Firebase Bearer token.
 """
 
 import httpx
@@ -18,7 +20,7 @@ import pytest
 import time
 
 BASE_URL = "http://localhost:8000"
-HEADERS = {"X-Spoof-Player-Id": "2"}
+HEADERS: dict[str, str] = {}  # TODO: Add Firebase Bearer token for auth
 
 pytestmark = pytest.mark.integration
 

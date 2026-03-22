@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth'
-import { api, setAuthBypass, isAuthBypassed } from './api'
+import { api } from './api'
 import { chatClient } from './game/services/chatClient'
 import { NavBar } from './components/NavBar'
 import { SplashPage } from './components/SplashPage'
@@ -183,7 +183,7 @@ const ProfilePage = ({
       <p style={{ color: 'orange', textAlign: 'center' }}>Firebase configuration missing. Check your .env file.</p>
     ) : !configLoaded ? (
       <p style={{ color: '#aaa', textAlign: 'center' }}>Loading…</p>
-    ) : !user && !isAuthBypassed() ? (
+    ) : !user ? (
       <Navigate to="/" replace />
     ) : backendUser ? (
       <ProfileDashboard
@@ -219,7 +219,7 @@ function App() {
   const location = useLocation()
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-  const isLoggedIn = !!user || isAuthBypassed()
+  const isLoggedIn = !!user
 
   // Health checks (public endpoints — no auth needed)
   useEffect(() => {
@@ -286,14 +286,6 @@ function App() {
           const data = await res.json()
           setPublicConfig(data as PublicConfig)
 
-          // Auth bypass: if backend says bypass is available, activate it
-          if (data.auth_bypass_available && data.auth_bypass_player_id) {
-            console.warn('[AUTH BYPASS] Active — spoofing player ID:', data.auth_bypass_player_id)
-            setAuthBypass(data.auth_bypass_player_id)
-            chatClient.bypassPlayerId = data.auth_bypass_player_id
-            // Trigger backend verification as the spoofed user
-            verifyUserWithBackend()
-          }
         }
       } catch (err) {
         console.error("Failed to fetch public config:", err)
@@ -307,12 +299,6 @@ function App() {
     if (!auth) return
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser && isAuthBypassed()) {
-        // Don't reset state when bypass is active — Firebase reports no user but bypass handles auth
-        setAuthLoading(false)
-        return
-      }
-
       setUser(currentUser)
       setBackendUser(null)
       setBackendError(null)
@@ -342,12 +328,6 @@ function App() {
   }, [authLoading, isLoggedIn, backendUser, character, location.pathname, navigate, showOnboarding])
 
   const handleLogin = async () => {
-    // Auth bypass: skip Firebase SSO entirely
-    if (isAuthBypassed()) {
-      verifyUserWithBackend()
-      return
-    }
-
     if (!auth || !googleProvider) {
       alert("Firebase is not configured correctly.")
       return

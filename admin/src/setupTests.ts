@@ -30,6 +30,4 @@ vi.mock('./api', () => ({
     patch: vi.fn(),
     delete: vi.fn(),
   },
-  isAuthBypassed: vi.fn(() => false),
-  setAuthBypass: vi.fn(),
 }))

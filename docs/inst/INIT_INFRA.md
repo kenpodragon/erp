@@ -128,9 +128,10 @@ Use Stripe's Test Mode for all local development. No real charges are made.
 4. **Verify Integration:**
    ```bash
    # Test that the backend can create a checkout session
+   # Requires a valid Firebase Bearer token (auth bypass removed 2026-03-22)
    curl -X POST http://localhost:8000/api/payments/checkout \
      -H "Content-Type: application/json" \
-     -H "X-Spoof-Player-Id: 2" \
+     -H "Authorization: Bearer <FIREBASE_TOKEN>" \
      -d '{"package_id": 1}'
 
    # Trigger a test webhook event

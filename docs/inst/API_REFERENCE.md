@@ -672,7 +672,7 @@
 - `chat_message` — Incoming chat message
 - `system_broadcast` — System announcements (boss kills, achievements, etc.)
 
-**Notes:** Supports auth bypass for dev (`ALLOW_AUTH_BYPASS=true`). Profanity filter applied to messages. Rate-limited system broadcasts.
+**Notes:** Requires Firebase auth token. Profanity filter applied to messages. Rate-limited system broadcasts.
 
 ---
 

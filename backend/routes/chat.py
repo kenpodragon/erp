@@ -1,6 +1,5 @@
 """Chat WebSocket and REST endpoints (REC 2.6.4)."""
 
-import os
 import logging
 import asyncio
 from datetime import datetime, timezone
@@ -10,7 +9,7 @@ from sqlmodel import Session, select
 
 from db import engine, get_session
 from auth import verify_firebase_token
-from models import Player, PlayerCharacter, ServerConfig
+from models import Player, PlayerCharacter
 from models.player import PlayerSettings
 from models.chat import ChatChannel
 from models.story_mode import GameConfig
@@ -39,35 +38,17 @@ async def chat_websocket(
     """WebSocket endpoint for real-time chat."""
     player = None
 
-    # Auth bypass for WebSocket (mirrors HTTP bypass in auth.py)
-    if token.startswith("bypass:") and os.getenv("ALLOW_AUTH_BYPASS", "").lower() == "true":
-        spoof_id_str = token.split(":", 1)[1]
-        with Session(engine) as session:
-            bypass_cfg = session.exec(
-                select(ServerConfig).where(ServerConfig.key == "ops.auth_bypass_enabled")
-            ).first()
-            if bypass_cfg and str(bypass_cfg.value).lower() in ("true", "1"):
-                try:
-                    player = session.exec(
-                        select(Player).where(Player.id == int(spoof_id_str))
-                    ).first()
-                except (ValueError, TypeError):
-                    pass
-        if not player:
-            await websocket.close(code=4001, reason="Invalid bypass token")
-            return
-    else:
-        # Normal Firebase token verification
-        try:
-            decoded = verify_firebase_token(token)
-        except Exception:
-            await websocket.close(code=4001, reason="Invalid token")
-            return
+    # Firebase token verification
+    try:
+        decoded = verify_firebase_token(token)
+    except Exception:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
 
-        with Session(engine) as session:
-            player = session.exec(
-                select(Player).where(Player.firebase_uid == decoded["uid"])
-            ).first()
+    with Session(engine) as session:
+        player = session.exec(
+            select(Player).where(Player.firebase_uid == decoded["uid"])
+        ).first()
 
     if not player:
         await websocket.close(code=4002, reason="Player not found")

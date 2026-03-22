@@ -17,25 +17,7 @@ import { auth } from './firebase'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Auth bypass state — set by App.tsx when public config says bypass is available
-let _authBypassPlayerId: string | null = null;
-
-/** Called by App.tsx after fetching /api/config/public */
-export function setAuthBypass(playerId: string | null) {
-  _authBypassPlayerId = playerId;
-}
-
-/** Check if auth bypass is currently active */
-export function isAuthBypassed(): boolean {
-  return _authBypassPlayerId !== null && _authBypassPlayerId !== '';
-}
-
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  // Auth bypass: send spoof header instead of Firebase token
-  if (_authBypassPlayerId) {
-    return { 'X-Spoof-Player-Id': _authBypassPlayerId }
-  }
-
   const user = auth?.currentUser
   if (!user) return {}
 

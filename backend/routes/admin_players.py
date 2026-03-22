@@ -11,6 +11,8 @@ from sqlmodel import Session, select, text
 from db import get_session
 from auth import get_current_admin, get_client_ip
 from models import Player, PlayerCharacter, CharacterClass, SupportTicket
+from models.story_mode import PlayerStorySession
+from models.narrative import Scene, Chapter, Book
 from utils import sanitize_text
 from audit import write_audit_log
 
@@ -75,9 +77,37 @@ async def admin_list_players(
 
     results = []
     for p in players:
-        char_count = session.exec(select(func.count()).select_from(PlayerCharacter).where(PlayerCharacter.player_id == p.id)).one()
         pd = p.model_dump()
-        pd["character_count"] = char_count
+
+        # Character info (first character — game only supports one)
+        char = session.exec(
+            select(PlayerCharacter).where(PlayerCharacter.player_id == p.id)
+        ).first()
+        if char:
+            pd["character_name"] = char.character_name
+            pd["character_level"] = char.level
+
+            # Story progress from most recent session
+            latest_session = session.exec(
+                select(PlayerStorySession)
+                .where(PlayerStorySession.player_id == p.id)
+                .order_by(PlayerStorySession.updated_at.desc())
+                .limit(1)
+            ).first()
+            if latest_session and latest_session.scene_id:
+                scene = session.exec(select(Scene).where(Scene.id == latest_session.scene_id)).first()
+                if scene:
+                    chapter = session.exec(select(Chapter).where(Chapter.id == scene.chapter_id)).first()
+                    if chapter:
+                        book = session.exec(select(Book).where(Book.id == chapter.book_id)).first()
+                        pd["progress"] = f"B{book.book_number} Ch{chapter.chapter_number} S{scene.scene_number}" if book else f"Ch{chapter.chapter_number} S{scene.scene_number}"
+            if "progress" not in pd:
+                pd["progress"] = "Not started"
+        else:
+            pd["character_name"] = None
+            pd["character_level"] = None
+            pd["progress"] = None
+
         results.append(pd)
 
     return {

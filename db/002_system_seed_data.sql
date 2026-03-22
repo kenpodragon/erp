@@ -895,8 +895,6 @@ INSERT INTO public.server_config VALUES ('ops.announcement_banner_type', 'info',
 INSERT INTO public.server_config VALUES ('ops.rate_limit_clicks_per_second', '20', 'integer', 'ops', 'Max clicks/sec before rate limiting kicks in.', '20', '2026-03-01 12:39:12.284722-05', NULL, NULL);
 INSERT INTO public.server_config VALUES ('ops.rate_limit_suspicious_threshold', '15', 'integer', 'ops', 'Sustained clicks/sec that flags a player as suspicious.', '15', '2026-03-01 12:39:12.284722-05', NULL, NULL);
 INSERT INTO public.server_config VALUES ('ops.admin_ip_whitelist_enabled', 'true', 'boolean', 'ops', 'If true, the Admin Panel enforces the IP whitelist. If false, any whitelisted email can access from any IP.', 'true', '2026-03-01 12:39:12.710283-05', NULL, NULL);
-INSERT INTO public.server_config VALUES ('ops.auth_bypass_enabled', 'true', 'boolean', 'ops', 'Enable auth bypass for testing (also requires ALLOW_AUTH_BYPASS=true in .env)', 'false', '2026-03-15 18:06:22.580605-04', NULL, NULL);
-INSERT INTO public.server_config VALUES ('ops.auth_bypass_player_id', '2', 'string', 'ops', 'Player ID to spoof when auth bypass is active (leave empty to require X-Spoof-Player-Id header)', '', '2026-03-16 00:16:08.738009-04', 'test_bypass_9fef715c82d5@test.bypass', NULL);
 
 
 

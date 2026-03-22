@@ -76,25 +76,12 @@ You can run specific tests using the dedicated testing compose file:
 
 ## 🔓 E2E Auth Bypass System
 
-For E2E testing without Firebase SSO, the project includes a double-gated auth bypass system.
+~~Auth bypass was removed in the spoofing lockdown (2026-03-22).~~
 
-### Setup
-1. **Enable in backend `.env`:**
-   ```
-   ALLOW_AUTH_BYPASS=true
-   ```
-2. **Enable in database** (via Admin → Server Config, or SQL):
-   ```sql
-   UPDATE server_config SET value = 'true' WHERE key = 'ops.auth_bypass_enabled';
-   UPDATE server_config SET value = '2' WHERE key = 'ops.auth_bypass_player_id';
-   ```
-3. **Create a test player** via Admin → Server Config → Auth Bypass panel → "Create Test Player".
-
-### How It Works
-- Backend `get_decoded_token()` in `auth.py` checks both gates before accepting `X-Spoof-Player-Id` header.
-- Frontend/Admin apps auto-detect bypass via `GET /api/config/public` and attach the spoof header on all API calls.
-- Both gates must be active — production `.env` never has `ALLOW_AUTH_BYPASS=true`.
-- All bypass requests are logged to `activity_events`.
+E2E testing now requires real Firebase authentication. Options:
+- **Firebase Auth Emulator:** Run the Firebase emulator suite for local testing without real credentials.
+- **Service Account Token:** Generate a custom token via Firebase Admin SDK for test users.
+- **Playwright Firebase Plugin:** Use a Playwright helper to programmatically sign in via Firebase.
 
 ### Shared Test Helpers
 Located in `testing/helpers/`:

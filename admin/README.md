@@ -58,7 +58,7 @@ VITE_API_BASE_URL=http://localhost:8000
 ## Authentication
 
 - **Production:** Firebase JWT via Google SSO. Admin users must have `is_admin = true` in the `players` table.
-- **Development:** Set `DEV_AUTH_BYPASS=true` in `backend/.env` and pass `X-Dev-Player-Id: <player_uuid>` headers to skip Firebase token validation. The role check (`is_admin`) is still enforced.
+- **Development:** Use Firebase Auth Emulator or sign in with a real Google account. Auth bypass was removed in the spoofing lockdown (2026-03-22). The role check (`is_admin`) is always enforced.
 
 See [`docs/API_GUIDE.md`](docs/API_GUIDE.md) for full auth details and curl examples.
 

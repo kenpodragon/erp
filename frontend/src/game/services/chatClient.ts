@@ -28,8 +28,6 @@ class ChatClient {
   private maxReconnectAttempts = 10;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private _connected = false;
-  /** Set by App.tsx when auth bypass is active — used instead of Firebase token */
-  bypassPlayerId: string | null = null;
 
   get connected(): boolean {
     return this._connected;
@@ -43,14 +41,9 @@ class ChatClient {
   async connect(): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
-    let token: string;
-    if (this.bypassPlayerId) {
-      token = `bypass:${this.bypassPlayerId}`;
-    } else {
-      const user = auth?.currentUser;
-      if (!user) return;
-      token = await user.getIdToken();
-    }
+    const user = auth?.currentUser;
+    if (!user) return;
+    const token = await user.getIdToken();
 
     try {
       this.ws = new WebSocket(`${WS_BASE}/ws/chat?token=${encodeURIComponent(token)}`);

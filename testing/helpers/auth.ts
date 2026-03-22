@@ -1,10 +1,9 @@
 /**
  * Auth helpers for E2E tests.
  *
- * Leverages the auth bypass system: the backend must have
- * ALLOW_AUTH_BYPASS=true in .env and ops.auth_bypass_enabled=true in DB.
- * The /api/config/public endpoint returns auth_bypass_available + bypass_player_id.
- * The frontend auto-detects this and uses the X-Spoof-Player-Id header.
+ * NOTE: Auth bypass was removed in the spoofing lockdown (2026-03-22).
+ * These helpers now require real Firebase authentication or a test-specific
+ * auth mechanism to be implemented for E2E testing.
  */
 
 import { type Page, expect } from '@playwright/test';
@@ -12,49 +11,38 @@ import { type Page, expect } from '@playwright/test';
 const API_URL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8000';
 
 /**
- * Wait for the frontend to load, detect auth bypass from /api/config/public,
- * and auto-login as the bypass player. Waits for the game layout or profile.
+ * Login as a test user via Firebase auth.
+ * TODO: Implement Firebase test auth (service account token or emulator).
  */
 export async function loginAsTestUser(page: Page) {
   await page.goto('/');
 
-  // Wait for the app to process the public config and auto-login via bypass
-  // The frontend calls /api/config/public on mount, detects bypass, and calls verifyUserWithBackend
-  await page.waitForTimeout(2000);
-
-  // If we're still on splash, the bypass didn't auto-redirect — click the login button
+  // Click the login button to trigger Firebase SSO
   const loginBtn = page.getByRole('button', { name: /begin your ascent|login|sign in/i });
-  if (await loginBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+  if (await loginBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
     await loginBtn.click();
-    await page.waitForTimeout(1500);
   }
 
-  // Should now be on /game or /profile
+  // Should now be on /game or /profile after Firebase auth
   await expect(page).not.toHaveURL('/', { timeout: 10000 });
 }
 
 /**
- * Login as admin via bypass. Navigates to the admin app.
+ * Login as admin via Firebase auth. Navigates to the admin app.
+ * TODO: Implement Firebase test auth for admin users.
  */
 export async function loginAsAdmin(page: Page, adminUrl?: string) {
   const base = adminUrl || 'http://localhost:5174';
   await page.goto(base);
 
-  // Admin app also checks /api/config/public for bypass
-  // The verifyBypass() function in admin App.tsx handles this
-  await page.waitForTimeout(2000);
-
-  // Should see the admin navbar if bypass worked
+  // Should see the admin navbar after Firebase auth
   await expect(page.locator('.admin-navbar, .admin-nav-links')).toBeVisible({ timeout: 10000 });
 }
 
 /**
- * Bypass the onboarding flow (splash → terms → profile → character → welcome).
- * Used when auth bypass auto-logs in but the player hasn't completed onboarding.
- *
- * This is the existing pattern from character_progression.spec.ts, extracted here.
+ * Navigate through the onboarding flow (splash → terms → profile → character → welcome).
  */
-export async function bypassOnboarding(page: Page) {
+export async function completeOnboarding(page: Page) {
   // Step 1: Splash — click "Begin Your Ascent"
   const startBtn = page.getByRole('button', { name: /begin your ascent/i });
   if (await startBtn.isVisible({ timeout: 3000 }).catch(() => false)) {

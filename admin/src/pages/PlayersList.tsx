@@ -18,7 +18,9 @@ interface Player {
   is_banned: boolean
   created_at: string
   last_login_at: string
-  character_count: number
+  character_name: string | null
+  character_level: number | null
+  progress: string | null
 }
 
 export default function PlayersList() {
@@ -130,7 +132,9 @@ export default function PlayersList() {
               <th onClick={() => handleSort('id')}>ID {sortBy === 'id' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
               <th onClick={() => handleSort('alias')}>Identity {sortBy === 'alias' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
               <th>Status</th>
-              <th>Characters</th>
+              <th>Character</th>
+              <th>Lvl</th>
+              <th>Progress</th>
               <th onClick={() => handleSort('created_at')}>Registered {sortBy === 'created_at' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
               <th onClick={() => handleSort('last_login_at')}>Last Active {sortBy === 'last_login_at' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
               <th>Actions</th>
@@ -138,9 +142,9 @@ export default function PlayersList() {
           </thead>
           <tbody>
             {loading && players.length === 0 ? (
-              <tr><td colSpan={7} className="loading-cell">Loading players...</td></tr>
+              <tr><td colSpan={9} className="loading-cell">Loading players...</td></tr>
             ) : players.length === 0 ? (
-              <tr><td colSpan={7} className="empty-cell">No players found matching filters.</td></tr>
+              <tr><td colSpan={9} className="empty-cell">No players found matching filters.</td></tr>
             ) : (
               players.map(player => (
                 <tr key={player.id} className={player.is_banned ? 'row-banned' : ''}>
@@ -156,7 +160,9 @@ export default function PlayersList() {
                       {player.is_banned ? 'Banned' : 'Active'}
                     </span>
                   </td>
-                  <td>{player.character_count}</td>
+                  <td>{player.character_name || <span style={{ color: '#666' }}>—</span>}</td>
+                  <td>{player.character_level ?? <span style={{ color: '#666' }}>—</span>}</td>
+                  <td><span style={{ fontSize: '0.85em', color: '#aaa' }}>{player.progress || '—'}</span></td>
                   <td>{new Date(player.created_at).toLocaleDateString()}</td>
                   <td>{new Date(player.last_login_at).toLocaleString()}</td>
                   <td>

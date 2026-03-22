@@ -20,22 +20,9 @@ All admin API requests require a valid Firebase ID token in the `Authorization` 
 4. The backend (`/backend/routes/auth.py`) verifies the token with Firebase Admin SDK.
 5. If `players.is_admin` is `false` or the player does not exist, the request returns `403 Forbidden`.
 
-### Development: Auth Spoofing (`DEV_AUTH_BYPASS`)
+### Development Authentication
 
-When the environment variable `DEV_AUTH_BYPASS=true` is set (local Docker compose only), the backend accepts a shortcut header instead of a real Firebase token:
-
-```
-X-Dev-Player-Id: <player_uuid>
-```
-
-This bypasses Firebase JWT validation entirely. Any player ID supplied is treated as the authenticated user. Admin-gated routes still enforce `is_admin = true` on that player record — the bypass only skips the Firebase token check, not the role check.
-
-**Enable in `backend/.env`:**
-```env
-DEV_AUTH_BYPASS=true
-```
-
-**Never set this in production.** The backend will refuse to start with `DEV_AUTH_BYPASS=true` if `ENV=production`.
+Auth bypass was removed in the spoofing lockdown (2026-03-22). All environments now require real Firebase authentication. For local development, use Firebase Auth Emulator or sign in with a real Google account.
 
 ---
 

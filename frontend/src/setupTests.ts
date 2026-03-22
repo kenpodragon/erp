@@ -35,8 +35,6 @@ vi.mock('./api', () => ({
     patch: vi.fn(() => mockResponse()),
   },
   apiEvents: new EventTarget(),
-  isAuthBypassed: vi.fn(() => false),
-  setAuthBypass: vi.fn(),
 }))
 
 // Mock chatClient

@@ -10,8 +10,8 @@ Read docs/TODO.md for active work.
 Simulation & Progression Balancing is COMPLETE (Phases 1-6, see done/DONE.md).
 Progression toolkit: docs/inst/SIM_TOOLKIT_GUIDE.md
 
-Next priority: Spoofing Lockdown (CRITICAL security — see TODO.md).
-After that: combat scaling polish, music loops, banner visuals, generators, cloud deployment.
+Spoofing Lockdown is COMPLETE (2026-03-22).
+Next priority: combat scaling polish, music loops, banner visuals, generators, cloud deployment.
 ```
 
 ---
@@ -26,12 +26,12 @@ After that: combat scaling polish, music loops, banner visuals, generators, clou
 
 ---
 
-## ⚠️ CRITICAL: Post-Simulation Spoofing Lockdown
-*(Must be done IMMEDIATELY after simulation testing is complete)*
-- [ ] **Turn off user spoofing** — disable all dev/test auth bypass mechanisms
-- [ ] **Verify spoofing is fully disabled** — test all external routes to confirm no spoofing endpoints are exposed
-- [ ] **Security audit** — ensure no spoofing-related env vars, headers, or query params leak to production
-- [ ] Remove or gate behind `DEV_ONLY` flag any admin spoofing utilities
+## ~~⚠️ CRITICAL: Post-Simulation Spoofing Lockdown~~ ✅ COMPLETE
+*(Completed 2026-03-22)*
+- [x] **Turn off user spoofing** — removed auth bypass from `backend/auth.py`, `backend/routes/chat.py`, `backend/routes/public.py`
+- [x] **Verify spoofing is fully disabled** — removed `X-Spoof-Player-Id` header support, `bypass:` WebSocket token, and all frontend/admin bypass logic
+- [x] **Security audit** — removed `ALLOW_AUTH_BYPASS` env var usage, `ops.auth_bypass_enabled`/`ops.auth_bypass_player_id` config exposure from public endpoint
+- [x] Removed all spoofing utilities from frontend (`api.ts`, `App.tsx`, `chatClient.ts`) and admin (`api.ts`, `App.tsx`)
 
 ---
 

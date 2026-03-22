@@ -1,8 +1,9 @@
 """
 Async HTTP client wrapping all game endpoints for the simulation bot.
 
-Uses X-Spoof-Player-Id header for auth bypass in dev mode
-(requires ALLOW_AUTH_BYPASS=true env + ops.auth_bypass_enabled=true in DB).
+NOTE: Auth bypass was removed in the spoofing lockdown (2026-03-22).
+This client now requires a valid Firebase token for authentication.
+The player_id parameter is retained for endpoint routing only.
 """
 
 import asyncio
@@ -32,7 +33,7 @@ class GameAPIClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
                 base_url=self.base_url,
-                headers={"X-Spoof-Player-Id": str(self.player_id)},
+                headers={},
                 timeout=httpx.Timeout(30.0),
             )
         return self._client
@@ -133,7 +134,7 @@ class GameAPIClient:
     # -- Auth ------------------------------------------------------------------
 
     async def login(self) -> dict[str, Any]:
-        """POST /api/auth/login -- login using spoof header."""
+        """POST /api/auth/login."""
         return await self._request("POST", "/api/auth/login")
 
     # -- Story Mode ------------------------------------------------------------
