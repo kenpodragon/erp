@@ -22,6 +22,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlmodel import Session, select, col
 
 from db import get_session
@@ -564,9 +565,13 @@ async def get_scene_enemies(
     scene_gold_scale_base = _get_config_float(session, "scene_gold_scaling_base", 1.008)
     scene_gold_multiplier = math.pow(scene_gold_scale_base, scene_position - 1)
 
-    # Max HP cap: prevents data errors from making early scenes impossible
-    max_base_hp_cap = _get_config_float(session, "max_scene_base_hp", 500.0)
-    max_hp_for_scene = max_base_hp_cap * scene_hp_multiplier
+    # Max HP cap: per-scene override from scene_gameplay_data, or global fallback
+    scene_gd = current_scene.gameplay_data
+    if scene_gd and scene_gd.max_enemy_hp:
+        max_hp_for_scene = float(scene_gd.max_enemy_hp)
+    else:
+        max_base_hp_cap = _get_config_float(session, "max_scene_base_hp", 500.0)
+        max_hp_for_scene = max_base_hp_cap * scene_hp_multiplier
 
     # Apply scene scaling to zone fallback values
     z_hp = min(z_hp * scene_hp_multiplier, max_hp_for_scene)
@@ -859,8 +864,9 @@ async def start_session(
     ).all()
     click_mult, auto_mult, click_lvl, auto_lvl = _calc_multipliers(session, all_upgrades)
 
-    # --- NEW: Fetch boss name for display ---
+    # --- Fetch boss name + compute boss HP from DB ---
     boss_name = "Guardian"
+    boss_base_hp = None
     if is_boss_session:
         boss_entity = session.exec(
             select(Entity)
@@ -870,6 +876,35 @@ async def start_session(
         ).first()
         if boss_entity:
             boss_name = boss_entity.canonical_name
+
+        # Compute boss HP using story mode scene_hp formula
+        # scene_position = count of all scenes up to this point
+        boss_book = session.get(Book, chapter.book_id)
+        boss_book_num = boss_book.book_number if boss_book else 1
+        earlier_scenes = session.exec(
+            select(func.count()).select_from(Scene)
+            .join(Chapter, Scene.chapter_id == Chapter.id)
+            .join(Book, Chapter.book_id == Book.id)
+            .where(
+                (Book.book_number < boss_book_num) |
+                ((Book.book_number == boss_book_num) & (Chapter.sort_order < chapter.sort_order)) |
+                ((Chapter.id == chapter.id) & (Scene.sort_order <= scene.sort_order))
+            )
+        ).one()
+        scene_position = max(earlier_scenes, 1)
+        scene_hp_scale = _get_config_float(session, "scene_hp_scaling_base", 1.012)
+        scene_hp_mult = math.pow(scene_hp_scale, scene_position - 1)
+        hp_multiplier = boss_config.get("hp_multiplier", 8)
+
+        # Boss entity base_hp from DB, or fallback
+        boss_gp = None
+        if boss_entity:
+            boss_gp = session.exec(
+                select(EntityGameplayData).where(EntityGameplayData.entity_id == boss_entity.id)
+            ).first()
+        entity_base_hp = float(boss_gp.base_hp) if boss_gp and boss_gp.base_hp else 50.0
+        max_base_hp_cap = _get_config_float(session, "max_scene_base_hp", 500.0)
+        boss_base_hp = round(min(entity_base_hp * scene_hp_mult, max_base_hp_cap * scene_hp_mult) * hp_multiplier, 2)
 
     return {
         "session_id": new_session.id,
@@ -895,6 +930,7 @@ async def start_session(
         "boss_type": scene.scene_type if is_boss_session else None,
         "boss_name": boss_name,
         "boss_config": boss_config if is_boss_session else None,
+        "boss_base_hp": boss_base_hp,
         "is_replay": is_replay,
         # 2.4: Class visual identity
         "visual_config": char_class.visual_config if char_class else None,

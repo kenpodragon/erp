@@ -35,16 +35,6 @@ Next priority: combat scaling polish, music loops, banner visuals, generators, c
 
 ---
 
-## Music Loop Length Improvements
-- [ ] **Longer music loops** — current 8-bit synth sequences are too short and become repetitive/annoying quickly. Target 2-3 minutes per loop minimum.
-  - Update music definition JSON schemas to support longer sequences
-  - Update `generate_8bit_music.py` generator to produce longer compositions (more variation, sections, transitions)
-  - Review all 21 atmosphere music definitions and extend/regenerate as needed
-  - Add to generator requirements docs (`docs/recs/`) when building out generator specs
-- *(Discovered during E2E Session 7 — audio testing)*
-
----
-
 ## Banner Visual Improvements
 - [ ] **Multiple enemies in banner** — currently only 1 enemy spawns at a time; should support packs/groups for visual variety
 - [ ] **Attack animation differentiation** — entities in BottomAnimatedBanner should show attack-type-appropriate animations:
@@ -73,6 +63,11 @@ Next priority: combat scaling polish, music loops, banner visuals, generators, c
 **NOTE:** Go through requirements definition first. Ask questions, fill out details, iterate on design + schema before coding.
 - [ ] Read `0_REQUIREMENTS.md` → capture generator requirements → build out recs/design/schema docs
 - [ ] Ensure all necessary generators are listed (check for gaps in existing data)
+- [ ] **Longer music loops** — current 8-bit synth sequences are too short and become repetitive/annoying quickly. Target 2-3 minutes per loop minimum.
+  - Update music definition JSON schemas to support longer sequences
+  - Update `generate_8bit_music.py` generator to produce longer compositions (more variation, sections, transitions)
+  - Review all 21 atmosphere music definitions and extend/regenerate as needed
+  - *(Discovered during E2E Session 7 — audio testing)*
 
 ### Cosmetic Asset Generation *(Ref: 3.3 §19)*
 - [ ] Pixel-art skins, badges, flair, avatars — depends on `C_STORY_ASSET_GENERATORS.md` §8

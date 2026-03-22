@@ -18,6 +18,7 @@ class SceneGameplayData(SQLModel, table=True):
     background_id: Optional[int] = Field(default=None, foreign_key="backgrounds.id")
     is_boss_scene: bool = Field(default=False)
     atmosphere_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
+    max_enemy_hp: Optional[float] = Field(default=None)  # Per-scene HP cap override (NULL = use global formula)
 
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)

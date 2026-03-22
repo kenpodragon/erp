@@ -64,9 +64,15 @@ const ActiveTrainingSimulator: React.FC<Props> = ({ skill, effectiveBaseXp, pote
   const spawnEnemy = useCallback((w: number, m: number) => {
     const isB = m > 10;
     setIsBoss(isB);
-    
-    // Scaling HP: base 100, +25% per wave, boss is 10x
-    const hp = Math.floor(100 * Math.pow(1.25, w - 1)) * (isB ? 10 : 1);
+
+    // HP scaling matches story mode formula:
+    //   level_scale = 1.012^(skillLevel - 1)  — same as scene_hp_scaling_base
+    //   wave_scale  = 1.08^(wave - 1)         — progression within session
+    //   boss multiplier = 8x
+    const baseHp = 100;
+    const levelScale = Math.pow(1.012, skill.level - 1);
+    const waveScale = Math.pow(1.08, w - 1);
+    const hp = Math.floor(baseHp * levelScale * waveScale * (isB ? 8 : 1));
     setEnemyHp(hp);
     setMaxHp(hp);
     

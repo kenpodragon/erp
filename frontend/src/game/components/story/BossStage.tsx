@@ -197,11 +197,12 @@ const BossStage: React.FC<Props> = ({
 
   const CRIT_CHANCE = Number(gameConfigs['crit_chance'] ?? 0.02);
   const CRIT_MULT   = Number(gameConfigs['crit_multiplier'] ?? 2.0);
-  const HP_SCALING  = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
 
-  // Calculate boss max HP: zone-relative baseline × multiplier
-  // Boss sessions use currentZone to represent the intended challenge level (e.g. Chapter 1 Boss = Level 10)
-  const baseHp = zoneHp(session.currentZone || 1, HP_SCALING) * cfg.hp_multiplier;
+  // Boss HP: prefer server-computed value (uses DB entity data + scene_hp formula),
+  // fall back to legacy zoneHp() if backend hasn't been updated yet
+  const HP_SCALING  = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
+  const baseHp = (session as any).bossBaseHp
+    ?? zoneHp(session.currentZone || 1, HP_SCALING) * cfg.hp_multiplier;
 
   const [bossHp, setBossHp]     = useState(baseHp);
   const [bossMaxHp]             = useState(baseHp);
