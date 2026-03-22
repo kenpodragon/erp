@@ -553,6 +553,25 @@ async def get_scene_enemies(
     )
     earlier_scene_ids = session.exec(earlier_scenes_query).all()
 
+    # Scene progression scaling: later scenes have tougher mobs.
+    # scene_position is 1-based global order (scene 1 of the whole game = 1).
+    # Exponential formula: base_hp * scene_hp_scaling_base ^ (scene_position - 1)
+    # Default 1.012 per scene: pos 1 = 1x, pos 24 = 1.33x, pos 100 = 3.3x, pos 300 = 35x, pos 580 = 1024x
+    # Tunable via game_configs — Phase 6 simulation will find the right value.
+    scene_position = max(len(earlier_scene_ids), 1)
+    scene_hp_scale_base = _get_config_float(session, "scene_hp_scaling_base", 1.012)
+    scene_hp_multiplier = math.pow(scene_hp_scale_base, scene_position - 1)
+    scene_gold_scale_base = _get_config_float(session, "scene_gold_scaling_base", 1.008)
+    scene_gold_multiplier = math.pow(scene_gold_scale_base, scene_position - 1)
+
+    # Max HP cap: prevents data errors from making early scenes impossible
+    max_base_hp_cap = _get_config_float(session, "max_scene_base_hp", 500.0)
+    max_hp_for_scene = max_base_hp_cap * scene_hp_multiplier
+
+    # Apply scene scaling to zone fallback values
+    z_hp = min(z_hp * scene_hp_multiplier, max_hp_for_scene)
+    z_gold = z_gold * scene_gold_multiplier
+
     # 3. Find eligible entities from those scenes
     # We look at entities whose first_appearance is in these scenes OR they have an appearance record.
     # Requirement: "anything not marked as boss or miniboss"
@@ -622,14 +641,20 @@ async def get_scene_enemies(
                 if not hp:
                     log_content_audit(session, "missing_stat", "enemy", entity.id,
                                entity.canonical_name, "base_hp", scene_id, zone)
-                    hp = z_hp
+                    hp = z_hp  # already scene-scaled
                     is_fallback = True
+                else:
+                    # Scale entity's base_hp by scene progression, capped
+                    hp = min(hp * scene_hp_multiplier, max_hp_for_scene)
 
                 if not gold:
                     log_content_audit(session, "missing_stat", "enemy", entity.id,
                                entity.canonical_name, "base_gold", scene_id, zone)
-                    gold = z_gold
+                    gold = z_gold  # already scene-scaled
                     is_fallback = True
+                else:
+                    # Scale entity's base_gold by scene progression
+                    gold = gold * scene_gold_multiplier
 
                 if not sprite_key:
                     log_content_audit(session, "missing_sprite", "enemy", entity.id,
@@ -648,7 +673,13 @@ async def get_scene_enemies(
             })
         session.commit()
 
-    return {"scene_id": scene_id, "zone": zone, "enemies": results}
+    return {
+        "scene_id": scene_id,
+        "zone": zone,
+        "scene_position": scene_position,
+        "scene_hp_multiplier": round(scene_hp_multiplier, 4),
+        "enemies": results,
+    }
 
 
 @router.post("/session/start")

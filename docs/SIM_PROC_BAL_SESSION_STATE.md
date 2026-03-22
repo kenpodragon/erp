@@ -10,6 +10,18 @@
 **Power Gamer (8h/day, optimized):** Complete in ~7-10 days with perfect farming and boost usage.
 **AFK/Idle Only:** Meaningful but slower — should feel like "progress while away" not "the whole game."
 
+### Progression Curve Philosophy (Pavlovian XP Model)
+
+The progression curve is NOT linear. It follows a three-phase feel:
+
+1. **Early Game (Levels 1-20, Book 1):** Fast, rewarding progression. Levels come quickly. The player should feel like they're getting more powerful with every session. Dopamine hits from frequent level-ups, skill unlocks, and visible damage increases. Hook the player.
+
+2. **Mid Game (Levels 20-55, Book 2):** Deliberate slowdown. Levels take noticeably longer. The player settles into a rhythm — farming, upgrading, training. Progress is steady but requires engagement. This is where idle training and smart upgrade choices start to matter.
+
+3. **End Game (Levels 55-80, Book 3):** Hard-earned progression. Each level feels like an achievement. The final levels should feel worked for — the player knows they earned it. This is the Pavlovian reward schedule: variable reinforcement, longer gaps between big payoffs, but each payoff feels significant.
+
+**Tuning implication:** The XP curve formula (`1000 × N²`) may need to be replaced with a piecewise or sigmoid curve that's gentle early, steepens in the middle, and becomes steep-but-not-impossible at the end. The math model should test multiple curve shapes against the 60-hour casual target.
+
 ### Progression Milestones
 | Milestone | Casual (~Day) | Power (~Day) | Character Level | Key Unlocks |
 |-----------|---------------|--------------|-----------------|-------------|
@@ -98,7 +110,7 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 
 ## Simulation Toolkit
 
-**Status:** Design & planning complete. Implementation next.
+**Status:** Phases 1-3 complete. Phase 4 (Browser Bot) next.
 
 Sessions 1-4 from the original manual plan are now automated by the simulation toolkit.
 - **Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
@@ -114,25 +126,32 @@ Sessions 1-4 from the original manual plan are now automated by the simulation t
 ### Implementation Progress
 
 #### Phase 1: API Documentation
-- [ ] Scan all backend routes → generate `docs/inst/API_REFERENCE.md`
-- [ ] Create `admin/docs/API_GUIDE.md` and update `admin/README.md`
+- [x] Scan all backend routes → generate `docs/inst/API_REFERENCE.md`
+- [x] Create `admin/docs/API_GUIDE.md` and update `admin/README.md`
 
 #### Phase 2: Math Model
-- [ ] Scaffold `tools/sim/` directory, profiles, requirements
-- [ ] Build config/formula module with tests
-- [ ] Build simulation engine (zone, economy, XP, walls, bosses, archetypes)
-- [ ] Content data snapshot from DB
+- [x] Scaffold `tools/sim/` directory, profiles, requirements
+- [x] Build config/formula module with tests (9 formula functions, 5 tests)
+- [x] Build simulation engine (zone, economy, XP, walls, bosses, archetypes — 14 tests)
+- [x] Content data snapshot from DB (3 books, 580 scenes, 18 skills, 72 configs)
+
+**Phase 2 Findings:**
+- Zone HP doc approximations (143/2063/253K) don't match formula output (97.7/606.4/41.5K) — verify against server in Phase 3
+- Boss data empty (`is_boss_scene` not populated) — math model uses generated placeholders
+- XP scaling extremely steep — casual projects ~5e22 hours at level 80, confirming balance tuning needed
 
 #### Phase 3: API Bot
-- [ ] Build async API client wrapping all game endpoints
-- [ ] Build bot runner with profile-driven behavior
-- [ ] Build comparison tool (diff two runs)
+- [x] Build async API client wrapping all game endpoints (`tools/sim/api_client.py` — 20 endpoints, httpx async, retry/backoff, metrics tracking, 7 tests)
+- [x] Build bot runner with profile-driven behavior (`tools/sim/api_bot.py` — 5 profiles, 4 upgrade strategies, tick loop, narrative pacing, 7 tests)
+- [x] Build comparison tool (`tools/sim/results/compare.py` — config/summary/zone/wall diffs, severity flags, design target verdicts, 7 tests)
 
-#### Phase 4: Browser Bot
-- [ ] Sustained play stability (20 CPS for hours)
-- [ ] Pacing validation (Ch1 first-play vs replay timing)
-- [ ] Load testing (Docker resource scaling matrix)
-- [ ] Endurance farming (4-8 hour continuous)
+#### Phase 4: Browser Bot — ~~OBE~~
+- [x] ~~Sustained play stability~~ **OBE** — browser validation (Playwright MCP) confirmed API bot produces identical server-side results to the frontend. Separate browser bot unnecessary.
+- [x] ~~Pacing validation~~ **OBE** — validated via fetch interception in browser: same tick responses, same gold, same zone progression.
+- [x] ~~Load testing~~ **OBE** — API bot can simulate concurrent players more efficiently than browser instances.
+- [x] ~~Endurance farming~~ **OBE** — API bot `--max-scenes` flag handles this.
+- See `tools/sim/browser_validation.py` for the validation script used.
+- **Bonus finding:** Discovered and fixed two combat scaling bugs during browser validation (see TODO.md).
 
 #### Phase 5: Results & Migration
 - [ ] Migration 062 generator
@@ -315,7 +334,8 @@ Read these files in order:
 3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
 
 We are building the Simulation & Progression Balancing Toolkit.
+Phases 1 (API Docs), 2 (Math Model), and 3 (API Bot) are complete.
 Use superpowers:subagent-driven-development to execute the plan task-by-task.
-Start with Phase 1 (API Documentation) — scan all backend routes and generate docs/inst/API_REFERENCE.md.
+Continue with Phase 4 (Browser Bot) — build the Playwright headless bot for stability, pacing, and load testing.
 The Docker stack should already be running. If not, start it: docker-compose up --build -d
 ```

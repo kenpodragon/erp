@@ -170,7 +170,7 @@ const CombatContent: React.FC<InnerProps> = ({
       if (isBossWave) poolToUse = pool.filter(e => e && (e.isBoss || isBossRole(e.role)));
       else if (isBoss) poolToUse = pool.filter(e => e && isMiniBossRole(e.role));
       else poolToUse = pool.filter(e => !e.isBoss && !isBossRole(e.role) && !isMiniBossRole(e.role));
-      
+
       if (!poolToUse || poolToUse.length === 0) poolToUse = pool;
 
       const template = poolToUse[Math.floor(Math.random() * poolToUse.length)];
@@ -181,10 +181,19 @@ const CombatContent: React.FC<InnerProps> = ({
           spriteKey: null, maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBoss, isPrimal, isFallback: true
         });
       } else {
+        // Use entity's base_hp/base_gold from the server when available (already scene-scaled);
+        // fall back to local zone formula when entity has no stat data
+        const tHp = (template as any).base_hp;
+        const tGold = (template as any).base_gold;
+        const entityHp = (tHp && tHp > 0) ? tHp : hp;
+        const entityGold = (tGold && tGold > 0) ? tGold : gold;
+        // Apply boss/primal multipliers on top
+        const finalHp = entityHp * (isBossWave ? 3 : isBoss ? 1.5 : 1) * (isPrimal ? 2 : 1);
+        const finalGold = entityGold * (isBossWave ? 10 : isBoss ? 3 : 1) * (isPrimal ? 3 : 1);
         setEnemy({
           ...template,
           name: template.name || (template as any).canonical_name || 'UNKNOWN ENTITY',
-          maxHp: hp, currentHp: hp, baseGold: gold, isBoss: isBoss, isPrimal, isFallback: false
+          maxHp: finalHp, currentHp: finalHp, baseGold: finalGold, isBoss: isBoss, isPrimal, isFallback: false
         });
       }
     } else {
