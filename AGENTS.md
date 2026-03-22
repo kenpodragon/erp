@@ -55,17 +55,18 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 ## 📜 Documentation Hierarchy
 When in doubt, consult these files in order:
 1. `AGENTS.md`: Core mandates and structure (This file).
-2. `@docs/TODO.md`: What is being built *now*.
-3. `@docs/done/DONE.md`: Everything that's been done so far.
-4. `@docs/ROADMAP.md`: High-level project phases.
-5. `@docs/recs/0_REQUIREMENTS.md`: What needs to be built.
-6. `@docs/ARCHITECTURE.md`: How it is built.
-7. `@docs/lore/`: High-signal, compressed lore references (e.g., `BOOKS_SUMMARY.md`).
-8. `@../Books/BOOKS.md`: Narrative source mapping (full text).
-9. `@docs/inst/DB_MIGRATIONS.md`: How to apply database updates.
-10. `@docs/inst/TESTING.md`: How to test the system.
-11. `@docs/inst/INIT_INFRA.md`: Environment setup.
-12. `@docs/inst/CODING_GUIDE.md`: Backend coding standards and module conventions.
+2. `@docs/SESSION_STATE.md`: Current project status, DB state, what's left.
+3. `@docs/TODO.md`: What is being built *now*.
+4. `@docs/done/DONE.md`: Everything that's been done so far.
+5. `@docs/ROADMAP.md`: High-level project phases.
+6. `@docs/recs/0_REQUIREMENTS.md`: What needs to be built.
+7. `@docs/ARCHITECTURE.md`: How it is built.
+8. `@docs/lore/`: High-signal, compressed lore references (e.g., `BOOKS_SUMMARY.md`).
+9. `@../Books/BOOKS.md`: Narrative source mapping (full text).
+10. `@docs/inst/DB_MIGRATIONS.md`: How to apply database updates.
+11. `@docs/inst/TESTING.md`: How to test the system.
+12. `@docs/inst/INIT_INFRA.md`: Environment setup.
+13. `@docs/inst/CODING_GUIDE.md`: Backend coding standards and module conventions.
 
 ## 🤖 Agent Operating Procedures
 1. **Lore Research:** Always consult the compressed lore guides in `docs/lore/` first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/lore/` to maintain it as the primary, high-signal reference.
