@@ -27,6 +27,8 @@ from config import (
     load_config_overrides,
     load_profile,
     milestone_multiplier,
+    scene_gold,
+    scene_hp,
     time_to_kill,
     upgrade_cost,
     xp_to_level,
@@ -83,17 +85,21 @@ def _load_content_snapshot() -> dict:
 
 
 def _generate_placeholder_bosses(config: dict) -> list[dict]:
-    """Generate placeholder boss data: 1 per chapter + 1 per book final boss."""
+    """Generate placeholder boss data: 1 per chapter + 1 per book final boss.
+
+    Uses scene-based HP scaling to match current server implementation.
+    """
     bosses = []
-    scaling = config.get("hp_scaling_factor", 1.55)
-    total_chapters = 30  # 3 books x 10 chapters
-    zones_per_chapter = 140 / total_chapters  # ~4.67 zones per chapter
+    hp_scaling = config.get("scene_hp_scaling_base", 1.012)
+    base_hp = config.get("avg_entity_base_hp", 20.0)
+    hp_cap = config.get("max_scene_base_hp", 500.0)
 
     for book_idx, (z_start, z_end) in enumerate(BOOK_ZONE_RANGES, 1):
         chapters_in_book = 10
         for ch in range(1, chapters_in_book + 1):
             ch_zone = int(z_start + (ch / chapters_in_book) * (z_end - z_start))
-            boss_hp = zone_hp(ch_zone, scaling) * 15  # bosses have 15x zone mob HP
+            mob_hp = scene_hp(ch_zone, base_hp, hp_scaling, hp_cap)
+            boss_hp = mob_hp * 15  # bosses have 15x zone mob HP
             enrage = 120.0  # 2 minute enrage timer
             is_book_boss = ch == chapters_in_book
             if is_book_boss:
@@ -160,15 +166,21 @@ def _calc_player_dps(level: int, profile: dict, config: dict) -> float:
 # ---------------------------------------------------------------------------
 
 def _sim_zone_progression(config: dict, profile: dict) -> list[dict]:
-    """5.3.1 — Zone progression: HP, gold/kill, TTK for zones 1-140."""
-    scaling = config.get("hp_scaling_factor", 1.55)
+    """5.3.1 — Zone progression: HP, gold/kill, TTK for zones 1-140.
+
+    Uses scene-based HP/gold formulas (matching current server implementation).
+    """
+    hp_scaling = config.get("scene_hp_scaling_base", 1.012)
+    base_hp = config.get("avg_entity_base_hp", 20.0)
+    hp_cap = config.get("max_scene_base_hp", 500.0)
+    gold_scaling = config.get("scene_gold_scaling_base", 1.008)
+    base_gold = config.get("avg_entity_base_gold", 8.0)
     results = []
-    # Estimate player level at each zone (rough: level ~ zone * 1.5 for casual)
+    # Estimate player level: ~0.57 levels per zone (80 levels across 140 zones)
     for z in range(1, 141):
-        hp = zone_hp(z, scaling)
-        gpk = zone_gold(z)
-        # Estimate level at this zone based on progression
-        est_level = max(1, int(z * 1.5))
+        hp = scene_hp(z, base_hp, hp_scaling, hp_cap)
+        gpk = scene_gold(z, base_gold, gold_scaling)
+        est_level = max(1, int(z * 0.57))
         dps = _calc_player_dps(est_level, profile, config)
         ttk = time_to_kill(hp, dps) if dps > 0 else math.inf
         monsters = config.get("monsters_per_zone", 10)

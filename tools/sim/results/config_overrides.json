@@ -1,0 +1,12 @@
+{
+  "description": "Config v2 — Slow XP 4x (factor 20->80), fix economy (essence base 500->200, growth 1.03->1.01, upgrade scaling 1.04->1.03). Combat HP already good via scene-based scaling.",
+  "run_ids": ["math_model_run_007", "math_model_run_017"],
+  "overrides": {
+    "char_level_xp_factor": 80,
+    "char_xp_per_scene_base": 200,
+    "idle_essence_drain_per_minute": 0.5,
+    "gold_to_essence_base_rate": 200,
+    "gold_to_essence_growth_factor": 1.01,
+    "upgrade_cost_scaling": 1.03
+  }
+}

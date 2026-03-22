@@ -110,7 +110,7 @@ Level 10 = 100K total XP, Level 50 = 2.5M, Level 99 = 9.8M
 
 ## Simulation Toolkit
 
-**Status:** Phases 1-4 complete (Phase 4 OBE). Combat scaling implemented + entity data seeded. Phase 5-6 next.
+**Status:** Phases 1-6 COMPLETE. Casual hits 59.53h (target: 60h). Migration 062 applied to dev DB. API bot validated (5/5 scenes, 0 errors). Ready for spoofing lockdown.
 
 Sessions 1-4 from the original manual plan are now automated by the simulation toolkit.
 - **Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
@@ -154,15 +154,41 @@ Sessions 1-4 from the original manual plan are now automated by the simulation t
 - **Bonus finding:** Discovered and fixed two combat scaling bugs during browser validation (see TODO.md).
 
 #### Phase 5: Results & Migration
-- [ ] Migration 062 generator
-- [ ] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`)
-- [ ] TODO.md updates
+- [x] Migration 062 generator (`tools/sim/generate_migration.py` — 9 tests)
+- [x] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`)
+- [x] TODO.md updates
 
 #### Phase 6: First Iteration Run
-- [ ] Run math model baseline for all profiles
-- [ ] Run API bot validation → compare to math model → calibrate
-- [ ] First tuning pass → iterate until casual projects ~60 hours
-- [ ] Generate migration 062 with final tuned configs
+- [x] Run math model baseline for all profiles (runs 007-011: baseline with scene-based HP)
+- [x] Fix math model: switched from legacy zone_hp (1.55x) to scene_hp (1.012x) matching server
+- [x] First tuning pass (v1: XP factor 1000→20, too fast at 43.59h)
+- [x] Second tuning pass (v2: XP factor 80, essence base 200, growth 1.01) → **casual 59.53h**
+- [x] Generate migration 062 with final tuned configs (`db/062_balanced_game_configs.sql`)
+- [x] Run API bot validation (5/5 scenes, 0 errors, ~31s/scene combat, gold economy working)
+- [x] Apply migration 062 to dev DB (6 UPDATE statements, all verified)
+
+**Phase 6 Results (Config v2):**
+
+| Profile | Total Hours | Target | Status |
+|---------|------------|--------|--------|
+| Casual | 59.53h | 60h | **On target** |
+| Power Gamer | 24.62h active | 56-80h / 7-10 days | **On target** |
+| No Autoskills | 256h | Walls, not stuck | **As designed** |
+| New User | 2,926h | Very slow | Expected (30min/day, no skills) |
+| Idle Only | inf | Can't clear content | **By design** |
+
+**Config Changes (Migration 062):**
+
+| Config Key | Old Value | New Value | Reason |
+|-----------|-----------|-----------|--------|
+| `char_level_xp_factor` | 1000 | 80 | XP curve was 50x too steep |
+| `char_xp_per_scene_base` | 50 | 200 | More XP per scene completion |
+| `gold_to_essence_base_rate` | 1000 | 200 | Cheaper essence conversion |
+| `gold_to_essence_growth_factor` | 1.07 | 1.01 | Flatter economy curve |
+| `idle_essence_drain_per_minute` | 1 | 0.5 | Sustain idle training longer |
+| `upgrade_cost_scaling` | 1.07 | 1.03 | Gentler upgrade cost growth |
+
+**Math Model Fix:** Switched from legacy `zone_hp(z, 1.55)` to `scene_hp(z, 20.0, 1.012, 500)` matching the actual server `/enemies` endpoint (implemented in Phase 3 combat scaling fix). This reduced baseline casual from 5.3×10²² hours to 2,977 hours before any config tuning.
 
 ### Original Session Plan (Reference)
 

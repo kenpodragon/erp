@@ -15,6 +15,15 @@ To build a high-fidelity, narrative-driven incremental game that serves as a gat
 
 **Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
 
+## 🌐 Browser Debugging (Chrome DevTools MCP)
+For **interactive debugging, visual inspection, and manual QA** of the frontend/admin apps, use the **Chrome DevTools MCP** server (not Playwright). This launches a dedicated Chrome for Testing instance with its own profile at `chrome/profile/`.
+
+- **When to use Chrome DevTools MCP:** Live debugging, inspecting DOM/network/console, testing responsive layouts, visual regression checks, accessibility audits, and any ad-hoc browser interaction that isn't an automated test.
+- **When to use Playwright MCP:** Automated E2E test suites only (tests in `/testing`).
+- **Chrome DevTools tools** include: `navigate_page`, `take_screenshot`, `take_snapshot`, `evaluate_script`, `list_network_requests`, `list_console_messages`, `click`, `fill`, `hover`, `press_key`, `lighthouse_audit`, `performance_start_trace`/`performance_stop_trace`, and more.
+- The Chrome profile persists across sessions (login state, cookies, local storage are retained).
+- Requires a Claude Code restart if the MCP config changes.
+
 ## 🧪 Testing Mandates
 All code changes must be verified locally before pushing to the cloud. **Refer to `@docs/inst/TESTING.md` for the full guide.**
 - **Backend:** Tests reside in `/backend/tests`. Use `pytest`. Every new feature or bug fix requires a corresponding test case.

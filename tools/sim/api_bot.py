@@ -417,8 +417,8 @@ class APIBot:
             waves_delta = 1
 
             # Gold estimate: use zone gold formula
-            from .config import zone_gold as _zone_gold
-            gold_delta = _zone_gold(zone) * waves_delta
+            from config import scene_gold as _scene_gold
+            gold_delta = _scene_gold(zone) * waves_delta
 
             try:
                 tick_resp = await self.client.tick(

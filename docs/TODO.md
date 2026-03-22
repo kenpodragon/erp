@@ -5,25 +5,24 @@
 
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
-Read these files in order:
-1. docs/SIM_PROC_BAL_SESSION_STATE.md — current state and progress
-2. docs/specs/2026-03-20-simulation-toolkit-design.md — full spec
-3. docs/plans/2026-03-20-simulation-toolkit-plan.md — implementation plan
+Simulation & Progression Balancing is COMPLETE (Phases 1-6).
+Casual: 59.53h (target: 60h). Migration 062 applied. API bot validated.
 
-We are building the Simulation & Progression Balancing Toolkit.
-Phases 1-4 are complete. Combat scaling is implemented and entity data is seeded.
-Continue with Phase 5 (Results tooling, migration generator, toolkit guide).
-Then Phase 6 (First iteration run — baseline → validate → tune until casual hits 60hr target).
-The Docker stack should already be running. If not, start it: docker-compose up --build -d
+Next priority: Spoofing Lockdown (see CRITICAL section below).
+After that: remaining TODO items (combat scaling polish, music loops, etc).
 ```
 
 ---
 
 ## Simulation & Progression Balancing
-*(Phases 1-4 complete — see `done/DONE.md`. Active work: Phases 5-6)*
-- [ ] **Phase 5:** Results tooling, migration generator, toolkit guide
-- [ ] **Phase 6:** First iteration run — baseline → validate → tune until casual hits 60hr target
-- [ ] Produce final scaling defaults → migration 062 SQL script
+*(Phases 1-6 complete — see `done/DONE.md`. Toolkit: `docs/inst/SIM_TOOLKIT_GUIDE.md`)*
+- [x] **Phase 5:** Results tooling, migration generator, toolkit guide
+- [x] **Phase 6:** First iteration run — casual hits **59.53h** (target: 60h)
+  - [x] Math model baseline (scene-based HP fix + XP tuning)
+  - [x] Two tuning passes (v1: 43.59h too fast → v2: 59.53h on target)
+  - [x] Generate migration 062 (`db/062_balanced_game_configs.sql`)
+  - [x] Apply migration 062 to dev DB (6 UPDATEs verified)
+  - [x] API bot validation (5/5 scenes, 0 errors, ~31s/scene combat)
 
 ---
 
@@ -92,6 +91,7 @@ The Docker stack should already be running. If not, start it: docker-compose up 
 - [ ] Investigate SDD frameworks (Open Spec) — consider converting documentation
 - [ ] Code bloat cleanup (break god-class files into modules)
 - [ ] Code documentation — link to requirements, functional specs, inline comments
+- [ ] Documentation final check - update user guides, manuals, etc... collapse the db merges back into 3 files (seeds to generic seeds).
 
 ### Cloud Deployment
 - [ ] Explore Firebase JSON storage for user data (capacity, update frequency)
@@ -102,4 +102,4 @@ The Docker stack should already be running. If not, start it: docker-compose up 
 
 ---
 
-*Updated: 2026-03-22 (Simulation toolkit Phases 1-4 complete. Combat scaling implemented. Phase 5-6 next.)*
+*Updated: 2026-03-22 (Simulation toolkit COMPLETE. Casual 59.53h. Migration 062 applied. API bot validated. Next: spoofing lockdown.)*

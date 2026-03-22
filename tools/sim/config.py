@@ -11,26 +11,38 @@ import os
 # ---------------------------------------------------------------------------
 
 DEFAULT_CONFIGS = {
+    # Scene-based HP scaling (current server implementation)
+    'scene_hp_scaling_base': 1.012,       # HP multiplier per scene position
+    'avg_entity_base_hp': 20.0,           # Average entity base HP (range: 5-80)
+    'max_scene_base_hp': 500.0,           # Safety cap on scene base HP
+    # Legacy zone HP formula (kept for reference, NOT used by server)
     'hp_scaling_factor': 1.55,
     'monsters_per_zone': 10,
+    # Gold & economy
+    'scene_gold_scaling_base': 1.008,     # Gold multiplier per scene position
+    'avg_entity_base_gold': 8.0,          # Average entity base gold (range: 2-32)
     'gold_to_essence_base_rate': 1000,
     'gold_to_essence_growth_factor': 1.07,
     'upgrade_cost_scaling': 1.07,
+    'session_gold_multiplier': 1.0,
+    'first_clear_multiplier': 1.5,
+    # Combat
     'click_dmg_mult_per_level': 0.05,
     'auto_dps_mult_per_level': 0.05,
     'crit_chance': 0.02,
     'crit_multiplier': 2.0,
-    'char_level_xp_factor': 1000,
-    'char_xp_per_scene_base': 50,
-    'idle_essence_drain_per_minute': 1,
-    'idle_offline_cap_hours': 24,
-    'session_gold_multiplier': 1.0,
-    'first_clear_multiplier': 1.5,
-    'default_player_wpm': 200,
-    'wave_duration_seconds': 30,
+    'click_rate_cap': 20,
     'milestone_start': 200,
     'milestone_interval': 25,
-    'click_rate_cap': 20,
+    # Progression
+    'char_level_xp_factor': 1000,
+    'char_xp_per_scene_base': 50,
+    # Idle training
+    'idle_essence_drain_per_minute': 1,
+    'idle_offline_cap_hours': 24,
+    # Narrative
+    'default_player_wpm': 200,
+    'wave_duration_seconds': 30,
 }
 
 # ---------------------------------------------------------------------------
@@ -40,12 +52,21 @@ DEFAULT_CONFIGS = {
 def load_config_overrides(path: str) -> dict:
     """Load JSON overrides from path and merge with DEFAULT_CONFIGS.
 
+    Supports two JSON formats:
+    - Flat: {"hp_scaling_factor": 1.45, ...}
+    - Nested: {"description": "...", "overrides": {"hp_scaling_factor": 1.45}}
+
     Returns a new dict with defaults overridden by the values in the file.
     """
     config = dict(DEFAULT_CONFIGS)
     with open(path, 'r', encoding='utf-8') as f:
-        overrides = json.load(f)
-    config.update(overrides)
+        data = json.load(f)
+    # Support nested format (from migration generator / toolkit guide)
+    overrides = data.get('overrides', data) if isinstance(data, dict) else data
+    # Only apply known config keys (skip metadata like description, run_ids)
+    for key, value in overrides.items():
+        if key in DEFAULT_CONFIGS or key.startswith(('scene_', 'avg_', 'max_')):
+            config[key] = value
     return config
 
 
@@ -65,19 +86,41 @@ def load_profile(name: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def zone_hp(zone: int, scaling_factor: float = 1.55) -> float:
-    """Monster HP for a given zone.
+    """Monster HP for a given zone (LEGACY formula).
 
     Formula: 10 * (scaling_factor^(zone-1) + zone - 1)
+    NOTE: Server now uses scene_hp() instead. Kept for backwards compat.
     """
     return 10 * (scaling_factor ** (zone - 1) + zone - 1)
 
 
+def scene_hp(scene_pos: int, base_hp: float = 20.0,
+             scaling_base: float = 1.012, cap: float = 500.0) -> float:
+    """Monster HP for a given scene position (CURRENT server formula).
+
+    Formula: min(base_hp * scaling_base^(scene_pos-1), cap)
+    This matches the /enemies endpoint implementation.
+    """
+    hp = base_hp * (scaling_base ** (scene_pos - 1))
+    return min(hp, cap)
+
+
 def zone_gold(zone: int) -> float:
-    """Gold per kill for a given zone.
+    """Gold per kill for a given zone (LEGACY formula).
 
     Formula: 5 * (1.1^(zone-1) + zone - 1)
+    NOTE: Server now uses scene_gold() instead. Kept for backwards compat.
     """
     return 5 * (1.1 ** (zone - 1) + zone - 1)
+
+
+def scene_gold(scene_pos: int, base_gold: float = 8.0,
+               scaling_base: float = 1.008) -> float:
+    """Gold per kill for a given scene position (CURRENT server formula).
+
+    Formula: base_gold * scaling_base^(scene_pos-1)
+    """
+    return base_gold * (scaling_base ** (scene_pos - 1))
 
 
 def essence_conversion(session_gold: float, zone: int) -> float:
