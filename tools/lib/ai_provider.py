@@ -38,15 +38,25 @@ def _load_env_file(path: str) -> dict:
     return result
 
 
-def _locate_env_file(provided: Optional[str]) -> Optional[str]:
-    """Return an env file path to load, searching tools/.env then backend/.env."""
-    if provided:
-        return provided
+def _load_merged_env(provided: Optional[str]) -> dict:
+    """
+    Merge env values in priority order (later overrides earlier):
+      1. backend/.env  (lowest priority)
+      2. tools/.env
+      3. provided env_file  (highest priority from files)
+    os.environ is checked separately at call sites (not merged here).
+    """
     here = Path(__file__).parent.parent  # tools/
-    for candidate in [here / ".env", here.parent / "backend" / ".env"]:
-        if candidate.exists():
-            return str(candidate)
-    return None
+    backend_env = here.parent / "backend" / ".env"
+    tools_env = here / ".env"
+
+    merged: dict = {}
+    # Load in ascending priority: backend → tools → provided
+    for candidate in [str(backend_env), str(tools_env)]:
+        merged.update(_load_env_file(candidate))
+    if provided:
+        merged.update(_load_env_file(provided))
+    return merged
 
 
 # ---------------------------------------------------------------------------
@@ -63,12 +73,12 @@ class AIProvider:
     DEFAULT_MAX_RETRIES = 3
 
     def __init__(self, env_file: str = None):
-        """Load config from tools/.env, backend/.env, or os.environ."""
-        env_path = _locate_env_file(env_file)
-        file_vals = _load_env_file(env_path) if env_path else {}
+        """Load config by merging backend/.env, tools/.env, env_file, then os.environ."""
+        file_vals = _load_merged_env(env_file)
 
         def _get(key: str, default):
-            return file_vals.get(key) or os.environ.get(key) or default
+            # os.environ takes highest priority, then file_vals, then default
+            return os.environ.get(key) or file_vals.get(key) or default
 
         self.provider: str = _get("AI_CLI_PROVIDER", self.DEFAULT_PROVIDER)
         self.fallback_provider: str = _get("AI_CLI_PROVIDER_FALLBACK", self.DEFAULT_FALLBACK)
@@ -86,7 +96,10 @@ class AIProvider:
 
     def _build_command(self, provider: str, prompt: str) -> list:
         """Build CLI command list for the given provider."""
-        return [provider, "-p", prompt, "--output-format", "json"]
+        cmd = [provider, "-p", prompt, "--output-format", "json"]
+        if self.model:
+            cmd += ["--model", self.model]
+        return cmd
 
     # ------------------------------------------------------------------
     # Core generation
@@ -103,12 +116,18 @@ class AIProvider:
         Retries with exponential backoff (2s, 4s, 8s).
         Auto-fallbacks to secondary after max_retries consecutive failures.
         """
-        # Determine which provider to use
+        # Determine which provider to use for this call.
+        # If the caller explicitly names a provider, honour it exactly.
+        # If _consecutive_failures already hit the threshold before this call
+        # and we haven't yet switched, delegate a fresh retry loop to fallback.
         if provider_name:
             active = provider_name
-        elif self._consecutive_failures >= self.max_retries:
-            active = self.fallback_provider
+        elif self._consecutive_failures >= self.max_retries and not self._using_fallback:
+            # Primary has accumulated enough failures — give fallback its own
+            # full retry loop via a recursive call.
             self._using_fallback = True
+            self._consecutive_failures = 0
+            return await self.generate(prompt, schema, provider_name=self.fallback_provider)
         else:
             active = self.provider
 
@@ -126,18 +145,26 @@ class AIProvider:
                 last_error = exc
                 self._consecutive_failures += 1
 
-                # Auto-fallback after exhausting primary retries
-                if self._consecutive_failures >= self.max_retries and not self._using_fallback:
-                    active = self.fallback_provider
+                # After each failure, check if we've hit the threshold mid-loop
+                # and should hand off to the fallback for its own fresh retries.
+                if (
+                    self._consecutive_failures >= self.max_retries
+                    and not self._using_fallback
+                    and not provider_name  # don't recurse when already on fallback
+                ):
                     self._using_fallback = True
-                    self._consecutive_failures = 0  # Reset for fallback attempts
+                    self._consecutive_failures = 0
+                    return await self.generate(
+                        prompt, schema, provider_name=self.fallback_provider
+                    )
 
                 if attempt < self.max_retries - 1:
                     backoff = 2 ** (attempt + 1)  # 2, 4, 8 ...
                     await asyncio.sleep(backoff)
 
         raise RuntimeError(
-            f"AIProvider.generate failed after {self.max_retries} attempts: {last_error}"
+            f"AIProvider.generate failed after {self.max_retries} attempts "
+            f"using provider {active!r}: {last_error}"
         ) from last_error
 
     async def _run_once(self, provider: str, prompt: str) -> Any:
@@ -148,7 +175,16 @@ class AIProvider:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate()
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=self.timeout
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.communicate()  # reap the process
+            raise RuntimeError(
+                f"CLI {provider!r} timed out after {self.timeout}s"
+            )
 
         if proc.returncode != 0:
             raise RuntimeError(

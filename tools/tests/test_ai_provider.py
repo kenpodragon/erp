@@ -84,16 +84,38 @@ class TestBuildCommand(unittest.TestCase):
 
     def test_build_command_claude(self):
         cmd = self.provider._build_command("claude", "hello world")
-        self.assertEqual(cmd, ["claude", "-p", "hello world", "--output-format", "json"])
+        # Core flags must be present; --model is appended when model is set
+        self.assertIn("claude", cmd)
+        self.assertIn("-p", cmd)
+        self.assertIn("hello world", cmd)
+        self.assertIn("--output-format", cmd)
+        self.assertIn("json", cmd)
 
     def test_build_command_gemini(self):
         cmd = self.provider._build_command("gemini", "hello world")
-        self.assertEqual(cmd, ["gemini", "-p", "hello world", "--output-format", "json"])
+        self.assertIn("gemini", cmd)
+        self.assertIn("-p", cmd)
+        self.assertIn("hello world", cmd)
+        self.assertIn("--output-format", cmd)
+        self.assertIn("json", cmd)
 
     def test_build_command_preserves_prompt(self):
         long_prompt = "Generate 50 items with complex JSON schema\nLine 2"
         cmd = self.provider._build_command("claude", long_prompt)
         self.assertIn(long_prompt, cmd)
+
+    def test_build_command_includes_model_flag(self):
+        """--model flag is included when model is set."""
+        cmd = self.provider._build_command("claude", "hello")
+        self.assertIn("--model", cmd)
+        model_idx = cmd.index("--model")
+        self.assertEqual(cmd[model_idx + 1], self.provider.model)
+
+    def test_build_command_no_model_flag_when_model_empty(self):
+        """--model flag is omitted when model is empty string."""
+        self.provider.model = ""
+        cmd = self.provider._build_command("claude", "hello")
+        self.assertNotIn("--model", cmd)
 
 
 class TestGenerate(unittest.IsolatedAsyncioTestCase):
@@ -286,6 +308,162 @@ class TestGenerateBatch(unittest.IsolatedAsyncioTestCase):
 
         # Single batch returns [{"result":"x"},{"result":"y"}]
         self.assertEqual(results, [{"result": "x"}, {"result": "y"}])
+
+
+class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
+    """Timeout wraps proc.communicate() and raises RuntimeError."""
+
+    def _make_provider(self, timeout=5):
+        for key in ["AI_CLI_PROVIDER", "AI_CLI_PROVIDER_FALLBACK", "AI_CLI_MODEL",
+                    "AI_CLI_TIMEOUT", "AI_CLI_MAX_RETRIES"]:
+            os.environ.pop(key, None)
+        p = AIProvider(env_file="/nonexistent/.env")
+        p.timeout = timeout
+        p.max_retries = 1  # single attempt so timeout propagates as RuntimeError
+        return p
+
+    async def test_timeout_raises_runtime_error(self):
+        """A hung subprocess raises RuntimeError mentioning timeout."""
+        provider = self._make_provider(timeout=1)
+
+        proc = MagicMock()
+        proc.kill = MagicMock()
+        proc.communicate = AsyncMock(return_value=(b"", b""))
+
+        # Patch wait_for in the ai_provider module namespace only,
+        # not globally, to avoid interfering with IsolatedAsyncioTestCase.
+        async def _fake_wait_for(coro, timeout):
+            raise asyncio.TimeoutError()
+
+        with patch("asyncio.create_subprocess_exec", return_value=proc):
+            with patch("tools.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
+                with self.assertRaises(RuntimeError) as ctx:
+                    await provider.generate("prompt", schema={})
+
+        self.assertIn("timed out", str(ctx.exception).lower())
+
+    async def test_timeout_kills_process(self):
+        """On timeout, _run_once kills the subprocess before re-raising."""
+        provider = self._make_provider(timeout=1)
+
+        proc = MagicMock()
+        proc.kill = MagicMock()
+        # After kill(), _run_once calls proc.communicate() to reap — must be awaitable.
+        proc.communicate = AsyncMock(return_value=(b"", b""))
+
+        async def _fake_wait_for(coro, timeout):
+            # Drain the coroutine to avoid "never awaited" warning
+            coro.close()
+            raise asyncio.TimeoutError()
+
+        with patch("asyncio.create_subprocess_exec", return_value=proc):
+            with patch("tools.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
+                with self.assertRaises(RuntimeError):
+                    await provider._run_once("claude", "prompt")
+
+        proc.kill.assert_called_once()
+
+
+class TestOrganicAutoFallback(unittest.IsolatedAsyncioTestCase):
+    """Organic fallback: consecutive failures across generate() calls."""
+
+    def _make_provider(self, max_retries=2):
+        for key in ["AI_CLI_PROVIDER", "AI_CLI_PROVIDER_FALLBACK", "AI_CLI_MODEL",
+                    "AI_CLI_TIMEOUT", "AI_CLI_MAX_RETRIES"]:
+            os.environ.pop(key, None)
+        p = AIProvider(env_file="/nonexistent/.env")
+        p.max_retries = max_retries
+        return p
+
+    def _mock_proc(self, stdout_bytes: bytes, returncode: int = 0):
+        proc = MagicMock()
+        proc.communicate = AsyncMock(return_value=(stdout_bytes, b""))
+        proc.returncode = returncode
+        return proc
+
+    async def test_fallback_gets_fresh_retries(self):
+        """After primary exhausts retries, fallback provider gets its own fresh loop."""
+        good_payload = {"fallback": True}
+        bad_proc = self._mock_proc(b"err", returncode=1)
+        good_proc = self._mock_proc(json.dumps(good_payload).encode(), returncode=0)
+
+        provider = self._make_provider(max_retries=2)
+
+        # Primary will fail twice (max_retries=2), then fallback should succeed
+        call_log = []
+
+        async def fake_exec(*args, **kwargs):
+            call_log.append(args[0])  # provider binary name
+            if args[0] == provider.provider:
+                return bad_proc
+            return good_proc
+
+        with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
+            with patch("asyncio.sleep", new_callable=AsyncMock):
+                result = await provider.generate("prompt", schema={})
+
+        self.assertEqual(result, good_payload)
+        # Primary was called, then fallback was called
+        self.assertIn(provider.provider, call_log)
+        self.assertIn(provider.fallback_provider, call_log)
+
+    async def test_fallback_provider_is_independent_of_primary_attempt_count(self):
+        """Fallback receives a full max_retries loop, not leftover primary iterations."""
+        good_payload = {"ok": True}
+        bad_proc = self._mock_proc(b"err", returncode=1)
+        good_proc = self._mock_proc(json.dumps(good_payload).encode(), returncode=0)
+
+        provider = self._make_provider(max_retries=2)
+        fallback_calls = []
+
+        async def fake_exec(*args, **kwargs):
+            name = args[0]
+            if name == provider.fallback_provider:
+                fallback_calls.append(name)
+                # Fail first fallback attempt, succeed second
+                if len(fallback_calls) == 1:
+                    return bad_proc
+                return good_proc
+            return bad_proc
+
+        with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
+            with patch("asyncio.sleep", new_callable=AsyncMock):
+                result = await provider.generate("prompt", schema={})
+
+        self.assertEqual(result, good_payload)
+        # Fallback should have been called twice (it got its own max_retries loop)
+        self.assertEqual(len(fallback_calls), 2)
+
+
+class TestEnvMerge(unittest.TestCase):
+    """Env file merge: backend/.env < tools/.env < provided file < os.environ."""
+
+    def test_provided_env_overrides_other_files(self):
+        """A directly-provided env file takes precedence over auto-located files."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
+            f.write("AI_CLI_PROVIDER=provided_provider\n")
+            provided_path = f.name
+        try:
+            for key in ["AI_CLI_PROVIDER"]:
+                os.environ.pop(key, None)
+            from tools.lib.ai_provider import _load_merged_env
+            merged = _load_merged_env(provided_path)
+            # The provided file's value must be present
+            self.assertEqual(merged.get("AI_CLI_PROVIDER"), "provided_provider")
+        finally:
+            os.unlink(provided_path)
+
+    def test_os_environ_overrides_file(self):
+        """os.environ values override file values in AIProvider._get."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
+            f.write("AI_CLI_PROVIDER=from_file\n")
+            env_path = f.name
+        try:
+            with patch.dict(os.environ, {"AI_CLI_PROVIDER": "from_env"}):
+                provider = AIProvider(env_file=env_path)
+            self.assertEqual(provider.provider, "from_env")
+        finally:
+            os.unlink(env_path)
 
 
 if __name__ == "__main__":
