@@ -494,4 +494,6 @@ backend/*.db
 .gemini/
 .github/
 .mcp.json
-\
+.superpowers/
+.playwright-mcp/
+chrome/
