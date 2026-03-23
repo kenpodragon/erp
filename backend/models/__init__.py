@@ -52,6 +52,9 @@ from models.content import (
     Background, SceneWaveConfig, EntityAlias, EntityBeatAppearance,
     LocationAlias, LocationSceneAppearance, SemanticTag,
 )
+from models.visual import (
+    MovementType, SizeClass, AnimationStyle, SilhouetteType, ArmorClass,
+)
 
 __all__ = [
     "Player", "PlayerSettings", "CharacterClass", "PlayerCharacter",
@@ -87,4 +90,5 @@ __all__ = [
     "WavePreset", "WavePresetAssignment", "DifficultyCurve", "DifficultyPreset",
     "Background", "SceneWaveConfig", "EntityAlias", "EntityBeatAppearance",
     "LocationAlias", "LocationSceneAppearance", "SemanticTag",
+    "MovementType", "SizeClass", "AnimationStyle", "SilhouetteType", "ArmorClass",
 ]
