@@ -431,6 +431,45 @@ class TestGenerateDreamItem:
         assert item.min_char_level >= 1
         assert item.min_char_level <= item.item_level
 
+    def test_sprite_key_set_when_armor_class_exists(self, session: Session, all_item_components,
+                                                      test_character, test_scene, test_chapter,
+                                                      test_book, gear_slots):
+        """sprite_key = armor_class.code + gear_slot.name + rarity when armor_class_id is set."""
+        from models.visual import ArmorClass
+        ac = ArmorClass(code="plate", display_name="Plate Armor")
+        session.add(ac)
+        session.commit()
+        session.refresh(ac)
+
+        # Set all item_type_bases to reference this armor_class
+        bases = session.exec(select(ItemTypeBase)).all()
+        for b in bases:
+            b.armor_class_id = ac.id
+            session.add(b)
+        session.commit()
+
+        item = generate_dream_item(session, test_character, test_scene, test_chapter)
+        assert item.sprite_key is not None
+        parts = item.sprite_key.split("_")
+        assert parts[0] == "plate"  # armor_class.code
+        assert parts[-1] in RARITY_MULTIPLIERS  # rarity
+        # middle part(s) should be the gear slot name
+        slot = session.get(GearSlot, item.gear_slot_id)
+        expected = f"plate_{slot.name}_{item.rarity}"
+        assert item.sprite_key == expected
+
+    def test_sprite_key_none_when_no_armor_class(self, session: Session, all_item_components,
+                                                   test_character, test_scene, test_chapter,
+                                                   test_book):
+        """sprite_key is None when item_type_base has no armor_class_id."""
+        # Default item_type_bases fixture has no armor_class_id set
+        bases = session.exec(select(ItemTypeBase)).all()
+        for b in bases:
+            assert b.armor_class_id is None  # precondition
+
+        item = generate_dream_item(session, test_character, test_scene, test_chapter)
+        assert item.sprite_key is None
+
 
 class TestRarityDistribution:
     """Basic probability sanity check over many rolls."""

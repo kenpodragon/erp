@@ -28,6 +28,7 @@ from models import (
     ShopItem, ShopBundle, ShopBundleItem, PlayerShopItem, PlayerActiveBooster,
     Donation,
     AttackType, EntityAttackType, TypeBaseAttackType,
+    MovementType, SizeClass, AnimationStyle, SilhouetteType, ArmorClass,
     EntityType, EntityFamily, VisualBehavior,
     WavePreset, WavePresetAssignment, DifficultyCurve, DifficultyPreset,
     SceneWaveConfig,

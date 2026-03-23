@@ -15,7 +15,12 @@ from models import (
     Entity, EntityGameplayData, StatDefinition,
     Artifact, PlayerCollection, BossCompletion,
     EntityType,
+    GearSlot, ItemTypeBase, ArmorClass,
 )
+from models.inventory import PlayerInventory, InventoryItem
+from models.discovery import PlayerEntityDiscovery
+from models.visual import MovementType, SizeClass, AnimationStyle, SilhouetteType
+from models.attack_types import AttackType
 from models.story_mode import DevContentAudit
 from models.asset_registry import AssetRegistryEntry
 
@@ -386,26 +391,121 @@ async def get_encountered_enemies(
     session: Session = Depends(get_session)
 ):
     """
-    Return all unique enemies encountered by the player so far.
+    Return all unique enemies the current player has discovered,
+    with inlined visual/combat data from lookup tables.
     """
     player = token.get("player")
-    character = session.exec(select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)).first()
-    if not character:
-        return []
 
-    enemies = session.exec(
-        select(Entity, EntityGameplayData)
-        .join(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
-        .join(EntityType, Entity.entity_type_id == EntityType.id)
-        .where(EntityType.name == "enemy")
+    # Fetch discovered entity IDs for this player
+    discoveries = session.exec(
+        select(PlayerEntityDiscovery.entity_id)
+        .where(PlayerEntityDiscovery.player_id == player.id)
     ).all()
 
-    return [
-        {
-            **e.model_dump(),
-            "gameplay_data": gd.model_dump()
-        } for e, gd in enemies
-    ]
+    if not discoveries:
+        return []
+
+    discovered_ids = list(discoveries)
+
+    # Fetch entities with optional gameplay data (LEFT JOIN)
+    from sqlalchemy.orm import aliased
+    PrimaryAtk = aliased(AttackType)
+    SecondaryAtk = aliased(AttackType)
+    TertiaryAtk = aliased(AttackType)
+
+    rows = session.exec(
+        select(
+            Entity, EntityGameplayData,
+            MovementType, SizeClass, AnimationStyle, SilhouetteType,
+            PrimaryAtk, SecondaryAtk, TertiaryAtk,
+        )
+        .outerjoin(EntityGameplayData, Entity.id == EntityGameplayData.entity_id)
+        .outerjoin(MovementType, EntityGameplayData.movement_type_id == MovementType.id)
+        .outerjoin(SizeClass, EntityGameplayData.size_class_id == SizeClass.id)
+        .outerjoin(AnimationStyle, EntityGameplayData.animation_style_id == AnimationStyle.id)
+        .outerjoin(SilhouetteType, EntityGameplayData.silhouette_type_id == SilhouetteType.id)
+        .outerjoin(PrimaryAtk, EntityGameplayData.primary_attack_type_id == PrimaryAtk.id)
+        .outerjoin(SecondaryAtk, EntityGameplayData.secondary_attack_type_id == SecondaryAtk.id)
+        .outerjoin(TertiaryAtk, EntityGameplayData.tertiary_attack_type_id == TertiaryAtk.id)
+        .where(Entity.id.in_(discovered_ids))  # type: ignore[union-attr]
+    ).all()
+
+    def _attack_dict(atk: AttackType | None) -> dict | None:
+        if atk is None:
+            return None
+        return {
+            "name": atk.name,
+            "attack_animation_type": atk.attack_animation_type,
+            "projectile_color": atk.projectile_color,
+            "cooldown_ms": atk.cooldown_ms,
+        }
+
+    def _movement_dict(m: MovementType | None) -> dict | None:
+        if m is None:
+            return None
+        return {
+            "name": m.name,
+            "y_offset_min": m.y_offset_min,
+            "y_offset_max": m.y_offset_max,
+            "bob_amplitude": m.bob_amplitude,
+            "bob_frequency": m.bob_frequency,
+            "speed_multiplier": m.speed_multiplier,
+            "trail_effect": m.trail_effect,
+        }
+
+    def _size_dict(s: SizeClass | None) -> dict | None:
+        if s is None:
+            return None
+        return {
+            "name": s.name,
+            "scale_min": s.scale_min,
+            "scale_max": s.scale_max,
+            "width_base": s.width_base,
+            "height_base": s.height_base,
+            "hitbox_radius": s.hitbox_radius,
+        }
+
+    def _animation_dict(a: AnimationStyle | None) -> dict | None:
+        if a is None:
+            return None
+        return {
+            "name": a.name,
+            "idle_scale_x": a.idle_scale_x,
+            "idle_cycle_ms": a.idle_cycle_ms,
+            "death_style": a.death_style,
+            "death_particle_count": a.death_particle_count,
+        }
+
+    def _silhouette_dict(si: SilhouetteType | None) -> dict | None:
+        if si is None:
+            return None
+        return {
+            "name": si.name,
+            "body_shape": si.body_shape,
+            "has_eye_glow": si.has_eye_glow,
+            "sub_unit_count": si.sub_unit_count,
+        }
+
+    result = []
+    for entity, gd, mov, size, anim, sil, p_atk, s_atk, t_atk in rows:
+        result.append({
+            "entity_id": entity.id,
+            "name": entity.canonical_name,
+            "sprite_key": gd.sprite_key if gd else None,
+            "base_hp": gd.base_hp if gd else None,
+            "base_gold": gd.base_gold if gd else None,
+            "color_primary": gd.color_primary if gd else None,
+            "color_secondary": gd.color_secondary if gd else None,
+            "movement": _movement_dict(mov),
+            "size": _size_dict(size),
+            "animation": _animation_dict(anim),
+            "silhouette": _silhouette_dict(sil),
+            "primary_attack": _attack_dict(p_atk),
+            "secondary_attack": _attack_dict(s_atk),
+            "tertiary_attack": _attack_dict(t_atk),
+        })
+
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -486,3 +586,93 @@ def report_frontend_audit(
     session.add(audit)
     session.commit()
     logger.info("Audit logged: missing_asset asset_key=%s category=%s", body.asset_key, body.category)
+
+
+# ---------------------------------------------------------------------------
+# Character visuals for paper doll rendering
+# ---------------------------------------------------------------------------
+
+def _aura_tier(level: int) -> str | None:
+    """Return the aura tier string based on character level."""
+    if level < 21:
+        return None
+    if level <= 40:
+        return "bronze"
+    if level <= 60:
+        return "silver"
+    if level <= 80:
+        return "gold"
+    return "cyan"
+
+
+@router.get("/character/visuals")
+async def get_character_visuals(
+    token: dict = Depends(get_current_player),
+    session: Session = Depends(get_session),
+):
+    """Return the player character's visual state for paper doll rendering."""
+    player = token.get("player")
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    character = session.exec(
+        select(PlayerCharacter).where(PlayerCharacter.player_id == player.id)
+    ).first()
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    # All gear slots that have a paperdoll_layer
+    all_slots = session.exec(
+        select(GearSlot).where(GearSlot.paperdoll_layer != None)  # noqa: E711
+    ).all()
+    all_layers = {gs.id: gs for gs in all_slots}
+
+    # Equipped items with their gear slot and type base info
+    stmt = (
+        select(PlayerInventory, InventoryItem, GearSlot, ItemTypeBase, ArmorClass)
+        .join(InventoryItem, PlayerInventory.item_id == InventoryItem.id)
+        .join(GearSlot, InventoryItem.gear_slot_id == GearSlot.id)
+        .join(ItemTypeBase, InventoryItem.item_code == ItemTypeBase.code, isouter=True)
+        .join(ArmorClass, ItemTypeBase.armor_class_id == ArmorClass.id, isouter=True)
+        .where(PlayerInventory.character_id == character.id)
+        .where(PlayerInventory.is_equipped == True)  # noqa: E712
+        .where(GearSlot.paperdoll_layer != None)  # noqa: E711
+    )
+    rows = session.exec(stmt).all()
+
+    equipped_slot_ids: set[int] = set()
+    equipped_layers = []
+    for pi, item, gear_slot, type_base, armor_class in rows:
+        equipped_slot_ids.add(gear_slot.id)
+        layer_entry: dict = {
+            "layer": gear_slot.paperdoll_layer,
+            "slot": gear_slot.name,
+            "sprite_key": item.sprite_key,
+        }
+        if armor_class:
+            ac_dict: dict = {"code": armor_class.code, "overlay_opacity": armor_class.overlay_opacity}
+            if armor_class.texture_pattern and armor_class.texture_pattern != "solid":
+                ac_dict["texture_pattern"] = armor_class.texture_pattern
+            if armor_class.glow_intensity:
+                ac_dict["glow_intensity"] = armor_class.glow_intensity
+            layer_entry["armor_class"] = ac_dict
+        if type_base and type_base.player_attack_animation:
+            layer_entry["player_attack_animation"] = type_base.player_attack_animation
+        equipped_layers.append(layer_entry)
+
+    # Sort by layer number
+    equipped_layers.sort(key=lambda e: e["layer"])
+
+    # Unequipped layers
+    unequipped_layers = sorted(
+        gs.paperdoll_layer for gs_id, gs in all_layers.items()
+        if gs_id not in equipped_slot_ids
+    )
+
+    return {
+        "character_id": character.id,
+        "level": character.level,
+        "aura_tier": _aura_tier(character.level),
+        "equipped_layers": equipped_layers,
+        "unequipped_layers": unequipped_layers,
+    }

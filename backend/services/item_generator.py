@@ -12,6 +12,7 @@ from models.inventory import (
     GearSlot, ItemPrefix, ItemQuality, ItemLoreTag,
     ItemTypeBase, ItemSuffix, InventoryItem, PlayerInventory,
 )
+from models.visual import ArmorClass
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,11 @@ def generate_dream_item(
         raise ValueError(f"No item types defined for gear slot {slot.name}")
     item_type = random.choice(item_types)
 
+    # Step 3b: Armor class lookup
+    armor_class = None
+    if item_type.armor_class_id:
+        armor_class = session.get(ArmorClass, item_type.armor_class_id)
+
     # Step 4: Name components
     prefixes = session.exec(select(ItemPrefix)).all()
     qualities = session.exec(select(ItemQuality)).all()
@@ -156,6 +162,12 @@ def generate_dream_item(
     item_code = f"{prefix.code}_{quality.code}_{lore_tag.code}_{item_type.code}_{suffix.code}"
     display_name = f"{prefix.display_name} {quality.display_name} {lore_tag.display_name} {item_type.display_name} of {suffix.display_name}"
 
+    # Step 8b: Derive sprite_key from armor_class + gear_slot + rarity
+    if armor_class:
+        sprite_key = f"{armor_class.code}_{slot.name}_{rarity}"
+    else:
+        sprite_key = None  # stat-only, no visual
+
     now = datetime.now(timezone.utc)
     item = InventoryItem(
         name=display_name,
@@ -168,6 +180,7 @@ def generate_dream_item(
         min_char_level=min_char_level,
         stat_requirements=stat_requirements,
         gear_slot_id=slot.id,
+        sprite_key=sprite_key,
         is_dream_item=True,
         acquired_from="dream_drop",
         created_at=now,
