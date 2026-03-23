@@ -494,7 +494,85 @@ Phase 5: Content & Polish (independent)
 
 Phase 6: Verification
   20. scan_content_gaps.py          — audit all tables for remaining gaps
+
+Phase 7: User Acceptance Testing (AI Agent Driven)
+  21. DB backup (snapshot before UAT)
+  22. AI agent smoke test — 5 items per generator, sequence-aware
+  23. Entity family full classification (subagents)
+  24. Uniqueness + lore-appropriateness validation
+  25. Visual review of generated assets/animations
+  26. Generate GENERATOR_INSTRUCTIONS.md + GENERATOR_AI_RULES.md
 ```
+
+---
+
+## 5.1 User Acceptance Testing (Phase 7)
+
+### Goal
+Prove the generators work end-to-end by having an AI agent use the tools to populate missing assets, then verify the results visually and structurally.
+
+### Step 1: DB Backup
+Before any UAT work, take a full DB snapshot so the system can be recovered if anything goes wrong.
+```bash
+python tools/db_dump_restore.py dump --tag pre-uat-2026-03-23
+```
+
+### Step 2: AI Agent Smoke Test (5 Items Per Generator)
+An AI agent (Claude/Gemini) calls each generator in the correct phase sequence, generating **5 items** per generator to validate the full pipeline:
+
+```
+Phase 2 first: assign_atmospheres → seed_entity_families → generate_entity_gameplay → capture_difficulty_preset
+Phase 3 next:  generate_entity_sprites → generate_item_sprites → generate_projectile_sprites → populate_attack_visuals → generate_backgrounds
+Phase 4 next:  generate_scene_data
+Phase 5 next:  generate_lore_content → generate_boss_lore → generate_achievement_icons → generate_artifact_icons → generate_extended_music
+Phase 6 last:  scan_content_gaps
+```
+
+Each generator is called with `--ai --batch-size 5` (or `--id <specific_id>` for 5 individual items). The agent validates that:
+- Each call returns successfully (exit code 0)
+- Generated records pass `validate` command
+- Records are inserted into the DB
+
+### Step 3: Entity Family Full Classification
+Entity families require **complete** classification (not just 5 samples) since downstream generators depend on family assignments. The agent spawns **parallel subagents** — one per entity_type — to classify all ~3,936 entities into the 10 family taxonomies. Each subagent handles one entity_type batch, calls the seeder with `--ai`, and reports results.
+
+### Step 4: Uniqueness + Lore Appropriateness Validation
+For the 5 generated items per generator, the agent must verify:
+- **Uniqueness:** No two generated items have identical visual configs (colors, silhouettes, sprites). Each generation must be distinct.
+- **Lore match:** Query the DB for entity descriptions, chapter lore context, and atmosphere data. Verify generated assets align with the source material (e.g., a "Shadow Wraith" from a dark chapter should NOT have bright yellow colors).
+- **FK integrity:** All foreign key references resolve to valid lookup table entries.
+- **Schema compliance:** All NOT NULL constraints and type constraints satisfied.
+
+### Step 5: Visual Review
+After all generators complete, the agent:
+- Queries the DB for the 5 generated entities' visual configs
+- Renders a preview using the shared renderers (EntityRenderer, PaperDollRenderer, AttackRenderer)
+- Takes screenshots or generates a summary report showing:
+  - Entity sprites with silhouettes, colors, animations
+  - Paper doll equipment renders per armor class
+  - Projectile/attack animations
+  - Background parallax layers
+- Presents results for human review
+
+### Step 6: Generate Documentation
+Two docs are generated as the final deliverable:
+
+#### `docs/inst/GENERATOR_INSTRUCTIONS.md`
+For human AND AI consumption. Contains:
+- Setup instructions (AI CLI config, DB connection, dependencies)
+- Generator-by-generator usage guide (status → generate → validate → export)
+- Execution order (phase dependencies)
+- Troubleshooting (common errors, recovery, cache management)
+- Examples for each generator
+
+#### `docs/inst/GENERATOR_AI_RULES.md`
+An AI-agent-ready prompt document that:
+- Contains a complete prompt an AI agent can follow to populate ALL missing assets in the system
+- Specifies the phase sequence, subagent dispatch strategy, and validation checks
+- Includes the DB queries needed to verify completeness
+- Defines success criteria: `scan_content_gaps.py` returns 0 gaps
+- Includes test result validation (every generator's `validate` passes)
+- Documents subagent spawning patterns (parallel by entity_type for families, parallel by phase for independent generators)
 
 ---
 
@@ -570,7 +648,8 @@ Follow the phase order in Section 5. Each phase depends on the previous. Within 
 - `tools/generate_narrative_pngs.py` (§19 — deferred)
 - `tools/sync_mapping_editor.py` (§20 — deferred)
 - `tools/.env.example` — template for AI provider config
-- `docs/inst/GENERATOR_GUIDE.md` — setup + execution order guide
+- `docs/inst/GENERATOR_INSTRUCTIONS.md` — setup + execution order + usage guide (human + AI)
+- `docs/inst/GENERATOR_AI_RULES.md` — AI agent prompt for full asset population pipeline
 
 ### Modified Files
 - `docs/recs/C_STORY_ASSET_GENERATORS.md` — already updated with consolidated generator list
