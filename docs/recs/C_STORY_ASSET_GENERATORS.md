@@ -122,7 +122,7 @@ Generates procedural `asset_registry` entries for entity rendering based on silh
 
 ### Generation Strategy
 - **AI mode:** Generate unique SVG silhouette paths per entity, with lore-appropriate detail. More organic shapes for beasts, geometric for constructs, ethereal for spirits.
-- **Python fallback:** Template silhouettes per `silhouette_type` (6 base shapes), colored with entity's primary/secondary/glow colors, scaled by `size_class`.
+- **Python fallback:** Template silhouettes per `silhouette_type` (6 base shapes), colored with entity's primary/secondary colors, scaled by `size_class`.
 
 ### Requirements
 - [ ] **3.1** Template silhouette SVG paths for all 6 silhouette_types
