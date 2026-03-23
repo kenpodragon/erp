@@ -67,6 +67,17 @@ class EntityGameplayData(SQLModel, table=True):
     unique_boss_theme_id: Optional[int] = Field(default=None, foreign_key="atmospheres.id")
     death_sfx_key: Optional[str] = Field(default=None, max_length=100)
 
+    # Visual / combat classification columns
+    movement_type_id: Optional[int] = Field(default=None, foreign_key="movement_types.id")
+    size_class_id: Optional[int] = Field(default=None, foreign_key="size_classes.id")
+    animation_style_id: Optional[int] = Field(default=None, foreign_key="animation_styles.id")
+    silhouette_type_id: Optional[int] = Field(default=None, foreign_key="silhouette_types.id")
+    color_primary: Optional[str] = None
+    color_secondary: Optional[str] = None
+    primary_attack_type_id: Optional[int] = Field(default=None, foreign_key="attack_types.id")
+    secondary_attack_type_id: Optional[int] = Field(default=None, foreign_key="attack_types.id")
+    tertiary_attack_type_id: Optional[int] = Field(default=None, foreign_key="attack_types.id")
+
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

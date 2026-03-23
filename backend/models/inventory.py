@@ -16,6 +16,7 @@ class GearSlot(SQLModel, table=True):
     display_name: str = Field(max_length=100, nullable=False)
     description: Optional[str] = Field(default=None)
     sort_order: int = Field(default=0)
+    paperdoll_layer: Optional[int] = None
     created_at: Optional[datetime] = Field(default=None)
 
 
@@ -64,6 +65,12 @@ class ItemTypeBase(SQLModel, table=True):
     gear_slot_id: int = Field(foreign_key="gear_slots.id", nullable=False)
     base_stat_range: Optional[Any] = Field(default=None, sa_column=Column(JSON))
     lore_reference: Optional[str] = Field(default=None)
+
+    # Visual / combat columns
+    armor_class_id: Optional[int] = Field(default=None, foreign_key="armor_classes.id")
+    player_attack_animation: Optional[str] = None
+    player_projectile_key: Optional[str] = None
+
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 

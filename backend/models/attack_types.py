@@ -19,6 +19,19 @@ class AttackType(SQLModel, table=True):
     lore_reference: Optional[str] = Field(default=None)
     visual_behavior_id: Optional[int] = Field(default=None, foreign_key="visual_behaviors.id")
     stat_multipliers: Optional[dict] = Field(default=None, sa_column=Column(JSONB))
+
+    # Visual / animation columns
+    attack_animation_type: str = Field(default="melee_swing")
+    projectile_sprite_key: Optional[str] = None
+    projectile_speed: float = Field(default=3.0)
+    projectile_color: Optional[str] = None
+    impact_effect: str = Field(default="flash")
+    attack_range: float = Field(default=30.0)
+    cooldown_ms: int = Field(default=2000)
+    arc_angle: float = Field(default=90.0)
+    trail_type: Optional[str] = None
+    screen_shake: bool = Field(default=False)
+
     created_at: Optional[datetime] = Field(default=None)
     updated_at: Optional[datetime] = Field(default=None)
 
