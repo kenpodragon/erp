@@ -21,6 +21,36 @@ The ERP database has ~70 tables, many with significant data gaps. Key tables lik
 | Module separation | 3 separate modules (AI, DB, BaseGenerator) | Each focused on one concern, clean dependency graph |
 | Config | Centralized `tools/.env` + `tools/lib/ai_provider.py` | One place, one config for AI provider routing across all generators |
 
+### Section Numbering Map (Spec ↔ RECS C_STORY_ASSET_GENERATORS.md)
+
+| Spec § | RECS § | Generator |
+|--------|--------|-----------|
+| §1 | §1 | Entity Gameplay Data |
+| §2 | §2 | Entity Family Seeder |
+| §3 | §3 | Entity Sprites |
+| §4 | §4 | Item Sprites |
+| §5 | §5 | Projectile Sprites |
+| §6 | §6 | Background Parallax |
+| §7 | — | Scene Generator (NEW — not in RECS) |
+| §8 | — | Atmosphere Assignment (NEW — standalone one-shots) |
+| §9 | — | Attack Type Visual Population (NEW — 13 rows) |
+| §10 | — | Achievement Icon Generator (NEW) |
+| §11 | — | Curated Artifact Icon Generator (NEW) |
+| §12 | — | Difficulty Preset Capture (NEW) |
+| §13 | §7.3 | Extended Music Loops |
+| §14 | §10 | Lore-to-Content |
+| §15 | §11 | Boss Transition Lore Text |
+| §16 | §12 | Cosmetic Assets |
+| §17 | §13 | Content Scanner |
+| §18 | §14 | Content Import |
+| §19 | §8 | PNG Text Generator (deferred) |
+| §20 | §9 | Sync Mapping Editor (deferred) |
+
+> **Note:** §7-§12 are new generators identified during the DB deep dive (2026-03-23) that are not yet in the RECS doc. The RECS doc should be updated to include these after spec approval.
+
+### CLI Design Note
+The RECS doc defines `generate <id>`, `generate-bulk`, `insert <id>`, `insert-bulk` as separate commands. This spec simplifies to: `generate` (all missing, auto-inserts by default), `generate --id <N>` (single), `generate --no-insert` (cache only, no DB write), `insert` (insert from cache). This is a deliberate simplification — the RECS doc CLI section should be updated to match after implementation.
+
 ## 3. Framework Architecture
 
 ### 3.1 Module Layout
@@ -132,20 +162,21 @@ python tools/<generator>.py <command> [options]
 
 Commands:
   status              Show populated vs missing counts
-  generate            Generate all missing (AI or Python fallback)
+  generate            Generate + validate + cache + insert all missing
   generate --id <N>   Generate for single entity/item
-  preview             Show what would be generated (dry run)
-  insert              Insert all cached generated data
-  validate            Validate generated data against schema
-  export              Export as SQL migration file
+  insert              Insert from cached generated data (for --no-insert recovery)
+  validate            Validate cached data against schema constraints
+  export              Export cached/generated data as SQL migration file
 
 Options:
   --ai                Use AI-enhanced generation
   --ai-provider X     Override provider (claude|gemini)
   --parallel N        Concurrent workers (default: 1)
+  --no-insert         Generate and cache only, skip DB insertion
   --resume            Resume from last checkpoint
   --retry-errors      Retry only previously failed batches
   --batch-size N      Items per AI call (default: per-generator)
+  --estimate          Print expected AI call count and batch breakdown, then exit
   --format json|sql   Export format (default: sql)
 ```
 
@@ -182,13 +213,18 @@ class BaseGenerator(ABC):
 ```
 
 **Orchestration Flow:**
+
+> `generate` = generate + cache + insert by default. Use `--no-insert` to cache only.
+> Entry point: `asyncio.run(main())` — async for AI subprocess calls, sync fallback for Python mode.
+
 ```
 1. Parse CLI args
-2. Init DBClient + AIProvider
+2. Init DBClient + AIProvider (AIProvider only if --ai)
 3. Load context (lookup tables, etc.)
-4. get_missing_items() → list of items to generate
-5. Group items by get_group_key()
-6. For each group:
+4. If --estimate: print batch/call count breakdown, exit
+5. get_missing_items() → list of items to generate
+6. Group items by get_group_key()
+7. For each group:
    a. Split into batches of batch_size
    b. For each batch:
       - If --ai: call ai_provider.generate_batch(batch, build_prompt)
@@ -196,10 +232,12 @@ class BaseGenerator(ABC):
       - Validate each record
       - Write to cache file (tools/.cache/<name>/batch_NNN.json)
       - Update manifest (status: "generated")
-   c. Insert batch into DB (per-batch transaction)
-   d. Update manifest (status: "inserted")
-7. Print summary (generated, inserted, failed, skipped)
+   c. Unless --no-insert: Insert batch into DB (per-batch transaction)
+   d. Update manifest (status: "inserted" or "cached")
+8. Print summary (generated, inserted, failed, skipped)
 ```
+
+**Idempotency:** `get_missing_items()` returns only rows with NULL required fields, so re-running a generator skips already-populated rows. For generators that UPDATE existing rows (§9 attack visuals), idempotency is achieved by overwriting with the same deterministic output — updates are safe to re-run.
 
 ### 3.5 `cache.py` — File-Based Recovery
 
@@ -254,7 +292,7 @@ class BaseGenerator(ABC):
 - **Target:** `entity_gameplay_data` — 3,936 entities
 - **Group key:** `entity_type` (creature, manifestation, spirit, humanoid, beast, etc.)
 - **Batch size:** 30-50
-- **Fields:** movement_type_id, size_class_id, animation_style_id, silhouette_type_id, color_primary, color_secondary, glow_color, primary/secondary/tertiary_attack_type_id, sprite_key, death_sfx_key
+- **Fields:** movement_type_id, size_class_id, animation_style_id, silhouette_type_id, color_primary, color_secondary, primary/secondary/tertiary_attack_type_id, sprite_key, death_sfx_key
 - **AI prompt:** Entity name + description + entity_type + chapter context → AI infers visual traits, colors matching lore, attack types matching creature behavior
 - **Python fallback:** Type-based defaults:
   - creature → ground/stalk/quadruped/medium, chapter mood earth tones
@@ -268,7 +306,7 @@ class BaseGenerator(ABC):
 
 #### §2 Entity Family Seeder
 - **Script:** `tools/seed_entity_families.py`
-- **Target:** `entity_families` table (seed ~10 rows) + `entity_gameplay_data.family_id` (assign ~3,936)
+- **Target:** `entity_families` table (seed ~10 rows) + `entities.entity_family_id` (assign ~3,936)
 - **Two phases:** 1) Seed canonical families (deterministic), 2) Classify entities into families
 - **Group key:** `entity_type`
 - **Batch size:** 50
@@ -288,11 +326,13 @@ class BaseGenerator(ABC):
 - **Target:** `difficulty_presets` table
 - **No AI needed** — pure data capture
 - **Steps:**
-  1. Read all 151 `game_configs` rows from live DB → snapshot as JSONB
-  2. Read `DEFAULT_CONFIGS` from `tools/sim/config.py` → snapshot as "Original" preset
-  3. Read balanced values (post-migration 062) → snapshot as "Balanced" preset, `is_active = true`
-  4. Link to existing `difficulty_curves` row (id=1)
-  5. Export as seed SQL for initial migration data
+  1. Read all 151 `game_configs` rows from live DB → snapshot as JSONB into `config_snapshot`
+  2. Read `DEFAULT_CONFIGS` from `tools/sim/config.py` (imported as Python dict) → snapshot as "Original" preset
+  3. Read current live DB values (which include migration 062 balanced changes: `char_level_xp_factor=80`, `upgrade_cost_scaling=1.03`, etc.) → snapshot as "Balanced" preset, `is_active = true`
+  4. Link to existing `difficulty_curves` row (id=1) via `difficulty_curve_id`
+  5. Set `wave_preset_id = NULL` for now (wave presets are not yet populated; will be linked when scene wave configs are generated in §7)
+  6. Export as seed SQL for initial migration data
+- **Source of balanced values:** Read directly from live `game_configs` table (post-migration 062 application). Do NOT parse the SQL file — the DB is the source of truth.
 - **Investigation during implementation:** Verify frontend reads `difficulty_presets` or just `game_configs` directly. If only `game_configs`, may need admin endpoint: `POST /admin/difficulty/apply/{preset_id}` → copies config_snapshot into game_configs.
 
 ### Phase 3: Visual Assets

@@ -66,7 +66,7 @@ Populates `entity_gameplay_data` for all ~3,936 entities with visual and combat 
 - `size_class_id` → FK to `size_classes` (tiny, small, medium, large, huge)
 - `animation_style_id` → FK to `animation_styles` (ooze, stalk, pulse, aggro, flap, swarm, slither)
 - `silhouette_type_id` → FK to `silhouette_types` (blob, quadruped, biped, orb, winged, cluster)
-- `primary_color`, `secondary_color`, `glow_color` → hex color strings
+- `color_primary`, `color_secondary` → hex color strings
 - `primary_attack_type_id`, `secondary_attack_type_id`, `tertiary_attack_type_id` → FK to `attack_types`
 - `sprite_key` → generated asset_registry key (see §4)
 
@@ -90,7 +90,7 @@ Populates `entity_gameplay_data` for all ~3,936 entities with visual and combat 
 **Status:** Not built (classifier exists: `tools/classify_entity_families.py`)
 **Priority:** HIGH — needed for entity grouping and visual consistency
 
-Populates `entity_families` table and assigns `family_id` to entities.
+Populates `entity_families` table and assigns `entity_family_id` on the `entities` table.
 
 ### Families
 wraiths, demons, beasts, elementals, undead, constructs, humanoids, celestials, aberrations, plants
@@ -102,7 +102,7 @@ wraiths, demons, beasts, elementals, undead, constructs, humanoids, celestials, 
 ### Requirements
 - [ ] **2.1** Seed `entity_families` table with canonical family entries
 - [ ] **2.2** Classify all entities into families (AI-assisted or type-based)
-- [ ] **2.3** Bulk update `entity_gameplay_data.family_id`
+- [ ] **2.3** Bulk update `entities.entity_family_id`
 - [ ] **2.4** Validation — no orphan entities without family assignment
 
 ---
