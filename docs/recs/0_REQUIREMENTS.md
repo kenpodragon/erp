@@ -349,19 +349,29 @@ The primary goal of ERP is to provide an immersive environment where players **r
 - [x] **Duplicate Analysis:** Identify potential duplicates using `check_duplicates.py`.
 - [x] **Automated Consolidation:** Safely merge duplicate records and re-map foreign keys.
 
-## C. Story Mode Asset Generators
-- [ ] Work on the outstanding C requirements (generators) and flesh out with any other generators that might be needed from across the application (sanity check for C generators to be built next).
-- [ ] Identify any and all missing assets, stat blocks, and other components in the DB that need to be updated (including sprites, backgrounds, music, etc...).
-- [ ] Ensure there is a generator below that will enable those components to be created. 
-- [ ] Ensure there is documentation and useage guides for all generators (including A, B and the C below).
-**Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md)
-- [x] **8 Bit Music Generator:** Completed in REC 2.5 (`tools/generate_8bit_music.py`)
-- [x] **Sound Effect Generator:** Completed in REC 2.5 (`tools/generate_8bit_sfx.py`)
-- [ ] **Banner Animation System:** PixiJS rendering integration consuming `visual_behaviors.animation_config` from 5.3, per-behavior animation state machines, animation sprite sheets per visual behavior. *(Deferred — depends on 5.3 data model + Asset Registry 5.7)*
-- [ ] **Background image generator:** Lots more for all the different books
-- [ ] **DB Populator:** Update DB With lore specific information and stat blocks for entities
-- [ ] **Sprite generator:** Need to generate sprites for all items, entities, different classes, avatars, spell icons, etc...
-- [ ] Visual achievement badge icons on leaderboard rank card. *(Deferred — requires achievement icon assets)* From 2.7
+## C. Game Asset Generators & Population Pipeline
+**Full Requirements:** [C_STORY_ASSET_GENERATORS.md](C_STORY_ASSET_GENERATORS.md) — 14 generators with shared AI-assisted architecture (Claude/Gemini CLI + Python fallback), parallel execution, consistent CLI interface.
+- [x] **§7.1 8-Bit Music Generator:** `tools/generate_8bit_music.py` — 21 atmospheres
+- [x] **§7.2 8-Bit SFX Generator:** `tools/generate_8bit_sfx.py` — 17 SFX presets
+- [x] **Atmosphere Classifier:** `tools/classify_atmospheres.py`
+- [x] **Entity Family Classifier:** `tools/classify_entity_families.py`
+- [ ] **§1 Entity Gameplay Data Generator** — populate 3,936 entities with visual FKs, colors, attack slots *(HIGH — blocks sprites)*
+- [ ] **§2 Entity Family Seeder** — populate entity_families, assign family_id to entities *(HIGH)*
+- [ ] **§3 Entity Sprite Generator** — procedural asset_registry entries from silhouette + colors + size *(HIGH — blocks visual verification)*
+- [ ] **§4 Item Sprite Generator** — paper doll layers, weapon sprites, inventory icons *(HIGH)*
+- [ ] **§5 Projectile Sprite Generator** — projectile + trail + impact per attack_type *(MEDIUM)*
+- [ ] **§6 Background Parallax Generator** — layered backgrounds per chapter *(MEDIUM)*
+- [ ] **§7.3 Extended Music Loops** — extend current 8-bit loops to 2-3 minutes *(MEDIUM)*
+- [ ] **§8 PNG Text Generator** — copy-protected narrative images *(LOW — deferred)*
+- [ ] **§9 Sync Mapping Editor** — audio-to-text timestamp mapping *(LOW — deferred)*
+- [ ] **§10 Lore-to-Content AI Generator** — fill hollow DB records with descriptions, stats, categorization *(HIGH)*
+- [ ] **§11 Boss Transition Lore Text** — NarrativeReveal cinematic text *(MEDIUM)*
+- [ ] **§12 Cosmetic Asset Generators** — skins, badges, flair, avatars for Emporium *(LOW — deferred)*
+- [ ] **§13 Proactive Content Scanner** — DB gap detection → dev_content_audit *(MEDIUM)*
+- [ ] **§14 Content Import & Book Loader** — new book ingestion pipeline *(LOW)*
+- [ ] **Banner Animation System:** PixiJS rendering integration consuming `visual_behaviors.animation_config` from 5.3 *(Deferred — depends on 5.3 data model + Asset Registry 5.7)*
+- [ ] Visual achievement badge icons on leaderboard rank card *(Deferred — requires achievement icon assets)* From 2.7
+- [ ] Documentation and usage guides for all generators (A, B, C)
 
 ## D. System usage instructions
 - [ ] Review the set up guides and instructions.
