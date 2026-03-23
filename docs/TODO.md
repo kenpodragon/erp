@@ -6,7 +6,7 @@
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
 Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
-Next priority: apply migrations 064-068, run entity gameplay data generator, sprite generators, visual verification.
+Next priority: entity gameplay data generator, sprite generators, visual verification.
 Spec: docs/superpowers/specs/2026-03-22-banner-visual-system-design.md
 Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
 ```
@@ -14,12 +14,6 @@ Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
 ---
 
 ## Banner Visual System — Phase 7 (Generators + Finalization)
-
-### Apply Migrations
-- [ ] Apply migrations 064-068 to dev DB (psql using backend/.env connection)
-- [ ] Verify all 5 lookup tables + seed data present
-- [ ] Verify entity_gameplay_data has new nullable columns
-- [ ] Verify attack_types has new visual columns
 
 ### Entity Data Population
 - [ ] **Entity gameplay data generator** (`tools/generate_entity_gameplay.py`) — populate all 3,936 entities with movement_type_id, size_class_id, animation_style_id, silhouette_type_id, colors, attack type slots. AI-assisted inference from entity descriptions.

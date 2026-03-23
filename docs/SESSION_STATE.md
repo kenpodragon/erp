@@ -21,7 +21,7 @@
 
 ## Database State
 
-- **Migrations:** 001-068 (064-068 written, not yet applied to dev DB)
+- **Migrations:** 001-068 applied to dev DB
 - **Next available migration:** 069
 - **Key recent migrations:**
   - 064: Visual lookup tables (movement_types, size_classes, animation_styles, silhouette_types, armor_classes) + seed data
