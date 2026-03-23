@@ -1,30 +1,55 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
-import { Container, Graphics, Text, TextStyle, TilingSprite, Texture, Sprite, ColorMatrixFilter } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle, TilingSprite, Texture, Sprite } from 'pixi.js';
 import './BottomAnimatedBanner.css';
 import BannerBackground from './BannerBackground';
 import { useGame } from '../GameContext';
 import { api } from '../../api';
-import { useAssets } from '../providers/AssetProvider';
-import { assetRenderer } from '../renderers/AssetRenderer';
+import EntityRenderer, { EnemyVisualData } from './shared/EntityRenderer';
+import PaperDollRenderer, { CharacterVisualData } from './shared/PaperDollRenderer';
+import AttackRenderer, { AttackVisualData } from './shared/AttackRenderer';
 
 // Register Pixi elements for use in React JSX
 extend({ Container, Graphics, Text, TilingSprite, Sprite });
 
-interface BannerEntity {
+// ── Banner config defaults (overridden by game_configs from DB) ─────
+
+interface BannerConfigs {
+  banner_base_enemies: number;
+  banner_max_enemies: number;
+  banner_enemies_per_level: number;
+  banner_death_base_rate: number;
+  banner_death_reduction_per_level: number;
+  banner_death_floor: number;
+  banner_kill_speed_base_ms: number;
+  banner_kill_speed_min_ms: number;
+  banner_spawn_rate_base: number;
+  banner_spawn_rate_combat: number;
+}
+
+const DEFAULT_BANNER_CONFIGS: BannerConfigs = {
+  banner_base_enemies: 1,
+  banner_max_enemies: 15,
+  banner_enemies_per_level: 0.15,
+  banner_death_base_rate: 0.03,
+  banner_death_reduction_per_level: 0.0003,
+  banner_death_floor: 0.002,
+  banner_kill_speed_base_ms: 3000,
+  banner_kill_speed_min_ms: 200,
+  banner_spawn_rate_base: 0.05,
+  banner_spawn_rate_combat: 0.01,
+};
+
+// ── Banner enemy state ──────────────────────────────────────────────
+
+interface BannerEnemy {
   id: string;
-  type: 'player' | 'enemy';
+  visual: EnemyVisualData;
   x: number;
   y: number;
   hp: number;
   maxHp: number;
-  stats: any;
-  spriteKey: string;
-  name: string;
-  isDead: boolean;
-  hueShift?: number;
-  level?: number;
-  scaleVariation?: number;
+  state: 'idle' | 'attacking' | 'dying' | 'dead';
 }
 
 interface DamageNumber {
@@ -36,97 +61,20 @@ interface DamageNumber {
   alpha: number;
 }
 
-/**
- * Inner component for the layered player character (Paper-doll)
- */
-const PlayerPaperDoll: React.FC<{ 
-  player: BannerEntity, 
-  textures: Record<string, Texture>,
-  visualScale: number,
-  time: number,
-  speedMult: number
-}> = ({ player, textures, visualScale, time, speedMult }) => {
-  
-  // Growth Scaling: Visual indicators for Level 1-99 benchmarks
-  const level = player.level || 1;
-  const growthScale = 1.0 + (level / 200);
-  const finalScale = visualScale * growthScale;
+// ── Player state ────────────────────────────────────────────────────
 
-  // Level-based Glow (Aura)
-  const getAuraColor = (lvl: number) => {
-    if (lvl >= 81) return 0x00ffff; // Radiant/Cosmic
-    if (lvl >= 61) return 0xffd700; // Gold
-    if (lvl >= 41) return 0xc0c0c0; // Silver
-    if (lvl >= 21) return 0xcd7f32; // Bronze
-    return null;
-  };
-  const auraColor = getAuraColor(level);
+type PlayerAnimState = 'idle' | 'walking' | 'fighting' | 'dead' | 'idle_check' | 'idle_stretch' | 'idle_shine' | 'idle_scan';
 
-  return (
-    <pixiContainer 
-      zIndex={5}
-      x={player.x} 
-      y={player.y}
-      scale={{ 
-        x: finalScale, 
-        y: player.stats.animState === 'idle_stretch' ? finalScale + Math.sin(time * 0.05) * 0.1 : finalScale 
-      }}
-      skew={{ 
-        x: player.stats.animState === 'walking' ? Math.sin(time * 0.1 * speedMult) * 0.05 : 0, 
-        y: player.stats.animState === 'walking' ? Math.cos(time * 0.1 * speedMult) * 0.02 : 0 
-      }}
-    >
-      {/* Level Aura */}
-      {auraColor !== null && (
-        <pixiGraphics
-          draw={(g) => {
-            const pulse = 0.4 + Math.abs(Math.sin(time * 0.1)) * 0.2;
-            g.clear()
-             .circle(0, -15, 20)
-             .fill({ color: auraColor, alpha: pulse });
-          }}
-        />
-      )}
-
-      {/* Layer 1: Base Body */}
-      {textures.player ? (
-        <pixiSprite texture={textures.player} anchor={{ x: 0.5, y: 1.0 }} />
-      ) : (
-        <pixiGraphics draw={g => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
-      )}
-
-      {/* Layer 2: Armor Slot (Placeholder fallback) */}
-      <pixiGraphics draw={g => {
-        g.clear();
-        // Only draw if level > 10 as a "progression" indicator
-        if (level > 10) {
-          g.rect(-8, -25, 16, 12)
-           .fill({ color: 0x555555, alpha: 0.6 });
-        }
-      }} />
-
-      {/* Layer 3: Head Slot (Placeholder fallback) */}
-      <pixiGraphics draw={g => {
-        g.clear();
-        if (level > 30) {
-          g.circle(0, -30, 6)
-           .fill({ color: 0x888888, alpha: 0.8 });
-        }
-      }} />
-
-      {/* Layer 4: Weapon Slot (Placeholder fallback) */}
-      <pixiGraphics draw={g => {
-        g.clear();
-        if (level > 5) {
-          const weaponY = -15 + Math.sin(time * 0.2) * 2;
-          g.moveTo(10, weaponY)
-           .lineTo(10, weaponY - 20)
-           .stroke({ width: 2, color: 0xaaaaaa });
-        }
-      }} />
-    </pixiContainer>
-  );
-};
+interface PlayerState {
+  x: number;
+  y: number;
+  hp: number;
+  maxHp: number;
+  isDead: boolean;
+  animState: PlayerAnimState;
+  vengeance: boolean;
+  level: number;
+}
 
 /**
  * Inner content component to access Pixi hooks like useTick
@@ -135,105 +83,93 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   const { state } = useGame();
   const width = window.innerWidth;
   const height = 150;
-  const groundY = 75; 
+  const groundY = 75;
 
-  // 5.7.3: Preload asset definitions from registry
-  let assets: ReturnType<typeof useAssets> | null = null;
-  try { assets = useAssets(); } catch { /* AssetProvider not mounted — skip */ }
+  // ── Data fetching ─────────────────────────────────────────────────
+  const [enemyPool, setEnemyPool] = useState<EnemyVisualData[]>([]);
+  const [charVisuals, setCharVisuals] = useState<CharacterVisualData | null>(null);
+  const [bannerConfigs, setBannerConfigs] = useState<BannerConfigs>(DEFAULT_BANNER_CONFIGS);
 
-  // ── Asset Loading & Enemy Pool ──────────────────────────────────
-  const [textures, setTextures] = useState<Record<string, Texture>>({});
-  const [enemyPool, setEnemyPool] = useState<any[]>([]);
-
-  // 5.7.3: Preload enemy + player sprite keys from asset registry
   useEffect(() => {
-    if (!assets) return;
-    const keys = [
-      'class_vessel',
-      ...enemyPool
-        .map((e: any) => e.gameplay_data?.sprite_key)
-        .filter((k: any): k is string => !!k),
-    ];
-    if (keys.length > 0) {
-      assets.preloadBatch(keys);
-    }
-  }, [enemyPool, assets]);
-
-  // Build textures from procedural asset registry renderings
-  useEffect(() => {
-    const buildTextures = () => {
-      const loaded: Record<string, Texture> = {};
-
-      // Player sprite from asset registry
-      if (assets) {
-        const playerResult = assets.renderAssetWithFallback('class_vessel', 'class_sprite');
-        if (playerResult?.canvas) {
-          loaded.player = Texture.from(playerResult.canvas);
-        }
-      }
-
-      // Enemy sprites — try registry, fall back to procedural
-      const enemyKeys = ['enemy_sludge', 'enemy_voidling', 'enemy_guardian', 'enemy_remnant'];
-      for (const key of enemyKeys) {
-        if (assets) {
-          const result = assets.renderAssetWithFallback(key, 'entity_sprite');
-          if (result?.canvas) {
-            loaded[key] = Texture.from(result.canvas);
-          }
-        }
-      }
-
-      // Also render textures for any enemy pool sprite keys
-      if (assets && enemyPool.length > 0) {
-        for (const enemy of enemyPool) {
-          const spriteKey = enemy.gameplay_data?.sprite_key;
-          if (spriteKey && !loaded[spriteKey]) {
-            const result = assets.renderAssetWithFallback(spriteKey, 'entity_sprite');
-            if (result?.canvas) {
-              loaded[spriteKey] = Texture.from(result.canvas);
-            }
-          }
-        }
-      }
-
-      setTextures(loaded);
-    };
-
-    const fetchPool = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/api/game/enemies/encountered');
-        if (res.ok) setEnemyPool(await res.json());
+        // Fetch encountered enemies with full visual data
+        const enemyRes = await api.get('/api/game/enemies/encountered');
+        if (enemyRes.ok) {
+          const data = await enemyRes.json();
+          setEnemyPool(data);
+        }
       } catch (err) {
         console.error('Banner: Failed to fetch enemy pool', err);
       }
+
+      try {
+        // Fetch character visual data for PaperDollRenderer
+        const charRes = await api.get('/api/game/character/visuals');
+        if (charRes.ok) {
+          setCharVisuals(await charRes.json());
+        }
+      } catch (err) {
+        console.error('Banner: Failed to fetch character visuals', err);
+      }
+
+      try {
+        // Fetch game configs for adaptive scaling
+        const configRes = await api.get('/api/game/story/configs');
+        if (configRes.ok) {
+          const configs = await configRes.json();
+          setBannerConfigs({
+            banner_base_enemies: Number(configs['banner_base_enemies'] ?? DEFAULT_BANNER_CONFIGS.banner_base_enemies),
+            banner_max_enemies: Number(configs['banner_max_enemies'] ?? DEFAULT_BANNER_CONFIGS.banner_max_enemies),
+            banner_enemies_per_level: Number(configs['banner_enemies_per_level'] ?? DEFAULT_BANNER_CONFIGS.banner_enemies_per_level),
+            banner_death_base_rate: Number(configs['banner_death_base_rate'] ?? DEFAULT_BANNER_CONFIGS.banner_death_base_rate),
+            banner_death_reduction_per_level: Number(configs['banner_death_reduction_per_level'] ?? DEFAULT_BANNER_CONFIGS.banner_death_reduction_per_level),
+            banner_death_floor: Number(configs['banner_death_floor'] ?? DEFAULT_BANNER_CONFIGS.banner_death_floor),
+            banner_kill_speed_base_ms: Number(configs['banner_kill_speed_base_ms'] ?? DEFAULT_BANNER_CONFIGS.banner_kill_speed_base_ms),
+            banner_kill_speed_min_ms: Number(configs['banner_kill_speed_min_ms'] ?? DEFAULT_BANNER_CONFIGS.banner_kill_speed_min_ms),
+            banner_spawn_rate_base: Number(configs['banner_spawn_rate_base'] ?? DEFAULT_BANNER_CONFIGS.banner_spawn_rate_base),
+            banner_spawn_rate_combat: Number(configs['banner_spawn_rate_combat'] ?? DEFAULT_BANNER_CONFIGS.banner_spawn_rate_combat),
+          });
+        }
+      } catch (err) {
+        console.error('Banner: Failed to fetch game configs', err);
+      }
     };
 
-    buildTextures();
-    fetchPool();
-  }, [assets, enemyPool.length]);
+    fetchData();
+  }, []);
+
+  // ── Adaptive scaling calculations ─────────────────────────────────
+  const level = character?.level || 1;
+
+  const maxEnemies = useMemo(() =>
+    Math.min(bannerConfigs.banner_max_enemies, Math.floor(bannerConfigs.banner_base_enemies + level * bannerConfigs.banner_enemies_per_level)),
+    [bannerConfigs, level]
+  );
+
+  const deathRate = useMemo(() =>
+    Math.max(bannerConfigs.banner_death_floor, bannerConfigs.banner_death_base_rate - level * bannerConfigs.banner_death_reduction_per_level),
+    [bannerConfigs, level]
+  );
+
+  const killSpeedMs = useMemo(() =>
+    Math.max(bannerConfigs.banner_kill_speed_min_ms, bannerConfigs.banner_kill_speed_base_ms - level * 30),
+    [bannerConfigs, level]
+  );
 
   // ── Local State ───────────────────────────────────────────────────
-  const [player, setPlayer] = useState<BannerEntity & { animState: string, vengeance: boolean }>({
-    id: 'player',
-    type: 'player',
+  const [player, setPlayer] = useState<PlayerState>({
     x: 100,
     y: groundY,
     hp: 100,
     maxHp: 100,
-    stats: { 
-      strength: character?.strength || 10, 
-      agility: character?.agility || 5, 
-      intelligence: character?.intelligence || 5 
-    },
-    level: character?.level || 1,
-    spriteKey: 'player',
-    name: character?.character_name || 'PLAYER',
     isDead: false,
     animState: 'walking',
-    vengeance: false
+    vengeance: false,
+    level: level,
   });
 
-  const [enemies, setEnemies] = useState<BannerEntity[]>([]);
+  const [enemies, setEnemies] = useState<BannerEnemy[]>([]);
   const [damageNumbers, setDamageNumbers] = useState<DamageNumber[]>([]);
   const [scrollSpeed, setScrollSpeed] = useState(1);
   const [waveTimer, setWaveTimer] = useState(0);
@@ -242,16 +178,71 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
   const [focusActive, setFocusActive] = useState(false);
   const [time, setTime] = useState(0);
 
-  // Derived Multipliers
-  const visualScale = useMemo(() => 1.2 + (player.stats.strength / 200), [player.stats.strength]);
-  const speedMult = useMemo(() => 1.0 + (player.stats.agility / 50), [player.stats.agility]);
-  const vfxIntensity = useMemo(() => player.stats.intelligence / 5, [player.stats.intelligence]);
+  // Attack state
+  const [playerAttackActive, setPlayerAttackActive] = useState(false);
+  const [enemyAttackActive, setEnemyAttackActive] = useState(false);
+  const attackCooldownRef = useRef(0);
+
+  // Derived stats from character
+  const strength = character?.strength || 10;
+  const agility = character?.agility || 5;
+  const intelligence = character?.intelligence || 5;
+
+  const speedMult = useMemo(() => 1.0 + (agility / 50), [agility]);
+  const vfxIntensity = useMemo(() => intelligence / 5, [intelligence]);
+
+  // Player attack visual (from equipped weapon or default)
+  const playerAttackVisual = useMemo<AttackVisualData>(() => {
+    const weaponLayer = charVisuals?.equipped_layers?.find(l => l.layer === 7);
+    const attackType = weaponLayer?.player_attack_animation || 'melee_swing';
+    return {
+      attack_animation_type: attackType as AttackVisualData['attack_animation_type'],
+      projectile_color: null,
+      impact_effect: 'flash',
+      attack_range: 40,
+      arc_angle: 90,
+    };
+  }, [charVisuals]);
+
+  // Nearest enemy attack visual (from their primary_attack data)
+  const enemyAttackVisual = useMemo<AttackVisualData>(() => {
+    const nearest = enemies.length > 0 ? enemies[0] : null;
+    if (nearest?.visual.primary_attack) {
+      return {
+        attack_animation_type: nearest.visual.primary_attack.attack_animation_type as AttackVisualData['attack_animation_type'],
+        projectile_color: nearest.visual.primary_attack.projectile_color,
+        impact_effect: nearest.visual.primary_attack.impact_effect,
+        attack_range: nearest.visual.primary_attack.attack_range,
+        arc_angle: nearest.visual.primary_attack.arc_angle,
+        trail_type: nearest.visual.primary_attack.trail_type,
+        projectile_speed: nearest.visual.primary_attack.projectile_speed,
+      };
+    }
+    return {
+      attack_animation_type: 'melee_swing',
+      projectile_color: '#ff4444',
+      impact_effect: 'flash',
+      attack_range: 30,
+      arc_angle: 60,
+    };
+  }, [enemies]);
+
+  // ── PaperDoll state mapping ───────────────────────────────────────
+  const paperDollState = useMemo((): 'idle' | 'walking' | 'fighting' | 'dead' => {
+    if (player.isDead) return 'dead';
+    if (player.animState === 'fighting') return 'fighting';
+    if (player.animState === 'walking') return 'walking';
+    return 'idle';
+  }, [player.isDead, player.animState]);
 
   // ── Physics & Combat Loop ─────────────────────────────────────────
   useTick((delta) => {
     const dt = delta.deltaTime;
     setTime(t => t + dt);
-    
+
+    // Update attack cooldown
+    attackCooldownRef.current = Math.max(0, attackCooldownRef.current - dt * 16.67);
+
     setDamageNumbers(prev => prev.map(num => ({
       ...num,
       y: num.y - (1.0 * dt),
@@ -264,11 +255,11 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
     if (player.isDead) {
       setDeathTimer(prev => prev + dt);
       setScrollSpeed(0);
-      if (deathTimer > 180) { 
+      if (deathTimer > 180) {
         setPlayer(prev => ({ ...prev, isDead: false, hp: prev.maxHp, x: 50, vengeance: true, animState: 'walking' }));
         setDeathTimer(0);
       }
-      return; 
+      return;
     }
 
     if (enemies.length > 0) {
@@ -279,29 +270,38 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       setWaveTimer(0);
       setIdleTimer(prev => prev + dt);
       setFocusActive(false);
+      setPlayerAttackActive(false);
+      setEnemyAttackActive(false);
       if (player.vengeance) setPlayer(prev => ({ ...prev, vengeance: false }));
     }
 
-    let nextAnimState = 'walking';
+    let nextAnimState: PlayerAnimState = 'walking';
     let moveX = 0;
 
     if (nearestEnemy && dist < 200) {
       nextAnimState = 'fighting';
       setScrollSpeed(0.1);
       if (dist < 60) {
-        moveX = -0.5 * dt; 
+        moveX = -0.5 * dt;
+
+        // Player takes damage based on adaptive death rate
         setPlayer(prev => {
-          const newHp = prev.hp - (0.2 * dt);
+          const newHp = prev.hp - (deathRate * dt * 10);
           if (newHp <= 0) return { ...prev, isDead: true, hp: 0, animState: 'dead' };
           return { ...prev, hp: newHp };
         });
+
+        // Trigger enemy attack animation
+        if (!enemyAttackActive && attackCooldownRef.current <= 0) {
+          setEnemyAttackActive(true);
+        }
       } else {
         moveX = (player.vengeance ? 2.5 : 0.8) * dt * speedMult;
       }
     } else if (enemies.length === 0) {
-      if (idleTimer > 180 && idleTimer < 360) { 
+      if (idleTimer > 180 && idleTimer < 360) {
         const cycle = Math.floor(idleTimer / 180) % 4;
-        const idles = ['idle_check', 'idle_stretch', 'idle_shine', 'idle_scan'];
+        const idles: PlayerAnimState[] = ['idle_check', 'idle_stretch', 'idle_shine', 'idle_scan'];
         nextAnimState = idles[cycle] || 'walking';
         setScrollSpeed(0);
         moveX = 0;
@@ -325,54 +325,65 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       y: groundY
     })).filter(en => en.x > -150));
 
-    // Wave Spawning (Using real dynamic pool)
-    if (enemies.length === 0 && Math.random() < (nextAnimState === 'walking' ? 0.05 : 0.01)) {
-      const hueShift = Math.random() * 360;
-      const scaleVar = 1.3 + Math.random() * 0.4;
-      
+    // Wave Spawning — adaptive using DB-driven configs
+    const spawnRate = nextAnimState === 'walking' ? bannerConfigs.banner_spawn_rate_base : bannerConfigs.banner_spawn_rate_combat;
+    if (enemies.length < maxEnemies && Math.random() < spawnRate) {
       if (enemyPool.length > 0) {
         const template = enemyPool[Math.floor(Math.random() * enemyPool.length)];
-        setEnemies([{
+        setEnemies(prev => [...prev, {
           id: `en_${Date.now()}`,
-          type: 'enemy',
+          visual: template,
           x: width + 50,
           y: groundY,
-          hp: template.gameplay_data?.base_hp || 50,
-          maxHp: template.gameplay_data?.base_hp || 50,
-          stats: template.gameplay_data?.stat_block || {},
-          spriteKey: template.gameplay_data?.sprite_key || 'enemy_sludge',
-          name: template.canonical_name.toUpperCase(),
-          isDead: false,
-          hueShift,
-          scaleVariation: scaleVar
+          hp: template.base_hp || 50,
+          maxHp: template.base_hp || 50,
+          state: 'idle',
         }]);
       } else {
         // Hard fallback if pool is empty
-        setEnemies([{
+        const fallbackVisual: EnemyVisualData = {
+          entity_id: Math.floor(Math.random() * 10000),
+          name: 'SLUDGE',
+          sprite_key: null,
+          base_hp: 50,
+          base_gold: 1,
+          color_primary: '#2a2a4a',
+          color_secondary: '#1a1a3a',
+          movement: null,
+          size: null,
+          animation: null,
+          silhouette: null,
+          primary_attack: null,
+          secondary_attack: null,
+          tertiary_attack: null,
+        };
+        setEnemies(prev => [...prev, {
           id: `en_fallback_${Date.now()}`,
-          type: 'enemy',
+          visual: fallbackVisual,
           x: width + 50,
           y: groundY,
           hp: 50,
           maxHp: 50,
-          stats: {},
-          spriteKey: 'enemy_sludge',
-          name: 'SLUDGE',
-          isDead: false,
-          hueShift,
-          scaleVariation: scaleVar
+          state: 'idle',
         }]);
       }
     }
 
+    // Combat — player damages nearest enemy
     if (nearestEnemy && dist < 80) {
+      // Trigger player attack animation
+      if (!playerAttackActive && attackCooldownRef.current <= 0) {
+        setPlayerAttackActive(true);
+      }
+
       setEnemies(prev => {
         if (prev.length === 0) return prev;
         const next = [...prev];
         const isCrit = Math.random() < 0.1;
-        const baseDamage = (1.0 + (player.stats.strength / 20));
+        // Kill speed drives damage: higher level = faster kills
+        const baseDamage = (next[0].maxHp / (killSpeedMs / 16.67));
         const damage = baseDamage * dt * (focusActive ? 10 : (player.vengeance ? 5 : 1)) * (isCrit ? 2 : 1);
-        
+
         if (Math.random() < 0.2) {
           setDamageNumbers(d => [...d, {
             id: `dmg_${Date.now()}_${Math.random()}`,
@@ -384,12 +395,22 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           }]);
         }
 
-        next[0].hp -= damage;
-        if (next[0].hp <= 0) return next.slice(1);
+        next[0] = { ...next[0], hp: next[0].hp - damage };
+        if (next[0].hp <= 0) {
+          next[0] = { ...next[0], state: 'dying' };
+          // Remove after brief death animation
+          setTimeout(() => {
+            setEnemies(e => e.filter(en => en.id !== next[0].id));
+          }, 600);
+          return next;
+        }
         return next;
       });
     }
   });
+
+  // Nearest enemy ref for attack rendering positions
+  const nearestEnemy = enemies.length > 0 ? enemies[0] : null;
 
   return (
     <pixiContainer sortableChildren={true}>
@@ -399,7 +420,7 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
 
       <pixiContainer zIndex={20}>
         {damageNumbers.map(num => (
-          <pixiText 
+          <pixiText
             key={num.id}
             text={num.value.toString()}
             x={num.x}
@@ -417,14 +438,22 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
       </pixiContainer>
 
       <pixiContainer zIndex={10} alpha={player.isDead ? 0.3 : 1.0} sortableChildren={true}>
-        {/* Layered Player Character */}
-        <PlayerPaperDoll 
-          player={player} 
-          textures={textures} 
-          visualScale={visualScale} 
-          time={time} 
-          speedMult={speedMult} 
-        />
+        {/* Player Character — PaperDollRenderer */}
+        {charVisuals ? (
+          <PaperDollRenderer
+            character={charVisuals}
+            x={player.x}
+            y={player.y}
+            state={paperDollState}
+            facingRight={true}
+            scale={1.2 + (strength / 200)}
+          />
+        ) : (
+          /* Fallback: simple procedural player while visuals load */
+          <pixiContainer x={player.x} y={player.y} zIndex={5}>
+            <pixiGraphics draw={g => { g.clear().circle(0, -15, 15).fill({ color: 0xdaa520 }); }} />
+          </pixiContainer>
+        )}
 
         {/* Ambient VFX on Player */}
         <pixiContainer x={player.x} y={player.y} zIndex={6}>
@@ -460,57 +489,61 @@ const BannerContent: React.FC<{ character: any }> = ({ character }) => {
           )}
         </pixiContainer>
 
-        {/* Enemies — zIndex 7 so approaching enemies render in front of player (zIndex 5) */}
+        {/* Enemies — EntityRenderer (zIndex 7 so they render in front of player) */}
         <pixiContainer zIndex={7}>
           {enemies.map(en => (
-            <EnemySprite
+            <EntityRenderer
               key={en.id}
-              enemy={en}
-              textures={textures}
-              time={time}
+              entity={en.visual}
+              x={en.x}
+              y={en.y}
+              state={en.state}
+              hp={en.hp}
+              maxHp={en.maxHp}
+              showHpBar={true}
+              showName={false}
             />
           ))}
+        </pixiContainer>
+
+        {/* Attack Animations */}
+        <pixiContainer zIndex={15}>
+          {/* Player attack */}
+          {nearestEnemy && (
+            <AttackRenderer
+              attack={playerAttackVisual}
+              sourceX={player.x}
+              sourceY={player.y - 15}
+              targetX={nearestEnemy.x}
+              targetY={nearestEnemy.y - 15}
+              active={playerAttackActive}
+              onComplete={() => {
+                setPlayerAttackActive(false);
+                attackCooldownRef.current = 500;
+              }}
+            />
+          )}
+
+          {/* Enemy attack */}
+          {nearestEnemy && (
+            <AttackRenderer
+              attack={enemyAttackVisual}
+              sourceX={nearestEnemy.x}
+              sourceY={nearestEnemy.y - 15}
+              targetX={player.x}
+              targetY={player.y - 15}
+              active={enemyAttackActive}
+              onComplete={() => {
+                setEnemyAttackActive(false);
+                attackCooldownRef.current = 300;
+              }}
+            />
+          )}
         </pixiContainer>
       </pixiContainer>
 
     </pixiContainer>
 
-  );
-};
-
-/**
- * Procedural Enemy Sprite with Hue/Size variants
- */
-const EnemySprite: React.FC<{ enemy: BannerEntity, textures: Record<string, Texture>, time: number }> = ({ enemy, textures, time }) => {
-  const filter = useMemo(() => {
-    const f = new ColorMatrixFilter();
-    if (enemy.hueShift) f.hue(enemy.hueShift, false);
-    return f;
-  }, [enemy.hueShift]);
-
-  return (
-    <pixiContainer x={enemy.x} y={enemy.y} scale={{ x: enemy.scaleVariation || 1.5, y: enemy.scaleVariation || 1.5 }} skew={{ x: Math.sin(time * 0.15) * 0.1, y: 0 }}>
-      <pixiGraphics draw={(g) => { g.clear().ellipse(0, 0, 15, 5).fill({ color: 0x000000, alpha: 0.3 }); }} />
-      {textures[enemy.spriteKey] ? (
-        <pixiSprite 
-          texture={textures[enemy.spriteKey]} 
-          anchor={{ x: 0.5, y: 1.0 }} 
-          filters={[filter]}
-        />
-      ) : (
-        <pixiGraphics draw={(g) => { 
-          g.clear()
-           .rect(-15, -30, 30, 30).fill({ color: 0xffffff, alpha: 0.8 })
-           .circle(0, -15, 10).fill({ color: 0xff0000 }); 
-        }} filters={[filter]} />
-      )}
-      <pixiGraphics
-        draw={(g) => {
-          const hpW = (enemy.hp / enemy.maxHp) * 20;
-          g.clear().rect(-10, -45, 20, 4).fill({ color: 0x333333 }).rect(-10, -45, hpW, 4).fill({ color: 0xff0000 });
-        }}
-      />
-    </pixiContainer>
   );
 };
 
@@ -533,11 +566,11 @@ const BottomAnimatedBanner: React.FC<BannerProps> = ({ character }) => {
   return (
     <div className="bottom-banner-container">
       {/* key ensures we don't reload the whole Pixi app unless the character ID changes */}
-      <Application 
+      <Application
         key={character?.id || 'no-char'}
-        width={dimensions.width} 
-        height={dimensions.height} 
-        background="#111111" 
+        width={dimensions.width}
+        height={dimensions.height}
+        background="#111111"
         antialias={true}
       >
         <BannerContent character={character} />

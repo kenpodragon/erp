@@ -14,6 +14,12 @@ import { hexToPixiTint } from '../../utils/classVisuals';
 import { useAssets } from '../../providers/AssetProvider';
 import { assetRenderer } from '../../renderers/AssetRenderer';
 import ParallaxBackground from './ParallaxBackground';
+import EntityRenderer from '../shared/EntityRenderer';
+import type { EnemyVisualData } from '../shared/EntityRenderer';
+import PaperDollRenderer from '../shared/PaperDollRenderer';
+import type { CharacterVisualData } from '../shared/PaperDollRenderer';
+import AttackRenderer from '../shared/AttackRenderer';
+import type { AttackVisualData } from '../shared/AttackRenderer';
 import './CombatStage.css';
 
 // Register for v8 JSX
@@ -138,12 +144,33 @@ const CombatContent: React.FC<InnerProps> = ({
   const [time, setTime] = useState(0);
   const [cps, setCps] = useState(0);
   
+  // Shared renderer state
+  const [characterVisuals, setCharacterVisuals] = useState<CharacterVisualData | null>(null);
+  const [playerAttackActive, setPlayerAttackActive] = useState(false);
+  const [autoAttackActive, setAutoAttackActive] = useState(false);
+  const [enemyState, setEnemyState] = useState<'idle' | 'attacking' | 'dying' | 'dead'>('idle');
+  const playerAttackDataRef = useRef<AttackVisualData>({
+    attack_animation_type: 'melee_swing',
+    projectile_color: null,
+    impact_effect: 'flash',
+    attack_range: 40,
+    arc_angle: 90,
+  });
+
   const autoTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const enrageRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const clickTimesRef = useRef<number[]>([]);
 
   const scalingFactor = Number(gameConfigs['hp_scaling_factor'] ?? 1.55);
   const critMult = Number(gameConfigs['crit_multiplier'] ?? 2.0);
+
+  // Fetch character visuals once on mount for PaperDollRenderer
+  useEffect(() => {
+    api.get('/api/game/character/visuals')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setCharacterVisuals(data); })
+      .catch(() => {});
+  }, []);
 
   const triggerShake = useCallback(() => { if (reduceMotion) return; setShake(1); setTimeout(() => setShake(0), 400); }, [reduceMotion]);
   const triggerRecoil = useCallback(() => { if (reduceMotion) return; setRecoil(1); setTimeout(() => setRecoil(0), 150); }, [reduceMotion]);
@@ -161,6 +188,7 @@ const CombatContent: React.FC<InnerProps> = ({
     const hp = zoneHp(enemyLevel, scalingFactor);
     const gold = zoneGold(enemyLevel) * (isBossWave ? 10 : isBoss ? 3 : 1) * (isPrimal ? 3 : 1);
 
+    setEnemyState('idle');
     if (pool && pool.length > 0) {
       let poolToUse = pool;
       // Handle both hyphenated (DB) and underscored (Code) roles
@@ -326,7 +354,10 @@ const CombatContent: React.FC<InnerProps> = ({
   useEffect(() => {
     autoTickRef.current = setInterval(() => {
       const dps = ((session.autoDpsPerSecond || 0) + (session.autoUpgradeLevel || 0)) * (session.autoDpsMultiplier || 1) * (session.darkRitualMultiplier || 1);
-      if (dps > 0) applyDamage(dps * (AUTO_DPS_TICK_MS / 1000), 'auto');
+      if (dps > 0) {
+        setAutoAttackActive(true);
+        applyDamage(dps * (AUTO_DPS_TICK_MS / 1000), 'auto');
+      }
     }, AUTO_DPS_TICK_MS);
     return () => { if (autoTickRef.current) clearInterval(autoTickRef.current); };
   }, [session.autoDpsPerSecond, session.autoUpgradeLevel, session.autoDpsMultiplier, session.darkRitualMultiplier, applyDamage, AUTO_DPS_TICK_MS]);
@@ -372,6 +403,8 @@ const CombatContent: React.FC<InnerProps> = ({
     
     const panValue = (ox / width) * 2 - 1;
     playSFX?.(isCrit ? 'sfx_crit' : 'sfx_click', { pan: panValue });
+    // Trigger player attack animation
+    setPlayerAttackActive(true);
     applyDamage(damage, isCrit ? 'crit' : 'normal', ox, oy);
   }, [enemy, session, critMult, applyDamage, onEnemyClick, CRIT_CHANCE, debugSuperClick, playSFX, width]);
 
@@ -424,6 +457,52 @@ const CombatContent: React.FC<InnerProps> = ({
     statusText = `Wave ${session.currentZone}/${requiredWaves} | Monsters: ${monstersInZone}/${MONSTERS_PER_ZONE}`;
   }
 
+  // Map current enemy to EnemyVisualData for EntityRenderer
+  const enemyVisualData = useMemo<EnemyVisualData | null>(() => {
+    if (!enemy) return null;
+    return {
+      entity_id: enemy.entityId ?? 0,
+      name: enemy.name,
+      sprite_key: enemy.spriteKey,
+      base_hp: enemy.maxHp,
+      base_gold: enemy.baseGold,
+      color_primary: enemy.isPrimal ? '#ffd700' : enemy.isRare ? '#60a5fa' : null,
+      color_secondary: enemy.isPrimal ? '#b8860b' : enemy.isRare ? '#3b82f6' : null,
+      movement: null,
+      size: enemy.isBoss ? {
+        name: 'large',
+        scale_min: 1.3,
+        scale_max: 1.5,
+        width_base: 44,
+        height_base: 65,
+        hitbox_radius: 28,
+        hp_bar_width: 160,
+      } : null,
+      animation: null,
+      silhouette: enemy.isBoss ? {
+        name: 'boss',
+        body_shape: 'rect',
+        body_ratio_w: 1,
+        body_ratio_h: 1,
+        corner_radius: 0,
+        has_limbs: false,
+        limb_count: 0,
+        has_head: true,
+        has_wings: false,
+        has_weapon_slot: false,
+        has_eye_glow: true,
+        sub_unit_count: 1,
+      } : null,
+      primary_attack: null,
+      secondary_attack: null,
+      tertiary_attack: null,
+    };
+  }, [enemy?.entityId, enemy?.name, enemy?.spriteKey, enemy?.maxHp, enemy?.baseGold, enemy?.isPrimal, enemy?.isRare, enemy?.isBoss]);
+
+  // Player position for attack renderer
+  const playerX = width * 0.15;
+  const playerY = floorY;
+
   return (
     <pixiContainer sortableChildren={true}>
       <ParallaxBackground width={width} height={height} chapterId={session.chapterId} waveCount={waveCount} />
@@ -437,35 +516,47 @@ const CombatContent: React.FC<InnerProps> = ({
         g.ellipse(enemyX, floorY, width * 0.22, height * 0.025).fill({ color: 0x0f0f26 }).stroke({ width: 1, color: 0x2a2a55, alpha: 0.8 });
       }} />
 
-      {/* Hero Avatar */}
-      <pixiContainer x={width * 0.15} y={floorY} zIndex={8}>
-        <pixiGraphics draw={g => {
-          const primaryTint = classColors.primary ? hexToPixiTint(classColors.primary) : 0x4444aa;
-          g.clear()
-            .ellipse(0, 0, 24, 7)
-            .fill({ color: 0x000000, alpha: 0.4 });
-          // Body
-          g.circle(0, -50, 16)
-            .fill({ color: primaryTint, alpha: 0.9 });
-          g.rect(-12, -34, 24, 38)
-            .fill({ color: primaryTint, alpha: 0.85 });
-        }} />
-        <pixiText
-          text="HERO"
-          y={12}
-          x={0}
-          anchor={0.5}
-          style={new TextStyle({
-            fontFamily: 'monospace',
-            fontSize: 8 * textScale,
-            fill: classColors.primary || '#aaaacc',
-            fontWeight: 'bold',
-          })}
-        />
-      </pixiContainer>
+      {/* Hero Avatar — PaperDollRenderer */}
+      {characterVisuals ? (
+        <pixiContainer zIndex={8}>
+          <PaperDollRenderer
+            character={characterVisuals}
+            x={playerX}
+            y={playerY}
+            state={playerAttackActive ? 'fighting' : 'idle'}
+            facingRight={true}
+            scale={1.2}
+          />
+        </pixiContainer>
+      ) : (
+        <pixiContainer x={playerX} y={floorY} zIndex={8}>
+          <pixiGraphics draw={g => {
+            const primaryTint = classColors.primary ? hexToPixiTint(classColors.primary) : 0x4444aa;
+            g.clear()
+              .ellipse(0, 0, 24, 7)
+              .fill({ color: 0x000000, alpha: 0.4 });
+            g.circle(0, -50, 16)
+              .fill({ color: primaryTint, alpha: 0.9 });
+            g.rect(-12, -34, 24, 38)
+              .fill({ color: primaryTint, alpha: 0.85 });
+          }} />
+          <pixiText
+            text="HERO"
+            y={12}
+            x={0}
+            anchor={0.5}
+            style={new TextStyle({
+              fontFamily: 'monospace',
+              fontSize: 8 * textScale,
+              fill: classColors.primary || '#aaaacc',
+              fontWeight: 'bold',
+            })}
+          />
+        </pixiContainer>
+      )}
 
-      {/* Enemy */}
-      {enemy && (
+      {/* Enemy — EntityRenderer */}
+      {enemy && enemyVisualData && (
         <pixiContainer x={enemyX + shakeX + (recoil ? -8 : 0)} y={floorY + shakeY} scale={{ x: 1 + breathe, y: 1 - breathe }} zIndex={10}>
           {/* 2.6.2: Rare spawn glow aura */}
           {enemy.isRare && !reduceMotion && (
@@ -479,16 +570,44 @@ const CombatContent: React.FC<InnerProps> = ({
               g.clear().circle(0, -20, 50).stroke({ width: 3, color: 0x60a5fa, alpha: 0.8 });
             }} />
           )}
-          <pixiGraphics draw={g => { g.clear().ellipse(0, 0, 38, 9).fill({ color: 0x000000, alpha: 0.45 }); }} />
-          {/* 5.7.3: Inline fallback rendering (existing) */}
-          <pixiGraphics draw={g => {
-            const c = hitFlash ? 0xffffff : (enemy.isRare ? 0x60a5fa : enemy.isPrimal ? 0xffd700 : 0x2a2a4a);
-            g.clear().circle(0, -70, 22).fill({ color: c, alpha: 0.9 }).rect(-18, -48, 36, 55).fill({ color: c, alpha: 0.85 });
-            if (enemy.isBoss) g.moveTo(-14, -92).lineTo(-8, -105).lineTo(0, -96).lineTo(8, -105).lineTo(14, -92).fill({ color: enemy.isPrimal ? 0xffd700 : 0x8b0000 });
-          }} />
-          <pixiGraphics y={-120} draw={g => { g.clear().rect(-barW/2, 0, barW, barH).fill({ color: 0x222222 }).rect(-barW/2, 0, barW*hpPct, barH).fill({ color: hpColor }); }} />
+          <EntityRenderer
+            entity={enemyVisualData}
+            x={0}
+            y={0}
+            state={enemyState}
+            hp={enemy.currentHp}
+            maxHp={enemy.maxHp}
+            showHpBar={true}
+            showName={false}
+            onDeath={() => setEnemyState('idle')}
+          />
           {enemy.isBoss && <pixiText text={`ENRAGE: ${enrageTimer}s`} y={-138} x={0} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 10 * textScale, fill: '#ff4400', fontWeight: 'bold' })} />}
           {enemy.isRare && <pixiText text="RARE" y={-142} x={0} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 11 * textScale, fill: '#60a5fa', fontWeight: 'bold', letterSpacing: 3 })} />}
+        </pixiContainer>
+      )}
+
+      {/* Attack VFX — player click attack */}
+      {!reduceMotion && (
+        <pixiContainer zIndex={15}>
+          <AttackRenderer
+            attack={playerAttackDataRef.current}
+            sourceX={playerX}
+            sourceY={playerY - 40}
+            targetX={enemyX}
+            targetY={floorY - 40}
+            active={playerAttackActive}
+            onComplete={() => setPlayerAttackActive(false)}
+          />
+          {/* Auto-DPS subtle pulse */}
+          <AttackRenderer
+            attack={{ attack_animation_type: 'aoe_burst', projectile_color: classColors.primary || '#aaaacc', impact_effect: 'dissipate', attack_range: 25 }}
+            sourceX={enemyX}
+            sourceY={floorY - 40}
+            targetX={enemyX}
+            targetY={floorY - 40}
+            active={autoAttackActive}
+            onComplete={() => setAutoAttackActive(false)}
+          />
         </pixiContainer>
       )}
 
