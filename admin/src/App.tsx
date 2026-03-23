@@ -22,6 +22,7 @@ import AchievementEditor from './pages/AchievementEditor'
 import FinanceDashboard from './pages/FinanceDashboard'
 import AssetRegistry from './pages/AssetRegistry'
 import DevAudit from './pages/DevAudit'
+import VisualEditor from './pages/VisualEditor'
 import AdminHelp from './pages/help/AdminHelp'
 
 /* ── Nav Dropdown (hover-based grouped menu) ── */
@@ -77,11 +78,12 @@ function AdminNavbar({ user, me, apiOnline, dbOnline, health, onLogout }: {
           <NavLink to="/chat" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Chat Manager</NavLink>
         </NavDropdown>
 
-        <NavDropdown label="Content" activePaths={['/world-builder', '/atmospheres', '/sfx-configs', '/asset-registry']}>
+        <NavDropdown label="Content" activePaths={['/world-builder', '/atmospheres', '/sfx-configs', '/asset-registry', '/visual-editor']}>
           <NavLink to="/world-builder" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>World Builder</NavLink>
           <NavLink to="/atmospheres" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Atmospheres</NavLink>
           <NavLink to="/sfx-configs" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Sound Effects</NavLink>
           <NavLink to="/asset-registry" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Asset Registry</NavLink>
+          <NavLink to="/visual-editor" className={({ isActive }) => `nav-dropdown-item ${isActive ? 'active' : ''}`}>Visual Editor</NavLink>
         </NavDropdown>
 
         <NavDropdown label="Game" activePaths={['/game-configs', '/artifacts', '/achievements']}>
@@ -295,6 +297,7 @@ function App() {
             <Route path="/sfx-configs" element={<div className="admin-content"><SFXConfigEditor /></div>} />
             <Route path="/artifacts" element={<div className="admin-content"><ArtifactEditor /></div>} />
             <Route path="/achievements" element={<div className="admin-content"><AchievementEditor /></div>} />
+            <Route path="/visual-editor" element={<div className="admin-content"><VisualEditor /></div>} />
             <Route path="/asset-registry" element={<div className="admin-content"><AssetRegistry /></div>} />
             <Route path="/chat" element={<div className="admin-content"><ChatManager /></div>} />
             <Route path="/finance" element={<div className="admin-content"><FinanceDashboard /></div>} />
