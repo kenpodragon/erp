@@ -19,6 +19,10 @@ import type { StorySession, BossConfig } from '../../GameContext';
 import { zoneHp, formatNumber } from '../../utils/numbers';
 import { useAssets } from '../../providers/AssetProvider';
 import { assetRenderer } from '../../renderers/AssetRenderer';
+import EntityRenderer from '../shared/EntityRenderer';
+import type { EnemyVisualData } from '../shared/EntityRenderer';
+import AttackRenderer from '../shared/AttackRenderer';
+import type { AttackVisualData } from '../shared/AttackRenderer';
 import './BossStage.css';
 
 extend({ Container, Graphics, Text });
@@ -73,68 +77,163 @@ interface Props {
   reduceMotion?: boolean;
 }
 
+// ── Default boss visual data (fallback when no visual data from server) ──────
+const DEFAULT_BOSS_VISUAL: EnemyVisualData = {
+  entity_id: 0,
+  name: 'Guardian',
+  sprite_key: null,
+  base_hp: 1000,
+  base_gold: 0,
+  color_primary: '#1a0000',
+  color_secondary: '#cc0000',
+  movement: {
+    name: 'stationary',
+    y_offset_min: 0,
+    y_offset_max: 0,
+    bob_amplitude: 3,
+    bob_frequency: 0.5,
+    speed_multiplier: 0,
+    trail_effect: null,
+  },
+  size: {
+    name: 'huge',
+    scale_min: 2.2,
+    scale_max: 2.4,
+    width_base: 50,
+    height_base: 70,
+    hitbox_radius: 60,
+    hp_bar_width: 200,
+  },
+  animation: {
+    name: 'boss_idle',
+    idle_scale_x: 0.02,
+    idle_scale_y: 0.02,
+    idle_cycle_ms: 1800,
+    idle_translate_x: 0,
+    idle_translate_y: 0,
+    attack_recoil: 6,
+    death_style: 'explode',
+    death_duration_ms: 1000,
+    death_particle_count: 20,
+  },
+  silhouette: {
+    name: 'boss_biped',
+    body_shape: 'biped',
+    body_ratio_w: 1.2,
+    body_ratio_h: 1.3,
+    corner_radius: 6,
+    has_limbs: true,
+    limb_count: 2,
+    has_head: true,
+    has_wings: false,
+    has_weapon_slot: true,
+    has_eye_glow: true,
+    sub_unit_count: 1,
+  },
+  primary_attack: {
+    name: 'boss_slam',
+    attack_animation_type: 'aoe_burst',
+    projectile_color: '#cc0000',
+    cooldown_ms: 3000,
+    projectile_speed: 4,
+    impact_effect: 'shatter',
+    attack_range: 80,
+    arc_angle: 120,
+    trail_type: null,
+    screen_shake: true,
+  },
+  secondary_attack: {
+    name: 'boss_bolt',
+    attack_animation_type: 'elemental_projectile',
+    projectile_color: '#ff4400',
+    cooldown_ms: 2000,
+    projectile_speed: 6,
+    impact_effect: 'splash',
+    attack_range: 200,
+    arc_angle: 90,
+    trail_type: 'glow',
+    screen_shake: false,
+  },
+  tertiary_attack: {
+    name: 'boss_sweep',
+    attack_animation_type: 'melee_swing',
+    projectile_color: '#880000',
+    cooldown_ms: 4000,
+    projectile_speed: 0,
+    impact_effect: 'flash',
+    attack_range: 70,
+    arc_angle: 140,
+    trail_type: null,
+    screen_shake: true,
+  },
+};
+
 // ── Inner PixiJS component ──────────────────────────────────────────────────
 interface InnerProps {
   bossHp: number;
   bossMaxHp: number;
   bossName: string;
+  bossVisual: EnemyVisualData;
   damageNumbers: DamageNumber[];
   shake: number;
   textScale: number;
   width: number;
   height: number;
+  activeAttack: AttackVisualData | null;
+  attackActive: boolean;
+  onAttackComplete: () => void;
 }
 
 const BossContent: React.FC<InnerProps> = ({
-  bossHp, bossMaxHp, bossName, damageNumbers, shake, textScale, width, height,
+  bossHp, bossMaxHp, bossName, bossVisual, damageNumbers, shake, textScale,
+  width, height, activeAttack, attackActive, onAttackComplete,
 }) => {
   const shakeX = shake > 0 ? (Math.random() - 0.5) * shake * 6 : 0;
   const shakeY = shake > 0 ? (Math.random() - 0.5) * shake * 4 : 0;
-  const hpPct = Math.max(0, bossHp / bossMaxHp);
-  const hpColor = hpPct > 0.5 ? 0xe53e3e : hpPct > 0.25 ? 0xed8936 : 0xfc3d3d;
 
   useTick(() => { /* trigger re-render each frame for shake */ });
 
+  // Boss glow ring (drawn behind EntityRenderer)
+  const drawBossGlow = useCallback((g: any) => {
+    g.clear();
+    const glowRadius = (bossVisual.size?.hitbox_radius ?? BOSS_RADIUS) + 10;
+    g.circle(BOSS_X, BOSS_Y, glowRadius);
+    g.fill({ color: 0x550000, alpha: 0.3 });
+    g.circle(BOSS_X, BOSS_Y, glowRadius + 5);
+    g.fill({ color: 0x330000, alpha: 0.15 });
+  }, [bossVisual.size?.hitbox_radius]);
+
+  const bossState = bossHp <= 0 ? 'dying' as const : 'idle' as const;
+
   return (
     <pixiContainer x={shakeX} y={shakeY}>
-      {/* Boss body */}
-      <pixiGraphics
-        draw={(g: Graphics) => {
-          g.clear();
-          // Outer glow ring
-          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS + 10);
-          g.fill({ color: 0x550000, alpha: 0.3 });
-          // Boss silhouette
-          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS);
-          g.fill({ color: 0x1a0000 });
-          g.circle(BOSS_X, BOSS_Y, BOSS_RADIUS);
-          g.stroke({ color: 0xcc0000, width: 3, alpha: 0.9 });
-        }}
-      />
+      {/* Boss glow effect behind entity */}
+      <pixiGraphics draw={drawBossGlow} />
 
-      {/* Boss HP bar (above boss) */}
-      <pixiGraphics
-        draw={(g: Graphics) => {
-          g.clear();
-          const barW = 200; const barH = 14;
-          const bx = BOSS_X - barW / 2; const by = BOSS_Y - BOSS_RADIUS - 36;
-          g.roundRect(bx, by, barW, barH, 4);
-          g.fill({ color: 0x330000 });
-          g.roundRect(bx, by, barW * hpPct, barH, 4);
-          g.fill({ color: hpColor });
-          g.roundRect(bx, by, barW, barH, 4);
-          g.stroke({ color: 0x660000, width: 1 });
-        }}
-      />
-
-      {/* HP text */}
-      <pixiText
-        text={`${formatNumber(bossHp)} / ${formatNumber(bossMaxHp)}`}
-        style={new TextStyle({ fill: '#ffaaaa', fontSize: 10 * textScale, fontFamily: 'monospace' })}
+      {/* Boss entity via shared EntityRenderer */}
+      <EntityRenderer
+        entity={bossVisual}
         x={BOSS_X}
-        y={BOSS_Y - BOSS_RADIUS - 50}
-        anchor={0.5}
+        y={BOSS_Y + (bossVisual.size?.height_base ?? 70) * (bossVisual.size?.scale_min ?? 2.2) * (bossVisual.silhouette?.body_ratio_h ?? 1.3) / 2}
+        state={bossState}
+        hp={bossHp}
+        maxHp={bossMaxHp}
+        showHpBar={true}
+        showName={false}
       />
+
+      {/* Boss attack animation */}
+      {activeAttack && (
+        <AttackRenderer
+          attack={activeAttack}
+          sourceX={BOSS_X}
+          sourceY={BOSS_Y}
+          targetX={BOSS_X + (Math.random() - 0.5) * 100}
+          targetY={BOSS_Y + 80}
+          active={attackActive}
+          onComplete={onAttackComplete}
+        />
+      )}
 
       {/* "BOSS" label */}
       <pixiText
@@ -211,6 +310,35 @@ const BossStage: React.FC<Props> = ({
   const [shake, setShake]           = useState(0);
   const [interrupt, setInterrupt]   = useState<ActiveInterrupt | null>(null);
   const [interruptSuccess, setInterruptSuccess] = useState<boolean | null>(null);
+
+  // Boss visual data (from session or fallback)
+  const bossVisual: EnemyVisualData = (session as any).bossVisualData ?? {
+    ...DEFAULT_BOSS_VISUAL,
+    name: bossName,
+  };
+
+  // Attack cycling: primary → secondary → tertiary
+  const attackTypes = [
+    bossVisual.primary_attack,
+    bossVisual.secondary_attack as AttackVisualData | null,
+    bossVisual.tertiary_attack as AttackVisualData | null,
+  ].filter(Boolean) as AttackVisualData[];
+
+  const [attackIndex, setAttackIndex] = useState(0);
+  const [attackActive, setAttackActive] = useState(false);
+  const [activeAttack, setActiveAttack] = useState<AttackVisualData | null>(null);
+  const attackCooldownRef = useRef(attackTypes[0]?.cooldown_ms ?? 3000);
+
+  const handleAttackComplete = useCallback(() => {
+    setAttackActive(false);
+    setActiveAttack(null);
+    // Cycle to next attack type
+    setAttackIndex(prev => {
+      const next = (prev + 1) % attackTypes.length;
+      attackCooldownRef.current = attackTypes[next]?.cooldown_ms ?? 3000;
+      return next;
+    });
+  }, [attackTypes]);
 
   const bossHpRef         = useRef(baseHp);
   const timerRef          = useRef(cfg.timer_seconds);
@@ -406,6 +534,17 @@ const BossStage: React.FC<Props> = ({
           spawnInterrupt();
         }
       }
+
+      // Boss attack cycling
+      attackCooldownRef.current -= TICK_MS;
+      if (attackCooldownRef.current <= 0 && attackTypes.length > 0) {
+        const currentAttack = attackTypes[attackIndex];
+        if (currentAttack) {
+          setActiveAttack(currentAttack);
+          setAttackActive(true);
+          attackCooldownRef.current = currentAttack.cooldown_ms ?? 3000;
+        }
+      }
     }, 100);
 
     // Damage number cleanup
@@ -483,11 +622,15 @@ const BossStage: React.FC<Props> = ({
           bossHp={bossHp}
           bossMaxHp={bossMaxHp}
           bossName={bossName}
+          bossVisual={bossVisual}
           damageNumbers={damageNums}
           shake={shake}
           textScale={textScale}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
+          activeAttack={activeAttack}
+          attackActive={attackActive}
+          onAttackComplete={handleAttackComplete}
         />
       </Application>
 
