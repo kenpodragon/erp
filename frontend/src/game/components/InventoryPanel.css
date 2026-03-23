@@ -35,14 +35,47 @@
   padding: 20px;
 }
 
-/* Equipped slots */
+/* Equipped section: paper doll + slots side by side */
+.inventory-equipped-section {
+  display: flex;
+  gap: 12px;
+}
+
+.inventory-paperdoll {
+  flex-shrink: 0;
+  width: 170px;
+}
+
+.paperdoll-canvas-wrapper {
+  border: 1px solid #1e1e3e;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.inventory-equipped {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Equipped slots — grid for all 16 slots */
+.equipped-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Legacy flex layout (kept for backward compat) */
 .equipped-slots {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .equipped-slot {
-  flex: 1;
   min-width: 0;
 }
 

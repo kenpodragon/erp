@@ -1,12 +1,18 @@
 /**
  * InventoryPanel — Home Base inventory UI.
- * 3 equipped slots + 10 bag slots with equip/unequip actions.
+ * All 16 gear slots + bag slots with equip/unequip actions + paper doll preview.
  */
 import React, { useState, useEffect, useCallback } from 'react';
+import { Application, extend } from '@pixi/react';
+import { Container, Graphics, Text } from 'pixi.js';
 import { api } from '../../api';
 import ItemCard from './story/ItemCard';
 import type { ItemData } from './story/ItemCard';
+import PaperDollRenderer from './shared/PaperDollRenderer';
+import type { CharacterVisualData } from './shared/PaperDollRenderer';
 import './InventoryPanel.css';
+
+extend({ Container, Graphics, Text });
 
 interface GearSlot {
   id: number;
@@ -23,17 +29,34 @@ interface InventoryState {
   bag_used: number;
 }
 
+const DOLL_CANVAS_WIDTH = 160;
+const DOLL_CANVAS_HEIGHT = 200;
+
+const DEFAULT_CHARACTER_VISUAL: CharacterVisualData = {
+  character_id: 0,
+  level: 1,
+  aura_tier: null,
+  equipped_layers: [],
+  unequipped_layers: [],
+};
+
 const InventoryPanel: React.FC = () => {
   const [inventory, setInventory] = useState<InventoryState | null>(null);
   const [selectedItem, setSelectedItem] = useState<ItemData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [characterVisual, setCharacterVisual] = useState<CharacterVisualData>(DEFAULT_CHARACTER_VISUAL);
 
   const fetchInventory = useCallback(async () => {
     try {
       const res = await api.get('/api/game/inventory');
       if (res.ok) {
-        setInventory(await res.json());
+        const data = await res.json();
+        // Sort gear_slots by sort_order to ensure all 16 display in order
+        if (data.gear_slots) {
+          data.gear_slots.sort((a: GearSlot, b: GearSlot) => a.sort_order - b.sort_order);
+        }
+        setInventory(data);
       }
     } catch (err) {
       console.error('Failed to fetch inventory:', err);
@@ -42,9 +65,19 @@ const InventoryPanel: React.FC = () => {
     }
   }, []);
 
+  const fetchCharacterVisual = useCallback(async () => {
+    try {
+      const res = await api.get('/api/game/character/visuals');
+      if (res.ok) {
+        setCharacterVisual(await res.json());
+      }
+    } catch { /* use default */ }
+  }, []);
+
   useEffect(() => {
     fetchInventory();
-  }, [fetchInventory]);
+    fetchCharacterVisual();
+  }, [fetchInventory, fetchCharacterVisual]);
 
   const handleEquip = async (inventoryId: number) => {
     setActionLoading(true);
@@ -52,6 +85,7 @@ const InventoryPanel: React.FC = () => {
       const res = await api.post('/api/game/inventory/equip', { inventory_id: inventoryId });
       if (res.ok) {
         await fetchInventory();
+        await fetchCharacterVisual();
         setSelectedItem(null);
       } else {
         const err = await res.json();
@@ -68,6 +102,7 @@ const InventoryPanel: React.FC = () => {
       const res = await api.post('/api/game/inventory/unequip', { inventory_id: inventoryId });
       if (res.ok) {
         await fetchInventory();
+        await fetchCharacterVisual();
         setSelectedItem(null);
       } else {
         const err = await res.json();
@@ -104,27 +139,52 @@ const InventoryPanel: React.FC = () => {
     <div className="inventory-panel">
       <div className="inventory-title">EQUIPMENT & INVENTORY</div>
 
-      <div className="inventory-equipped">
-        <div className="inventory-section-label">EQUIPPED</div>
-        <div className="equipped-slots">
-          {inventory.gear_slots.map(slot => {
-            const equipped = equippedBySlot[slot.name];
-            return (
-              <div key={slot.id} className="equipped-slot">
-                <div className="equipped-slot-label">{slot.display_name}</div>
-                {equipped ? (
-                  <ItemCard
-                    item={equipped}
-                    compact
-                    selected={selectedItem?.inventory_id === equipped.inventory_id}
-                    onClick={() => setSelectedItem(equipped)}
-                  />
-                ) : (
-                  <div className="equipped-slot-empty">Empty</div>
-                )}
-              </div>
-            );
-          })}
+      <div className="inventory-equipped-section">
+        {/* Paper doll preview */}
+        <div className="inventory-paperdoll">
+          <div className="inventory-section-label">CHARACTER PREVIEW</div>
+          <div className="paperdoll-canvas-wrapper">
+            <Application
+              width={DOLL_CANVAS_WIDTH}
+              height={DOLL_CANVAS_HEIGHT}
+              background={0x08080f}
+              antialias
+            >
+              <PaperDollRenderer
+                character={characterVisual}
+                x={DOLL_CANVAS_WIDTH / 2}
+                y={DOLL_CANVAS_HEIGHT - 30}
+                state="idle"
+                facingRight={true}
+                scale={1.5}
+              />
+            </Application>
+          </div>
+        </div>
+
+        {/* All 16 gear slots */}
+        <div className="inventory-equipped">
+          <div className="inventory-section-label">EQUIPPED ({inventory.gear_slots.length} SLOTS)</div>
+          <div className="equipped-slots-grid">
+            {inventory.gear_slots.map(slot => {
+              const equipped = equippedBySlot[slot.name];
+              return (
+                <div key={slot.id} className="equipped-slot">
+                  <div className="equipped-slot-label">{slot.display_name}</div>
+                  {equipped ? (
+                    <ItemCard
+                      item={equipped}
+                      compact
+                      selected={selectedItem?.inventory_id === equipped.inventory_id}
+                      onClick={() => setSelectedItem(equipped)}
+                    />
+                  ) : (
+                    <div className="equipped-slot-empty">Empty</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
