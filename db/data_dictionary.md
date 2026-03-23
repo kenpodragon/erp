@@ -1,6 +1,6 @@
 # ERP Data Dictionary
 
-Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
+Generated from live database on 2026-03-22. **109 tables**, PostgreSQL 17.
 
 ## Table of Contents
 
@@ -11,6 +11,8 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 - [admin_shard_adjustments](#admin_shard_adjustments) (0 rows)
 - [admin_whitelist_emails](#admin_whitelist_emails) (2 rows)
 - [admin_whitelist_ips](#admin_whitelist_ips) (2 rows)
+- [animation_styles](#animation_styles) (7 rows)
+- [armor_classes](#armor_classes) (8 rows)
 - [artifact_prefixes](#artifact_prefixes) (20 rows)
 - [artifact_suffixes](#artifact_suffixes) (20 rows)
 - [artifact_type_bases](#artifact_type_bases) (15 rows)
@@ -43,7 +45,7 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 - [entity_gameplay_data](#entity_gameplay_data) (4 rows)
 - [entity_scene_appearances](#entity_scene_appearances) (6434 rows)
 - [entity_types](#entity_types) (9 rows)
-- [game_configs](#game_configs) (141 rows)
+- [game_configs](#game_configs) (151 rows)
 - [gear_slots](#gear_slots) (16 rows)
 - [idle_skill_stat_contributions](#idle_skill_stat_contributions) (3 rows)
 - [inventory_items](#inventory_items) (2 rows)
@@ -56,6 +58,7 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 - [location_aliases](#location_aliases) (19 rows)
 - [location_scene_appearances](#location_scene_appearances) (586 rows)
 - [locations](#locations) (449 rows)
+- [movement_types](#movement_types) (5 rows)
 - [marketplace_listings](#marketplace_listings) (0 rows)
 - [marketplace_notifications](#marketplace_notifications) (0 rows)
 - [marketplace_price_history](#marketplace_price_history) (0 rows)
@@ -92,6 +95,8 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 - [shard_transactions](#shard_transactions) (1 rows)
 - [shop_bundle_items](#shop_bundle_items) (9 rows)
 - [shop_bundles](#shop_bundles) (3 rows)
+- [silhouette_types](#silhouette_types) (6 rows)
+- [size_classes](#size_classes) (5 rows)
 - [shop_items](#shop_items) (45 rows)
 - [skill_actions](#skill_actions) (47 rows)
 - [skill_prerequisites](#skill_prerequisites) (40 rows)
@@ -231,6 +236,45 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 | added_by | varchar(255) | YES |  |  |
 | created_at | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
 
+## animation_styles
+
+**Rows:** 7
+
+| Column | Type | Nullable | Default | Key |
+|--------|------|----------|---------|-----|
+| id | integer | NO | auto | PK |
+| name | text | NO |  | UQ |
+| description | text | YES |  |  |
+| idle_scale_x | real | YES | 1.0 |  |
+| idle_scale_y | real | YES | 1.0 |  |
+| idle_cycle_ms | integer | YES | 2000 |  |
+| idle_translate_x | real | YES | 0 |  |
+| idle_translate_y | real | YES | 0 |  |
+| attack_recoil | real | YES | 3.0 |  |
+| death_style | text | YES | fade |  |
+| death_duration_ms | integer | YES | 400 |  |
+| death_particle_count | integer | YES | 8 |  |
+| created_at | timestamptz | YES | now() |  |
+
+## armor_classes
+
+**Rows:** 8
+
+| Column | Type | Nullable | Default | Key |
+|--------|------|----------|---------|-----|
+| id | integer | NO | auto | PK |
+| code | text | NO |  | UQ |
+| display_name | text | NO |  |  |
+| description | text | YES |  |  |
+| overlay_opacity | real | YES | 0.6 |  |
+| color_tint_base | text | YES |  |  |
+| texture_pattern | text | YES | solid |  |
+| glow_intensity | real | YES | 0 |  |
+| outline_width | real | YES | 1.0 |  |
+| weight_class | text | YES | medium |  |
+| sort_order | integer | YES | 0 |  |
+| created_at | timestamptz | YES | now() |  |
+
 ## artifact_prefixes
 
 **Rows:** 20
@@ -335,6 +379,16 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 | updated_at | timestamp without time zone | YES | now() |  |
 | visual_behavior_id | integer | YES |  | FK->visual_behaviors.id |
 | stat_multipliers | jsonb | YES |  |  |
+| attack_animation_type | text | YES | melee_swing |  |
+| projectile_sprite_key | text | YES |  |  |
+| projectile_speed | real | YES | 3.0 |  |
+| projectile_color | text | YES |  |  |
+| impact_effect | text | YES | flash |  |
+| attack_range | real | YES | 30.0 |  |
+| cooldown_ms | integer | YES | 2000 |  |
+| arc_angle | real | YES | 90 |  |
+| trail_type | text | YES |  |  |
+| screen_shake | boolean | YES | false |  |
 
 **Foreign Keys:**
 - `visual_behavior_id` -> `visual_behaviors.id` (ON DELETE SET NULL)
@@ -775,10 +829,26 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 | updated_at | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
 | unique_boss_theme_id | integer | YES |  | FK->atmospheres.id |
 | death_sfx_key | varchar(100) | YES |  |  |
+| movement_type_id | integer | YES |  | FK->movement_types.id |
+| size_class_id | integer | YES |  | FK->size_classes.id |
+| animation_style_id | integer | YES |  | FK->animation_styles.id |
+| silhouette_type_id | integer | YES |  | FK->silhouette_types.id |
+| color_primary | text | YES |  |  |
+| color_secondary | text | YES |  |  |
+| primary_attack_type_id | integer | YES |  | FK->attack_types.id |
+| secondary_attack_type_id | integer | YES |  | FK->attack_types.id |
+| tertiary_attack_type_id | integer | YES |  | FK->attack_types.id |
 
 **Foreign Keys:**
 - `unique_boss_theme_id` -> `atmospheres.id` (ON DELETE SET NULL)
 - `entity_id` -> `entities.id` (ON DELETE CASCADE)
+- `movement_type_id` -> `movement_types.id`
+- `size_class_id` -> `size_classes.id`
+- `animation_style_id` -> `animation_styles.id`
+- `silhouette_type_id` -> `silhouette_types.id`
+- `primary_attack_type_id` -> `attack_types.id`
+- `secondary_attack_type_id` -> `attack_types.id`
+- `tertiary_attack_type_id` -> `attack_types.id`
 
 ## entity_scene_appearances
 
@@ -823,7 +893,9 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 
 ## game_configs
 
-**Rows:** 141
+**Rows:** 151
+
+*Includes 10 banner scaling configs from migration 068: `banner_base_enemies`, `banner_max_enemies`, `banner_enemies_per_level`, `banner_death_base_rate`, `banner_death_reduction_per_level`, `banner_death_floor`, `banner_kill_speed_base_ms`, `banner_kill_speed_min_ms`, `banner_spawn_rate_base`, `banner_spawn_rate_combat` (category: `banner`).*
 
 | Column | Type | Nullable | Default | Key |
 |--------|------|----------|---------|-----|
@@ -849,6 +921,7 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 | display_name | varchar(100) | NO |  |  |
 | description | text | YES |  |  |
 | sort_order | integer | NO | 0 |  |
+| paperdoll_layer | integer | YES |  |  |
 | created_at | timestamp with time zone | YES | now() |  |
 
 ## idle_skill_stat_contributions
@@ -958,11 +1031,15 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 | gear_slot_id | integer | NO |  | FK->gear_slots.id |
 | base_stat_range | jsonb | NO | {} |  |
 | lore_reference | text | YES |  |  |
+| armor_class_id | integer | YES |  | FK->armor_classes.id |
+| player_attack_animation | text | YES |  |  |
+| player_projectile_key | text | YES |  |  |
 | created_at | timestamp with time zone | YES | now() |  |
 | updated_at | timestamp with time zone | YES | now() |  |
 
 **Foreign Keys:**
 - `gear_slot_id` -> `gear_slots.id` (ON DELETE RESTRICT)
+- `armor_class_id` -> `armor_classes.id`
 
 ## leaderboard_cache
 
@@ -1047,6 +1124,24 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 **Foreign Keys:**
 - `archetype_id` -> `atmospheres.id` (ON DELETE SET NULL)
 - `first_appearance_scene_id` -> `scenes.id` (ON DELETE SET NULL)
+
+## movement_types
+
+**Rows:** 5
+
+| Column | Type | Nullable | Default | Key |
+|--------|------|----------|---------|-----|
+| id | integer | NO | auto | PK |
+| name | text | NO |  | UQ |
+| description | text | YES |  |  |
+| y_offset_min | real | YES | 0 |  |
+| y_offset_max | real | YES | 0 |  |
+| bob_amplitude | real | YES | 0 |  |
+| bob_frequency | real | YES | 1.0 |  |
+| speed_multiplier | real | YES | 1.0 |  |
+| can_change_lane | boolean | YES | false |  |
+| trail_effect | text | YES |  |  |
+| created_at | timestamptz | YES | now() |  |
 
 ## marketplace_listings
 
@@ -1856,6 +1951,48 @@ Generated from live database on 2026-03-15. **104 tables**, PostgreSQL 17.
 
 **Foreign Keys:**
 - `class_restriction` -> `character_classes.id` (ON DELETE SET NULL)
+
+## silhouette_types
+
+**Rows:** 6
+
+| Column | Type | Nullable | Default | Key |
+|--------|------|----------|---------|-----|
+| id | integer | NO | auto | PK |
+| name | text | NO |  | UQ |
+| description | text | YES |  |  |
+| body_shape | text | NO |  |  |
+| body_ratio_w | real | YES | 1.0 |  |
+| body_ratio_h | real | YES | 1.0 |  |
+| corner_radius | real | YES | 0.1 |  |
+| has_limbs | boolean | YES | false |  |
+| limb_count | integer | YES | 0 |  |
+| has_head | boolean | YES | false |  |
+| has_wings | boolean | YES | false |  |
+| has_weapon_slot | boolean | YES | false |  |
+| has_eye_glow | boolean | YES | false |  |
+| sub_unit_count | integer | YES | 1 |  |
+| created_at | timestamptz | YES | now() |  |
+
+## size_classes
+
+**Rows:** 5
+
+| Column | Type | Nullable | Default | Key |
+|--------|------|----------|---------|-----|
+| id | integer | NO | auto | PK |
+| name | text | NO |  | UQ |
+| description | text | YES |  |  |
+| scale_min | real | NO |  |  |
+| scale_max | real | NO |  |  |
+| width_base | real | NO |  |  |
+| height_base | real | NO |  |  |
+| hitbox_radius | real | NO |  |  |
+| hp_bar_width | real | NO |  |  |
+| hp_bar_offset_y | real | YES | -8 |  |
+| name_tag_visible | boolean | YES | true |  |
+| sort_order | integer | YES | 0 |  |
+| created_at | timestamptz | YES | now() |  |
 
 ## skill_actions
 
