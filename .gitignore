@@ -498,3 +498,7 @@ backend/*.db
 .superpowers/
 .playwright-mcp/
 chrome/
+
+# Generator pipeline
+tools/.cache/
+tools/.env
