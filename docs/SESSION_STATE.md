@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-23
-**Last session focus:** Banner Visual System — wave scaling, entity rendering, paper doll, attack animations, admin editors
+**Last session focus:** Generator Pipeline — framework, 16 generators, UAT, AI rules documentation
 
 ---
 
@@ -18,6 +18,7 @@
 | Spoofing Lockdown | Complete | Full stack auth bypass removal (2026-03-22) |
 | Combat Scaling | Complete | Idle/story aligned, per-scene HP caps, boss HP from DB |
 | Banner Visual System | Phase 1-5 Complete | Shared renderers, wave scaling, paper doll, attack anims (2026-03-23) |
+| Generator Pipeline | Complete | 4 framework modules, 16 generators, 75 tests, AI rules docs (2026-03-23) |
 
 ## Database State
 
