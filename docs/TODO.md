@@ -6,58 +6,75 @@
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
 Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
-Next priority: entity gameplay data generator, sprite generators, visual verification.
-Spec: docs/superpowers/specs/2026-03-22-banner-visual-system-design.md
-Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
+Branch: feature/generator-pipeline (merge to main when visual verification passes).
+Next: AI-driven full population, death_sfx_key generation, visual verification.
+Instructions: docs/inst/GENERATOR_INSTRUCTIONS.md
+AI Rules: docs/inst/GENERATOR_AI_RULES.md
+Admin Asset Viewer: admin/src/pages/AssetViewer.tsx + backend/routes/admin_visual.py
 ```
 
 ---
 
-## Banner Visual System — Phase 7 (Generators + Finalization)
+## Generator Pipeline — Active Work
 
-### Entity Data Population
-- [ ] **Entity gameplay data generator** (`tools/generate_entity_gameplay.py`) — populate all 3,936 entities with movement_type_id, size_class_id, animation_style_id, silhouette_type_id, colors, attack type slots. AI-assisted inference from entity descriptions.
-- [ ] **Entity type visual defaults** — creature→ground/stalk/quadruped, manifestation→hover/pulse/orb, etc.
-- [ ] **Entity family seeder** (`tools/seed_entity_families.py`) — populate entity_families table (wraiths, demons, beasts, elementals, undead, constructs, humanoids)
+### Step 1: AI-Driven Full Population (GENERATOR_AI_RULES.md)
+Current data was generated with Python fallback (generic/repetitive). Need to regenerate with `--ai` mode for lore-appropriate, unique content.
 
-### Sprite Generators
-- [ ] **Entity sprite generator** (`tools/generate_entity_sprites.py`) — procedural asset_registry entries from silhouette + colors + size
-- [ ] **Item sprite generator** (`tools/generate_item_sprites.py`) — paper doll layer sprites for armor_class × gear_slot × rarity, weapon sprites, inventory icons
-- [ ] **Projectile sprite generator** (`tools/generate_projectile_sprites.py`) — projectile asset_registry entries per attack_type
+**Process:** Follow `docs/inst/GENERATOR_AI_RULES.md` step-by-step:
+1. Take DB backup: `python tools/db_dump_restore.py dump`
+2. Reset fallback data where needed (NULL out visual columns to force regeneration)
+3. Run each generator in phase order with `--ai` (see AI Rules doc for full sequence)
+4. Verify: `python tools/scan_content_gaps.py --verbose` → 0 gaps (excluding known exceptions)
+5. Review in admin Asset Viewer (`admin/src/pages/AssetViewer.tsx`)
 
-### Finalization
-- [ ] **Migration 069** — NOT NULL constraints on entity_gameplay_data after generator populates. Migrate entity_attack_types → primary/secondary/tertiary. Drop entity_attack_types table.
-- [ ] **Visual verification** — Test at level 1/20/40/70/90: banner enemy count, death rate, gear rendering, attack animations. Verify consistency across all 4 surfaces.
+### Step 2: Death SFX Key + Sound Generation
+- [ ] **death_sfx_key for 3,936 entities** — AI-assisted assignment of SFX preset keys based on entity type, family, size, and description
+- [ ] **Generate actual SFX presets** — extend `audio_configs` table with death SFX presets per entity family/type
+- [ ] Cross-reference existing `audio_configs` SFX presets (17 rows) for valid keys
+
+### Step 3: Visual Verification (All Combat Surfaces)
+- [ ] **Admin Asset Viewer review** — screenshot each section, verify uniqueness + lore-appropriateness
+- [ ] **BottomAnimatedBanner** — Test at level 1/20/40/70/90: enemy count scales, entities render with correct sprites/colors
+- [ ] **CombatStage** — Attack animations per entity attack_type, projectile colors, impact effects
+- [ ] **BossStage** — Boss entity at large scale, attack type cycling, interrupt rendering
+- [ ] **ActiveTrainingSimulator** — Idle training entities with shared renderers, skill-based themes
+- [ ] **InventoryPanel** — Paper doll preview with armor class overlays, weapon sprites
+
+Use Chrome DevTools MCP or admin Asset Viewer (`backend/routes/admin_visual.py`) for verification.
+
+### Step 4: Finalization
+- [ ] **Migration 069** — NOT NULL constraints on entity_gameplay_data visual columns
+- [ ] **Replace remaining 33 default sprite_keys** — re-run `generate_entity_sprites.py --ai`
+- [ ] **Merge feature/generator-pipeline → main**
+- [ ] **Update DONE.md** — move completed generator pipeline section
 
 ---
 
-## Combat Scaling — Remaining Work
-
-### Entity sprite population
-- [ ] **Replace default sprite keys** — all entities currently use type-based defaults (`enemy_creature`, `enemy_manifestation`, etc). Sprite generators above will handle this.
+## Music and SFX Overhaul
+- [ ] Generate death_sfx_key for 3,936 entities (generate sound effects as well)
+- [ ] Update music definition JSON schemas to support longer sequences
+- [ ] Update `generate_8bit_music.py` generator to produce longer compositions (more variation, sections, transitions)
+- [ ] Review all 21 atmosphere music definitions and extend/regenerate as needed
 
 ---
 
 ## Future Work
 
-### Generators
-**NOTE:** Go through requirements definition first. Ask questions, fill out details, iterate on design + schema before coding. So I want these to be able to be used by other folks to add content into the DB and generate as appropriate. However, these should be built so that they are python scripts (under tools), but could be run by agentic AI to send generated content to the DB and seed things. So things like get status, remaining items, update, edit, fetch view, should all be considered as inputs (almost like mini API/MCP bits without the MCP bits - just a script the AI can call to do a lot of the heavy lifting and interfacing - or a person).
-- [ ] Read `0_REQUIREMENTS.md` → capture generator requirements → build out recs/design/schema docs
-- [ ] Ensure all necessary generators are listed (check for gaps in existing data)
-- [ ] **Longer music loops** — current 8-bit synth sequences are too short and become repetitive/annoying quickly. Target 2-3 minutes per loop minimum.
-  - Update music definition JSON schemas to support longer sequences
-  - Update `generate_8bit_music.py` generator to produce longer compositions (more variation, sections, transitions)
-  - Review all 21 atmosphere music definitions and extend/regenerate as needed
-  - *(Discovered during E2E Session 7 — audio testing)*
+### Generators (Framework Complete)
+- [x] Generator framework built (`tools/lib/` — ai_provider, db_client, base_generator, cache)
+- [x] 16 generators implemented with AI mode + Python fallback
+- [x] Requirements consolidated in `C_STORY_ASSET_GENERATORS.md`
+- [x] GENERATOR_INSTRUCTIONS.md + GENERATOR_AI_RULES.md written
+- [x] Admin Asset Viewer built
 
 #### Cosmetic Asset Generation *(Ref: 3.3 §19)*
-- [ ] Pixel-art skins, badges, flair, avatars — depends on `C_STORY_ASSET_GENERATORS.md` §8
+- [ ] Pixel-art skins, badges, flair, avatars — `generate_cosmetics.py` (deferred, depends on Emporium)
 
 ### Structural Improvements
 - [ ] Investigate SDD frameworks (Open Spec) — consider converting documentation
 - [ ] Code bloat cleanup (break god-class files into modules)
 - [ ] Code documentation — link to requirements, functional specs, inline comments
-- [ ] Documentation final check - update user guides, manuals, etc... collapse the db merges back into 3 files (seeds to generic seeds).
+- [ ] Documentation final check — update user guides, manuals, collapse DB merges
 
 ### Cloud Deployment
 - [ ] Explore Firebase JSON storage for user data (capacity, update frequency)
@@ -68,4 +85,4 @@ Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
 
 ---
 
-*Updated: 2026-03-23 (Banner Visual System Phase 1-5 COMPLETE. Next: generators, sprite population, visual verification.)*
+*Updated: 2026-03-23 (Generator pipeline complete. Next: AI-driven full population, death_sfx_key, visual verification.)*

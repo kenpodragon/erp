@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text as sa_text
 from sqlmodel import Session, select
 
 from db import get_session
@@ -54,6 +55,151 @@ def _row_to_dict(row) -> dict:
             val = val.isoformat()
         data[col.name] = val
     return data
+
+
+# ---------------------------------------------------------------------------
+# Asset preview — aggregated read-only endpoint for the Asset Viewer page
+# Must be defined BEFORE the /{table_name} catch-all below.
+# ---------------------------------------------------------------------------
+
+@router.get("/asset-preview")
+def get_asset_preview(
+    session: Session = Depends(get_session),
+    _admin: dict = Depends(get_current_admin),
+):
+    """Return all visual asset data for the Asset Viewer admin page."""
+
+    # 1. Backgrounds
+    bg_rows = session.exec(
+        sa_text("""
+            SELECT id, name, background_key, mood, parallax_config, color_palette
+            FROM backgrounds ORDER BY mood, name
+        """)
+    ).mappings().all()
+    backgrounds = [dict(r) for r in bg_rows]
+
+    # 2. Entity sprites (with visual FK names)
+    entity_rows = session.exec(
+        sa_text("""
+            SELECT
+                egd.id, egd.sprite_key, egd.color_primary, egd.color_secondary,
+                e.canonical_name, et.name AS entity_type,
+                mt.name AS movement_name,
+                sc.name AS size_name,
+                ans.name AS animation_name,
+                st.name AS silhouette_name
+            FROM entity_gameplay_data egd
+            JOIN entities e ON e.id = egd.entity_id
+            LEFT JOIN entity_types et ON et.id = e.entity_type_id
+            LEFT JOIN movement_types mt ON mt.id = egd.movement_type_id
+            LEFT JOIN size_classes sc ON sc.id = egd.size_class_id
+            LEFT JOIN animation_styles ans ON ans.id = egd.animation_style_id
+            LEFT JOIN silhouette_types st ON st.id = egd.silhouette_type_id
+            ORDER BY e.canonical_name
+            LIMIT 500
+        """)
+    ).mappings().all()
+    entities = [dict(r) for r in entity_rows]
+
+    # 3. Attack types
+    atk_rows = session.exec(
+        sa_text("""
+            SELECT id, name, attack_animation_type, projectile_color,
+                   trail_type, impact_effect
+            FROM attack_types ORDER BY name
+        """)
+    ).mappings().all()
+    attack_types = [dict(r) for r in atk_rows]
+
+    # 4. Item sprites from asset_registry
+    item_rows = session.exec(
+        sa_text("""
+            SELECT id, asset_key, display_name, category, render_definition, tags
+            FROM asset_registry
+            WHERE category = 'item_sprite'
+            ORDER BY asset_key
+        """)
+    ).mappings().all()
+    item_sprites = [dict(r) for r in item_rows]
+
+    # 5a. Achievements with icon keys
+    ach_rows = session.exec(
+        sa_text("""
+            SELECT a.id, a.name, a.description, a.category, a.icon_sprite_key,
+                   ar.render_definition AS icon_render
+            FROM achievements a
+            LEFT JOIN asset_registry ar ON ar.asset_key = a.icon_sprite_key
+            ORDER BY a.category, a.name
+        """)
+    ).mappings().all()
+    achievements = [dict(r) for r in ach_rows]
+
+    # 5b. Curated artifacts with best-tier rarity
+    ca_rows = session.exec(
+        sa_text("""
+            SELECT ca.id, ca.name, ca.source_type, ca.icon_sprite_key,
+                   ar.render_definition AS icon_render,
+                   cat.rarity
+            FROM curated_artifacts ca
+            LEFT JOIN asset_registry ar ON ar.asset_key = ca.icon_sprite_key
+            LEFT JOIN curated_artifact_tiers cat ON cat.curated_artifact_id = ca.id
+            ORDER BY ca.name
+        """)
+    ).mappings().all()
+    curated_artifacts = [dict(r) for r in ca_rows]
+
+    # 6. Entity family distribution
+    fam_rows = session.exec(
+        sa_text("""
+            SELECT ef.name AS family_name, COUNT(e.id) AS count
+            FROM entity_families ef
+            LEFT JOIN entities e ON e.entity_family_id = ef.id
+            GROUP BY ef.name
+            ORDER BY count DESC
+        """)
+    ).mappings().all()
+    entity_families = [dict(r) for r in fam_rows]
+
+    # 7. Boss lore samples
+    lore_rows = session.exec(
+        sa_text("""
+            SELECT c.id, c.title, c.chapter_number, c.transition_lore_text,
+                   b.title AS book_title
+            FROM chapters c
+            JOIN books b ON b.id = c.book_id
+            WHERE c.transition_lore_text IS NOT NULL
+                AND c.transition_lore_text != ''
+            ORDER BY c.id
+            LIMIT 5
+        """)
+    ).mappings().all()
+    boss_lore = [dict(r) for r in lore_rows]
+
+    # 8. Scene assignment coverage
+    cov_row = session.exec(
+        sa_text("""
+            SELECT
+                COUNT(*) AS total_scenes,
+                COUNT(atmosphere_id) AS with_atmosphere,
+                COUNT(background_id) AS with_background,
+                COUNT(*) - COUNT(atmosphere_id) AS missing_atmosphere,
+                COUNT(*) - COUNT(background_id) AS missing_background
+            FROM scene_gameplay_data
+        """)
+    ).mappings().first()
+    scene_coverage = dict(cov_row) if cov_row else {}
+
+    return {
+        "backgrounds": backgrounds,
+        "entities": entities,
+        "attack_types": attack_types,
+        "item_sprites": item_sprites,
+        "achievements": achievements,
+        "curated_artifacts": curated_artifacts,
+        "entity_families": entity_families,
+        "boss_lore": boss_lore,
+        "scene_coverage": scene_coverage,
+    }
 
 
 # ---------------------------------------------------------------------------
