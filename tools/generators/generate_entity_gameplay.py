@@ -21,13 +21,13 @@ import re
 import sys
 from pathlib import Path
 
-# Allow running from repo root or tools/ directory
-_TOOLS_DIR = Path(__file__).resolve().parent
-if str(_TOOLS_DIR) not in sys.path:
-    sys.path.insert(0, str(_TOOLS_DIR))
+# Ensure repo root is on sys.path so `tools.generators.lib` resolves
+_REPO_ROOT = str(Path(__file__).resolve().parent.parent.parent)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
-from lib.base_generator import BaseGenerator
-from lib.db_client import DBClient
+from tools.generators.lib.base_generator import BaseGenerator
+from tools.generators.lib.db_client import DBClient
 
 
 # ---------------------------------------------------------------------------
