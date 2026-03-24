@@ -136,7 +136,8 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         return proc
 
     async def test_generate_parses_json_stdout(self):
-        """Successful call returns parsed JSON."""
+        """Successful call unwraps Claude Code wrapper and returns inner result."""
+        # Claude Code wraps responses: {"result": "...content..."}
         payload = {"result": [{"name": "Goblin", "hp": 10}]}
         proc = self._mock_proc(json.dumps(payload).encode())
         provider = self._make_provider()
@@ -144,8 +145,20 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         with patch("asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
             result = await provider.generate("make an enemy", schema={})
 
-        self.assertEqual(result, payload)
+        # _parse_response unwraps the "result" field
+        self.assertEqual(result, [{"name": "Goblin", "hp": 10}])
         mock_exec.assert_called_once()
+
+    async def test_generate_parses_direct_json(self):
+        """Direct JSON (no wrapper) is returned as-is."""
+        payload = [{"name": "Goblin", "hp": 10}]
+        proc = self._mock_proc(json.dumps(payload).encode())
+        provider = self._make_provider()
+
+        with patch("asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
+            result = await provider.generate("make an enemy", schema={})
+
+        self.assertEqual(result, payload)
 
     async def test_generate_retries_on_failure(self):
         """Retries up to max_retries on non-zero returncode."""
