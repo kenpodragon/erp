@@ -144,6 +144,32 @@ class ItemSpriteGenerator(BaseGenerator):
         return results
 
     # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Normalize AI output — ensure render_definition is a JSON string."""
+        rd = record.get("render_definition")
+        if rd is not None and not isinstance(rd, str):
+            record["render_definition"] = json.dumps(rd)
+        return record
+
+    # ------------------------------------------------------------------
     # build_prompt
     # ------------------------------------------------------------------
 
@@ -156,20 +182,45 @@ class ItemSpriteGenerator(BaseGenerator):
 
         armor_palettes = json.dumps(_ARMOR_PALETTES, indent=4)
 
-        return f"""Generate item sprite configurations for a dark-fantasy MMORPG paper doll.
+        return f"""You are a pixel-art equipment designer for a dark-fantasy MMORPG called "Towers of Elysium". Generate DETAILED paper doll equipment sprite configurations for each armor_class × gear_slot combination.
 
-Combos to process:
+MATERIAL APPEARANCE GUIDE (how each armor class should look):
+- cloth: Flowing fabric with visible fold lines, soft edges, slightly translucent. Colors: deep purples and indigos.
+- leather: Tough hide with visible stitching seams, buckle and rivet details, worn texture. Colors: dark browns and tans.
+- chain: Interlocking ring pattern visible as fine mesh texture, metallic sheen. Colors: steel grays.
+- plate: Solid angular panels with engraved edge lines, bold rivets at joints, highly reflective. Colors: silver with dark accents.
+- divine: Radiant golden filigree over white base, glowing trim, ornate engravings. Colors: gold (#ffd700) with white.
+- magic: Arcane rune-etched surface with subtle inner glow, iridescent sheen. Colors: medium purple with cyan highlights.
+- bone: Skeletal segments visible, yellowed with age, cracked surface, irregular edges. Colors: cream/tan with dark cracks.
+- shadow: Translucent void-black material with wispy smoke edges, barely-there form. Colors: near-black with deep blue hints.
+
+SLOT SHAPE GUIDE (what each gear slot looks like):
+- helmet/head: Dome with visor slit or open face, cheek guards
+- chest/body: Full torso panel with shoulder width, waist taper
+- legs: Two-leg trapezoid shape with knee guards
+- boots/feet: Angled foot shape with ankle cuff
+- gloves/hands: Five-finger hand outline with wrist cuff
+- shoulders: Pauldron — rounded cap with flange extensions
+- belt/waist: Horizontal strap with central buckle
+- ring: Small circular band with gemstone accent
+- necklace/neck: Oval pendant on thin chain
+- offhand/shield: Heater shield or buckler shape
+- mainhand/weapon: Sword blade with crossguard and grip
+- twohand: Large greatsword — long blade, extended grip
+- back/cloak: Flowing cape silhouette
+
+Combinations to generate:
 {combos_block}
 
-Armor class color palettes:
+Base color palettes by armor class:
 {armor_palettes}
 
-For each combo return a JSON object with:
+For each combination return a JSON object with:
   asset_key ("item_{{armor_class}}_{{gear_slot}}"),
   category ("item_sprite"),
-  render_definition (JSON string with shape, color, armor_class, gear_slot)
+  render_definition (a JSON STRING containing: svg_path (unique SVG path for this exact slot shape), primary_color, secondary_color, texture_description (1 sentence), glow_effect (null or color hex), detail_notes (1 sentence of visual specifics))
 
-Return a JSON array. No explanation.
+Return a JSON array. No explanation. No markdown.
 """
 
     # ------------------------------------------------------------------
