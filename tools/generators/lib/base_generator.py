@@ -18,8 +18,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
 
-from lib.cache import GeneratorCache
-from lib.db_client import DBClient
+from .cache import GeneratorCache
+from .db_client import DBClient
 
 
 class BaseGenerator(ABC):
@@ -223,7 +223,7 @@ class BaseGenerator(ABC):
                 async with sem:
                     # Generate
                     if args.ai:
-                        from lib.ai_provider import AIProvider
+                        from .ai_provider import AIProvider
                         ai = AIProvider()
                         prompt = self.build_prompt(batch, context)
                         try:

@@ -8,6 +8,7 @@ Config is loaded from env file, falling back to os.environ, then defaults.
 import asyncio
 import json
 import os
+import shutil
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -168,10 +169,94 @@ class AIProvider:
         ) from last_error
 
     async def _run_once(self, provider: str, prompt: str) -> Any:
-        """Execute CLI once and return parsed JSON."""
+        """Execute AI generation via SDK (preferred) or CLI fallback."""
+        # Prefer SDK-based generation for reliability (avoids subprocess issues)
+        if provider == "claude" or provider == "anthropic":
+            return await self._run_anthropic_sdk(prompt)
+        elif provider == "gemini":
+            return await self._run_gemini_sdk(prompt)
+        # Generic CLI fallback
+        return await self._run_cli(provider, prompt)
+
+    async def _run_anthropic_sdk(self, prompt: str) -> Any:
+        """Use Anthropic Python SDK directly — no subprocess needed."""
+        try:
+            import anthropic
+        except ImportError:
+            return await self._run_cli("claude", prompt)
+
+        # Load API key from env files if not in os.environ
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            file_vals = _load_merged_env(None)
+            api_key = file_vals.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            # No API key — fall back to CLI
+            return await self._run_cli("claude", prompt)
+
+        client = anthropic.Anthropic(api_key=api_key)
+        model = self.model or self.DEFAULT_MODEL
+
+        # Run synchronous SDK call in executor to avoid blocking event loop
+        def _call():
+            return client.messages.create(
+                model=model,
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}],
+            )
+
+        loop = asyncio.get_event_loop()
+        response = await asyncio.wait_for(
+            loop.run_in_executor(None, _call),
+            timeout=self.timeout,
+        )
+
+        raw = response.content[0].text.strip()
+        return self._parse_response(raw, "anthropic-sdk")
+
+    async def _run_gemini_sdk(self, prompt: str) -> Any:
+        """Use Google GenAI SDK directly — no subprocess needed."""
+        try:
+            import google.generativeai as genai
+        except ImportError:
+            # Fall back to CLI
+            return await self._run_cli("gemini", prompt)
+
+        api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            file_vals = _load_merged_env(None)
+            api_key = file_vals.get("GOOGLE_API_KEY") or file_vals.get("GEMINI_API_KEY")
+        if not api_key:
+            # Fall back to CLI
+            return await self._run_cli("gemini", prompt)
+
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-2.0-flash")
+
+        def _call():
+            return model.generate_content(prompt)
+
+        loop = asyncio.get_event_loop()
+        response = await asyncio.wait_for(
+            loop.run_in_executor(None, _call),
+            timeout=self.timeout,
+        )
+
+        raw = response.text.strip()
+        return self._parse_response(raw, "gemini-sdk")
+
+    async def _run_cli(self, provider: str, prompt: str) -> Any:
+        """Execute CLI subprocess (fallback for providers without SDK)."""
+        import sys
         cmd = self._build_command(provider, prompt)
+        # On Windows, .CMD scripts need shell=True
+        use_shell = sys.platform == "win32" and shutil.which(provider, mode=os.X_OK) is not None and shutil.which(provider).lower().endswith(".cmd")
         proc = await asyncio.create_subprocess_exec(
             *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        ) if not use_shell else await asyncio.create_subprocess_shell(
+            " ".join(cmd),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
