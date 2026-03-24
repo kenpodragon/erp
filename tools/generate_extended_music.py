@@ -176,16 +176,98 @@ class ExtendedMusicGenerator(BaseGenerator):
             })
         return results
 
+    # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Ensure music_definitions is a JSON string."""
+        md = record.get("music_definitions")
+        if md is not None and not isinstance(md, str):
+            record["music_definitions"] = json.dumps(md)
+        return record
+
     def build_prompt(self, batch: list[dict], context: dict) -> str:
         lines = [
-            f"  - id={r['id']} name=\"{r.get('name')}\" archetype=\"{r.get('archetype')}\""
+            f'  - id={r["id"]} name="{r.get("name")}" archetype="{r.get("archetype")}"'
+            f' current_sections={len((r.get("music_definitions") or {{}}).get("sections", [])) if isinstance(r.get("music_definitions"), dict) else 0}'
             for r in batch
         ]
-        return (
-            "Extend music loop definitions for these atmospheres.\n"
-            "Return JSON array with fields: id, music_definitions\n\n"
-            + "\n".join(lines)
-        )
+        atmos_block = "\n".join(lines)
+
+        return f"""You are a composer for a dark-fantasy MMORPG called "Towers of Elysium". The game uses Web Audio API synthesis — generate music loop definitions using the note/frequency/duration format below.
+
+Each atmosphere needs a COMPLETE music_definitions object with at least 4 sections: intro, main, variation, and outro. Each section must feel distinct — different instrument mix, note density, or emotional tone.
+
+WEB AUDIO SYNTHESIS FORMAT:
+{{
+  "bpm": <60-120 integer>,
+  "key": <"minor" | "major" | "dorian" | "phrygian">,
+  "loop_point": 1,
+  "extended": true,
+  "sections": [
+    {{
+      "name": "intro",
+      "duration_beats": <4-8>,
+      "volume_envelope": {{"attack": 2.0, "sustain": 0.7, "release": 0.5}},
+      "tracks": [
+        {{
+          "instrument": <"bass" | "pad" | "lead" | "percussion" | "arp">,
+          "notes": [
+            {{"frequency": <Hz float>, "duration": <beats float>, "volume": <0.0-1.0>}},
+            ...
+          ]
+        }}
+      ]
+    }},
+    ...
+  ]
+}}
+
+ARCHETYPE → MUSICAL IDENTITY GUIDE:
+- dungeon: Slow minor key, bass-heavy, sparse notes, tension-building drones. BPM 55-65. Instruments: bass, pad.
+- combat: Fast phrygian mode, aggressive percussion, driving bass, rapid arp. BPM 110-120. Instruments: bass, percussion, arp.
+- exploration: Dorian mode, melodic lead, flowing arp patterns, open feel. BPM 70-85. Instruments: lead, arp, pad.
+- boss: Intense, orchestral-inspired, minor key with chromatic tension. BPM 100-115. All instruments.
+- boss_chapter: Grand but ominous, driving rhythm with sweeping lead. BPM 95-110.
+- boss_book: Epic finale energy, all sections at high intensity, climactic. BPM 105-120.
+- training: Motivational but dark, medium tempo, repetitive groove. BPM 85-100. Instruments: bass, arp.
+- ambient: Very slow, pad-only, almost no rhythm, atmospheric. BPM 50-60. Instruments: pad only.
+- idle: Gentle minor loop, sparse notes, comfortable for long listening. BPM 65-75.
+- settlement: Slightly warmer than dungeon, folk-influenced, minor but not oppressive. BPM 70-80.
+
+FREQUENCY REFERENCE (common dark fantasy note frequencies in Hz):
+A2=110, B2=123, C3=131, D3=147, E3=165, F3=175, G3=196,
+A3=220, B3=247, C4=262, D4=294, E4=330, F4=349, G4=392,
+A4=440, Bb4=466, C5=523, D5=587, E5=659
+
+For minor chords, use: root, minor 3rd (root×1.189), 5th (root×1.498)
+For tension: tritone = root×1.414
+
+Atmospheres to extend:
+{atmos_block}
+
+For each atmosphere, return a JSON object with:
+  id (integer),
+  music_definitions (a JSON STRING — the complete music definition object with bpm, key, loop_point, extended=true, and sections array containing intro + main + variation + outro, each with 1-3 tracks and 4-12 notes per track)
+
+Return a JSON array. No explanation. No markdown.
+"""
 
     def validate(self, record: dict, db: DBClient) -> list[str]:
         errors: list[str] = []
