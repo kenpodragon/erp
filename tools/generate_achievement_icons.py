@@ -109,22 +109,19 @@ class AchievementIconGenerator(BaseGenerator):
             asset_config = record.get("asset_config", "{}")
 
             # Update achievement
-            db.execute(
-                "UPDATE achievements SET icon_sprite_key = $1 WHERE id = $2",
-                [sprite_key, achievement_id],
-            )
+            db.update("achievements", {"icon_sprite_key": sprite_key}, {"id": achievement_id})
 
             # Insert or skip asset_registry entry
             existing = db.query(
-                "SELECT id FROM asset_registry WHERE asset_key = $1 LIMIT 1",
+                "SELECT id FROM asset_registry WHERE asset_key = %s LIMIT 1",
                 [sprite_key],
             )
             if not existing:
                 db.insert_batch("asset_registry", [{
                     "asset_key": sprite_key,
-                    "asset_type": "sprite",
-                    "config": asset_config,
-                    "is_generated": True,
+                    "category": "achievement_icon",
+                    "render_definition": asset_config,
+                    "source": "generator",
                 }])
 
 

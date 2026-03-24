@@ -206,10 +206,7 @@ class ExtendedMusicGenerator(BaseGenerator):
 
     def _insert_results(self, db: DBClient, results: list[dict]) -> None:
         for record in results:
-            db.execute(
-                "UPDATE atmospheres SET music_definitions = $1 WHERE id = $2",
-                [record["music_definitions"], record["id"]],
-            )
+            db.update("atmospheres", {"music_definitions": record["music_definitions"]}, {"id": record["id"]})
 
 
 if __name__ == "__main__":

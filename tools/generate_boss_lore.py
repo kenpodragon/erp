@@ -103,10 +103,7 @@ class BossLoreGenerator(BaseGenerator):
         for record in results:
             target_type = record.get("target_type", "chapter")
             table = "chapters" if target_type == "chapter" else "books"
-            db.execute(
-                f"UPDATE {table} SET transition_lore_text = $1 WHERE id = $2",
-                [record["transition_lore_text"], record["id"]],
-            )
+            db.update(table, {"transition_lore_text": record["transition_lore_text"]}, {"id": record["id"]})
 
 
 if __name__ == "__main__":

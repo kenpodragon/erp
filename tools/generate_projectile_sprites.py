@@ -124,8 +124,9 @@ class ProjectileSpriteGenerator(BaseGenerator):
                 "attack_type_id": attack_id,
                 "sprite_key": sprite_key,
                 "asset_key": sprite_key,
-                "asset_type": "projectile_sprite",
-                "config_json": config_json,
+                "category": "projectile_sprite",
+                "render_definition": config_json,
+                "source": "generator",
             }
             results.append(record)
         return results
@@ -153,8 +154,8 @@ Animation type templates: {anim_types}
 
 For each attack type, return a JSON object with:
   attack_type_id, sprite_key ("projectile_{{animation_type}}_{{id}}"),
-  asset_key (same as sprite_key), asset_type ("projectile_sprite"),
-  config_json (JSON string: shape, trail, color, animation_type)
+  asset_key (same as sprite_key), category ("projectile_sprite"),
+  render_definition (JSON string: shape, trail, color, animation_type)
 
 Return a JSON array. No explanation.
 """
@@ -181,16 +182,14 @@ Return a JSON array. No explanation.
             sprite_key = record["sprite_key"]
 
             # Update attack_types
-            db.execute(
-                "UPDATE attack_types SET projectile_sprite_key = %s WHERE id = %s",
-                (sprite_key, attack_type_id),
-            )
+            db.update("attack_types", {"projectile_sprite_key": sprite_key}, {"id": attack_type_id})
 
             # Insert into asset_registry
             asset_row = {
                 "asset_key": record["asset_key"],
-                "asset_type": record["asset_type"],
-                "config_json": record["config_json"],
+                "category": record["category"],
+                "render_definition": record["render_definition"],
+                "source": record["source"],
             }
             db.insert_batch(self.table, [asset_row])
 

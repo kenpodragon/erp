@@ -113,20 +113,14 @@ class LoreContentGenerator(BaseGenerator):
     def _insert_results(self, db: DBClient, results: list[dict]) -> None:
         for record in results:
             entity_id = record["id"]
-            db.execute(
-                """
-                UPDATE entities
-                SET base_description    = $1,
-                    base_emotional_state = $2,
-                    base_sounds         = $3
-                WHERE id = $4
-                """,
-                [
-                    record.get("base_description"),
-                    record.get("base_emotional_state"),
-                    record.get("base_sounds"),
-                    entity_id,
-                ],
+            db.update(
+                "entities",
+                {
+                    "base_description": record.get("base_description"),
+                    "base_emotional_state": record.get("base_emotional_state"),
+                    "base_sounds": record.get("base_sounds"),
+                },
+                {"id": entity_id},
             )
 
 

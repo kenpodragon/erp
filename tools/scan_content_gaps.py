@@ -228,14 +228,13 @@ def _column_exists(db: DBClient, table_name: str, column_name: str) -> bool:
 def _audit_insert(db: DBClient, category: str, entity_type: str, entity_id: int, field_name: str, message: str) -> None:
     """Best-effort insert into dev_content_audit."""
     try:
-        db.execute(
-            """
-            INSERT INTO dev_content_audit (category, entity_type, entity_id, field_name, message)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT DO NOTHING
-            """,
-            [category, entity_type, entity_id, field_name, message],
-        )
+        db.insert_one("dev_content_audit", {
+            "category": category,
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "field_name": field_name,
+            "message": message,
+        })
     except Exception:
         pass  # Table may not support ON CONFLICT or may be absent
 

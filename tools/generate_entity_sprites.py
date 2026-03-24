@@ -189,10 +189,7 @@ Return a JSON array, one object per entity. No explanation.
         for record in results:
             egdata_id = record["id"]
             sprite_key = record["sprite_key"]
-            db.execute(
-                "UPDATE entity_gameplay_data SET sprite_key = %s WHERE id = %s",
-                (sprite_key, egdata_id),
-            )
+            db.update("entity_gameplay_data", {"sprite_key": sprite_key}, {"id": egdata_id})
 
 
 # ---------------------------------------------------------------------------

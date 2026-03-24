@@ -99,22 +99,19 @@ class ArtifactIconGenerator(BaseGenerator):
             asset_config = record.get("asset_config", "{}")
 
             # Update curated_artifact
-            db.execute(
-                "UPDATE curated_artifacts SET icon_sprite_key = $1 WHERE id = $2",
-                [sprite_key, artifact_id],
-            )
+            db.update("curated_artifacts", {"icon_sprite_key": sprite_key}, {"id": artifact_id})
 
             # Insert asset_registry entry if not already present
             existing = db.query(
-                "SELECT id FROM asset_registry WHERE asset_key = $1 LIMIT 1",
+                "SELECT id FROM asset_registry WHERE asset_key = %s LIMIT 1",
                 [sprite_key],
             )
             if not existing:
                 db.insert_batch("asset_registry", [{
                     "asset_key": sprite_key,
-                    "asset_type": "sprite",
-                    "config": asset_config,
-                    "is_generated": True,
+                    "category": "artifact_icon",
+                    "render_definition": asset_config,
+                    "source": "generator",
                 }])
 
 

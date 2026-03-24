@@ -165,10 +165,7 @@ class SceneDataGenerator(BaseGenerator):
 
         if atmo_updates:
             for row in atmo_updates:
-                db.execute(
-                    "UPDATE scene_gameplay_data SET atmosphere_id = $1 WHERE scene_id = $2",
-                    [row["atmosphere_id"], row["scene_id"]]
-                )
+                db.update("scene_gameplay_data", {"atmosphere_id": row["atmosphere_id"]}, {"scene_id": row["scene_id"]})
 
 
 if __name__ == "__main__":
