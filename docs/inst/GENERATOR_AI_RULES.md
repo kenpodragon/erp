@@ -4,6 +4,21 @@
 
 This document is a prompt for an AI agent to populate ALL missing assets in the ERP game database. Follow the steps below in exact order. Do not skip phases. Do not parallelize across phases — only within a phase where noted.
 
+**Reference docs (read if you need more detail):**
+- `docs/inst/GENERATOR_INSTRUCTIONS.md` — full setup, usage examples, troubleshooting
+- `docs/recs/C_STORY_ASSET_GENERATORS.md` — generator requirements and priority list
+- `docs/superpowers/specs/2026-03-23-generator-pipeline-design.md` — architecture spec
+
+---
+
+## How Generation Works
+
+**`--ai` mode:** Calls an external AI CLI (Claude or Gemini) configured in `tools/.env` via `AI_CLI_PROVIDER`. The AI receives entity descriptions, lore context, and chapter data from the DB and generates lore-appropriate, unique content. Each generator's `build_prompt()` and `get_context()` methods automatically query the DB for relevant context — you do not need to manually provide lore.
+
+**Default mode (no `--ai`):** Uses deterministic Python fallback logic — template-based, type-mapped defaults. Functional but generic. Good for bulk seeding where AI quality isn't needed.
+
+**For lore-appropriate results, always use `--ai`.** The generators automatically query entity descriptions, chapter titles, atmosphere data, and family classifications to build context-rich prompts.
+
 ---
 
 ## Prerequisites Check
@@ -11,17 +26,22 @@ This document is a prompt for an AI agent to populate ALL missing assets in the 
 Before starting, verify the environment is ready:
 
 ```bash
-# 1. Check DB connection
-python tools/db_utils_check.py
+# 1. Check DB connection (use localhost from host, not host.docker.internal)
+python -c "from tools.lib.db_client import DBClient; db = DBClient(); print('DB connection OK'); db.close()"
 # Expected: "DB connection OK"
+# If it fails with host.docker.internal error: set DATABASE_URL env var with localhost:
+#   export DATABASE_URL="postgresql://<user>:<pass>@localhost:5432/<dbname>"
 
-# 2. Verify tools/.env exists
+# 2. Verify tools/.env exists (for AI mode)
 ls tools/.env
-# If missing: cp tools/.env.example tools/.env  (then configure AI_CLI_PROVIDER)
+# If missing: cp tools/.env.example tools/.env
+# Then edit tools/.env and set AI_CLI_PROVIDER=claude (or gemini)
 
 # 3. Verify backend/.env has DATABASE_URL
 grep DATABASE_URL backend/.env
 # Expected: a non-empty postgresql:// connection string
+# NOTE: If DATABASE_URL contains "host.docker.internal", you must override it:
+#   export DATABASE_URL="postgresql://<user>:<pass>@localhost:5432/<dbname>"
 ```
 
 If any check fails, stop and resolve before proceeding.
@@ -35,10 +55,12 @@ If any check fails, stop and resolve before proceeding.
 Always back up before any generation run.
 
 ```bash
-python tools/db_dump_restore.py dump --tag pre-generation
+python tools/db_dump_restore.py dump
 ```
 
-Confirm the backup file exists before continuing.
+Note the output filename (e.g., `erp_backup_20260323_191448.dump`). You will need it if you need to restore.
+
+Confirm the backup file exists in `db/backups/` before continuing.
 
 ---
 
@@ -59,20 +81,28 @@ Review the output. Note which tables report missing rows — these are the targe
 Run these scripts in exact order. Each depends on the previous.
 
 ```bash
-# 3a. Assign atmosphere archetypes to all scenes
+# 3a. Assign atmosphere archetypes to chapters, books, and locations
 python tools/assign_atmospheres.py --ai
+# NOTE: This is a standalone script. No validate/status commands.
+# Verify: check the output summary line for counts updated.
 
-# 3b. Classify all 3,936 entities into families (see Subagent Strategy below for large batches)
+# 3b. Classify all entities into families
 python tools/seed_entity_families.py generate --ai --parallel 4
+# Verify:
+python tools/seed_entity_families.py status
+# Expected: "Missing items: 0"
 
-# 3c. Generate gameplay stats (HP, DPS, rewards) for every entity
+# 3c. Populate visual/combat data for every entity
 python tools/generate_entity_gameplay.py generate --ai --parallel 4
+# Verify:
+python tools/generate_entity_gameplay.py status
+# Expected: "Missing items: 0"
 
 # 3d. Snapshot current game_configs as a difficulty preset
 python tools/capture_difficulty_preset.py
+# NOTE: This is a standalone script. No validate/status commands.
+# Verify: check the output confirms presets were inserted.
 ```
-
-After each script: run `python tools/<script>.py validate` and confirm 0 errors before proceeding.
 
 ---
 
@@ -81,58 +111,66 @@ After each script: run `python tools/<script>.py validate` and confirm 0 errors 
 Depends on Phase 2 entity families being fully populated.
 
 ```bash
-# 4a. Entity sprite descriptors
+# 4a. Entity sprite rendering configs
 python tools/generate_entity_sprites.py generate --ai --parallel 4
+python tools/generate_entity_sprites.py status
+# Expected: "Missing items: 0"
 
-# 4b. Item icon descriptors
+# 4b. Item paper doll + inventory sprites
 python tools/generate_item_sprites.py generate --ai --parallel 4
+python tools/generate_item_sprites.py status
 
-# 4c. Projectile visual descriptors
+# 4c. Projectile visual configs
 python tools/generate_projectile_sprites.py generate --ai
+python tools/generate_projectile_sprites.py status
 
-# 4d. Link attack patterns to entity families
+# 4d. Attack type visual columns (projectile_color, trail_type, impact_effect)
 python tools/populate_attack_visuals.py generate --ai
+python tools/populate_attack_visuals.py status
 
-# 4e. Scene background descriptors
+# 4e. Parallax background layers per chapter
 python tools/generate_backgrounds.py generate --ai --parallel 4
+python tools/generate_backgrounds.py status
 ```
-
-After each script: run `python tools/<script>.py validate` and confirm 0 errors.
 
 ---
 
 ### Step 5: Phase 4 — Scene Composition
 
-Depends on Phase 3 sprites being fully populated.
+Depends on Phase 3 backgrounds being populated.
 
 ```bash
-# Generate entity spawn tables for all scenes
 python tools/generate_scene_data.py generate --ai --parallel 4
+python tools/generate_scene_data.py status
+# Expected: "Missing items: 0"
 ```
-
-Run `python tools/generate_scene_data.py validate` and confirm 0 errors.
 
 ---
 
 ### Step 6: Phase 5 — Content and Polish
 
-These scripts are independent of each other. They may be run in any order, or in parallel if your environment supports it.
+These scripts are independent of each other. They may be run in any order.
 
 ```bash
-# Flavor text for scenes and entities
+# Entity descriptions, emotional states, sounds
 python tools/generate_lore_content.py generate --ai --parallel 4
+python tools/generate_lore_content.py status
 
-# Chapter and book transition lore text
+# Chapter and book transition lore text (NarrativeReveal cinematics)
 python tools/generate_boss_lore.py generate --ai
+python tools/generate_boss_lore.py status
 
-# Achievement icon URLs
+# Achievement icon sprite keys
 python tools/generate_achievement_icons.py generate --ai
+python tools/generate_achievement_icons.py status
 
-# Artifact type icon URLs
+# Curated artifact icon sprite keys
 python tools/generate_artifact_icons.py generate --ai
+python tools/generate_artifact_icons.py status
 
-# Extended music definition seeds
+# Extended music loops (2-3 minutes per atmosphere)
 python tools/generate_extended_music.py generate --ai
+python tools/generate_extended_music.py status
 ```
 
 ---
@@ -143,41 +181,41 @@ python tools/generate_extended_music.py generate --ai
 python tools/scan_content_gaps.py --verbose
 ```
 
-**Success criteria:** The scanner reports **0 gaps** across all tables.
+**Success criteria:** The scanner reports **0 gaps** across all tables (excluding known exceptions like `death_sfx_key` which requires dedicated SFX generation).
 
-If gaps remain, identify which generator is responsible using the Generator List in `GENERATOR_INSTRUCTIONS.md`, re-run that generator with `--resume`, validate, and re-scan.
+If gaps remain, identify which generator is responsible using the Generator List in `docs/inst/GENERATOR_INSTRUCTIONS.md`, re-run that generator, check `status`, and re-scan.
 
 ---
 
 ## Subagent Strategy
 
-For large classification tasks — especially `seed_entity_families.py` which processes 3,936 entities — spawn parallel subagents to reduce wall-clock time:
+For large tasks, use the `--parallel` flag built into each generator. This spawns concurrent workers internally — no need to manually split into subagents.
 
-1. Query distinct `entity_type` values from the `entities` table.
-2. Assign one subagent per `entity_type` batch (e.g., `BEAST`, `HUMANOID`, `UNDEAD`, `CONSTRUCT`, etc.).
-3. Each subagent runs:
-   ```bash
-   python tools/seed_entity_families.py generate --ai --entity-type <TYPE>
-   ```
-4. Wait for all subagents to complete before running `generate_entity_gameplay.py`.
+```bash
+# Example: 4 concurrent workers for entity gameplay data
+python tools/generate_entity_gameplay.py generate --ai --parallel 4
+```
 
-Do not split `generate_entity_gameplay.py` or `generate_scene_data.py` by subagent — their internal `--parallel` flag is sufficient.
+The generators group items by type (entity_type, silhouette_type, armor_class, etc.) and process groups in parallel. This provides natural load distribution.
+
+For the initial entity family classification (~3,936 entities), `--parallel 4` is sufficient. The script handles batching and grouping internally.
 
 ---
 
-## Validation Rules
+## Validation Protocol
 
-After every generator script:
+After running each BaseGenerator-based script, verify with `status`:
 
-1. Run the validate command:
-   ```bash
-   python tools/<generator>.py validate
-   ```
-2. Confirm zero FK violations (all referenced IDs exist in parent tables).
-3. Confirm zero uniqueness violations (no duplicate rows on constrained columns).
-4. Confirm row count matches expected (compare `status` output before and after).
+```bash
+python tools/<generator>.py status
+# Expected: "Missing items: 0"
+```
 
-Do not proceed to the next phase if validation reports errors.
+**Standalone scripts** (`assign_atmospheres.py`, `capture_difficulty_preset.py`) do NOT have `status` or `validate` commands. Verify their output by:
+- Checking the summary line they print (e.g., "Updated: 138 chapters, 3 books, 449 locations")
+- Running `scan_content_gaps.py` to confirm the related gaps are now filled
+
+**For all generators:** Check `status` output before and after to confirm the count decreased as expected.
 
 ---
 
@@ -185,25 +223,33 @@ Do not proceed to the next phase if validation reports errors.
 
 ### Generator fails mid-run
 ```bash
-python tools/<generator>.py generate --resume
+# Re-run generate — BaseGenerator.get_missing_items() naturally skips already-populated rows
+python tools/<generator>.py generate --ai
 ```
-The `--resume` flag skips rows already written to the DB and restarts from the last unprocessed batch.
+The generator only processes rows where required columns are still NULL, so re-running is safe and idempotent.
+
+### Cached batches not inserted (process crashed between generate and insert)
+```bash
+# Insert already-cached data without re-generating
+python tools/<generator>.py insert
+```
 
 ### AI provider times out or errors
 - Reduce parallelism: `--parallel 2` or `--parallel 1`
 - Switch provider in `tools/.env`: `AI_CLI_PROVIDER=gemini`
-- Retry: `python tools/<generator>.py generate --ai --resume`
+- Retry: `python tools/<generator>.py generate --ai`
 
 ### DB is corrupted or data is invalid
 ```bash
-python tools/db_dump_restore.py restore --tag pre-generation
+# Restore the backup from Step 1 (use the actual filename)
+python tools/db_dump_restore.py restore <backup_filename>
 ```
 This restores the pre-generation backup. Re-run from Step 2.
 
 ### Cache is inconsistent after crash
 ```bash
-python tools/<generator>.py cache --clear
-python tools/<generator>.py generate --resume
+python tools/<generator>.py --clean-cache
+python tools/<generator>.py generate --ai
 ```
 
 ---
@@ -212,7 +258,10 @@ python tools/<generator>.py generate --resume
 
 The run is complete when ALL of the following are true:
 
-1. `python tools/scan_content_gaps.py --verbose` reports **0 gaps**.
-2. Every generator reports `status: fully_populated` when run with the `status` subcommand.
-3. No FK violations or uniqueness errors in any `validate` output.
-4. The DB backup from Step 1 is retained (do not delete).
+1. `python tools/scan_content_gaps.py --verbose` reports **0 gaps** (or only known exceptions).
+2. Every BaseGenerator-based script reports `"Missing items: 0"` via `status`.
+3. The DB backup from Step 1 is retained (do not delete).
+
+---
+
+## For detailed troubleshooting, see `docs/inst/GENERATOR_INSTRUCTIONS.md`.

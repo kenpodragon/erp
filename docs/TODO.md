@@ -6,9 +6,11 @@
 ## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
 ```
 Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
-Next priority: entity gameplay data generator, sprite generators, visual verification.
-Spec: docs/superpowers/specs/2026-03-22-banner-visual-system-design.md
-Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
+Generator pipeline built (feature/generator-pipeline branch). Next: AI-driven full population, death_sfx_key generation, visual verification.
+Spec: docs/superpowers/specs/2026-03-23-generator-pipeline-design.md
+Plan: docs/superpowers/plans/2026-03-23-generator-pipeline.md
+Instructions: docs/inst/GENERATOR_INSTRUCTIONS.md
+AI Rules: docs/inst/GENERATOR_AI_RULES.md
 ```
 
 ---
@@ -24,6 +26,9 @@ Plan: docs/superpowers/plans/2026-03-22-banner-visual-system.md
 - [ ] **Entity sprite generator** (`tools/generate_entity_sprites.py`) — procedural asset_registry entries from silhouette + colors + size
 - [ ] **Item sprite generator** (`tools/generate_item_sprites.py`) — paper doll layer sprites for armor_class × gear_slot × rarity, weapon sprites, inventory icons
 - [ ] **Projectile sprite generator** (`tools/generate_projectile_sprites.py`) — projectile asset_registry entries per attack_type
+
+### Death SFX Population
+- [ ] **death_sfx_key generator** — 3,936 entities missing `death_sfx_key` in `entity_gameplay_data`. Needs AI-assisted generation based on entity type, family, and description to assign appropriate SFX preset keys. Add to `generate_entity_gameplay.py` or create dedicated generator.
 
 ### Finalization
 - [ ] **Migration 069** — NOT NULL constraints on entity_gameplay_data after generator populates. Migrate entity_attack_types → primary/secondary/tertiary. Drop entity_attack_types table.

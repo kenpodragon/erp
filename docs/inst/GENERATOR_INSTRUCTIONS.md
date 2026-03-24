@@ -185,8 +185,8 @@ psycopg2.errors.ForeignKeyViolation
 ### Cache corruption
 If a generator crashes mid-batch and the cache is inconsistent:
 ```bash
-python tools/<generator>.py cache --clear
-python tools/<generator>.py generate --resume
+python tools/<generator>.py --clean-cache
+python tools/<generator>.py generate
 ```
 Cache files live in `tools/.cache/<generator_name>/`.
 
