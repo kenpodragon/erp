@@ -138,35 +138,104 @@ class EntitySpriteGenerator(BaseGenerator):
         return results
 
     # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Map any name-based fields returned by the AI to FK IDs."""
+        silhouette_types = context.get("silhouette_types", {})
+        size_classes = context.get("size_classes", {})
+        animation_styles = context.get("animation_styles", {})
+
+        if "silhouette_type_name" in record:
+            resolved = self._lookup_id(silhouette_types, record.pop("silhouette_type_name"))
+            if resolved is not None:
+                record["silhouette_type_id"] = resolved
+
+        if "size_class_name" in record:
+            resolved = self._lookup_id(size_classes, record.pop("size_class_name"))
+            if resolved is not None:
+                record["size_class_id"] = resolved
+
+        if "animation_style_name" in record:
+            resolved = self._lookup_id(animation_styles, record.pop("animation_style_name"))
+            if resolved is not None:
+                record["animation_style_id"] = resolved
+
+        return record
+
+    # ------------------------------------------------------------------
     # build_prompt
     # ------------------------------------------------------------------
 
     def build_prompt(self, batch: list[dict], context: dict) -> str:
         silhouette_names = list(context["silhouette_types"].keys())
         size_names = list(context["size_classes"].keys())
+        animation_names = list(context.get("animation_styles", {}).keys())
 
         entity_lines = []
         for item in batch:
-            desc = (item.get("base_description") or "").strip()[:100]
+            desc = (item.get("base_description") or "").strip()[:200]
             entity_lines.append(
                 f'  - egdata_id={item["egdata_id"]} entity_id={item["entity_id"]}'
-                f' name="{item.get("entity_name")}" silhouette="{item.get("silhouette_type_name")}"'
-                f' size="{item.get("size_class_name")}" desc="{desc}"'
+                f' name="{item.get("entity_name")}"'
+                f' family="{item.get("entity_family_name", "unknown")}"'
+                f' silhouette="{item.get("silhouette_type_name")}"'
+                f' size="{item.get("size_class_name")}"'
+                f' animation="{item.get("animation_style_name")}"'
+                f' color_primary="{item.get("color_primary", "#8B0000")}"'
+                f' color_secondary="{item.get("color_secondary", "#1A1A2E")}"'
+                f' desc="{desc}"'
             )
         entities_block = "\n".join(entity_lines)
 
-        return f"""Generate unique SVG paths for entities in a dark-fantasy MMORPG.
+        return f"""You are a visual artist for a dark-fantasy MMORPG called "Towers of Elysium". Generate UNIQUE, DETAILED SVG silhouette path data for each entity below.
 
-Entities:
+CRITICAL RULES:
+- Every entity MUST have a completely unique SVG path — no two entities share the same shape
+- Use the entity's name, description, family, and size to inspire the shape
+- Use curves (C, Q bezier commands), arcs (A), and organic shapes — NOT just straight lines (L)
+- ViewBox is centered on 0,0; all shapes must fit within the -30 to 30 range
+- Scale shapes to match the size class: tiny (-8 to 8), small (-15 to 15), medium (-22 to 22), large (-27 to 27), huge (-30 to 30)
+
+SHAPE INSPIRATION EXAMPLES:
+- "Sludge Stalker" → amorphous blob with dripping tendrils at bottom, irregular bumps on top
+- "Rust Guardian" → angular mechanical torso with gear-like protrusions, rigid limbs
+- "Void Wraith" → wispy ethereal tendrils radiating outward, hollow center, frayed edges
+- "Shadow Bat" → wide wingspan silhouette, small body, pointed ears
+- "Bone Colossus" → skeletal ribcage visible, jagged spine protrusions, hollow sockets
+- "Crystal Elemental" → geometric faceted polygon with sharp crystalline spikes
+- "Swamp Lurker" → wide low crouching quadruped shape with tail
+- "Plague Specter" → hooded humanoid with tattered cloak edges trailing
+
+Entities to generate:
 {entities_block}
 
-Silhouette types: {silhouette_names}
-Size classes: {size_names}
+Valid silhouette_type_name values: {silhouette_names}
+Valid size_class_name values: {size_names}
+Valid animation_style_name values: {animation_names}
 
 For each entity, return a JSON object with:
-  id (egdata_id), sprite_key ("entity_sprite_{{entity_id}}")
+  id (egdata_id as integer),
+  sprite_key ("entity_sprite_{{entity_id}}"),
+  svg_path (the unique SVG "d" attribute string — MUST use C/Q/A curves, not just M/L/Z)
 
-Return a JSON array, one object per entity. No explanation.
+Return a JSON array, one object per entity. No explanation. No markdown.
 """
 
     # ------------------------------------------------------------------
