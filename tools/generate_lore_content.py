@@ -94,13 +94,88 @@ class LoreContentGenerator(BaseGenerator):
             })
         return results
 
+    # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Pass-through — all fields are plain strings, no FK resolution needed."""
+        return record
+
+    # ------------------------------------------------------------------
+    # build_prompt
+    # ------------------------------------------------------------------
+
     def build_prompt(self, batch: list[dict], context: dict) -> str:
-        lines = [f"  - id={r['id']} name=\"{r.get('canonical_name')}\" type=\"{r.get('entity_type_name')}\"" for r in batch]
-        return (
-            "Generate lore descriptions for these dark-fantasy entities.\n"
-            "Return JSON array with fields: id, base_description, base_emotional_state, base_sounds\n\n"
-            + "\n".join(lines)
-        )
+        lines = [
+            f'  - id={r["id"]} name="{r.get("canonical_name")}"'
+            f' type="{r.get("entity_type_name")}"'
+            f' family="{r.get("entity_family_name", "unknown")}"'
+            f' chapter="{r.get("chapter_title", "unknown")}"'
+            f' book="{r.get("book_title", "unknown")}"'
+            for r in batch
+        ]
+        entities_block = "\n".join(lines)
+
+        return f"""You are a lore writer for "Towers of Elysium", a dark-fantasy MMORPG based on a gothic horror book trilogy. Write IMMERSIVE, EVOCATIVE lore content for each entity below.
+
+WRITING STYLE:
+- Voice: Grim, literary, atmospheric — like flavour text in Darkest Dungeon or Dark Souls
+- Tone: Dread, awe, and weary familiarity with horror
+- Length: base_description = exactly 2-3 sentences. base_sounds = exactly 1 sentence.
+- NO clichés: do not write "its eyes glowed red" or "it exuded menace" — be specific and visceral
+
+CONTENT FIELDS TO GENERATE:
+
+1. base_description (2-3 sentences):
+   - Sentence 1: What the entity looks like — specific physical details, how it moves
+   - Sentence 2: Its behavior or hunting pattern, what makes it dangerous or unsettling
+   - Sentence 3 (optional): Its relationship to the world — what curse or force created it
+
+2. base_emotional_state (single word or short phrase):
+   - The psychological state the entity projects onto those nearby
+   - Examples: "hollow despair", "frenzied hunger", "cold calculating malice", "mournful longing", "infectious madness"
+   - Must be UNIQUE per entity — do not repeat the same state
+
+3. base_sounds (1 sentence):
+   - What the entity sounds like when encountered — be specific about the quality and source
+   - Examples: "A wet clicking rhythm like cracking joints precedes it from three rooms away." / "It communicates only in the scrape of keratin on stone." / "Silence itself seems to deepen in its presence, swallowing ambient sound."
+
+4. base_smells (1 sentence, optional but encouraged):
+   - What olfactory signature it leaves — ozone, rot, copper, sulfur, ancient dust, etc.
+
+EXAMPLES OF GOOD vs BAD DESCRIPTIONS:
+
+BAD: "A fearsome creature prowls the shadows. It is very dangerous and scary."
+GOOD: "The Marrow Stalker moves in a slow lateral gait, its spine articulating backwards at the hip like a broken marionette. It targets warmth — pressing its hollow face against stone walls where heat bleeds through — and waits for prey to pass within arm's reach. They say it was once a tax collector, cursed for every lie he told until his face forgot how to hold expression."
+
+Entities to generate:
+{entities_block}
+
+For each entity, return a JSON object with:
+  id (integer),
+  base_description (string, 2-3 sentences),
+  base_emotional_state (string, short phrase),
+  base_sounds (string, 1 sentence),
+  base_smells (string, 1 sentence — or null if you cannot derive one)
+
+Return a JSON array. No explanation. No markdown.
+"""
 
     def validate(self, record: dict, db: DBClient) -> list[str]:
         errors: list[str] = []
