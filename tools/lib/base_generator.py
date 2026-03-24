@@ -237,6 +237,10 @@ class BaseGenerator(ABC):
                     else:
                         results = self.python_fallback(batch, context)
 
+                    # Resolve AI name fields to IDs (if subclass implements it)
+                    if args.ai and hasattr(self, 'resolve_ai_record'):
+                        results = [self.resolve_ai_record(r, context) for r in results]
+
                     # Validate
                     valid_results = []
                     for record in results:

@@ -270,6 +270,41 @@ Return ONLY the JSON array, no explanation.
         return prompt
 
     # ------------------------------------------------------------------
+    # resolve_ai_record — convert name fields to ID fields
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Convert AI-returned name fields to FK IDs using lookup tables."""
+        name_to_id_map = {
+            "movement_type_name":        ("movement_type_id",        "movement_types"),
+            "size_class_name":           ("size_class_id",           "size_classes"),
+            "animation_style_name":      ("animation_style_id",      "animation_styles"),
+            "silhouette_type_name":      ("silhouette_type_id",      "silhouette_types"),
+            "primary_attack_type_name":  ("primary_attack_type_id",  "attack_types"),
+            "secondary_attack_type_name":("secondary_attack_type_id","attack_types"),
+            "tertiary_attack_type_name": ("tertiary_attack_type_id", "attack_types"),
+        }
+        resolved = dict(record)
+        for name_field, (id_field, lookup_table) in name_to_id_map.items():
+            name_val = resolved.pop(name_field, None)
+            if name_val and name_val != "null" and id_field not in resolved:
+                lookup = context.get(lookup_table, {})
+                # Try exact match, then lowercase
+                fk_id = lookup.get(name_val) or lookup.get(str(name_val).lower())
+                resolved[id_field] = fk_id
+            elif id_field not in resolved:
+                resolved.setdefault(id_field, None)
+
+        # Ensure stat_block is a JSON string
+        sb = resolved.get("stat_block")
+        if isinstance(sb, dict):
+            resolved["stat_block"] = json.dumps(sb)
+        elif sb is None:
+            resolved["stat_block"] = json.dumps({})
+
+        return resolved
+
+    # ------------------------------------------------------------------
     # validate
     # ------------------------------------------------------------------
 

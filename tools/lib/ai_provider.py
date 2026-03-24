@@ -192,10 +192,54 @@ class AIProvider:
             )
 
         raw = stdout.decode().strip()
+        return self._parse_response(raw, provider)
+
+    @staticmethod
+    def _parse_response(raw: str, provider: str) -> Any:
+        """Parse CLI response, handling Claude Code wrapper format."""
+        import re
+
         try:
-            return json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"Non-JSON stdout from {provider!r}: {raw[:200]}") from exc
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Maybe it's raw text with JSON embedded
+            data = raw
+
+        # Claude Code wraps output: {"type":"result","result":"...markdown..."}
+        if isinstance(data, dict) and "result" in data:
+            inner = data["result"]
+            if isinstance(inner, str):
+                # Extract JSON from markdown code blocks
+                match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", inner, re.DOTALL)
+                if match:
+                    inner = match.group(1).strip()
+                # Try parsing the inner content
+                try:
+                    return json.loads(inner)
+                except json.JSONDecodeError:
+                    # Maybe the result itself is plain text, return as-is
+                    return inner
+            return inner
+
+        # Gemini or direct JSON response
+        if isinstance(data, (dict, list)):
+            return data
+
+        # Last resort: try to find JSON in raw text
+        if isinstance(data, str):
+            match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", data, re.DOTALL)
+            if match:
+                try:
+                    return json.loads(match.group(1).strip())
+                except json.JSONDecodeError:
+                    pass
+            # Try parsing the whole string as JSON
+            try:
+                return json.loads(data)
+            except json.JSONDecodeError:
+                pass
+
+        raise ValueError(f"Cannot parse response from {provider!r}: {str(data)[:200]}")
 
     # ------------------------------------------------------------------
     # Batch generation
