@@ -1,18 +1,14 @@
-"""Tests for tools/lib/ai_provider.py"""
+"""Tests for tools/generators/lib/ai_provider.py"""
 
 import asyncio
 import json
 import os
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch, call
 
-# Ensure tools/ is on path so `tools.lib` is importable
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from tools.lib.ai_provider import AIProvider
+from tools.generators.lib.ai_provider import AIProvider
 
 
 class TestConfigLoading(unittest.TestCase):
@@ -349,7 +345,7 @@ class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
             raise asyncio.TimeoutError()
 
         with patch("asyncio.create_subprocess_exec", return_value=proc):
-            with patch("tools.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
+            with patch("tools.generators.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
                 with self.assertRaises(RuntimeError) as ctx:
                     await provider.generate("prompt", schema={})
 
@@ -370,7 +366,7 @@ class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
             raise asyncio.TimeoutError()
 
         with patch("asyncio.create_subprocess_exec", return_value=proc):
-            with patch("tools.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
+            with patch("tools.generators.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
                 with self.assertRaises(RuntimeError):
                     await provider._run_once("claude", "prompt")
 
@@ -459,7 +455,7 @@ class TestEnvMerge(unittest.TestCase):
         try:
             for key in ["AI_CLI_PROVIDER"]:
                 os.environ.pop(key, None)
-            from tools.lib.ai_provider import _load_merged_env
+            from tools.generators.lib.ai_provider import _load_merged_env
             merged = _load_merged_env(provided_path)
             # The provided file's value must be present
             self.assertEqual(merged.get("AI_CLI_PROVIDER"), "provided_provider")

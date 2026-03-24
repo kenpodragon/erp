@@ -1,19 +1,15 @@
-"""Tests for tools/lib/base_generator.py"""
+"""Tests for tools/generators/lib/base_generator.py"""
 import argparse
 import asyncio
 import json
-import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 
-# Ensure tools/ is on path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "tools"))
-
-from lib.base_generator import BaseGenerator
-from lib.cache import GeneratorCache
+from tools.generators.lib.base_generator import BaseGenerator
+from tools.generators.lib.cache import GeneratorCache
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +202,7 @@ class TestOrchestrationNoInsert:
         args = gen.parse_args(["generate", "--no-insert"])
 
         # Patch DBClient to return mock_db
-        with patch("lib.base_generator.DBClient", return_value=mock_db):
+        with patch("tools.generators.lib.base_generator.DBClient", return_value=mock_db):
             asyncio.run(gen._cmd_generate(args))
 
         # Cache directory for mock_gen should exist with at least one batch file
@@ -219,7 +215,7 @@ class TestOrchestrationNoInsert:
         gen._cache_dir = str(tmp_path / ".cache")
         args = gen.parse_args(["generate", "--no-insert"])
 
-        with patch("lib.base_generator.DBClient", return_value=mock_db):
+        with patch("tools.generators.lib.base_generator.DBClient", return_value=mock_db):
             asyncio.run(gen._cmd_generate(args))
 
         mock_db.insert_batch.assert_not_called()
@@ -229,7 +225,7 @@ class TestOrchestrationNoInsert:
         gen._cache_dir = str(tmp_path / ".cache")
         args = gen.parse_args(["generate"])
 
-        with patch("lib.base_generator.DBClient", return_value=mock_db):
+        with patch("tools.generators.lib.base_generator.DBClient", return_value=mock_db):
             asyncio.run(gen._cmd_generate(args))
 
         mock_db.insert_batch.assert_called()
@@ -239,7 +235,7 @@ class TestOrchestrationNoInsert:
         gen._cache_dir = str(tmp_path / ".cache")
         args = gen.parse_args(["generate", "--estimate"])
 
-        with patch("lib.base_generator.DBClient", return_value=mock_db):
+        with patch("tools.generators.lib.base_generator.DBClient", return_value=mock_db):
             asyncio.run(gen._cmd_generate(args))
 
         captured = capsys.readouterr()
@@ -257,7 +253,7 @@ class TestOrchestrationNoInsert:
 
 class TestCmdStatus:
     def test_status_prints_counts(self, gen, mock_db, capsys):
-        with patch("lib.base_generator.DBClient", return_value=mock_db):
+        with patch("tools.generators.lib.base_generator.DBClient", return_value=mock_db):
             gen._cmd_status()
         captured = capsys.readouterr()
         assert "missing" in captured.out.lower() or "3" in captured.out

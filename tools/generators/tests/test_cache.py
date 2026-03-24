@@ -2,7 +2,7 @@
 import json
 import pytest
 from pathlib import Path
-from tools.lib.cache import GeneratorCache
+from tools.generators.lib.cache import GeneratorCache
 
 
 @pytest.fixture

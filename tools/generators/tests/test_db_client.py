@@ -1,6 +1,6 @@
 """Tests for DBClient using SQLite in-memory — no PostgreSQL required."""
 import pytest
-from tools.lib.db_client import DBClient
+from tools.generators.lib.db_client import DBClient
 
 
 @pytest.fixture
