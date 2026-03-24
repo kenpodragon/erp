@@ -132,6 +132,35 @@ class ProjectileSpriteGenerator(BaseGenerator):
         return results
 
     # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Normalize AI output — ensure render_definition is a JSON string."""
+        rd = record.get("render_definition")
+        if rd is not None and not isinstance(rd, str):
+            record["render_definition"] = json.dumps(rd)
+        # Ensure asset_key mirrors sprite_key
+        if record.get("sprite_key") and not record.get("asset_key"):
+            record["asset_key"] = record["sprite_key"]
+        return record
+
+    # ------------------------------------------------------------------
     # build_prompt
     # ------------------------------------------------------------------
 
@@ -140,24 +169,74 @@ class ProjectileSpriteGenerator(BaseGenerator):
         attack_lines = [
             f'  - id={item["id"]} name="{item.get("name")}"'
             f' animation_type="{item.get("attack_animation_type")}"'
-            f' color="{item.get("projectile_color")}"'
+            f' base_color="{item.get("projectile_color") or "derive from name"}"'
             for item in batch
         ]
         attacks_block = "\n".join(attack_lines)
 
-        return f"""Generate projectile sprite configurations for a dark-fantasy MMORPG.
+        return f"""You are a VFX artist for a dark-fantasy MMORPG called "Towers of Elysium". Generate UNIQUE, DETAILED projectile sprite configurations for each attack type below.
 
-Attack types to process:
+Each projectile must have a visual identity that reflects the attack name and damage type. Think about what the attack LOOKS and FEELS like in motion.
+
+PROJECTILE DESIGN VOCABULARY:
+
+Shape options (pick what suits the attack):
+- orb: Glowing sphere with inner light pulse
+- arrow: Slim aerodynamic projectile with feather tail
+- bolt: Short thick energy discharge
+- wave: Spreading arc of energy
+- lance: Long piercing beam
+- spiral: Corkscrew rotating shape
+- expanding_circle: Radiating ring that grows outward
+- shard: Angular crystalline fragment
+- tendril: Writhing organic thread
+- vortex: Swirling inward spiral
+
+Trail effects (what the projectile leaves behind):
+- spark: Brief bright sparks
+- fire: Trailing flame wisps with heat distortion
+- ice: Frost crystal fragments floating
+- void: Distorting space-tear with darkness
+- poison: Dripping green-black globules
+- lightning: Branching electric tendrils
+- dust: Crumbling earth particles
+- magic: Twinkling arcane motes
+- smoke: Dark billowing cloud remnants
+- blood: Red droplet spray
+
+Impact effects (what happens on hit):
+- explosion: Expanding fireball with debris
+- freeze: Ice crystal formation radiating outward
+- implode: Reality collapse inward with void pull
+- radiate: Holy light pulse expanding
+- corrode: Spreading acid eat-away
+- shock: Lightning discharge arcs
+- shatter: Crystalline fragmentation burst
+- flash: Bright white-yellow starburst
+- burst: Magical energy bloom
+- crush: Impact crater with shockwave
+
+EXAMPLE MAPPINGS (use as inspiration, generate your own for each):
+- "Void Bolt" → vortex shape, #6600cc color, void trail, implode impact — "a swirling dark purple vortex with reality-distortion tendrils"
+- "Thermal Lance" → lance shape, #ff4400 color, fire trail, explosion impact — "a blazing white-hot lance leaving an ember and smoke trail"
+- "Corruption Spore" → orb shape, #33cc00 color, poison trail, corrode impact — "a pulsing sickly green spore trailing decay motes"
+- "Psychic Pulse" → wave shape, #00ffcc color, magic trail, burst impact — "a cyan shockwave of mental energy with iridescent ripple rings"
+- "Gravitic Pull" → vortex shape, #000044 color, void trail, crush impact — "a dense indigo singularity warping light around it"
+- "Stone Shard" → shard shape, #8b4513 color, dust trail, shatter impact — "jagged granite fragment trailing dust and pebbles"
+
+Attack types to generate:
 {attacks_block}
 
-Animation type templates: {anim_types}
+Valid animation_type values: {anim_types}
 
 For each attack type, return a JSON object with:
-  attack_type_id, sprite_key ("projectile_{{animation_type}}_{{id}}"),
-  asset_key (same as sprite_key), category ("projectile_sprite"),
-  render_definition (JSON string: shape, trail, color, animation_type)
+  attack_type_id (integer),
+  sprite_key ("projectile_{{animation_type}}_{{id}}"),
+  asset_key (same as sprite_key),
+  category ("projectile_sprite"),
+  render_definition (a JSON STRING containing: shape, color (#RRGGBB), trail, impact_effect, particle_count (10-50 integer), speed_multiplier (0.5-2.0 float), size_scale (0.5-2.0 float), visual_description (1 sentence evocative description))
 
-Return a JSON array. No explanation.
+Return a JSON array. No explanation. No markdown.
 """
 
     # ------------------------------------------------------------------
