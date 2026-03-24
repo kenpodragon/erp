@@ -110,6 +110,8 @@ class EntityGameplayGenerator(BaseGenerator):
             LEFT JOIN chapters c
                 ON c.id = s.chapter_id
             WHERE eg.id IS NULL
+               OR eg.movement_type_id IS NULL
+               OR eg.color_primary IS NULL
             ORDER BY e.id
         """
         return db.query(sql)
@@ -321,8 +323,28 @@ Return ONLY the JSON array, no explanation.
     # ------------------------------------------------------------------
 
     def _insert_results(self, db: DBClient, results: list[dict]) -> None:
-        """INSERT new rows into entity_gameplay_data (never UPDATE)."""
-        db.insert_batch(self.table, results)
+        """INSERT new rows or UPDATE existing rows with visual data."""
+        for record in results:
+            entity_id = record["entity_id"]
+            # Check if row already exists
+            existing = db.query(
+                "SELECT id FROM entity_gameplay_data WHERE entity_id = %s",
+                [entity_id],
+            )
+            if existing:
+                # UPDATE visual columns on existing row
+                visual_fields = {
+                    k: v for k, v in record.items()
+                    if k not in ("entity_id", "base_hp", "base_gold",
+                                 "appearance_chance", "difficulty_modifier",
+                                 "stat_block")
+                    and v is not None
+                }
+                if visual_fields:
+                    db.update("entity_gameplay_data", visual_fields,
+                              {"entity_id": entity_id})
+            else:
+                db.insert_one("entity_gameplay_data", record)
 
 
 # ---------------------------------------------------------------------------
