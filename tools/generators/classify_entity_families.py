@@ -16,7 +16,7 @@ import argparse
 from pathlib import Path
 
 # Load .env from backend
-env_path = Path(__file__).parent.parent / "backend" / ".env"
+env_path = Path(__file__).resolve().parent.parent.parent / "backend" / ".env"
 if env_path.exists():
     for line in env_path.read_text().splitlines():
         line = line.strip()

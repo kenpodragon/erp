@@ -12,14 +12,12 @@ import json
 import os
 import sys
 
-# Ensure tools/ and tools/sim/ are importable
-_TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-_ROOT_DIR = os.path.dirname(_TOOLS_DIR)
-sys.path.insert(0, _TOOLS_DIR)
-sys.path.insert(0, _ROOT_DIR)
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
-from lib.db_client import DBClient  # noqa: E402
-from sim.config import DEFAULT_CONFIGS  # noqa: E402
+from tools.generators.lib.db_client import DBClient  # noqa: E402
+from tools.sim.config import DEFAULT_CONFIGS  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

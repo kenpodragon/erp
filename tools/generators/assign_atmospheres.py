@@ -244,8 +244,10 @@ def main():
     # DB connection
     # ------------------------------------------------------------------
     try:
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from lib.db_client import DBClient
+        _repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        if _repo_root not in sys.path:
+            sys.path.insert(0, _repo_root)
+        from tools.generators.lib.db_client import DBClient
     except ImportError as exc:
         print(f"ERROR: Could not import DBClient: {exc}", file=sys.stderr)
         sys.exit(1)
@@ -310,7 +312,7 @@ def main():
     if args.ai:
         # ---- AI mode ----
         try:
-            from lib.ai_provider import AIProvider
+            from tools.generators.lib.ai_provider import AIProvider
         except ImportError as exc:
             print(f"ERROR: Could not import AIProvider: {exc}", file=sys.stderr)
             db.close()

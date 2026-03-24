@@ -16,11 +16,11 @@ import argparse
 import sys
 from pathlib import Path
 
-_TOOLS_DIR = Path(__file__).resolve().parent
-if str(_TOOLS_DIR) not in sys.path:
-    sys.path.insert(0, str(_TOOLS_DIR))
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-from lib.db_client import DBClient
+from tools.generators.lib.db_client import DBClient
 
 
 # ---------------------------------------------------------------------------

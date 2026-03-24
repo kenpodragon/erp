@@ -15,8 +15,10 @@ import os
 import re
 import sys
 
-# Add backend to path for model imports
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend"))
+# Add repo root to path for imports
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 # ---------------------------------------------------------------------------
 # Archetype keyword mappings

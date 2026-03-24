@@ -9,11 +9,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Ensure tools/lib is on the path when run directly
-sys.path.insert(0, str(Path(__file__).parent))
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-from lib.base_generator import BaseGenerator
-from lib.db_client import DBClient
+from tools.generators.lib.base_generator import BaseGenerator
+from tools.generators.lib.db_client import DBClient
 
 
 # ---------------------------------------------------------------------------
