@@ -130,5 +130,4 @@
 
 ## Branch Status
 
-- **main:** Stable. Spec + plan committed.
-- **feature/generator-pipeline:** 35+ commits ahead of main. All generators + framework + UAT fixes. Ready to merge after full AI population + visual verification.
+- **main:** All generator pipeline work merged (2026-03-23). 42 files, 8,650 lines added. Feature branch `feature/generator-pipeline` deleted.
