@@ -116,7 +116,7 @@ class BackgroundGenerator(BaseGenerator):
 
             palette = _BOOK_PALETTES.get(book_id, _DEFAULT_PALETTE)
 
-            layers = {
+            parallax_layers = {
                 "far": {
                     "type": "gradient",
                     "colors": [palette["far"]["sky_top"], palette["far"]["sky_bottom"]],
@@ -134,11 +134,24 @@ class BackgroundGenerator(BaseGenerator):
                 },
             }
 
+            color_palette = {
+                "primary": palette["far"]["sky_top"],
+                "secondary": palette["mid"]["silhouette"],
+                "accent": palette["near"]["ground"],
+            }
+
+            # Derive a mood from the palette
+            mood_map = {1: "dark", 2: "ominous", 3: "ethereal"}
+            mood = mood_map.get(book_id, "dark")
+
             record = {
                 "chapter_id": chapter_id,
                 "name": f"bg_chapter_{chapter_id}",
+                "background_key": f"bg_chapter_{chapter_id}",
                 "description": f"Background for {chapter_title}",
-                "layers": json.dumps(layers),
+                "parallax_config": json.dumps(parallax_layers),
+                "mood": mood,
+                "color_palette": json.dumps(color_palette),
             }
             results.append(record)
         return results
@@ -167,11 +180,14 @@ Book colour palettes:
 
 Rules:
 - 3 layers: far (sky/gradient, scroll_speed 0.1), mid (landscape silhouette, 0.4), near (ground, 1.0)
-- Name format: bg_chapter_{{chapter_id}}
-- layers must include at minimum "far" and "mid" keys
+- Name and background_key format: bg_chapter_{{chapter_id}}
+- parallax_config must include at minimum "far" and "mid" keys
+- mood must be one of: dark, ominous, ethereal, mysterious, serene
+- color_palette must include "primary", "secondary", "accent" keys
 
 For each chapter return a JSON object with:
-  chapter_id, name, description, layers (JSON string with far/mid/near)
+  chapter_id, name, background_key, description, parallax_config (JSON string with far/mid/near),
+  mood (string), color_palette (JSON string with primary/secondary/accent)
 
 Return a JSON array. No explanation.
 """
@@ -184,19 +200,21 @@ Return a JSON array. No explanation.
         errors: list[str] = []
         if not record.get("name"):
             errors.append("name is required and must be non-empty")
+        if not record.get("background_key"):
+            errors.append("background_key is required and must be non-empty")
 
-        layers_raw = record.get("layers")
-        if not layers_raw:
-            errors.append("layers is required")
+        parallax_raw = record.get("parallax_config")
+        if not parallax_raw:
+            errors.append("parallax_config is required")
         else:
             try:
-                layers = json.loads(layers_raw) if isinstance(layers_raw, str) else layers_raw
-                if "far" not in layers:
-                    errors.append("layers must contain 'far' key")
-                if "mid" not in layers:
-                    errors.append("layers must contain 'mid' key")
+                parallax = json.loads(parallax_raw) if isinstance(parallax_raw, str) else parallax_raw
+                if "far" not in parallax:
+                    errors.append("parallax_config must contain 'far' key")
+                if "mid" not in parallax:
+                    errors.append("parallax_config must contain 'mid' key")
             except (ValueError, TypeError):
-                errors.append("layers is not valid JSON")
+                errors.append("parallax_config is not valid JSON")
 
         return errors
 
