@@ -79,7 +79,7 @@ class SceneDataGenerator(BaseGenerator):
 
     def _table_exists(self, db: DBClient, table_name: str) -> bool:
         rows = db.query(
-            "SELECT to_regclass($1) AS t", [table_name]
+            "SELECT to_regclass(%s) AS t", [table_name]
         )
         return bool(rows and rows[0].get("t"))
 
@@ -157,7 +157,7 @@ class SceneDataGenerator(BaseGenerator):
             for row in wave_inserts:
                 scene_id = row["scene_id"]
                 exists = db.query(
-                    "SELECT id FROM scene_wave_configs WHERE scene_id = $1 LIMIT 1",
+                    "SELECT id FROM scene_wave_configs WHERE scene_id = %s LIMIT 1",
                     [scene_id]
                 )
                 if not exists:

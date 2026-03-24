@@ -95,6 +95,7 @@ class EntityFamilySeeder(BaseGenerator):
             if family_name not in existing:
                 db.insert_one("entity_families", {
                     "name": family_name,
+                    "display_name": family_name.capitalize(),
                     "description": description,
                 })
                 inserted += 1

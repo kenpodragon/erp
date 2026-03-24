@@ -205,7 +205,7 @@ def _count_safe(db: DBClient, sql: str) -> int:
 
 def _table_exists(db: DBClient, table_name: str) -> bool:
     try:
-        rows = db.query("SELECT to_regclass($1) AS t", [table_name])
+        rows = db.query("SELECT to_regclass(%s) AS t", [table_name])
         return bool(rows and rows[0].get("t"))
     except Exception:
         return False
@@ -216,7 +216,7 @@ def _column_exists(db: DBClient, table_name: str, column_name: str) -> bool:
         rows = db.query(
             """
             SELECT column_name FROM information_schema.columns
-            WHERE table_name = $1 AND column_name = $2
+            WHERE table_name = %s AND column_name = %s
             """,
             [table_name, column_name],
         )

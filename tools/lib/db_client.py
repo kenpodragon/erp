@@ -75,17 +75,25 @@ class DBClient:
     # Public API
     # ------------------------------------------------------------------
 
-    def query(self, sql: str, params: dict = None) -> list[dict]:
+    def query(self, sql: str, params=None) -> list[dict]:
         """Execute a SELECT query and return results as a list of dicts."""
         cur = self._cursor()
-        if params:
-            # Accept dict params; convert to positional list for both drivers
-            cur.execute(sql, list(params.values()))
-        else:
-            cur.execute(sql)
-        rows = cur.fetchall()
-        cur.close()
-        return [self._row_to_dict(r) for r in rows]
+        try:
+            if params:
+                if isinstance(params, dict):
+                    cur.execute(sql, list(params.values()))
+                else:
+                    cur.execute(sql, params)
+            else:
+                cur.execute(sql)
+            rows = cur.fetchall()
+            return [self._row_to_dict(r) for r in rows]
+        except Exception:
+            if self._is_pg:
+                self._conn.rollback()
+            raise
+        finally:
+            cur.close()
 
     def insert_one(self, table: str, data: dict) -> Optional[int]:
         """Insert a single row into *table* and return its generated ID."""

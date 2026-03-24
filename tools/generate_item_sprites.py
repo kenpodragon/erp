@@ -90,17 +90,18 @@ class ItemSpriteGenerator(BaseGenerator):
         """Return armor_class × gear_slot combos that lack an asset_registry entry."""
         sql = """
             SELECT DISTINCT
-                itb.armor_class,
-                itb.gear_slot
+                ac.code AS armor_class,
+                gs.name AS gear_slot
             FROM item_type_bases itb
-            WHERE itb.armor_class IS NOT NULL
-              AND itb.gear_slot IS NOT NULL
+            JOIN armor_classes ac ON ac.id = itb.armor_class_id
+            JOIN gear_slots gs ON gs.id = itb.gear_slot_id
+            WHERE itb.armor_class_id IS NOT NULL
               AND NOT EXISTS (
                   SELECT 1 FROM asset_registry ar
-                  WHERE ar.asset_key = 'item_' || itb.armor_class || '_' || itb.gear_slot
-                    AND ar.asset_type = 'item_sprite'
+                  WHERE ar.asset_key = 'item_' || ac.code || '_' || gs.name
+                    AND ar.category = 'item_sprite'
               )
-            ORDER BY itb.armor_class, itb.gear_slot
+            ORDER BY ac.code, gs.name
         """
         return db.query(sql)
 
@@ -125,17 +126,19 @@ class ItemSpriteGenerator(BaseGenerator):
             shape = _SLOT_SHAPES.get(gear_slot, _DEFAULT_SHAPE)
             sprite_key = f"item_{armor_class}_{gear_slot}"
 
-            config_json = json.dumps({
+            render_def = {
                 "shape": shape,
                 "color": color,
                 "armor_class": armor_class,
                 "gear_slot": gear_slot,
-            })
+            }
 
             record = {
                 "asset_key": sprite_key,
-                "asset_type": "item_sprite",
-                "config_json": config_json,
+                "category": "item_sprite",
+                "display_name": f"{armor_class} {gear_slot}",
+                "render_definition": json.dumps(render_def),
+                "source": "generator",
             }
             results.append(record)
         return results
@@ -163,8 +166,8 @@ Armor class color palettes:
 
 For each combo return a JSON object with:
   asset_key ("item_{{armor_class}}_{{gear_slot}}"),
-  asset_type ("item_sprite"),
-  config_json (JSON string with shape, color, armor_class, gear_slot)
+  category ("item_sprite"),
+  render_definition (JSON string with shape, color, armor_class, gear_slot)
 
 Return a JSON array. No explanation.
 """
@@ -177,13 +180,13 @@ Return a JSON array. No explanation.
         errors: list[str] = []
         if not record.get("asset_key"):
             errors.append("asset_key is required and must be non-empty")
-        if not record.get("config_json"):
-            errors.append("config_json is required")
+        if not record.get("render_definition"):
+            errors.append("render_definition is required")
         else:
             try:
-                json.loads(record["config_json"])
+                json.loads(record["render_definition"]) if isinstance(record["render_definition"], str) else record["render_definition"]
             except (ValueError, TypeError):
-                errors.append("config_json is not valid JSON")
+                errors.append("render_definition is not valid JSON")
         return errors
 
     # ------------------------------------------------------------------

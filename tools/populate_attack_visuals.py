@@ -189,18 +189,14 @@ Return a JSON array. No explanation.
 
     def _insert_results(self, db: DBClient, results: list[dict]) -> None:
         for record in results:
-            db.execute(
-                """UPDATE attack_types
-                   SET projectile_color = %s,
-                       trail_type = %s,
-                       impact_effect = %s
-                   WHERE id = %s""",
-                (
-                    record["projectile_color"],
-                    record["trail_type"],
-                    record["impact_effect"],
-                    record["id"],
-                ),
+            db.update(
+                "attack_types",
+                {
+                    "projectile_color": record["projectile_color"],
+                    "trail_type": record["trail_type"],
+                    "impact_effect": record["impact_effect"],
+                },
+                {"id": record["id"]},
             )
 
 

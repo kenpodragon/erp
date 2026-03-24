@@ -280,7 +280,7 @@ def main():
     # Locations: join to scenes to find chapter_id via first_appearance_scene_id
     locations_null = db.query(
         """
-        SELECT l.id, l.name, s.chapter_id
+        SELECT l.id, l.canonical_name, s.chapter_id
         FROM locations l
         LEFT JOIN scenes s ON s.id = l.first_appearance_scene_id
         WHERE l.archetype_id IS NULL
