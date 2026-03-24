@@ -128,6 +128,40 @@ class AttackVisualsGenerator(BaseGenerator):
         return results
 
     # ------------------------------------------------------------------
+    # _lookup_id helper
+    # ------------------------------------------------------------------
+
+    def _lookup_id(self, lookup: dict, name: str) -> "int | None":
+        if not name or name == "null":
+            return None
+        if name in lookup:
+            return lookup[name]
+        lower = name.lower()
+        for k, v in lookup.items():
+            if k.lower() == lower:
+                return v
+        return None
+
+    # ------------------------------------------------------------------
+    # resolve_ai_record
+    # ------------------------------------------------------------------
+
+    def resolve_ai_record(self, record: dict, context: dict) -> dict:
+        """Validate and normalize AI-returned color/trail/impact fields."""
+        import re
+        hex_re = re.compile(r"^#[0-9A-Fa-f]{6}$")
+        color = record.get("projectile_color") or ""
+        if color and not hex_re.match(color):
+            # Try to fix missing hash
+            if re.match(r"^[0-9A-Fa-f]{6}$", color):
+                record["projectile_color"] = f"#{color}"
+        trail = record.get("trail_type") or ""
+        if trail and trail not in _VALID_TRAIL_TYPES:
+            # Best-effort fallback
+            record["trail_type"] = "magic"
+        return record
+
+    # ------------------------------------------------------------------
     # build_prompt
     # ------------------------------------------------------------------
 
@@ -138,26 +172,44 @@ class AttackVisualsGenerator(BaseGenerator):
         ]
         attacks_block = "\n".join(attack_lines)
 
-        keyword_list = [kw for kw, _ in _KEYWORD_OVERRIDES]
+        return f"""You are a VFX designer for a dark-fantasy MMORPG called "Towers of Elysium". Assign UNIQUE visual signatures to each attack type below. Every attack must feel visually distinct — do not reuse the same color/trail/impact combination.
 
-        return f"""Assign visual properties to attack types in a dark-fantasy MMORPG.
+UNIQUE VISUAL SIGNATURE GUIDE (use these as anchors, then be creative for variations):
+
+By attack theme (infer from name):
+- void / null / abyssal → #6600cc deep purple, void trail, implode impact
+- corruption / rot / decay → #33cc00 sickly green, poison trail, corrode impact
+- psychic / mind / mental → #00ffcc bright cyan, magic trail, burst impact
+- gravitic / gravity / crush → #000066 dark navy, void trail, crush impact
+- thermal / fire / flame / blaze → #ff4400 orange-red, fire trail, explosion impact
+- frost / ice / cryo / freeze → #00ccff pale blue, ice trail, freeze impact
+- lightning / storm / thunder / arc → #87ceeb electric blue, lightning trail, shock impact
+- holy / divine / sacred / light → #ffd700 gold, spark trail, radiate impact
+- shadow / dark / night / umbra → #2f2f4f near-black, void trail, implode impact
+- poison / acid / venom / toxic → #9acd32 yellow-green, poison trail, corrode impact
+- earth / stone / rock / seismic → #8b4513 brown, dust trail, shatter impact
+- blood / life / vitality → #cc0000 deep red, spark trail, flash impact
+- arcane / mystic / rune → #7b68ee medium purple, magic trail, burst impact
+- bone / death / necrotic → #d2b48c tan-bone, dust trail, shatter impact
+- wind / air / gust / storm → #c0e0ff pale sky, spark trail, flash impact
+
+Physical attacks (is_physical=True): Default to #ff6600 orange, spark trail, flash impact — but OVERRIDE based on name keywords above.
+Magical attacks (is_physical=False): Default to #7b68ee purple, magic trail, burst impact — but OVERRIDE based on name keywords above.
+
+Valid trail_type values: {sorted(_VALID_TRAIL_TYPES)}
+
+IMPORTANT: Each attack must have a projectile_color that EXACTLY matches its thematic identity. Don't default to generic orange or purple if the name implies something more specific.
 
 Attack types to process:
 {attacks_block}
 
-Rules:
-- Physical attacks: projectile_color=#ff6600, trail_type=spark, impact_effect=flash
-- Magical attacks: projectile_color=#7b68ee, trail_type=magic, impact_effect=burst
-- Override by name keywords: {keyword_list}
-  - fire → #ff4400/fire/explosion
-  - ice/frost → #00ccff/ice/freeze
-  - void/dark/shadow → #6600cc/void/implode
-  - holy/light → #ffd700/spark/radiate
-
 For each attack type, return a JSON object with:
-  id, projectile_color (#RRGGBB), trail_type, impact_effect
+  id (integer),
+  projectile_color (hex #RRGGBB — MUST be unique and thematically appropriate),
+  trail_type (from valid list above),
+  impact_effect (one of: explosion, freeze, implode, radiate, corrode, shock, shatter, flash, burst, crush)
 
-Return a JSON array. No explanation.
+Return a JSON array. No explanation. No markdown.
 """
 
     # ------------------------------------------------------------------
