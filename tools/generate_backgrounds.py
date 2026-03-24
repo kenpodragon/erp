@@ -84,12 +84,8 @@ class BackgroundGenerator(BaseGenerator):
                 SELECT 1 FROM scenes s WHERE s.chapter_id = c.id
             )
               AND NOT EXISTS (
-                SELECT 1
-                FROM scenes s
-                JOIN scene_gameplay_data sgd
-                    ON sgd.scene_id = s.id
-                WHERE s.chapter_id = c.id
-                  AND sgd.background_id IS NOT NULL
+                SELECT 1 FROM backgrounds bg
+                WHERE bg.background_key = 'bg_chapter_' || c.id
             )
             ORDER BY b.id, c.chapter_number
         """
