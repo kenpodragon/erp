@@ -1,0 +1,464 @@
+/* ── Asset Viewer ── */
+
+.asset-viewer {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.av-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--color-text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.av-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.av-loading,
+.av-error {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+}
+
+.av-error {
+  color: var(--color-error);
+}
+
+.av-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+/* ── Section / Group ── */
+
+.av-section {
+  margin-top: 0.5rem;
+}
+
+.av-section-info {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+}
+
+.av-group {
+  margin-bottom: 1.5rem;
+}
+
+.av-group-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--color-accent);
+  text-transform: capitalize;
+  margin: 0 0 0.75rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 0.35rem;
+}
+
+.av-count {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+}
+
+/* ── Grid layouts ── */
+
+.av-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.av-grid--bg {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.av-grid--entity {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.av-grid--attack {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.av-grid--item {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.av-grid--icon {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* ── Card base ── */
+
+.av-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.av-card:hover {
+  border-color: var(--color-border-medium);
+}
+
+.av-card-info {
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.av-card-title {
+  font-size: 0.78rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Badges ── */
+
+.av-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: rgba(100, 108, 255, 0.12);
+  color: var(--color-info);
+  white-space: nowrap;
+}
+
+.av-badge--warn {
+  background: rgba(255, 152, 0, 0.15);
+  color: var(--color-warning);
+}
+
+.av-badge--ok {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--color-success);
+}
+
+.av-badge--trail {
+  background: rgba(155, 89, 182, 0.15);
+  color: #b57edc;
+}
+
+.av-badge--impact {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+/* ── Background preview ── */
+
+.av-bg-preview {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+}
+
+.av-bg-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.av-bg-label {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Entity sprite ── */
+
+.av-card--entity {
+  display: flex;
+  align-items: center;
+}
+
+.av-entity-sprite {
+  width: 60px;
+  min-width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.av-no-visual {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(100, 100, 100, 0.3);
+  border: 1px dashed var(--color-border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+}
+
+.av-color-swatch {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.av-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ── Attack preview ── */
+
+.av-card--attack {
+  display: flex;
+  align-items: center;
+}
+
+.av-attack-preview {
+  width: 60px;
+  min-width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ── Item preview ── */
+
+.av-card--item {
+  display: flex;
+  align-items: center;
+}
+
+.av-item-preview {
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ── Icon placeholder ── */
+
+.av-card--icon {
+  display: flex;
+  align-items: center;
+}
+
+.av-icon-placeholder {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid;
+}
+
+/* ── Bar chart ── */
+
+.av-bar-chart {
+  max-width: 700px;
+}
+
+.av-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.av-bar-label {
+  width: 140px;
+  min-width: 140px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  text-align: right;
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-bar-track {
+  flex: 1;
+  height: 18px;
+  background: rgba(100, 108, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.av-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-info), var(--color-secondary));
+  border-radius: 3px;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+
+.av-bar-count {
+  width: 40px;
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* ── Lore cards ── */
+
+.av-lore-grid {
+  display: grid;
+  gap: 1rem;
+  max-width: 800px;
+}
+
+.av-lore-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+}
+
+.av-lore-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.6rem;
+}
+
+.av-lore-book {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-accent);
+}
+
+.av-lore-chapter {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
+.av-lore-text {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Coverage panel ── */
+
+.av-coverage {
+  max-width: 700px;
+}
+
+.av-coverage h3 {
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  margin: 0 0 1rem;
+}
+
+.av-coverage-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.av-coverage-stat {
+  text-align: center;
+  padding: 1rem;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.av-stat-num {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-info);
+}
+
+.av-stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.av-coverage-block {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.av-coverage-block h4 {
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+  margin: 0 0 0.5rem;
+}
+
+.av-progress-track {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.av-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.av-progress--atm {
+  background: linear-gradient(90deg, #4caf50, #81c784);
+}
+
+.av-progress--bg {
+  background: linear-gradient(90deg, var(--color-info), var(--color-secondary));
+}
+
+.av-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.2rem;
+}
+
+.av-pie-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
