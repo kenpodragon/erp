@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
-**Last updated:** 2026-03-24
-**Last session focus:** Migration consolidation (061-068 → 001-003) + production readiness
+**Last updated:** 2026-03-25
+**Last session focus:** Test health triage + frontend runtime fixes
 
 ---
 
@@ -23,6 +23,7 @@
 | Watchdog v1 (Overnight) | Complete | All data populated but low quality — template text, identical BGs (2026-03-24) |
 | Generator Reorg | Complete | Moved to `tools/generators/`, proper package imports, sys.path hacks removed (2026-03-24) |
 | Migration Consolidation | Complete | 061-068 merged into 001-003, archived to db/old/ (2026-03-24) |
+| **Test Health** | **Complete** | All tests green: 853+457+368+76 passing, 0 failures (2026-03-25) |
 | **Watchdog v2 (Quality)** | **Not yet run** | Quality improvement pass — audit/keep/replace workflow (2026-03-24) |
 
 ## Database State
@@ -41,28 +42,35 @@
   - 85 death SFX presets in audio_configs
   - 111 achievement icons, 50 artifact icons in asset_registry
 
-## Generator Reorg (2026-03-24) — Complete
+## Test Health (2026-03-25) — Complete
 
-- Moved 21 scripts + 4 lib modules + 4 tests from `tools/` root → `tools/generators/`
-- Deleted one-off `generate_migration_040.py`
-- Replaced all `sys.path.insert()` hacks with proper package imports
-- Updated `.gitignore`, all docs, watchdog imports
-- 8 clean commits on main
-- `tools/` root now contains only: `db_dump_restore.py`, `refresh_dump.py`, `toggle_db.py`, `test_helpers.py`
+### Fixes applied this session
+- **Frontend:** Type imports for interfaces (white screen), early-return-before-hooks in PaperDollRenderer + EntityRenderer, backend Docker port binding
+- **Backend:** PIL→raw PNG, pytest.ini (integration marker + default exclusion), discovery response shape, websocket test, admin finance plan keys + column names, admin players field names
+- **Generator:** Mock paths updated for reorg, non-SDK provider names force CLI path
+
+### Current test counts
+| Suite | Passed | Skipped | Deselected | Notes |
+|-------|--------|---------|------------|-------|
+| Backend (pytest) | 853 | 2 | 25 | 25 deselected = Stripe E2E (need live server + Firebase token) |
+| Frontend (vitest) | 457 | 1 | — | act() warnings in stderr (non-blocking) |
+| Admin (vitest) | 368 | — | — | All clean |
+| Generator (pytest) | 76 | — | — | All clean |
 
 ## What's Left (see TODO.md)
 
-### Immediate — Watchdog v2 Review
-1. Review v2 results in AM (STOP script shows scorecard)
-2. Visual verification via Asset Viewer + Chrome DevTools
-3. Iterate if needed (v3)
+### Active — Documentation Cleanup
+1. Investigate SDD frameworks (Open Spec) for documentation format
+2. Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
+3. Update user guides, API reference, admin docs
 
-### Near-term — Production Readiness
-1. Code quality: break god-class files, remove dead code, standardize patterns
-2. Documentation: consolidate docs, remove stale files
-3. Test health: triage 25+3 pre-existing failures, target zero known failures
-4. Test fresh DB spin-up from 001-003 only
-5. Migration 069 (NOT NULL constraints after quality confirmed)
+### Backlog — Watchdog v2 Review
+1. Run v2 overnight, review results, visual verification
+2. Migration 069 (NOT NULL constraints after quality confirmed)
+
+### Backlog — Code Quality
+1. Break god-class files, remove dead code, standardize patterns
+2. Type hints, code documentation
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)
@@ -80,17 +88,8 @@
 - **Quality > coverage:** Better to do 2,000 entities excellently than 3,936 with template text.
 - **Auth:** Firebase-only. All spoofing/bypass mechanisms removed 2026-03-22.
 - **Combat HP formula:** `entity_base_hp * 1.012^(scene_position - 1)`, capped per-scene or global `max_scene_base_hp`.
-
-## Test Status
-
-| Suite | Count | Status |
-|-------|-------|--------|
-| Backend (pytest) | ~766 | 25 pre-existing failures (test_2_6_features, test_stripe_e2e) |
-| Frontend (vitest) | 457 | All passing (1 skipped) |
-| Admin (vitest) | 368+ | All passing |
-| Generator (pytest) | 76 | 73 passing, 3 pre-existing (ai_provider retry/fallback) |
-| E2E (Playwright) | 5 | Needs Firebase auth update |
+- **Test isolation:** Stripe E2E tests marked `@pytest.mark.integration`, excluded by default via `pytest.ini`. Run with `pytest -m integration` when live stack is available.
 
 ## Branch Status
 
-- **main:** Migration consolidation complete. Watchdog v2 not yet run.
+- **main:** All tests green. Documentation cleanup next.

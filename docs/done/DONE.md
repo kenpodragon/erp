@@ -3,7 +3,36 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-24*
+*Updated: 2026-03-25*
+
+## Test Health + Frontend Fixes — COMPLETE (2026-03-25)
+
+### Frontend Runtime Fixes
+- [x] Fixed BottomAnimatedBanner.tsx: value imports for type-only exports caused white screen (`AttackVisualData`, `EnemyVisualData`, `CharacterVisualData` → `type` imports)
+- [x] Fixed PaperDollRenderer.tsx: early `return null` before hooks caused "Rendered fewer hooks" crash — moved after all hooks
+- [x] Fixed EntityRenderer.tsx: same early-return-before-hooks bug
+- [x] Fixed backend Docker container port 8000 not binding to host (admin auth stuck)
+
+### Backend Test Health (29 failures → 0)
+- [x] Fixed test_profiles.py: replaced PIL/Pillow dependency with raw PNG bytes (collection blocker)
+- [x] Created `backend/pytest.ini`: registered `integration` marker, excluded Stripe E2E tests from default runs (22 tests need live Stripe CLI + Firebase token)
+- [x] Fixed test_2_6_features.py: updated discovery endpoint assertions for paginated dict response (was expecting bare list), fixed `entity_family_name` → `family` key, fixed websocket test for last-connection-wins design
+- [x] Fixed test_admin_finance.py: updated plan_key to match hardcoded service prices (`monthly_premium` → `ascendant_monthly`), fixed `tier` → `patron_tier` column name
+- [x] Fixed test_admin_players.py: `character_count` → `character_name`/`character_level` to match actual route response
+
+### Generator Test Health (3 failures → 0)
+- [x] Fixed test_ai_provider.py mock paths: `asyncio.create_subprocess_exec` → `tools.generators.lib.ai_provider.asyncio.create_subprocess_exec` (broken after generator reorg)
+- [x] Fixed all `_make_provider()` helpers: set non-SDK provider names (`cli_primary`/`cli_fallback`) to force `_run_cli` path, bypassing SDK branches that skip subprocess mocks
+
+### Final Test Counts
+| Suite | Passed | Skipped | Deselected |
+|-------|--------|---------|------------|
+| Backend (pytest) | 853 | 2 | 25 (integration) |
+| Frontend (vitest) | 457 | 1 | — |
+| Admin (vitest) | 368 | — | — |
+| Generator (pytest) | 76 | — | — |
+
+---
 
 ## Migration Consolidation — COMPLETE (2026-03-24)
 

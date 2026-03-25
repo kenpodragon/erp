@@ -7,13 +7,22 @@
 ```
 Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
 Branch: main
-Migration consolidation complete (001-003 clean install). Watchdog v2 not yet run.
-Current: Production readiness + code cleanup.
+All tests green (853+457+368+76 passing, 0 failures). Migration consolidation complete (001-003).
+Current: Documentation cleanup & consolidation.
 ```
 
 ---
 
-## Active Work — Watchdog v2 Review
+## Active Work — Documentation Cleanup & Consolidation
+
+### Documentation Cleanup & Consolidation
+- [ ] Investigate SDD frameworks (Open Spec) for documentation format
+- [ ] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
+- [ ] Update user guides, API reference, admin docs
+
+---
+
+## Backlog — Watchdog v2 Review
 
 ### Watchdog v2 — Overnight Quality Improvement (2026-03-24)
 v1 ran all generators but produced template/generic data. v2 is a quality improvement pass with direct DB updates (no generators).
@@ -44,35 +53,20 @@ v1 ran all generators but produced template/generic data. v2 is a quality improv
 
 ---
 
-## Production Readiness & Code Cleanup
+## Backlog — Code Quality
 
-### DB Consolidation
-- [x] Collapse 68 DB migrations into clean seed scripts (001-003 only, 061-068 merged, rest in old/)
-- [x] Generic seed data for fresh DB spin-up — 001 schema, 002 system seed, 003 sample content
-- [x] Test fresh DB spin-up from scratch (001→002→003 only) — 109 tables, all seed data, backend API 200 OK
-
-### Test Health
-- [ ] Triage 25 pre-existing backend test failures (test_2_6_features, test_stripe_e2e)
-- [ ] Triage 3 pre-existing generator test failures (ai_provider retry/fallback)
-- [ ] Fix or remove broken tests — zero known failures as target
-- [ ] Add missing test coverage for critical paths
-
-### Documentation Cleanup & Consolidation
-- [ ] Investigate SDD frameworks (Open Spec) for documentation format
-- [ ] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
-- [ ] Update user guides, API reference, admin docs
-
-### Code Quality
 - [ ] Break god-class files into focused modules (identify top offenders by LOC)
 - [ ] Remove dead code, unused imports, commented-out blocks
 - [ ] Standardize error handling patterns across backend routes
 - [ ] Audit and fix any remaining `sys.path` hacks outside generators
 - [ ] Type hints: add missing annotations to backend services and routes
 - [ ] Code documentation, like to the requirements this matches to.
+- [ ] Add missing test coverage for critical paths
 
+---
 
+## Backlog — Cloud Deployment Prep
 
-### Cloud Deployment Prep
 - [ ] Explore Firebase JSON storage for user data (capacity, update frequency)
 - [ ] Evaluate free cloud DB alternatives
 - [ ] If viable: Postgres Docker container auto-loaded with DB dump (minus player data)
@@ -81,4 +75,4 @@ v1 ran all generators but produced template/generic data. v2 is a quality improv
 
 ---
 
-*Updated: 2026-03-24 (Migration consolidation complete. 001-003 clean install. Watchdog v2 not yet run. Next: production readiness.)*
+*Updated: 2026-03-25 (All tests green. Test health complete. Next: documentation cleanup & consolidation.)*
