@@ -1,5 +1,8 @@
 # ERP Style Guide — Visual Identity & Design Token System
 
+> **Audience:** Frontend developers. CSS custom properties, color palette, typography, and spacing tokens for the player-facing UI.
+> For the procedural asset rendering pipeline (JSON definitions, DB→runtime flow), see [`GAME_ASSETS_GUIDE.md`](GAME_ASSETS_GUIDE.md).
+
 This document defines the visual identity, color palette, typography, and CSS custom property system for the Elysium Rising mmorPg. All frontend and admin code should reference these design tokens rather than hardcoded values.
 
 ---

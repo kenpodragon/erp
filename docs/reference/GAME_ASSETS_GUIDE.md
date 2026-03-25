@@ -1,5 +1,8 @@
 # Game Assets Guide: Procedural DB-Driven Rendering
 
+> **Audience:** Full-stack developers and content pipeline operators. Procedural asset system architecture: JSON render definitions in DB, runtime rendering, generator pipeline.
+> For frontend design tokens (colors, typography, spacing), see [`STYLE_GUIDE.md`](STYLE_GUIDE.md).
+
 This document defines how all visual assets in Elysium Rising are stored and rendered. As of REC 5.7, **all visual assets are procedural** — stored as JSON render definitions in the database and rendered at runtime.
 
 ---
