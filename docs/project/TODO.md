@@ -10,6 +10,7 @@ Branch: main
 All tests green (853+457+368+76 passing, 0 failures).
 Watchdog v3 ready to run: tools/watchdog/ (AGENT_INSTRUCTIONS.md, AGENT_GOALS.md)
 Launch: powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
+NEXT: Consolidate and deduplicate docs, and updating the user guides, and security scanning.
 ```
 
 ---
@@ -39,8 +40,12 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 ---
 
 ## Backlog — Documentation Cleanup
-- [ ] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
+- [x] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
 - [ ] Update user guides, API reference, admin docs
+- [ ] Security scan and assessment
+- [ ] Remove Lore and Inpsiration documents, ERP specific lore bits from the documentation (should be generic and apply to anyone who is building this). This is a pass to be done once the generators are completed.
+- [ ] Remove the TODO, DONE, and SESISON_STATE, from teh repo. CLean up AGENTS CLAUDE, GEMINI. Remove the db old.
+- [ ] Update README.md to contain more relevant information about the project, quick install guide (and link to the deeper ADMIN setup guide).
 
 ---
 
@@ -51,8 +56,15 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 - [ ] Standardize error handling patterns across backend routes
 - [ ] Audit and fix any remaining `sys.path` hacks outside generators
 - [ ] Type hints: add missing annotations to backend services and routes
+- [ ] Legacy code and unused codee removal.
 - [ ] Code documentation, link to the requirements this matches to.
 - [ ] Add missing test coverage for critical paths
+
+## Backlog — Pre-launch bits.
+- [ ] Remove Lore and Inpsiration documents, ERP specific lore bits from the documentation (should be generic and apply to anyone who is building this). This is a pass to be done once the generators are completed.
+- [ ] Remove the TODO, DONE, and SESISON_STATE, from teh repo. CLean up AGENTS CLAUDE, GEMINI. Remove the db old.
+- [ ] Update README.md to contain more relevant information about the project, quick install guide (and link to the deeper ADMIN setup guide).
+
 
 ---
 
