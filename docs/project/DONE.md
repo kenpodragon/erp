@@ -5,6 +5,55 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-25*
 
+## Watchdog v1-v2 + v3 Design — COMPLETE (2026-03-24/25)
+
+### Watchdog Infrastructure (2026-03-24)
+- [x] Built watchdog system (adapted from RESUMES project): WATCHDOG_AUTO.ps1, START_AUTONOMOUS.ps1, STOP_AUTONOMOUS.ps1
+- [x] PowerShell supervisor: monitors Claude process, auto-restarts on crash/stall (20 min timeout, max 10 restarts)
+- [x] Heartbeat protocol, progress tracking, resume-from-checkpoint
+
+### Watchdog v1 — Bulk Population (2026-03-24)
+- [x] AGENT_INSTRUCTIONS.md + AGENT_GOALS.md with 103 acceptance criteria
+- [x] Ran overnight ~2 hours — all 16 generators executed, all 3,936 entities populated
+- [x] Entity families expanded 10 → 17, max family 72% → 21.4%
+- [x] 85 death SFX presets created, all entities mapped
+- [x] 724 scenes with atmosphere + background + wave configs
+- [x] **Quality audit:** Data structurally complete but content unusable — template lore, identical backgrounds, blob sprites
+
+### Watchdog v2 — Quality Pass (2026-03-25)
+- [x] Redesigned as audit-first quality pass: sample → classify KEEP/REPLACE → fix → verify
+- [x] 129 quality-focused goals with template detection, SVG complexity checks, content sampling
+- [x] Ran overnight — 129/129 goals passed structurally
+- [x] **Quality audit:** Goals measured string length and non-NULL counts, NOT actual visual quality. Sprites still blobs, lore still template text.
+
+### Watchdog v3 — Full Content Regeneration Design (2026-03-25)
+- [x] Rewrote AGENT_INSTRUCTIONS.md — full regeneration via upsert (not audit/keep)
+- [x] Rewrote AGENT_GOALS.md — 84 goals requiring actual visual verification (SVG element parsing, prose reading, tier progression)
+- [x] Family body plan design phase — design body plans before generating sprites
+- [x] Lore lookup uses story_beats.raw_text (actual book content) as primary source, BOOKS_SUMMARY.md as high-level reference
+- [x] Replace-in-place via upsert (ON CONFLICT DO UPDATE) — crash-safe, no data loss
+- [x] Defined render_definition JSON schemas for all 4 asset types
+- [x] Asset key naming conventions, upsert SQL templates, background INSERT clarification
+- [x] Review agent protocol: reads actual SVG structure and prose, cross-references lore against BOOKS_SUMMARY
+- [x] Expanded anti-template patterns (7 → 15+), viewBox enforcement, SVG validity checks
+- [x] Time caps per phase, structured RESUME_STATE for crash recovery
+- [x] 3 deep review passes by code-reviewer agent — all CRITICAL/HIGH issues resolved
+- [x] Fixed: wrong FK column (beat_id→story_beat_id), stale v2 prompts, missing upsert templates, lore file paths
+- [x] v1: Built watchdog infrastructure, ran overnight, all 3,936 entities populated
+- [x] v2: Added quality gates, ran overnight, 129/129 goals passed (but content still bad)
+- [x] v2 audit: Confirmed sprites are identical blobs, lore is template text, icons are generic
+- [x] v3: Rewrote AGENT_INSTRUCTIONS as full regeneration (not audit/keep)
+- [x] v3: Rewrote AGENT_GOALS — 84 goals with actual visual verification (not string length)
+- [x] v3: Added family body plan design phase before sprite generation
+- [x] v3: Lore lookup now uses story_beats.raw_text (actual book content) as primary source
+- [x] v3: Replace-in-place via upsert (no deletes, crash-safe)
+- [x] v3: Fixed all audit findings (wrong FK column, stale v2 prompts, missing upsert templates)
+- [x] v3: 3 deep review passes — all critical/high issues resolved
+
+**Next steps:** Run v3 overnight, review results, visual verification, iterate if needed.
+
+---
+
 ## Documentation Standardization — COMPLETE (2026-03-25)
 
 ### OpenSpec SDD Framework

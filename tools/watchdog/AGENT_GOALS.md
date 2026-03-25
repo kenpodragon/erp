@@ -138,7 +138,7 @@
 
 ## BG: Backgrounds — Lore-Appropriate Parallax Environments
 
-**REPLACE ALL in-place. Current backgrounds are identical.**
+**REPLACE ALL in-place via upsert. Current backgrounds are identical. NOTE: 139 unique backgrounds serve 724 scenes (N:1). Most backgrounds need INSERT not UPDATE — table may only have ~1 row. Do NOT create one background per scene.**
 
 - [ ] BG.1 All 724 scenes have `background_id` in `scene_gameplay_data`
 - [ ] BG.2 **Config diversity:** `SELECT COUNT(DISTINCT parallax_config::text) FROM backgrounds;` >= 50 distinct configs

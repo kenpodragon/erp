@@ -106,7 +106,7 @@ This is the real narrative — what the book says happens where this entity appe
 SELECT sb.beat_number, sb.raw_text, sb.hidden_lore_text, sb.intensity, sb.pacing,
   s.title as scene_title, ch.chapter_number, ch.title as chapter_title
 FROM story_beats sb
-JOIN entity_beat_appearances eba ON eba.beat_id = sb.id
+JOIN entity_beat_appearances eba ON eba.story_beat_id = sb.id
 JOIN scenes s ON sb.scene_id = s.id
 JOIN chapters ch ON s.chapter_id = ch.id
 WHERE eba.entity_id = :entity_id
@@ -291,7 +291,7 @@ You have one overnight session. 3,936 entities is a lot. **Prioritize quality ov
 2. Entity lore — ALL 3,936 (current ones are template text)
 3. Achievement icons — ALL 111 (current ones are generic shapes)
 4. Item sprites — ALL 90 base types + 50 artifacts (current ones are missing or generic)
-5. Backgrounds — ALL 139 (current ones are identical)
+5. Backgrounds — 139 total needed, but table may only have ~1 row currently. Most need INSERT, not UPDATE. 724 scenes share these 139 backgrounds (N:1) — do NOT create one background per scene.
 
 **What to LEAVE ALONE (already good from v1/v2):**
 - Entity families (distribution, descriptions, lore_references)
@@ -567,7 +567,8 @@ Spawn after Phases 3, 4, 5, 6, 7, and at Phase 12 (final).
 You are a QUALITY REVIEW AGENT. You validate CONTENT QUALITY by READING AND ANALYZING actual data — NOT by counting rows or checking string length.
 
 PERMISSIONS: READ-ONLY DB. WRITE only to AUTONOMOUS_PROGRESS.md and AGENT_GOALS.md.
-LORE REFERENCE: docs/lore/BOOKS_SUMMARY.md, docs/lore/CHARACTER_GUIDE.md, docs/lore/ENVIRONMENT_GUIDE.md
+LORE REFERENCE: docs/explanation/lore/BOOKS_SUMMARY.md, docs/explanation/lore/CHARACTER_GUIDE.md, docs/explanation/lore/ENVIRONMENT_GUIDE.md
+PRIMARY LORE: story_beats.raw_text from DB (actual book content for each entity's scenes)
 
 ## HOW TO VERIFY ENTITY SPRITES (CRITICAL)
 1. SELECT 10 random sprite render_definitions from asset_registry WHERE category='entity_sprite'
@@ -705,10 +706,40 @@ All asset_keys MUST follow these exact patterns — FKs in other tables referenc
 | artifact_icon | `artifact_icon_{curated_artifact_id}` | `artifact_icon_7` |
 | achievement_icon | `achievement_icon_{achievement_id}` | `achievement_icon_33` |
 
-After inserting into asset_registry, you MUST also UPDATE the FK in the source table:
+After upserting into asset_registry, you MUST also UPDATE the FK in the source table:
 - `entity_gameplay_data.sprite_key` for entity sprites
 - `achievements.icon_sprite_key` for achievement icons
 - `curated_artifacts.icon_sprite_key` for artifact icons
+
+### Standard Upsert Template (use for ALL asset_registry writes)
+
+`asset_registry` has a UNIQUE constraint on `asset_key`. Use this exact pattern:
+
+```sql
+INSERT INTO asset_registry (asset_key, category, display_name, render_definition, tags, source)
+VALUES (%s, %s, %s, %s::jsonb, %s::jsonb, 'watchdog_v3')
+ON CONFLICT (asset_key) DO UPDATE SET
+  render_definition = EXCLUDED.render_definition,
+  tags = EXCLUDED.tags,
+  source = EXCLUDED.source,
+  updated_at = now();
+```
+
+### Background Upsert (backgrounds table — unique on `background_key`)
+
+Most backgrounds need INSERT (table may only have ~1 row). Use upsert:
+
+```sql
+INSERT INTO backgrounds (background_key, parallax_config, mood, time_of_day, color_palette)
+VALUES (%s, %s::jsonb, %s, %s, %s::jsonb)
+ON CONFLICT (background_key) DO UPDATE SET
+  parallax_config = EXCLUDED.parallax_config,
+  mood = EXCLUDED.mood,
+  time_of_day = EXCLUDED.time_of_day,
+  color_palette = EXCLUDED.color_palette;
+```
+
+Then link to scenes: `UPDATE scene_gameplay_data SET background_id = :bg_id WHERE scene_id = :scene_id;`
 
 ---
 

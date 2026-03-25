@@ -77,7 +77,10 @@ $requiredFiles = @(
     'tools\watchdog\AGENT_GOALS.md',
     'tools\watchdog\WATCHDOG_AUTO.ps1',
     'backend\.env',
-    'AGENTS.md'
+    'AGENTS.md',
+    'docs\explanation\lore\BOOKS_SUMMARY.md',
+    'docs\explanation\lore\CHARACTER_GUIDE.md',
+    'docs\explanation\lore\ENVIRONMENT_GUIDE.md'
 )
 $allOk = $true
 foreach ($f in $requiredFiles) {

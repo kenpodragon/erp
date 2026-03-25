@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-25
-**Last session focus:** Documentation standardization (OpenSpec + Diataxis migration)
+**Last session focus:** Watchdog v3 — full content regeneration with real quality gates (sprites, lore, icons, backgrounds)
 
 ---
 
@@ -25,7 +25,8 @@
 | Migration Consolidation | Complete | 061-068 merged into 001-003, archived to db/old/ (2026-03-24) |
 | Test Health | Complete | All tests green: 853+457+368+76 passing, 0 failures (2026-03-25) |
 | **Documentation Standardization** | **Complete** | OpenSpec (28 specs) + Diataxis (4 categories). 67 source files → 28 specs, 68 old files deleted (2026-03-25) |
-| **Watchdog v2 (Quality)** | **Not yet run** | Quality improvement pass — audit/keep/replace workflow (2026-03-24) |
+| Watchdog v2 (Quality) | Complete | Ran overnight, 129/129 structural goals passed — but content still garbage (blobs, templates) (2026-03-25) |
+| **Watchdog v3 (Regen)** | **Ready to run** | Full content regeneration — upserts, family body plans, story_beats lore, 84 visual quality goals (2026-03-25) |
 
 ## Database State
 
@@ -60,12 +61,11 @@
 
 ## What's Left (see TODO.md)
 
-### Active — None (ready for next priority)
-Documentation standardization complete. Feature specs in `openspec/specs/`, docs in `docs/{how-to,reference,explanation,project}/`.
-
-### Backlog — Watchdog v2 Review
-1. Run v2 overnight, review results, visual verification
-2. Migration 069 (NOT NULL constraints after quality confirmed)
+### Active — Watchdog v3 Content Regeneration
+1. Run v3 tonight — full content regeneration (sprites, lore, icons, backgrounds)
+2. Review results in AM — STOP script shows scorecard
+3. Visual verification via Asset Viewer + Chrome DevTools
+4. Migration 069 (NOT NULL constraints after quality confirmed)
 
 ### Backlog — Code Quality
 1. Break god-class files, remove dead code, standardize patterns
