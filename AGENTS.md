@@ -5,13 +5,16 @@ You are an agent working on **ERP (Elysium Rising mmorPg)**, a browser-based inc
 ## 🌌 The Mission
 To build a high-fidelity, narrative-driven incremental game that serves as a gateway to the Elysium Rising universe, leveraging audio-book immersion and competitive social mechanics.
 
-## 🛠️ Tech Stack Mandates
-- **Frontend:** React + Vite + TypeScript. (Use **Vanilla CSS** for styling). PixiJS (via `@pixi/react`) for 2D game.
+## 🛠️ Tech Stack
+
+See `docs/reference/ARCHITECTURE.md` for the full technology stack and architectural decisions.
+
+**Key mandates:**
+- **Frontend:** React + Vite + TypeScript + Vanilla CSS. PixiJS (via `@pixi/react`) for 2D game rendering.
 - **Backend:** Python + FastAPI + SQLModel/SQLAlchemy.
-- **Database:** PostgreSQL (Cloud SQL) for all development. A local `test.db` (SQLite in MEMORY) is used **only** for mocking unit tests.
-- **Auth:** Firebase (Google SSO).
-- **Payments:** Stripe.
-- **DevOps:** Docker, **Google Cloud Build**, Google Cloud Run.
+- **Database:** PostgreSQL (Cloud SQL). SQLite in-memory for unit test mocking only.
+- **Auth:** Firebase (Google SSO). **No spoofing or bypass mechanisms.**
+- **DevOps:** Docker, Google Cloud Build, Google Cloud Run.
 
 **Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
 
@@ -64,38 +67,15 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 - `/testing`: Unified test runners and system-wide E2E tests.
 - `../Books`: **Read-only** source material (ER_Kindle.docx, etc.).
 
-## 📜 Documentation Hierarchy
+## 📜 Documentation & Specs
 
-### Feature Specs (OpenSpec)
-All feature requirements, design, and schema live in `openspec/specs/`.
-- To understand a feature: `openspec/specs/{capability}/spec.md`
-- To see active work: `openspec/changes/`
-- To see historical changes: `openspec/changes/archive/`
-- Specs use RFC-2119 (SHALL/SHOULD/MAY) + GIVEN/WHEN/THEN scenarios.
-- New features: use `/opsx:propose` to create, `/opsx:apply` to implement, `/opsx:archive` to finalize.
+Documentation follows [Diataxis](https://diataxis.fr/) classification in `docs/`:
+- `docs/how-to/` — Step-by-step operational guides (deploy, test, migrate)
+- `docs/reference/` — Technical standards (API, architecture, coding, style)
+- `docs/explanation/` — Background context (lore, roadmap, marketing)
+- `docs/project/` — Current status (TODO, DONE, SESSION_STATE)
 
-### Non-Spec Docs (Diataxis — `docs/`)
-| Category | Path | Use When |
-|----------|------|----------|
-| How-to | `docs/how-to/` | You need step-by-step instructions (deploy, test, migrate) |
-| Reference | `docs/reference/` | You need to look up API, architecture, coding standards |
-| Explanation | `docs/explanation/` | You need background context (lore, roadmap, rationale) |
-| Project | `docs/project/` | You need current status (TODO, DONE, SESSION_STATE) |
-
-When in doubt, consult these in order:
-1. `AGENTS.md`: Core mandates (this file).
-2. `docs/project/SESSION_STATE.md`: Current project status.
-3. `docs/project/TODO.md`: What is being built now.
-4. `docs/project/DONE.md`: Everything completed.
-5. `docs/explanation/ROADMAP.md`: High-level phases.
-6. `openspec/specs/`: Feature specifications.
-7. `docs/reference/ARCHITECTURE.md`: How it is built.
-8. `docs/explanation/lore/`: Lore references.
-9. `../Books/BOOKS.md`: Full narrative source.
-10. `docs/how-to/DB_MIGRATIONS.md`: Database updates.
-11. `docs/how-to/TESTING.md`: Testing guide.
-12. `docs/how-to/INIT_INFRA.md`: Environment setup.
-13. `docs/reference/CODING_GUIDE.md`: Coding standards.
+Feature specifications live in `openspec/specs/` (one folder per capability). Use `/opsx:propose` to create new specs, `/opsx:apply` to implement, `/opsx:archive` to finalize.
 
 ## 🤖 Agent Operating Procedures
 1. **Lore Research:** Always consult the compressed lore guides in `docs/explanation/lore/` first. If the required information is missing or ambiguous, refer to the full `../Books/BOOKS.md`. If you find new or conflicting information in `BOOKS.md`, you MUST update the corresponding lore guide in `docs/explanation/lore/` to maintain it as the primary, high-signal reference.
