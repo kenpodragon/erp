@@ -1,6 +1,6 @@
-# ERP Deployment & Testing Guide
+# ERP Deployment Guide
 
-This guide covers how to run, test, and deploy the Elysium Rising mmorPg (ERP) stack.
+This guide covers how to run and deploy the Elysium Rising mmorPg (ERP) stack.
 
 ## 1. Local Development (No Docker)
 This is the fastest way to develop. Each service runs directly on your host machine.
@@ -37,27 +37,11 @@ npm run dev
 
 ---
 
-## 2. Local Verification & Testing (Docker)
-Before pushing to the cloud, you should verify your changes locally using Docker Compose.
+## 2. Local Verification Before Deploy
 
-### Running the Full Test Suite
-We have a unified test runner that executes backend `pytest`, frontend linting/building, and admin linting/building in isolated containers.
+Before pushing to the cloud, verify your changes locally.
 
-**Windows:**
-```powershell
-./run_tests.bat
-```
-
-**Linux/Mac:**
-```bash
-chmod +x run_tests.sh
-./run_tests.sh
-```
-
-### Individual Service Verification
-- **Backend Tests:** `docker-compose run --rm backend-test`
-- **Frontend Lint/Build:** `docker-compose run --rm frontend-test`
-- **Admin Lint/Build:** `docker-compose run --rm admin-test`
+> **Testing:** For running the test suite (pytest, vitest, playwright), see [`docs/how-to/TESTING.md`](TESTING.md).
 
 ---
 
