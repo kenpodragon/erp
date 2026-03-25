@@ -110,8 +110,6 @@ const PaperDollRenderer: React.FC<PaperDollRendererProps> = ({
   const finalY = y + idleBob + walkBob;
   const flipX = facingRight ? 1 : -1;
 
-  if (state === 'dead') return null;
-
   // ── Draw aura ─────────────────────────────────────────────────────
 
   const auraConfig = character.aura_tier ? AURA_COLORS[character.aura_tier] : null;
@@ -344,6 +342,8 @@ const PaperDollRenderer: React.FC<PaperDollRendererProps> = ({
     g.ellipse(0, LEG_H + 2, 16, 5)
       .fill({ color: 0x000000, alpha: 0.35 });
   }, []);
+
+  if (state === 'dead') return null;
 
   return (
     <pixiContainer

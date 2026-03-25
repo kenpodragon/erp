@@ -21,9 +21,10 @@ def test_admin_list_players(admin_client, test_player, test_character):
     player_ids = [p["id"] for p in data["players"]]
     assert test_player.id in player_ids
     
-    # Check character count enrichment
+    # Check character enrichment (route returns character_name/character_level, not character_count)
     tp_in_list = next(p for p in data["players"] if p["id"] == test_player.id)
-    assert tp_in_list["character_count"] == 1
+    assert tp_in_list["character_name"] is not None
+    assert tp_in_list["character_level"] is not None
 
 def test_admin_get_player_detail(admin_client, test_player, test_character):
     """Test fetching full player detail."""

@@ -608,7 +608,7 @@ class TestPlayerInvestigation:
         session.add(don)
         session.flush()
         session.execute(
-            text("UPDATE donations SET status = 'completed', tier = 'bronze', donor_name = 'TestPlayer' WHERE id = :did"),
+            text("UPDATE donations SET status = 'completed', patron_tier = 'bronze', donor_name = 'TestPlayer' WHERE id = :did"),
             {"did": don.id},
         )
         session.commit()
@@ -631,15 +631,15 @@ class TestSubscriptionMetrics:
         """Subscription metrics returns correct active count, churn, MRR."""
         now = datetime.now(timezone.utc)
 
-        # Active subscription
+        # Active subscription — use actual plan key from service mapping
         sub1 = PlayerSubscription(
-            player_id=test_player.id, plan_key="monthly_premium",
+            player_id=test_player.id, plan_key="ascendant_monthly",
             status="active", created_at=now, updated_at=now,
         )
         session.add(sub1)
         session.flush()
         session.execute(
-            text("UPDATE player_subscriptions SET plan_id = 'monthly_premium', price_cents = 999 WHERE id = :sid"),
+            text("UPDATE player_subscriptions SET plan_id = 'ascendant_monthly', price_cents = 499 WHERE id = :sid"),
             {"sid": sub1.id},
         )
 
@@ -665,10 +665,10 @@ class TestSubscriptionMetrics:
         result = finance_svc.get_subscription_metrics(session)
 
         assert result["active_count"] == 1
-        assert result["mrr_cents"] == 999
+        assert result["mrr_cents"] == 499
         assert result["churn_30d"]["voluntary"] == 1
         assert result["churn_30d"]["involuntary"] == 0
-        assert result["plan_split"]["monthly_premium"] == 1
+        assert result["plan_split"]["ascendant_monthly"] == 1
 
 
 # =============================================================================
@@ -867,7 +867,7 @@ class TestDonationAnalytics:
             session.add(don)
             session.flush()
             session.execute(
-                text("UPDATE donations SET status = 'completed', tier = :tier WHERE id = :did"),
+                text("UPDATE donations SET status = 'completed', patron_tier = :tier WHERE id = :did"),
                 {"tier": "bronze" if i < 2 else "silver", "did": don.id},
             )
 
@@ -889,7 +889,7 @@ class TestDonationAnalytics:
         session.add(don2)
         session.flush()
         session.execute(
-            text("UPDATE donations SET status = 'completed', tier = 'bronze' WHERE id = :did"),
+            text("UPDATE donations SET status = 'completed', patron_tier = 'bronze' WHERE id = :did"),
             {"did": don2.id},
         )
         session.commit()

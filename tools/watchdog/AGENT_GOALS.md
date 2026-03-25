@@ -1,279 +1,217 @@
-# ERP Generator Watchdog v2 — Agent Goals & Acceptance Criteria
+# ERP Generator Watchdog v3 — Agent Goals & Acceptance Criteria
 
-**This is your scorecard.** Check off items as they pass quality review with EVIDENCE. The REVIEW AGENT must READ actual content samples — not just count non-NULL rows.
+**This is your scorecard.** Check off items ONLY when they pass the VISUAL VERIFICATION described in each section. The REVIEW AGENT must READ actual content — not just count rows or check string length.
 
-**v2 is a QUALITY IMPROVEMENT PASS.** All data already exists from v1. Your job is to:
-- **AUDIT** each category — sample existing rows, classify as KEEP or REPLACE
-- **KEEP** rows that already meet quality (do NOT regenerate from scratch)
-- **REPLACE** rows with template text, simple sprites, identical configs, or null values
-- **VERIFY** improved rows meet the bar before checking off goals
+**v3 is a FULL CONTENT REGENERATION.** v1/v2 proved that structural checks (non-NULL, string length >= 300) are meaningless — all 129 goals "passed" but the content was garbage blobs and template text. This time:
+- **REPLACE IN-PLACE** all sprites, icons, lore, and backgrounds via upsert (never delete)
+- **VERIFY by READING actual SVG structure and prose** — not by counting bytes
+- **Family-first sprite strategy** — design body plans before generating individual sprites
 
-**What v1 produced (known issues to fix):**
-- Entity lore: template text ("A mysterious entity known as...")
-- Backgrounds: all identical parallax configs and color palettes
-- Music: many mood variants were null with empty sequences
-- Sprites: some too simple (< 200 chars, basic shapes)
-- Achievement icons: metadata only, no real SVG compositions
+**What to REGENERATE (all garbage):**
+- Entity sprites (3,936) — currently identical blobs
+- Entity lore (3,936) — currently template text
+- Achievement icons (111) — currently generic shapes
+- Item sprites (90 base + 50 artifacts) — currently missing or generic
+- Backgrounds (139) — currently identical configs
 
-**Counts:** ~3,936 entities | ~724 scenes | ~138 chapters | 3 books | 111 achievements | 50 curated artifacts | 90 item_type_bases | 15 artifact_type_bases | 21 atmospheres | 13 attack types
+**What to LEAVE ALONE (already good):**
+- Entity families, gameplay data, death SFX, attack visuals, scenes, atmospheres, music
 
-**Data chain for lore context:**
-- Entity → entity_scene_appearances → scenes → chapters → books
-- Entity → entity_beat_appearances → story_beats (narrative text)
-- Scene → locations (base_visual, base_auditory, base_atmosphere)
-- Entity → entity_families (family traits)
-- Scene → scene_gameplay_data → atmospheres (archetype)
-- Lore docs: `docs/lore/BOOKS_SUMMARY.md`, `CHARACTER_GUIDE.md`, `ENVIRONMENT_GUIDE.md`
+**Counts:** ~3,936 entities | ~724 scenes | ~138 chapters | 3 books | 111 achievements | 50 curated artifacts | 90 item_type_bases | ~15 entity families | 21 atmospheres | 13 attack types
 
 ---
 
 ## QG: Quality Gates (Phase-Level)
 
-- [ ] QG.1 **Audit complete** — All categories sampled, verdicts logged
-- [ ] QG.2 **Families rebalanced** — No family > 25%, all have lore descriptions
-- [ ] QG.3 **Entity lore quality** — 0 template text remaining, 10 random samples are unique prose
-- [ ] QG.4 **Entity sprites quality** — 10 random SVGs >= 300 chars with >= 4 elements
-- [ ] QG.5 **Item sprites complete** — All 90 item_type_bases + 50 curated artifacts have sprites
-- [ ] QG.6 **Achievement icons quality** — Tiered achievements show visual progression
-- [ ] QG.7 **Backgrounds quality** — >= 30 distinct parallax configs, lore-appropriate per book
-- [ ] QG.8 **Music quality** — All 84 mood variants non-NULL, each >= 180s
-- [ ] QG.9 **Death SFX mapped** — All entities have death_sfx_key, >= 30 distinct presets
-- [ ] QG.10 **Final scan** — 0 content gaps
+- [ ] QG.1 **Baseline logged** — Row counts for all categories recorded in progress file
+- [ ] QG.2 **Family body plans designed** — All ~15 families have documented body plan with example SVG
+- [ ] QG.3 **Entity sprites regenerated** — All old sprites deleted, new ones inserted, review agent PASSED
+- [ ] QG.4 **Entity lore regenerated** — All descriptions rewritten, review agent PASSED
+- [ ] QG.5 **Achievement icons regenerated** — All deleted and recreated, review agent PASSED
+- [ ] QG.6 **Item sprites + artifact icons regenerated** — All created, review agent PASSED
+- [ ] QG.7 **Backgrounds regenerated** — All updated with diverse configs, review agent PASSED
+- [ ] QG.8 **Audit-only phases clean** — Music, SFX, attacks, gameplay, scenes all verified OK
+- [ ] QG.9 **Final review agent PASSED** — All critical checks pass with quoted evidence
+- [ ] QG.10 **Zero structural regressions** — sprite_key FKs valid, death_sfx_key FKs valid, 0 content gaps
 
 ---
 
-## EF: Entity Families — Diversity & Lore Accuracy
+## SPR: Entity Sprites — Visually Complex & Family-Consistent
 
-- [ ] EF.1 **>= 15 distinct families**
-- [ ] EF.2 **No family > 25% of all entities** — `SELECT name, ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM entities),1) as pct FROM entities e JOIN entity_families ef ON e.entity_family_id=ef.id GROUP BY name ORDER BY pct DESC;`
-- [ ] EF.3 Every family `description` >= 50 chars — references Towers of Elysium lore
-- [ ] EF.4 Every family has `lore_reference` citing specific book/chapter content
-- [ ] EF.5 Every family has `base_stat_template` JSONB (HP/DPS/speed scaling unique per family)
-- [ ] EF.6 Every family has `icon_key` → valid `asset_registry` entry
-- [ ] EF.7 **QUALITY: Read 5 family descriptions** — each is distinct, evocative, NOT "A group of creatures that..."
-- [ ] EF.8 **QUALITY: Entity distribution is narratively sensible** — underground chapters have more constructs/undead, forest chapters have more beasts, tower chapters have more celestials/phantasms
+**REPLACE ALL in-place via upsert. Current sprites are colored blobs with no recognizable form.**
 
----
+### SPR-A: Family Body Plans (Phase 2 — before ANY sprite generation)
+- [ ] SPR.A1 **Body plan documented for every family** — Each has: body type (quadruped/biped/floating/etc.), constant elements, variable elements, color guide per book
+- [ ] SPR.A2 **Example SVG written for each family** — A reference SVG showing the body plan with >= 8 distinct elements
+- [ ] SPR.A3 **Body plans are DIFFERENT across families** — No two families share the same body type (beasts ≠ constructs ≠ phantasms)
 
-## LORE: Entity Descriptions — The Core Deliverable
-
-**Every entity description must use the data chain:** entity → family → scene → chapter → book → location → story beats.
-
-### LORE-A: Content Completeness
-- [ ] LORE.A1 `base_description` non-NULL and >= 50 chars for all 3,936 entities
-- [ ] LORE.A2 `base_emotional_state` non-NULL for all
-- [ ] LORE.A3 `base_sounds` non-NULL for all
-- [ ] LORE.A4 `base_abilities` non-NULL for all
-
-### LORE-B: Template Detection (CRITICAL)
-- [ ] LORE.B1 **ZERO template text:** `SELECT COUNT(*) FROM entities WHERE base_description LIKE 'A mysterious entity%' OR base_description LIKE 'A fearsome%' OR base_description LIKE 'This creature%' OR base_description LIKE '%lurks in the darkness%' OR base_description LIKE '%prowls the shadows%';` **MUST BE 0.**
-- [ ] LORE.B2 **Description length diversity:** `SELECT AVG(LENGTH(base_description)), MIN(LENGTH(base_description)), MAX(LENGTH(base_description)) FROM entities;` MIN >= 50, AVG >= 80
-- [ ] LORE.B3 **Emotional state diversity:** `SELECT COUNT(DISTINCT base_emotional_state) FROM entities;` >= 15 distinct states
-- [ ] LORE.B4 **Sound diversity:** `SELECT COUNT(DISTINCT base_sounds) FROM entities;` >= 100 distinct values (not all "growl")
-
-### LORE-C: Content Quality (Review Agent Reads Actual Text)
-- [ ] LORE.C1 **Sample 10 random entities** — each description is unique prose, references entity name, location, and family
-- [ ] LORE.C2 **Sample 5 entities from Book 1** — descriptions reference underground/cave/dungeon themes
-- [ ] LORE.C3 **Sample 5 entities from Book 3** — descriptions reference tower/celestial/ascension themes
-- [ ] LORE.C4 **Sample 5 boss entities** — descriptions are more elaborate, reference `boss_text_references` where available
-- [ ] LORE.C5 **No two entities in same chapter** share identical `base_description` — `SELECT base_description, COUNT(*) c FROM entities GROUP BY base_description HAVING COUNT(*)>1;` MUST return 0 rows.
-
-### LORE-D: Boss Transition Lore
-- [ ] LORE.D1 All ~138 chapters have `transition_lore_text` >= 100 chars
-- [ ] LORE.D2 All 3 books have `transition_lore_text` >= 200 chars
-- [ ] LORE.D3 **QUALITY: Sample 3 chapter transitions** — references specific narrative events
-- [ ] LORE.D4 **QUALITY: Read all 3 book transitions** — epic cinematic tone
+### SPR-B: Sprite Generation Quality (Phase 3 — per family)
+- [ ] SPR.B1 **All 3,936 entities have new sprite** in asset_registry (category = 'entity_sprite')
+- [ ] SPR.B2 **Every sprite_key in entity_gameplay_data references a valid asset_registry entry**
+- [ ] SPR.B3 **SVG element diversity:** Review agent reads 10 random sprites — EACH has >= 6 distinct SVG elements (path + circle/ellipse + rect/polygon + gradient + animate + detail). NOT just circles.
+- [ ] SPR.B4 **Path uniqueness:** Review agent reads 10 random sprites from SAME family — all 10 have DIFFERENT `<path d="...">` values (not copy-pasted SVGs)
+- [ ] SPR.B5 **Family consistency:** Review agent reads 5 sprites from each of 3 different families — sprites within a family share body plan (same limb count, posture) but differ in details
+- [ ] SPR.B6 **Cross-family distinction:** Review agent compares 1 sprite from each of 5 families — body plans are visibly DIFFERENT (quadruped vs biped vs floating vs serpentine vs amorphous)
+- [ ] SPR.B7 **Book-appropriate coloring:** Review agent reads 3 sprites from Book 1 + 3 from Book 3 — Book 1 uses dark/underground palette, Book 3 uses celestial/golden palette
+- [ ] SPR.B8 **No blob sprites:** `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND render_definition::text NOT LIKE '%<path%';` MUST be 0 (every sprite has at least one path element)
+- [ ] SPR.B9 **Animation elements:** >= 80% of sprites contain at least one `<animate>` or `<animateTransform>` element
+- [ ] SPR.B10 **ViewBox enforced:** `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND render_definition::text NOT LIKE '%viewBox="0 0 64 64"%';` MUST be 0
+- [ ] SPR.B11 **Element type diversity:** Every sprite must have at LEAST: 1 `<path>` + 1 `<circle>` or `<ellipse>` + 1 gradient + 1 animation. SQL: `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND (render_definition::text NOT LIKE '%<path%' OR (render_definition::text NOT LIKE '%<circle%' AND render_definition::text NOT LIKE '%<ellipse%') OR render_definition::text NOT LIKE '%Gradient%');` MUST be 0
 
 ---
 
-## SPR: Entity Sprites — Visually Complex & Lore-Appropriate
+## LORE: Entity Descriptions — Lore-Grounded Prose
 
-### SPR-A: Completeness
-- [ ] SPR.A1 All 3,936 entities have `sprite_key` in `entity_gameplay_data`
-- [ ] SPR.A2 Every `sprite_key` references valid `asset_registry` entry (category = 'entity_sprite')
-- [ ] SPR.A3 Zero sprite_keys with "default_" or "entity_" prefix
+**REPLACE ALL in-place. Current descriptions are template text.**
 
-### SPR-B: Visual Complexity
-- [ ] SPR.B1 **SVG complexity:** Sample 10 — each `render_definition.svg_template` >= 300 chars
-- [ ] SPR.B2 **Element count:** Each SVG contains >= 4 distinct elements (path, circle, rect, line, gradient, animate)
-- [ ] SPR.B3 **NOT simple shapes:** Zero sprites that are just a `<circle>` or `<rect>` — `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND LENGTH(render_definition::text) < 200;` MUST be 0
-- [ ] SPR.B4 **Color palette:** Each has `color_palette` with >= 2 colors
+### LORE-A: Content Quality (the actual bar)
+- [ ] LORE.A1 **All 3,936 entities have base_description >= 50 words**
+- [ ] LORE.A2 **Review agent reads 10 random descriptions** — EACH ONE:
+  - Mentions the entity BY NAME
+  - References a specific LOCATION or CHAPTER detail from the books
+  - Mentions FAMILY-specific traits (canine, spectral, mechanical, etc.)
+  - Reads like fantasy novel prose (NOT a database entry or stat block)
+  - Is COMPLETELY DIFFERENT from the other 9 samples
+- [ ] LORE.A3 **Book 1 lore check:** Review agent reads 5 from Book 1 — all reference underground/cave/dungeon themes from Towers of Elysium
+- [ ] LORE.A4 **Book 3 lore check:** Review agent reads 5 from Book 3 — all reference tower/celestial/ascension themes
+- [ ] LORE.A5 **Boss lore check:** Review agent reads 5 boss entities — descriptions are MORE elaborate, reference boss_text_references where available
 
-### SPR-C: Lore Appropriateness
-- [ ] SPR.C1 **Family consistency:** Sample 5 entities from same family — sprites share family silhouette traits (all canines have four legs, all phantasms have wispy forms)
-- [ ] SPR.C2 **Individual uniqueness:** Sample 10 from same chapter — no two have identical `render_definition`
-- [ ] SPR.C3 **Chapter coloring:** Sample 5 from Book 1 vs Book 3 — underground entities use dark palettes, tower entities use lighter/golden palettes
-- [ ] SPR.C4 **Tags meaningful:** Each entry's `tags` array contains family name + visual trait + chapter/environment reference
+### LORE-B: Anti-Template Checks
+- [ ] LORE.B1 **ZERO template text:** `SELECT COUNT(*) FROM entities WHERE base_description LIKE 'A mysterious%' OR base_description LIKE 'A fearsome%' OR base_description LIKE 'This creature%' OR base_description LIKE '%lurks in the%' OR base_description LIKE '%prowls the%' OR base_description LIKE 'An ancient%' OR base_description LIKE 'A powerful%' OR base_description LIKE 'Deep within%' OR base_description LIKE 'Known throughout%' OR base_description LIKE 'Born of%' OR base_description LIKE 'Dwelling in%' OR base_description LIKE 'Emerging from%' OR base_description LIKE 'Among the%' OR base_description LIKE 'Beneath the%' OR base_description ILIKE '%formidable opponent%' OR base_description ILIKE '%testament to the%';` **MUST BE 0.**
+- [ ] LORE.B2 **ZERO duplicates:** `SELECT base_description, COUNT(*) c FROM entities GROUP BY base_description HAVING COUNT(*)>1;` MUST return 0 rows.
+- [ ] LORE.B3 **Emotional state diversity:** `SELECT COUNT(DISTINCT base_emotional_state) FROM entities;` >= 20 distinct states (NOT all "threatening")
+- [ ] LORE.B4 **Sound diversity:** `SELECT COUNT(DISTINCT base_sounds) FROM entities;` >= 200 distinct values
+- [ ] LORE.B5 **Ability diversity:** `SELECT COUNT(DISTINCT base_abilities) FROM entities;` >= 200 distinct values
 
----
-
-## ITEM: Item Sprites — Base Types + Artifact Specials
-
-### ITEM-A: Base Item Type Coverage (90 item_type_bases)
-- [ ] ITEM.A1 **All 90 `item_type_bases` have a sprite** in asset_registry (category = 'item_sprite') — query: `SELECT COUNT(*) FROM item_type_bases itb WHERE NOT EXISTS (SELECT 1 FROM asset_registry ar WHERE ar.asset_key = 'item_' || itb.code AND ar.category='item_sprite');` MUST be 0
-- [ ] ITEM.A2 Each has `render_definition` with: `svg_path` (>= 100 chars), `slot`, `paperdoll_layer`, `anchor_point`, `color_palette`, `scale`
-- [ ] ITEM.A3 **Slot distinctness:** Helmets look like helmets, swords like swords, boots like boots — sample 5 different slots
-- [ ] ITEM.A4 **Armor class coloring:** Cloth=earthy browns, plate=silver/steel, divine=gold, magic=purple, shadow=dark — sample 3 armor classes
-
-### ITEM-B: Curated Artifact Sprites (50 unique items — SPECIAL treatment)
-- [ ] ITEM.B1 **All 50 curated_artifacts have a UNIQUE sprite** in asset_registry (category = 'artifact_icon') — `SELECT ca.name FROM curated_artifacts ca WHERE NOT EXISTS (SELECT 1 FROM asset_registry ar WHERE ar.asset_key = 'artifact_' || ca.id AND ar.category='artifact_icon');` MUST return 0
-- [ ] ITEM.B2 Artifact sprites are **visually distinct from base items** — more ornate, glow effects, unique silhouettes
-- [ ] ITEM.B3 **Lore-driven:** Each artifact sprite reflects its `lore_text` and `source_type`
-- [ ] ITEM.B4 **Rarity progression:** Common artifacts = clean design, legendary = ornate + glow + particle effects — sample across rarity tiers
-- [ ] ITEM.B5 **QUALITY: Sample 5 artifacts** — each icon is clearly a unique, special item (not just recolored base item)
+### LORE-C: Boss Transition Lore
+- [ ] LORE.C1 All ~138 chapters have `transition_lore_text` >= 100 chars
+- [ ] LORE.C2 All 3 books have `transition_lore_text` >= 200 chars
+- [ ] LORE.C3 **Review agent reads 3 chapter transitions** — each references specific narrative events from that chapter
+- [ ] LORE.C4 **Review agent reads all 3 book transitions** — epic cinematic tone, references major book arc
 
 ---
 
 ## ACH: Achievement Icons — Tiered Visual Progression
 
+**REPLACE ALL in-place via upsert. Current icons are generic shapes.**
+
 ### ACH-A: Completeness
 - [ ] ACH.A1 All 111 achievements have `icon_sprite_key` → valid asset_registry entry (category = 'achievement_icon')
-- [ ] ACH.A2 Each has `svg_template` >= 300 chars with multiple SVG elements
+- [ ] ACH.A2 Each has SVG with >= 5 distinct elements (path, circle, gradient, etc.)
 
 ### ACH-B: Thematic Accuracy
-- [ ] ACH.B1 **Category colors:** Combat achievements = red tones, exploration = green, collection = gold, social = blue, story = purple, training = orange
-- [ ] ACH.B2 **Symbol matches achievement:** "First Kill" has a combat symbol, "Explorer" has a compass/map symbol, "Collector" has a chest/gems symbol
-- [ ] ACH.B3 **QUALITY: Sample 5 from different categories** — each icon clearly communicates what was achieved
+- [ ] ACH.B1 **Review agent reads 3 combat achievement icons** — each has weapon/shield/battle symbols, red color scheme
+- [ ] ACH.B2 **Review agent reads 3 exploration achievement icons** — each has compass/map/path symbols, green color scheme
+- [ ] ACH.B3 **Review agent reads 3 collection achievement icons** — each has treasure/gem/chest symbols, gold color scheme
+- [ ] ACH.B4 **Review agent reads icons from 2 other categories** — symbols match category (social=people, story=books, training=targets)
 
-### ACH-C: Tiered Achievement Progression (CRITICAL — new requirement)
-- [ ] ACH.C1 **Identify tiered achievements:** `SELECT a.id, a.name, a.threshold_value, a.parent_achievement_id FROM achievements a WHERE a.parent_achievement_id IS NOT NULL ORDER BY a.parent_achievement_id, a.threshold_value;`
-- [ ] ACH.C2 **Visual progression:** For each tier chain, icons share common visual theme but increase in complexity:
-  - Tier 1 (lowest threshold): Simple — single element, basic colors
-  - Tier 2: Same elements but larger/doubled, brighter colors
-  - Tier 3+: Full composition — multiple elements, glow, ornate frame, golden accents
-- [ ] ACH.C3 **QUALITY: Pick 2 tier chains** — verify icons progress from simple → ornate as threshold increases
-- [ ] ACH.C4 **SVG element count scales with tier:** Tier 1 >= 4 elements, Tier 2 >= 6, Tier 3+ >= 8
+### ACH-C: Tiered Achievement Progression (CRITICAL)
+- [ ] ACH.C1 **Identify all tier chains:** `SELECT parent_achievement_id, COUNT(*) FROM achievements WHERE parent_achievement_id IS NOT NULL GROUP BY parent_achievement_id;`
+- [ ] ACH.C2 **Review agent picks 2 tier chains and reads ALL SVGs in each:**
+  - `render_definition->>'base_symbol'` is IDENTICAL across all tiers in each chain
+  - SVG element count INCREASES: Tier 1 has 3-4 elements, Tier 2 has 5-6, Tier 3+ has 8+
+  - Colors INTENSIFY: Tier 1 is muted, highest tier has golden/glowing accents
+  - If element count does NOT increase across tiers → FAIL
+  - If `base_symbol` differs across tiers → FAIL
+- [ ] ACH.C3 **No generic shapes:** Review agent verifies NO achievement icon is just a star, circle, or generic badge shape — each has category-specific symbolism
+- [ ] ACH.C4 **All SVGs valid:** Every achievement icon SVG has `viewBox="0 0 64 64"` and parses as valid XML
+
+---
+
+## ITEM: Item Sprites — Slot-Recognizable Equipment
+
+**REPLACE ALL in-place via upsert.**
+
+### ITEM-A: Base Item Types (90 item_type_bases)
+- [ ] ITEM.A1 **All 90 item_type_bases have a sprite** in asset_registry (category = 'item_sprite')
+- [ ] ITEM.A2 **Slot recognition test:** Review agent reads 5 sprites from different gear slots (weapon, helmet, chest, boots, ring). Can identify the slot from SVG structure alone — swords have blade+hilt, helmets have dome+visor, boots have sole+cuff.
+- [ ] ITEM.A3 **Armor class differentiation:** Review agent reads 3 sprites of same slot but different armor classes. Cloth has soft/draped paths, plate has angular/rigid paths, magic has glow/gradient effects.
+- [ ] ITEM.A4 Each sprite has `render_definition` with: `svg_path`, `slot`, `paperdoll_layer`, `anchor_point`, `color_palette`, `scale`
+
+### ITEM-B: Curated Artifact Sprites (50 unique items)
+- [ ] ITEM.B1 **All 50 curated_artifacts have a UNIQUE sprite** in asset_registry (category = 'artifact_icon')
+- [ ] ITEM.B2 **Complexity test:** Review agent reads 3 artifact icons and 3 base item sprites. Artifact icons have MORE SVG elements (ornate border, glow, unique silhouette) than base items.
+- [ ] ITEM.B3 **Lore-driven:** Review agent reads 3 artifact icons alongside their `lore_text` — icon visually references the lore (e.g., "forged in celestial fire" → flame elements and gold coloring)
+- [ ] ITEM.B4 **Rarity progression:** Review agent compares a common artifact icon vs a legendary one — legendary is clearly more ornate/complex
 
 ---
 
 ## BG: Backgrounds — Lore-Appropriate Parallax Environments
 
+**REPLACE ALL in-place. Current backgrounds are identical.**
+
 - [ ] BG.1 All 724 scenes have `background_id` in `scene_gameplay_data`
-- [ ] BG.2 Every `parallax_config` has 3 layers: `far`, `mid`, `near`
-- [ ] BG.3 Each layer has `type`, `colors` (array), `scroll_speed`
-- [ ] BG.4 **Mood diversity:** >= 5 distinct moods used — `SELECT COUNT(DISTINCT mood) FROM backgrounds;`
-- [ ] BG.5 **Time diversity:** >= 4 distinct time_of_day values
-- [ ] BG.6 **Config diversity:** `SELECT COUNT(DISTINCT parallax_config::text) FROM backgrounds;` >= 30 distinct configs
-- [ ] BG.7 **No mass duplication:** `SELECT parallax_config::text, COUNT(*) c FROM backgrounds GROUP BY parallax_config::text HAVING COUNT(*)>3 ORDER BY c DESC;` No config used by > 3 backgrounds
-- [ ] BG.8 **QUALITY — Book 1 samples:** 3 backgrounds use dark/underground palettes (blues, grays, crystal glow)
-- [ ] BG.9 **QUALITY — Book 2 samples:** 3 backgrounds use wilderness palettes (greens, browns, mist)
-- [ ] BG.10 **QUALITY — Book 3 samples:** 3 backgrounds use celestial/tower palettes (golds, whites, sky)
-- [ ] BG.11 **QUALITY — Location-driven:** Sample 5 — `parallax_config` layer types match the `locations.base_visual` description for that scene's location (note: locations table uses `canonical_name`, not `name`)
+- [ ] BG.2 **Config diversity:** `SELECT COUNT(DISTINCT parallax_config::text) FROM backgrounds;` >= 50 distinct configs
+- [ ] BG.3 **No mass duplication:** No parallax_config shared by > 3 backgrounds
+- [ ] BG.4 **Book 1 verification:** Review agent reads 3 backgrounds from Book 1 — dark/underground palettes (deep blue, purple, crystal green, phosphorescent accents). Layer types include: rock walls, crystal formations, dim light.
+- [ ] BG.5 **Book 2 verification:** Review agent reads 3 backgrounds from Book 2 — wilderness palettes (forest green, earthy brown, amber, mist). Layer types include: trees, canopy, underbrush.
+- [ ] BG.6 **Book 3 verification:** Review agent reads 3 backgrounds from Book 3 — celestial/tower palettes (gold, white, silver, sky blue). Layer types include: stone architecture, stained glass, celestial sky.
+- [ ] BG.7 **Cross-book distinction:** Review agent confirms Book 1, 2, 3 backgrounds are visually DIFFERENT (different layer types, different color families)
+- [ ] BG.8 **Location-driven:** Review agent reads 5 backgrounds alongside their location's `base_visual` description — parallax layers match the described environment
+- [ ] BG.9 **Layer types valid:** `SELECT COUNT(*) FROM backgrounds WHERE parallax_config->'far'->>'type' IS NULL OR parallax_config->'mid'->>'type' IS NULL OR parallax_config->'near'->>'type' IS NULL;` MUST be 0. No layer type may be 'solid' or 'empty'.
 
 ---
 
-## EGD: Entity Gameplay Data
+## PRESERVE: Categories That Are Already Good (Audit-Only)
 
-### EGD-A: Core Stats
-- [ ] EGD.A1 All 3,936 have entity_gameplay_data row
-- [ ] EGD.A2 `base_hp` non-NULL for all
-- [ ] EGD.A3 `base_gold` non-NULL for all
-- [ ] EGD.A4 `stat_block` has ATK, DEF, SPD keys
-- [ ] EGD.A5 `appearance_rate` non-NULL (0.1–1.0)
+These passed quality in v1/v2. Quick structural verification — do NOT regenerate.
 
-### EGD-B: Visual FK Columns
-- [ ] EGD.B1 `movement_type_id` non-NULL for all
-- [ ] EGD.B2 `size_class_id` non-NULL for all
-- [ ] EGD.B3 `animation_style_id` non-NULL for all
-- [ ] EGD.B4 `silhouette_type_id` non-NULL for all
-- [ ] EGD.B5 `color_primary` + `color_secondary` non-NULL for all
-- [ ] EGD.B6 **Visual diversity:** `SELECT COUNT(DISTINCT (movement_type_id, size_class_id, animation_style_id, silhouette_type_id)) FROM entity_gameplay_data;` >= 50
-- [ ] EGD.B7 **QUALITY: Sample 20** — FKs match entity fantasy (cave=burrowing, ghost=hover, bird=flying)
+### Entity Families
+- [ ] PRSV.1 >= 15 distinct families, no family > 25%
+- [ ] PRSV.2 All families have description, lore_reference, base_stat_template, icon_key
 
-### EGD-C: Attack Types
-- [ ] EGD.C1 `primary_attack_type_id` non-NULL for all
-- [ ] EGD.C2 >= 50% have `secondary_attack_type_id`
-- [ ] EGD.C3 Boss entities have all 3 attack IDs
-- [ ] EGD.C4 **QUALITY: Sample 10** — attack types match entity (mages=magic_cast, wolves=melee)
+### Entity Gameplay Data
+- [ ] PRSV.3 All 3,936 have entity_gameplay_data with non-NULL: base_hp, base_gold, stat_block, movement_type_id, size_class_id, animation_style_id, silhouette_type_id, color_primary, color_secondary, primary_attack_type_id
+- [ ] PRSV.4 Visual combo diversity: `SELECT COUNT(DISTINCT (movement_type_id, size_class_id, animation_style_id, silhouette_type_id)) FROM entity_gameplay_data;` >= 50
 
----
+### Death SFX
+- [ ] PRSV.5 `death_sfx_key` non-NULL for all 3,936 entities
+- [ ] PRSV.6 Every `death_sfx_key` references valid `audio_configs.config_key`
+- [ ] PRSV.7 >= 30 distinct death_sfx_key values
 
-## MUS: Music — Extended Compositions
+### Music
+- [ ] PRSV.8 All 21 atmospheres have all 4 mood variants non-NULL
+- [ ] PRSV.9 All 84 tracks >= 180s duration
 
-- [ ] MUS.1 All 21 atmospheres have `music_definitions` populated
-- [ ] MUS.2 Each has 4 mood variants (boss, combat, explore, mystery) — ALL non-NULL
-- [ ] MUS.3 **DURATION:** Every variant >= 180s — `SUM(duration_beats) * (60/bpm)`
-- [ ] MUS.4 Each variant has >= 8 sections
-- [ ] MUS.5 `generator_key`/`generator_scale` vary (>= 6 distinct keys)
-- [ ] MUS.6 `generator_complexity`: boss >= 7, explore <= 5
-- [ ] MUS.7 **QUALITY: Sample 3** — combat is faster/more complex than explore for same atmosphere
+### Attack Visuals
+- [ ] PRSV.10 All 13 attack types have `attack_animation_type` set, distinct per type
+
+### Scenes & Atmospheres
+- [ ] PRSV.11 All 724 scenes have atmosphere_id, background_id, scene_wave_configs with entity_pool
 
 ---
 
-## SFX: Death Sound Effects
+## FINAL: End-to-End Verification
 
-- [ ] SFX.1 `audio_configs` has >= 30 death presets
-- [ ] SFX.2 Presets cover all family × size combos
-- [ ] SFX.3 Each has `preset_definition` with duration_ms, pitches, waveforms, envelope
-- [ ] SFX.4 Durations scale: tiny < small < medium < large < huge
-- [ ] SFX.5 `death_sfx_key` non-NULL for all 3,936 entities
-- [ ] SFX.6 Every `death_sfx_key` references valid `audio_configs.config_key`
-- [ ] SFX.7 `SELECT COUNT(DISTINCT death_sfx_key) FROM entity_gameplay_data;` >= 30
-- [ ] SFX.8 **QUALITY: Sample 5** — different families have distinct pitch/waveform profiles
-
----
-
-## ATK: Attack Visuals
-
-- [ ] ATK.1 All 13 attack types have `attack_animation_type` set
-- [ ] ATK.2 Ranged/magic types have `projectile_sprite_key` → asset_registry
-- [ ] ATK.3 Ranged/magic types have `projectile_color`
-- [ ] ATK.4 All have `impact_effect`
-- [ ] ATK.5 Magic types have `trail_type`
-- [ ] ATK.6 AoE types have `screen_shake` = TRUE
-- [ ] ATK.7 **QUALITY:** Each type's animation matches its name (not all "melee_swing")
-
----
-
-## SC: Scene Composition
-
-- [ ] SC.1 All 724 scenes have `scene_wave_configs` with non-NULL `entity_pool`
-- [ ] SC.2 Each `entity_pool` has 3–8 entities
-- [ ] SC.3 Boss scenes have `boss_entity_id`
-- [ ] SC.4 `max_enemies_per_wave` scales with scene position
-- [ ] SC.5 **QUALITY: Sample 5** — entity families in pool match scene atmosphere/chapter theme
-
----
-
-## ATM: Atmosphere Assignment
-
-- [ ] ATM.1 All 724 scenes have `atmosphere_id` in `scene_gameplay_data`
-- [ ] ATM.2 `scenes.atmosphere_archetype` non-NULL for all
-- [ ] ATM.3 >= 8 distinct archetypes used
-- [ ] ATM.4 **QUALITY: Sample 5 per book** — atmosphere matches chapter narrative
-
----
-
-## FINAL: End-to-End
-
-- [ ] FINAL.1 `scan_content_gaps.py --verbose` → 0 gaps
-- [ ] FINAL.2 Entity count match: entity_gameplay_data count = entities count (3,936)
-- [ ] FINAL.3 Every `sprite_key` exists in asset_registry
+- [ ] FINAL.1 `python tools/scan_content_gaps.py --verbose` → 0 gaps
+- [ ] FINAL.2 Entity count match: entity_gameplay_data = entities = 3,936
+- [ ] FINAL.3 Every `sprite_key` in entity_gameplay_data exists in asset_registry
 - [ ] FINAL.4 Every `death_sfx_key` exists in audio_configs
-- [ ] FINAL.5 DB backup retained
-- [ ] FINAL.6 **FULL CHAIN:** 3 random entities → sprite + scene + background + atmosphere + music + death SFX all resolve
-- [ ] FINAL.7 Write `STATUS: COMPLETE`
+- [ ] FINAL.5 DB backup retained from pre-flight
+- [ ] FINAL.6 **FULL CHAIN TEST:** Review agent picks 3 random entities → verifies each has: sprite (with >= 6 SVG elements) + lore (prose, not template) + scene + background (lore-appropriate) + atmosphere + music + death SFX — all resolve, all quality
+- [ ] FINAL.7 Write `STATUS: COMPLETE` only after review agent confirms ALL above
 
 ---
 
 ## Summary
 
-| Section | Items | Focus |
+| Section | Goals | Focus |
 |---------|-------|-------|
 | QG | 10 | Phase-level quality gates |
-| EF | 8 | Entity family diversity |
-| LORE | 17 | **Entity descriptions — core deliverable** |
-| SPR | 10 | Entity sprite complexity + lore fit |
-| ITEM | 9 | Base item + curated artifact sprites |
-| ACH | 9 | Achievement icon tiers + progression |
-| BG | 11 | Background parallax variety + lore fit |
-| EGD | 13 | Gameplay data completeness |
-| MUS | 7 | Music duration + variation |
-| SFX | 8 | Death SFX coverage |
-| ATK | 7 | Attack visuals |
-| SC | 5 | Scene composition |
-| ATM | 4 | Atmosphere assignment |
+| SPR | 14 | **Entity sprites — family body plans + visual complexity** |
+| LORE | 14 | **Entity lore — book-grounded prose** |
+| ACH | 11 | **Achievement icons — tiered progression + category symbols** |
+| ITEM | 8 | **Item sprites — slot-recognizable + artifact specials** |
+| BG | 9 | **Backgrounds — lore-appropriate parallax diversity** |
+| PRSV | 11 | Preserved categories (audit-only) |
 | FINAL | 7 | End-to-end verification |
-| **TOTAL** | **129** | |
+| **TOTAL** | **84** | |
 
-**Completion:** All non-QUALITY items must pass. QUALITY items may be DEFERRED after 2 remediation attempts (max 5 deferred total). **Template text = CRITICAL FAIL = do NOT signal completion.** Total: 129 goals.
+**Completion rules:**
+- ALL SPR, LORE, ACH, ITEM, BG goals must pass with QUOTED EVIDENCE from review agent
+- ALL PRSV goals must pass (structural verification)
+- ALL FINAL goals must pass
+- Template text or blob sprites = CRITICAL FAIL = do NOT signal completion
+- Max 3 goals may be DEFERRED after 2 remediation attempts
+- **String length and non-NULL checks alone are NEVER sufficient** — review agent must READ actual content
+- **viewBox="0 0 64 64"** must be present in every SVG — no exceptions

@@ -1,6 +1,7 @@
 import pytest
 import io
-from PIL import Image
+import struct
+import zlib
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.pool import StaticPool
@@ -228,11 +229,18 @@ def test_upload_avatar(client: TestClient, session: Session):
     
     app.dependency_overrides[get_current_player] = override_get_current_player_avatar
     
-    # Create a dummy image
-    img = Image.new('RGB', (100, 100), color = 'red')
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
-    img_byte_arr.seek(0)
+    # Create a minimal valid 1x1 red PNG (no Pillow dependency)
+    def _make_png():
+        raw = b'\x00\xff\x00\x00'  # filter byte + 1 red pixel (RGB)
+        compressed = zlib.compress(raw)
+        def _chunk(ctype, data):
+            c = ctype + data
+            return struct.pack('>I', len(data)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+        return (b'\x89PNG\r\n\x1a\n'
+                + _chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 2, 0, 0, 0))
+                + _chunk(b'IDAT', compressed)
+                + _chunk(b'IEND', b''))
+    img_byte_arr = io.BytesIO(_make_png())
     
     response = client.post(
         "/api/players/me/avatar",

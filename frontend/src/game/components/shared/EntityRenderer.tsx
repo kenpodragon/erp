@@ -274,8 +274,6 @@ const EntityRenderer: React.FC<EntityRendererProps> = ({
   const finalScaleX = scale * (1 + scaleOscX) * deathScaleX;
   const finalScaleY = scale * (1 + scaleOscY) * deathScaleY;
 
-  if (state === 'dead') return null;
-
   // ── Draw body callback ────────────────────────────────────────────
 
   const drawBody = useCallback((g: any) => {
@@ -416,6 +414,8 @@ const EntityRenderer: React.FC<EntityRendererProps> = ({
   const totalH = (baseH * bodyRatioH) + (hasHead ? baseW * 0.22 * 0.6 : 0);
   const hpBarY = -(totalH * scale) - 16;
   const nameY = hpBarY - 14;
+
+  if (state === 'dead') return null;
 
   return (
     <pixiContainer

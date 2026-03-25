@@ -123,6 +123,10 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
             os.environ.pop(key, None)
         p = AIProvider(env_file="/nonexistent/.env")
         p.max_retries = max_retries
+        # Force non-SDK provider names so _run_once always goes through _run_cli,
+        # which is what we mock with create_subprocess_exec.
+        p.provider = "cli_primary"
+        p.fallback_provider = "cli_fallback"
         return p
 
     def _mock_proc(self, stdout_bytes: bytes, returncode: int = 0):
@@ -138,7 +142,7 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         proc = self._mock_proc(json.dumps(payload).encode())
         provider = self._make_provider()
 
-        with patch("asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
             result = await provider.generate("make an enemy", schema={})
 
         # _parse_response unwraps the "result" field
@@ -151,7 +155,7 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         proc = self._mock_proc(json.dumps(payload).encode())
         provider = self._make_provider()
 
-        with patch("asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", return_value=proc) as mock_exec:
             result = await provider.generate("make an enemy", schema={})
 
         self.assertEqual(result, payload)
@@ -166,8 +170,8 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         # Fail twice, succeed on third
         side_effects = [bad_proc, bad_proc, good_proc]
 
-        with patch("asyncio.create_subprocess_exec", side_effect=side_effects):
-            with patch("asyncio.sleep", new_callable=AsyncMock):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", side_effect=side_effects):
+            with patch("tools.generators.lib.ai_provider.asyncio.sleep", new_callable=AsyncMock):
                 result = await provider.generate("prompt", schema={})
 
         self.assertEqual(result, good_payload)
@@ -186,8 +190,8 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
         # Pre-set failures so generate() starts with fallback
         provider._consecutive_failures = provider.max_retries
 
-        with patch("asyncio.create_subprocess_exec", return_value=good_proc) as mock_exec:
-            with patch("asyncio.sleep", new_callable=AsyncMock):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", return_value=good_proc) as mock_exec:
+            with patch("tools.generators.lib.ai_provider.asyncio.sleep", new_callable=AsyncMock):
                 result = await provider.generate("prompt", schema={})
 
         self.assertEqual(result, good_payload)
@@ -203,8 +207,8 @@ class TestGenerate(unittest.IsolatedAsyncioTestCase):
 
         provider = self._make_provider(max_retries=3)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=[bad_proc, good_proc]):
-            with patch("asyncio.sleep", new_callable=AsyncMock):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", side_effect=[bad_proc, good_proc]):
+            with patch("tools.generators.lib.ai_provider.asyncio.sleep", new_callable=AsyncMock):
                 result = await provider.generate("prompt", schema={})
 
         self.assertEqual(result, good_payload)
@@ -217,7 +221,10 @@ class TestGenerateBatch(unittest.IsolatedAsyncioTestCase):
         for key in ["AI_CLI_PROVIDER", "AI_CLI_PROVIDER_FALLBACK", "AI_CLI_MODEL",
                     "AI_CLI_TIMEOUT", "AI_CLI_MAX_RETRIES"]:
             os.environ.pop(key, None)
-        return AIProvider(env_file="/nonexistent/.env")
+        p = AIProvider(env_file="/nonexistent/.env")
+        p.provider = "cli_primary"
+        p.fallback_provider = "cli_fallback"
+        return p
 
     def _mock_proc(self, payload):
         proc = MagicMock()
@@ -329,6 +336,8 @@ class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
         p = AIProvider(env_file="/nonexistent/.env")
         p.timeout = timeout
         p.max_retries = 1  # single attempt so timeout propagates as RuntimeError
+        p.provider = "cli_primary"
+        p.fallback_provider = "cli_fallback"
         return p
 
     async def test_timeout_raises_runtime_error(self):
@@ -344,7 +353,7 @@ class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
         async def _fake_wait_for(coro, timeout):
             raise asyncio.TimeoutError()
 
-        with patch("asyncio.create_subprocess_exec", return_value=proc):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", return_value=proc):
             with patch("tools.generators.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
                 with self.assertRaises(RuntimeError) as ctx:
                     await provider.generate("prompt", schema={})
@@ -365,7 +374,7 @@ class TestTimeoutHandling(unittest.IsolatedAsyncioTestCase):
             coro.close()
             raise asyncio.TimeoutError()
 
-        with patch("asyncio.create_subprocess_exec", return_value=proc):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", return_value=proc):
             with patch("tools.generators.lib.ai_provider.asyncio.wait_for", side_effect=_fake_wait_for):
                 with self.assertRaises(RuntimeError):
                     await provider._run_once("claude", "prompt")
@@ -382,6 +391,8 @@ class TestOrganicAutoFallback(unittest.IsolatedAsyncioTestCase):
             os.environ.pop(key, None)
         p = AIProvider(env_file="/nonexistent/.env")
         p.max_retries = max_retries
+        p.provider = "cli_primary"
+        p.fallback_provider = "cli_fallback"
         return p
 
     def _mock_proc(self, stdout_bytes: bytes, returncode: int = 0):
@@ -407,8 +418,8 @@ class TestOrganicAutoFallback(unittest.IsolatedAsyncioTestCase):
                 return bad_proc
             return good_proc
 
-        with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
-            with patch("asyncio.sleep", new_callable=AsyncMock):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", side_effect=fake_exec):
+            with patch("tools.generators.lib.ai_provider.asyncio.sleep", new_callable=AsyncMock):
                 result = await provider.generate("prompt", schema={})
 
         self.assertEqual(result, good_payload)
@@ -435,8 +446,8 @@ class TestOrganicAutoFallback(unittest.IsolatedAsyncioTestCase):
                 return good_proc
             return bad_proc
 
-        with patch("asyncio.create_subprocess_exec", side_effect=fake_exec):
-            with patch("asyncio.sleep", new_callable=AsyncMock):
+        with patch("tools.generators.lib.ai_provider.asyncio.create_subprocess_exec", side_effect=fake_exec):
+            with patch("tools.generators.lib.ai_provider.asyncio.sleep", new_callable=AsyncMock):
                 result = await provider.generate("prompt", schema={})
 
         self.assertEqual(result, good_payload)

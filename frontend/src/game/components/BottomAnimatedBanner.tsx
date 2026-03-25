@@ -5,9 +5,9 @@ import './BottomAnimatedBanner.css';
 import BannerBackground from './BannerBackground';
 import { useGame } from '../GameContext';
 import { api } from '../../api';
-import EntityRenderer, { EnemyVisualData } from './shared/EntityRenderer';
-import PaperDollRenderer, { CharacterVisualData } from './shared/PaperDollRenderer';
-import AttackRenderer, { AttackVisualData } from './shared/AttackRenderer';
+import EntityRenderer, { type EnemyVisualData } from './shared/EntityRenderer';
+import PaperDollRenderer, { type CharacterVisualData } from './shared/PaperDollRenderer';
+import AttackRenderer, { type AttackVisualData } from './shared/AttackRenderer';
 
 // Register Pixi elements for use in React JSX
 extend({ Container, Graphics, Text, TilingSprite, Sprite });

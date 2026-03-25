@@ -516,10 +516,13 @@ class TestDiscoveryEntitiesEndpoint:
         resp = full_client.get("/api/game/registry/entities")
         assert resp.status_code == 200
         data = resp.json()
-        assert isinstance(data, list)
-        assert len(data) >= 1
+        assert isinstance(data, dict)
+        assert "entities" in data
+        entities = data["entities"]
+        assert isinstance(entities, list)
+        assert len(entities) >= 1
         # Entity should appear (possibly as "mist" since no discovery record)
-        entity_ids = [e["entity_id"] for e in data]
+        entity_ids = [e["entity_id"] for e in entities]
         assert test_entity.id in entity_ids
 
     def test_pagination(self, full_client, session: Session, test_entity_type):
@@ -534,16 +537,17 @@ class TestDiscoveryEntitiesEndpoint:
         resp = full_client.get("/api/game/registry/entities?page=1&per_page=2")
         assert resp.status_code == 200
         data = resp.json()
-        assert len(data) <= 2
+        assert len(data["entities"]) <= 2
 
     def test_family_filter(self, full_client, test_entity, session: Session):
         # test_entity has family="goblin" via entity_family_id FK
         resp = full_client.get("/api/game/registry/entities?family=goblin")
         assert resp.status_code == 200
         data = resp.json()
+        entities = data["entities"]
         assert all(
-            e["entity_family_name"] == "goblin" or e["entity_family_name"] is None
-            for e in data
+            e["family"] == "goblin" or e["family"] is None
+            for e in entities
         )
 
 
@@ -919,6 +923,7 @@ class TestConnectionManagerConnectDisconnect:
         assert 42 not in mgr.active_connections
 
     def test_multiple_connections_same_player(self):
+        """Second connect replaces the first (last-connection-wins design)."""
         import asyncio
         from services.chat import ConnectionManager
         mgr = ConnectionManager()
@@ -928,10 +933,13 @@ class TestConnectionManagerConnectDisconnect:
         loop = asyncio.new_event_loop()
         loop.run_until_complete(mgr.connect(player_id=1, websocket=ws1))
         loop.run_until_complete(mgr.connect(player_id=1, websocket=ws2))
-        assert len(mgr.active_connections[1]) == 2
-
-        mgr.disconnect(player_id=1, websocket=ws1)
+        # Second connect replaces first — stale ws1 was closed
         assert len(mgr.active_connections[1]) == 1
+        assert mgr.active_connections[1][0] is ws2
+        ws1.close.assert_called_once()
+
+        mgr.disconnect(player_id=1, websocket=ws2)
+        assert 1 not in mgr.active_connections
 
     def test_get_history(self):
         from services.chat import ConnectionManager
