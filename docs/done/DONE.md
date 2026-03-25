@@ -3,7 +3,67 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-22*
+*Updated: 2026-03-24*
+
+## Migration Consolidation — COMPLETE (2026-03-24)
+
+### DB Migration Merge (061-068 → 001-003)
+- [x] Deep-dived all 8 migrations to classify schema vs seed vs Elysium-specific data
+- [x] Confirmed: 062 game configs REQUIRED (balanced values), 068 banner configs UNUSED (dead code), 063 max_enemy_hp OPTIONAL (NULL fallback), 064-067 visual data MOSTLY UNUSED (only paperdoll_layer + attack_animation_type required, rest have fallbacks)
+- [x] 001_init_db_tables.sql: Added 5 new lookup tables (animation_styles, armor_classes, movement_types, silhouette_types, size_classes) with sequences, PKs, UNIQUE, FKs. Added columns to attack_types (10), entity_gameplay_data (9), gear_slots (1), item_type_bases (3), scene_gameplay_data (1)
+- [x] 002_system_seed_data.sql: Updated 6 game_config values in-place (sim toolkit balanced values). Added lookup table seed rows (5+5+7+6+8). Baked paperdoll_layer into gear_slots INSERTs
+- [x] 003_sample_content_data.sql: No changes needed
+- [x] Moved 061-068 to db/old/ (archived, not deleted)
+- [x] Result: Clean 001-003 install for any new instance, no Elysium-specific data required
+
+---
+
+## Generator Pipeline + Watchdog v1 — COMPLETE (2026-03-23/24)
+
+### Generator Pipeline Framework (2026-03-23)
+- [x] Built 4 framework modules: `tools/lib/ai_provider.py`, `db_client.py`, `base_generator.py`, `cache.py`
+- [x] Built 16 generators with `--ai` mode + Python fallback (entity families, gameplay, sprites, backgrounds, lore, music, SFX, scenes, achievements, artifacts, attack visuals, projectiles)
+- [x] Admin Asset Viewer: `admin/src/pages/AssetViewer.tsx` + `backend/routes/admin_visual.py`
+- [x] 76 generator tests passing
+- [x] Migrations 064-068 (visual lookup tables, entity gameplay FKs, attack type visuals, paperdoll layers, banner scaling)
+- [x] Documentation: GENERATOR_INSTRUCTIONS.md, GENERATOR_AI_RULES.md, C_STORY_ASSET_GENERATORS.md
+
+### Watchdog v1 — Overnight Bulk Population (2026-03-24)
+- [x] Built watchdog infrastructure (adapted from RESUMES project): WATCHDOG_AUTO.ps1, START_AUTONOMOUS.ps1, STOP_AUTONOMOUS.ps1
+- [x] AGENT_INSTRUCTIONS.md + AGENT_GOALS.md with 103 acceptance criteria
+- [x] Ran overnight ~2 hours — all 16 generators executed via AI mode
+- [x] Results: 87/103 goals passed, 0 gaps, all 3,936 entities populated
+- [x] Entity families expanded 10 → 17, max family 72% → 21.4%
+- [x] 85 death SFX presets created, all entities mapped
+- [x] 724 scenes with atmosphere + background + wave configs
+
+**Quality audit (post-v1):** Data structurally complete but content quality poor — template lore text, identical backgrounds, null music tracks. Led to v2 quality improvement pass.
+
+### Watchdog v2 — Quality Improvement Design (2026-03-24)
+- [x] Audited v1 cache files — identified template text, identical configs, null values
+- [x] Redesigned as audit-first quality pass: sample → classify KEEP/REPLACE → fix → verify
+- [x] Direct SQL approach (skip generators) with full lore data chain (entity → scenes → chapters → books → locations → story beats)
+- [x] 129 quality-focused goals with template detection, SVG complexity checks, content sampling
+- [x] Scoping/prioritization: Book 1 + bounded sets first, quality > coverage
+- [x] 3 deep audit passes on all docs — cross-referenced against actual schema
+
+**Next steps:** Run v2 overnight, review results, visual verification, iterate if needed.
+
+### Generator Directory Reorganization — COMPLETE (2026-03-24)
+- [x] Created `tools/generators/` package with proper `__init__.py` files
+- [x] Moved `tools/lib/` → `tools/generators/lib/` (4 framework modules: ai_provider, base_generator, cache, db_client)
+- [x] Moved `tools/tests/` → `tools/generators/tests/` (4 test files), fixed imports + mock paths
+- [x] Moved 15 generators from `tools/` root → `tools/generators/` with import fixes
+- [x] Moved 6 supporting scripts (scan_content_gaps, seed_entity_families, assign_atmospheres, classify_atmospheres, classify_entity_families, capture_difficulty_preset)
+- [x] Deleted one-off `generate_migration_040.py`
+- [x] Updated watchdog imports (`tools.lib` → `tools.generators.lib`)
+- [x] Updated `.gitignore` exception for new lib path
+- [x] Updated all documentation path references (AGENTS.md, GENERATOR_AI_RULES.md, TODO.md, pipeline docs)
+- [x] Removed stale "Cosmetic Asset Generation" TODO section (3.3 Emporium already complete)
+- [x] Replaced `sys.path.insert()` hacks with proper package imports across all files
+- [x] Verification: 73/76 generator tests pass (3 pre-existing failures), all generators import correctly
+
+---
 
 ## Spoofing Lockdown + Combat Scaling Alignment — COMPLETE (2026-03-22)
 

@@ -20,11 +20,11 @@ $script:ClaudePID = $null
 Set-Location $WorkDir
 
 $InitialPrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. Read ALL mandatory files listed in the MANDATORY READS section. Read tools/watchdog/AUTONOMOUS_PROGRESS.md to determine current state. Execute phases 0-8 in order. Heartbeat every task by updating the progress file. Do NOT exit until all phases are complete and scan_content_gaps.py reports 0 gaps, then write "STATUS: COMPLETE" to tools/watchdog/.autonomous_status.
+Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v2 — a QUALITY IMPROVEMENT PASS. Data already exists from v1 but is low quality (template lore, identical backgrounds, null music). Your job: AUDIT existing data, KEEP what is good, REPLACE what is bad, VERIFY quality. Read ALL mandatory files — especially tools/watchdog/AGENT_GOALS.md (125 acceptance criteria). Read docs/lore/BOOKS_SUMMARY.md + CHARACTER_GUIDE.md + ENVIRONMENT_GUIDE.md for lore context. Execute phases 0-12 in order. Phase 1 AUDITS existing data before changing anything. Each phase: audit first, only fix rows that fail quality. Prioritize Book 1 entities + bounded sets (achievements, items, backgrounds, music) over rushing all 3,936 entities. If you detect template text like "A mysterious entity known as..." that is a CRITICAL FAIL. Spawn REVIEW AGENTS that READ actual content samples. Heartbeat every task. Write "STATUS: COMPLETE" to tools/watchdog/.autonomous_status only when quality gates pass.
 '@
 
 $ResumePrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as ORCHESTRATOR. Read ALL mandatory files listed in the MANDATORY READS section. Resume from last checkpoint in tools/watchdog/AUTONOMOUS_PROGRESS.md. Skip pre-flight if DB backup already exists. Continue from the last incomplete phase. Heartbeat every task. Do NOT exit until all phases complete and verification passes, then write "STATUS: COMPLETE" to tools/watchdog/.autonomous_status.
+Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as ORCHESTRATOR (v2 — quality improvement pass over existing data). Read ALL mandatory files — especially tools/watchdog/AGENT_GOALS.md (check which items are [x] vs [ ]). Resume from last checkpoint in tools/watchdog/AUTONOMOUS_PROGRESS.md. Skip completed phases. CRITICAL: AUDIT existing data first — KEEP good rows, only REPLACE bad ones. Template text like "A mysterious entity..." is a CRITICAL FAIL — do not proceed with template data. Spawn REVIEW AGENTS that check content quality by reading actual samples. Heartbeat every task. Write "STATUS: COMPLETE" only when quality gates pass.
 '@
 
 function Write-Log {
@@ -55,7 +55,8 @@ function Get-FileAge {
         $watchdogAge = if ($script:WatchdogStartTime) { [int]((Get-Date) - $script:WatchdogStartTime).TotalSeconds } else { $fileAge }
         return [Math]::Min($fileAge, $watchdogAge)
     }
-    return 0
+    # Missing progress file = maximally stale (triggers restart)
+    return ($TimeoutSeconds + 1)
 }
 
 function Get-TaskCount {
@@ -68,11 +69,16 @@ function Get-TaskCount {
 function Get-CurrentPhase {
     if (Test-Path $ProgressFile) {
         try {
-            $content = Get-Content $ProgressFile -Raw -ErrorAction SilentlyContinue
-            $phases = [regex]::Matches($content, "## Phase (\d+)")
-            if ($phases.Count -gt 0) {
-                return $phases[$phases.Count - 1].Groups[1].Value
+            # Look for the last "## Phase X" or "## Review: Phase X" header
+            # Also check SPAWNING/COMPLETED lines for the most recent activity
+            $lines = Get-Content $ProgressFile -ErrorAction SilentlyContinue
+            $lastPhase = "0"
+            foreach ($line in $lines) {
+                if ($line -match "## (?:Review: )?Phase (\d+)") {
+                    $lastPhase = $Matches[1]
+                }
             }
+            return $lastPhase
         } catch { }
     }
     return "?"
@@ -100,7 +106,7 @@ function Stop-Claude {
             $proc | Stop-Process -Force -ErrorAction SilentlyContinue
         }
     } catch {
-        Write-Log "Kill failed (may have already exited)" "DarkGray"
+        Write-Log 'Kill failed - may have already exited' 'DarkGray'
     }
     Start-Sleep -Seconds 5
 }
@@ -140,7 +146,7 @@ $claudeProc = Launch-Claude -Prompt $InitialPrompt
 $script:ClaudePID = $claudeProc.Id
 $launchTime = Get-Date
 
-Write-Log "Grace period (60s) - letting Claude start up..." "DarkGray"
+Write-Log 'Grace period 60s - letting Claude start up...' 'DarkGray'
 Start-Sleep -Seconds 60
 
 # --- MONITOR LOOP ---

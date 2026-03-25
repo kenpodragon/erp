@@ -607,6 +607,87 @@ ALTER SEQUENCE public.artifacts_id_seq OWNED BY public.artifacts_legacy.id;
 
 
 --
+-- Name: animation_styles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.animation_styles (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    idle_scale_x real DEFAULT 1.0,
+    idle_scale_y real DEFAULT 1.0,
+    idle_cycle_ms integer DEFAULT 2000,
+    idle_translate_x real DEFAULT 0,
+    idle_translate_y real DEFAULT 0,
+    attack_recoil real DEFAULT 3.0,
+    death_style text DEFAULT 'fade'::text,
+    death_duration_ms integer DEFAULT 400,
+    death_particle_count integer DEFAULT 8,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: animation_styles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.animation_styles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: animation_styles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.animation_styles_id_seq OWNED BY public.animation_styles.id;
+
+
+--
+-- Name: armor_classes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.armor_classes (
+    id integer NOT NULL,
+    code text NOT NULL,
+    display_name text NOT NULL,
+    description text,
+    overlay_opacity real DEFAULT 0.6,
+    color_tint_base text,
+    texture_pattern text DEFAULT 'solid'::text,
+    glow_intensity real DEFAULT 0,
+    outline_width real DEFAULT 1.0,
+    weight_class text DEFAULT 'medium'::text,
+    sort_order integer DEFAULT 0,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: armor_classes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.armor_classes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: armor_classes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.armor_classes_id_seq OWNED BY public.armor_classes.id;
+
+
+--
 -- Name: asset_registry; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -698,7 +779,17 @@ CREATE TABLE public.attack_types (
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now(),
     visual_behavior_id integer,
-    stat_multipliers jsonb
+    stat_multipliers jsonb,
+    attack_animation_type text DEFAULT 'melee_swing'::text,
+    projectile_sprite_key text,
+    projectile_speed real DEFAULT 3.0,
+    projectile_color text,
+    impact_effect text DEFAULT 'flash'::text,
+    attack_range real DEFAULT 30.0,
+    cooldown_ms integer DEFAULT 2000,
+    arc_angle real DEFAULT 90,
+    trail_type text,
+    screen_shake boolean DEFAULT false
 );
 
 
@@ -1579,7 +1670,16 @@ CREATE TABLE public.entity_gameplay_data (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     unique_boss_theme_id integer,
-    death_sfx_key character varying(100)
+    death_sfx_key character varying(100),
+    movement_type_id integer,
+    size_class_id integer,
+    animation_style_id integer,
+    silhouette_type_id integer,
+    color_primary text,
+    color_secondary text,
+    primary_attack_type_id integer,
+    secondary_attack_type_id integer,
+    tertiary_attack_type_id integer
 );
 
 
@@ -1707,7 +1807,8 @@ CREATE TABLE public.gear_slots (
     display_name character varying(100) NOT NULL,
     description text,
     sort_order integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    paperdoll_layer integer
 );
 
 
@@ -1957,7 +2058,10 @@ CREATE TABLE public.item_type_bases (
     base_stat_range jsonb DEFAULT '{}'::jsonb NOT NULL,
     lore_reference text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    armor_class_id integer,
+    player_attack_animation text,
+    player_projectile_key text
 );
 
 
@@ -2301,6 +2405,45 @@ CREATE SEQUENCE public.marketplace_trades_id_seq
 --
 
 ALTER SEQUENCE public.marketplace_trades_id_seq OWNED BY public.marketplace_trades.id;
+
+
+--
+-- Name: movement_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.movement_types (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    y_offset_min real DEFAULT 0,
+    y_offset_max real DEFAULT 0,
+    bob_amplitude real DEFAULT 0,
+    bob_frequency real DEFAULT 1.0,
+    speed_multiplier real DEFAULT 1.0,
+    can_change_lane boolean DEFAULT false,
+    trail_effect text,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: movement_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.movement_types_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: movement_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.movement_types_id_seq OWNED BY public.movement_types.id;
 
 
 --
@@ -3133,7 +3276,8 @@ CREATE TABLE public.scene_gameplay_data (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     atmosphere_id integer,
-    background_id integer
+    background_id integer,
+    max_enemy_hp real
 );
 
 
@@ -3392,6 +3536,90 @@ CREATE SEQUENCE public.shard_transactions_id_seq
 --
 
 ALTER SEQUENCE public.shard_transactions_id_seq OWNED BY public.shard_transactions.id;
+
+
+--
+-- Name: silhouette_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.silhouette_types (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    body_shape text NOT NULL,
+    body_ratio_w real DEFAULT 1.0,
+    body_ratio_h real DEFAULT 1.0,
+    corner_radius real DEFAULT 0.1,
+    has_limbs boolean DEFAULT false,
+    limb_count integer DEFAULT 0,
+    has_head boolean DEFAULT false,
+    has_wings boolean DEFAULT false,
+    has_weapon_slot boolean DEFAULT false,
+    has_eye_glow boolean DEFAULT false,
+    sub_unit_count integer DEFAULT 1,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: silhouette_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.silhouette_types_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: silhouette_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.silhouette_types_id_seq OWNED BY public.silhouette_types.id;
+
+
+--
+-- Name: size_classes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.size_classes (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    scale_min real NOT NULL,
+    scale_max real NOT NULL,
+    width_base real NOT NULL,
+    height_base real NOT NULL,
+    hitbox_radius real NOT NULL,
+    hp_bar_width real NOT NULL,
+    hp_bar_offset_y real DEFAULT '-8'::real,
+    name_tag_visible boolean DEFAULT true,
+    sort_order integer DEFAULT 0,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: size_classes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.size_classes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: size_classes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.size_classes_id_seq OWNED BY public.size_classes.id;
 
 
 --
@@ -4162,6 +4390,20 @@ ALTER TABLE ONLY public.artifacts_legacy ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: animation_styles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.animation_styles ALTER COLUMN id SET DEFAULT nextval('public.animation_styles_id_seq'::regclass);
+
+
+--
+-- Name: armor_classes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.armor_classes ALTER COLUMN id SET DEFAULT nextval('public.armor_classes_id_seq'::regclass);
+
+
+--
 -- Name: asset_registry id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -4463,6 +4705,13 @@ ALTER TABLE ONLY public.marketplace_trades ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: movement_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.movement_types ALTER COLUMN id SET DEFAULT nextval('public.movement_types_id_seq'::regclass);
+
+
+--
 -- Name: payment_orders id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -4642,6 +4891,20 @@ ALTER TABLE ONLY public.shard_packages ALTER COLUMN id SET DEFAULT nextval('publ
 --
 
 ALTER TABLE ONLY public.shard_transactions ALTER COLUMN id SET DEFAULT nextval('public.shard_transactions_id_seq'::regclass);
+
+
+--
+-- Name: silhouette_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.silhouette_types ALTER COLUMN id SET DEFAULT nextval('public.silhouette_types_id_seq'::regclass);
+
+
+--
+-- Name: size_classes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.size_classes ALTER COLUMN id SET DEFAULT nextval('public.size_classes_id_seq'::regclass);
 
 
 --
@@ -4896,6 +5159,38 @@ ALTER TABLE ONLY public.artifacts_legacy
 
 ALTER TABLE ONLY public.asset_registry
     ADD CONSTRAINT asset_registry_asset_key_key UNIQUE (asset_key);
+
+
+--
+-- Name: animation_styles animation_styles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.animation_styles
+    ADD CONSTRAINT animation_styles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: animation_styles animation_styles_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.animation_styles
+    ADD CONSTRAINT animation_styles_name_key UNIQUE (name);
+
+
+--
+-- Name: armor_classes armor_classes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.armor_classes
+    ADD CONSTRAINT armor_classes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: armor_classes armor_classes_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.armor_classes
+    ADD CONSTRAINT armor_classes_code_key UNIQUE (code);
 
 
 --
@@ -5547,6 +5842,22 @@ ALTER TABLE ONLY public.marketplace_trades
 
 
 --
+-- Name: movement_types movement_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.movement_types
+    ADD CONSTRAINT movement_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: movement_types movement_types_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.movement_types
+    ADD CONSTRAINT movement_types_name_key UNIQUE (name);
+
+
+--
 -- Name: payment_orders payment_orders_idempotency_key_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5920,6 +6231,38 @@ ALTER TABLE ONLY public.shard_packages
 
 ALTER TABLE ONLY public.shard_transactions
     ADD CONSTRAINT shard_transactions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: silhouette_types silhouette_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.silhouette_types
+    ADD CONSTRAINT silhouette_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: silhouette_types silhouette_types_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.silhouette_types
+    ADD CONSTRAINT silhouette_types_name_key UNIQUE (name);
+
+
+--
+-- Name: size_classes size_classes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.size_classes
+    ADD CONSTRAINT size_classes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: size_classes size_classes_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.size_classes
+    ADD CONSTRAINT size_classes_name_key UNIQUE (name);
 
 
 --
@@ -7680,6 +8023,62 @@ ALTER TABLE ONLY public.entity_gameplay_data
 
 
 --
+-- Name: entity_gameplay_data entity_gameplay_data_movement_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_movement_type_id_fkey FOREIGN KEY (movement_type_id) REFERENCES public.movement_types(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_size_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_size_class_id_fkey FOREIGN KEY (size_class_id) REFERENCES public.size_classes(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_animation_style_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_animation_style_id_fkey FOREIGN KEY (animation_style_id) REFERENCES public.animation_styles(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_silhouette_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_silhouette_type_id_fkey FOREIGN KEY (silhouette_type_id) REFERENCES public.silhouette_types(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_primary_attack_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_primary_attack_type_id_fkey FOREIGN KEY (primary_attack_type_id) REFERENCES public.attack_types(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_secondary_attack_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_secondary_attack_type_id_fkey FOREIGN KEY (secondary_attack_type_id) REFERENCES public.attack_types(id);
+
+
+--
+-- Name: entity_gameplay_data entity_gameplay_data_tertiary_attack_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_gameplay_data
+    ADD CONSTRAINT entity_gameplay_data_tertiary_attack_type_id_fkey FOREIGN KEY (tertiary_attack_type_id) REFERENCES public.attack_types(id);
+
+
+--
 -- Name: entity_scene_appearances entity_scene_appearances_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7741,6 +8140,14 @@ ALTER TABLE ONLY public.inventory_items
 
 ALTER TABLE ONLY public.item_type_bases
     ADD CONSTRAINT item_type_bases_gear_slot_id_fkey FOREIGN KEY (gear_slot_id) REFERENCES public.gear_slots(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: item_type_bases item_type_bases_armor_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.item_type_bases
+    ADD CONSTRAINT item_type_bases_armor_class_id_fkey FOREIGN KEY (armor_class_id) REFERENCES public.armor_classes(id);
 
 
 --

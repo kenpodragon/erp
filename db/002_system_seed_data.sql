@@ -283,7 +283,7 @@ INSERT INTO public.entity_types VALUES (9, 'other', 'Other', 'Uncategorized enti
 -- Data for Name: game_configs; Type: TABLE DATA; Schema: public; Owner: -
 
 INSERT INTO public.game_configs VALUES ('idle_offline_cap_hours', '24', 'Maximum offline training hours calculated on player return. Progress beyond this cap is discarded.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
-INSERT INTO public.game_configs VALUES ('idle_essence_drain_per_minute', '1', 'Elysium Essence drained per minute of active idle training. Configurable for economy balance.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
+INSERT INTO public.game_configs VALUES ('idle_essence_drain_per_minute', '0.5', 'Elysium Essence drained per minute of active idle training. Configurable for economy balance.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_essence_xp_full_threshold', '0.75', 'Essence % (0.0-1.0) above which XP is earned at 100% rate.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_essence_xp_mid_threshold', '0.40', 'Essence % (0.0-1.0) above which XP is earned at 75% rate (below full threshold).', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_essence_xp_low_threshold', '0.15', 'Essence % (0.0-1.0) above which XP is earned at 50% rate (below mid threshold).', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
@@ -291,7 +291,7 @@ INSERT INTO public.game_configs VALUES ('idle_essence_xp_critical_threshold', '0
 INSERT INTO public.game_configs VALUES ('idle_essence_xp_floor_rate', '0.10', 'Minimum XP rate multiplier when Essence is at 0%. Training never fully halts.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_active_mode_boss_interval', '10', 'Number of waves between boss spawns in the Idle Training Active Mode mini-game.', '2026-03-05 19:39:33.689876-05', 'training', 'Idle Training XP rates, Essence drain, offline cap. Affects IdleTraining panel and offline calc.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_to_char_xp_ratio', '0.1', 'Fraction of idle training XP that converts to Character XP. 0.1 = 1 char XP per 10 idle XP. Idle training is the primary char XP engine.', '2026-03-05 19:39:33.690987-05', 'progression', 'Character level accumulation rate. Affects player_characters.character_xp accrual on idle level events.', NULL);
-INSERT INTO public.game_configs VALUES ('char_level_xp_factor', '1000', 'Quadratic curve factor K. XP to reach level N = K × N². Default 1000.', '2026-03-05 19:39:33.690987-05', 'progression', 'Character level thresholds. Changing this shifts all level breakpoints. Affects character sheet level bar.', NULL);
+INSERT INTO public.game_configs VALUES ('char_level_xp_factor', '80', 'Quadratic curve factor K. XP to reach level N = K × N². Default 80 (tuned for ~60h casual).', '2026-03-05 19:39:33.690987-05', 'progression', 'Character level thresholds. Changing this shifts all level breakpoints. Affects character sheet level bar.', NULL);
 INSERT INTO public.game_configs VALUES ('char_level_cap', '99', 'Maximum attainable character level. Currently 99.', '2026-03-05 19:39:33.690987-05', 'progression', 'Hard cap on player_characters.level. Affects XP accrual halt and character sheet display.', NULL);
 INSERT INTO public.game_configs VALUES ('click_rate_cap', '20', 'Maximum allowed clicks per second before flagging/throttling.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
 INSERT INTO public.game_configs VALUES ('hp_scaling_factor', '1.55', 'The exponential base for monster HP scaling across zones.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
@@ -303,7 +303,7 @@ INSERT INTO public.game_configs VALUES ('boss_enrage_seconds', '30', 'Seconds be
 INSERT INTO public.game_configs VALUES ('boss_zone_interval', '5', 'Every Nth zone is a boss zone.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
 INSERT INTO public.game_configs VALUES ('session_gold_multiplier', '1.0', 'Global multiplier for session gold drops.', '2026-03-05 22:00:12.060096-05', 'economy', 'Session reward scaling.', NULL);
 INSERT INTO public.game_configs VALUES ('first_clear_multiplier', '1.5', 'Multiplier applied to Essence rewards for the first time a scene is completed.', '2026-03-05 22:00:12.060096-05', 'economy', 'Session reward scaling.', NULL);
-INSERT INTO public.game_configs VALUES ('upgrade_cost_scaling', '1.07', 'Exponential cost multiplier per upgrade level (1.07^L).', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
+INSERT INTO public.game_configs VALUES ('upgrade_cost_scaling', '1.03', 'Exponential cost multiplier per upgrade level (1.03^L).', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
 INSERT INTO public.game_configs VALUES ('cd_reduction_per_level', '0.05', 'Cooldown reduction percentage per skill level.', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
 INSERT INTO public.game_configs VALUES ('max_cd_reduction', '0.7', 'Maximum possible cooldown reduction (e.g. 0.7 = 70% off).', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
 INSERT INTO public.game_configs VALUES ('base_click_upgrade_cost', '10.0', 'Base gold cost for Click Damage level 1.', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
@@ -311,7 +311,7 @@ INSERT INTO public.game_configs VALUES ('base_auto_dps_upgrade_cost', '25.0', 'B
 INSERT INTO public.game_configs VALUES ('base_skill_unlock_cost', '50.0', 'Base gold cost to unlock a skill (multiplied by skill base cost).', '2026-03-05 22:00:12.060492-05', 'upgrades', 'In-session upgrade cost and power scaling.', NULL);
 INSERT INTO public.game_configs VALUES ('idle_essence_capacity', '1000', 'Base Elysium Essence capacity for idle training stability calculation. Overflows are allowed but stability caps at 100%.', '2026-03-05 22:00:12.060954-05', 'training', 'Idle training tuning.', NULL);
 INSERT INTO public.game_configs VALUES ('default_player_wpm', '200', 'Default words-per-minute for narrative delay calculations when no user preference is set.', '2026-03-05 22:00:12.061331-05', 'ui', 'Player experience / UI defaults.', NULL);
-INSERT INTO public.game_configs VALUES ('char_xp_per_scene_base', '50', 'Flat Character XP awarded per Story Mode scene completion. Multiplied by scene difficulty modifier.', '2026-03-05 19:39:33.690987-05', 'progression', 'Character XP from story play. Affects character level accumulation for active (non-idle) players.', NULL);
+INSERT INTO public.game_configs VALUES ('char_xp_per_scene_base', '200', 'Flat Character XP awarded per Story Mode scene completion. Multiplied by scene difficulty modifier.', '2026-03-05 19:39:33.690987-05', 'progression', 'Character XP from story play. Affects character level accumulation for active (non-idle) players.', NULL);
 INSERT INTO public.game_configs VALUES ('lore_pool_coefficient', '0.6', 'Multiplier applied to Lore level to determine the bonus stat pool: pool = floor(lore_level × coeff).', '2026-03-05 19:39:33.690987-05', 'progression', 'Lore idle skill stat distribution. Affects character_stats recalculation for Lore contributions.', NULL);
 INSERT INTO public.game_configs VALUES ('run_achievement_config', '{"achievements": [{"id": "speed_completion", "display": "Swift Passage", "description": "Complete the scene run in under N minutes", "threshold_type": "completion_time_seconds", "drop_chance_pct": 15, "threshold_value": 300}, {"id": "enemy_slayer", "display": "Enemy Slayer", "description": "Defeat N or more enemies in a single run", "threshold_type": "enemies_killed", "drop_chance_pct": 10, "threshold_value": 100}, {"id": "wave_climber", "display": "Wave Climber", "description": "Reach wave N or higher", "threshold_type": "max_wave_reached", "drop_chance_pct": 12, "threshold_value": 50}, {"id": "perfect_run", "display": "Flawless Execution", "description": "Complete without dying", "threshold_type": "death_count", "drop_chance_pct": 20, "threshold_value": 0}, {"id": "boss_slayer", "display": "Boss Slayer", "description": "Defeat the scene boss", "threshold_type": "boss_killed", "drop_chance_pct": 25, "threshold_value": 1}, {"id": "personal_best", "display": "High Tide", "description": "Reach a personal best wave for this scene", "threshold_type": "personal_best_wave", "drop_chance_pct": 8, "threshold_value": 1}]}', 'Run completion achievement thresholds and drop chance percentages for Dream Items.', '2026-03-05 19:39:33.690987-05', 'drops', 'Dream Item drop system. Evaluated on every POST /api/game/story/complete-scene call.', NULL);
 INSERT INTO public.game_configs VALUES ('rarity_weight_book_1', '{"epic": 4, "rare": 10, "common": 60, "cosmic": 1, "uncommon": 25}', 'Dream Item rarity drop weights for Book 1 chapters. Values are relative weights (not %).', '2026-03-05 19:39:33.690987-05', 'drops', 'Item rarity distribution in Book 1 scenes. Used by Dream Item generator on scene completion.', NULL);
@@ -323,8 +323,8 @@ INSERT INTO public.game_configs VALUES ('agi_speed_coefficient', '0.015', '+1.5%
 INSERT INTO public.game_configs VALUES ('agi_crit_coefficient', '0.003', '+0.3% crit chance per AGI point.', '2026-03-05 19:39:33.692233-05', 'combat', 'Story Mode crit chance. Affects CombatStage critical hit roll.', NULL);
 INSERT INTO public.game_configs VALUES ('int_power_coefficient', '0.02', '+2% skill power per INT point.', '2026-03-05 19:39:33.692233-05', 'combat', 'Story Mode hotbar skill damage/effect scaling. Affects SkillsHotbar activation.', NULL);
 INSERT INTO public.game_configs VALUES ('int_cooldown_coefficient', '0.005', '-0.5% cooldown per INT point (min 50% of base).', '2026-03-05 19:39:33.692233-05', 'combat', 'Story Mode skill cooldown reduction. Affects SkillsHotbar cooldown timers.', NULL);
-INSERT INTO public.game_configs VALUES ('gold_to_essence_base_rate', '1000', 'The initial amount of gold required to earn 1 unit of Essence at Zone 1.', '2026-03-05 22:00:12.049474-05', 'economy', 'Economy conversion rate. Affects post-run Essence rewards.', NULL);
-INSERT INTO public.game_configs VALUES ('gold_to_essence_growth_factor', '1.07', 'The exponential growth of the conversion rate per zone.', '2026-03-05 22:00:12.049474-05', 'economy', 'Economy scaling. Higher values make Essence harder to earn in later zones.', NULL);
+INSERT INTO public.game_configs VALUES ('gold_to_essence_base_rate', '200', 'The initial amount of gold required to earn 1 unit of Essence at Zone 1.', '2026-03-05 22:00:12.049474-05', 'economy', 'Economy conversion rate. Affects post-run Essence rewards.', NULL);
+INSERT INTO public.game_configs VALUES ('gold_to_essence_growth_factor', '1.01', 'The exponential growth of the conversion rate per zone.', '2026-03-05 22:00:12.049474-05', 'economy', 'Economy scaling. Higher values make Essence harder to earn in later zones.', NULL);
 INSERT INTO public.game_configs VALUES ('monsters_per_zone', '10', 'Number of minions to defeat before a boss or zone completion.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
 INSERT INTO public.game_configs VALUES ('crit_chance', '0.02', 'Base probability (0.0-1.0) of a critical hit.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
 INSERT INTO public.game_configs VALUES ('auto_dps_tick_ms', '500', 'Interval in milliseconds between auto-damage applications.', '2026-03-05 22:00:12.058145-05', 'combat', 'Combat timing and feel.', NULL);
@@ -429,22 +429,22 @@ INSERT INTO public.game_configs VALUES ('wave_default_spawn_pattern', '"uniform"
 
 -- Data for Name: gear_slots; Type: TABLE DATA; Schema: public; Owner: -
 
-INSERT INTO public.gear_slots VALUES (1, 'main_hand', 'Main Hand', 'Primary weapon hand. Equips swords, emitters, staves, and other offensive instruments.', 12, '2026-03-05 20:58:05.123136-05');
-INSERT INTO public.gear_slots VALUES (2, 'chest', 'Chest', 'Core body armor. Provides the bulk of defensive capability.', 4, '2026-03-05 20:58:05.123136-05');
-INSERT INTO public.gear_slots VALUES (4, 'head', 'Head', 'Cranial protection and neural enhancement. Helmets, visors, and mind-shields.', 1, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (5, 'neck', 'Neck', 'Necklaces, amulets, and conduit chains. Channels ambient Akashic energy.', 2, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (6, 'shoulders', 'Shoulders', 'Pauldrons and energy emitter mounts. Provides structural support and style.', 3, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (7, 'hands', 'Hands', 'Gauntlets, gloves, and haptic interfaces. Enhances grip and energy channeling.', 5, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (8, 'wrist_1', 'Wrist (L)', 'Left wrist bracelet or data band. Compact enhancement slot.', 6, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (9, 'wrist_2', 'Wrist (R)', 'Right wrist bracelet or data band. Compact enhancement slot.', 7, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (10, 'finger_1', 'Ring (L)', 'Left hand ring. Small but potent enhancement — often Akashic-infused.', 8, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (11, 'finger_2', 'Ring (R)', 'Right hand ring. Small but potent enhancement — often Akashic-infused.', 9, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (12, 'legs', 'Legs', 'Leg armor and exoskeleton components. Mobility and structural defense.', 10, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (13, 'feet', 'Feet', 'Boots and stabilizer platforms. Ground-contact enhancement and movement speed.', 11, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (14, 'off_hand', 'Off Hand', 'Secondary hand — shields, focus orbs, or dual-wield weapons.', 13, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (15, 'back', 'Back', 'Cloaks, jetpacks, and energy wings. Provides passive aura effects.', 14, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (16, 'waist', 'Waist', 'Belts and utility harnesses. Compact storage and stat augmentation.', 16, '2026-03-05 22:40:08.882121-05');
-INSERT INTO public.gear_slots VALUES (3, 'trinket', 'Trinket', 'Passive enhancement accessory. Boosts Intelligence and provides unique effects.', 15, '2026-03-05 20:58:05.123136-05');
+INSERT INTO public.gear_slots VALUES (1, 'main_hand', 'Main Hand', 'Primary weapon hand. Equips swords, emitters, staves, and other offensive instruments.', 12, '2026-03-05 20:58:05.123136-05', 7);
+INSERT INTO public.gear_slots VALUES (2, 'chest', 'Chest', 'Core body armor. Provides the bulk of defensive capability.', 4, '2026-03-05 20:58:05.123136-05', 3);
+INSERT INTO public.gear_slots VALUES (4, 'head', 'Head', 'Cranial protection and neural enhancement. Helmets, visors, and mind-shields.', 1, '2026-03-05 22:40:08.882121-05', 6);
+INSERT INTO public.gear_slots VALUES (5, 'neck', 'Neck', 'Necklaces, amulets, and conduit chains. Channels ambient Akashic energy.', 2, '2026-03-05 22:40:08.882121-05', NULL);
+INSERT INTO public.gear_slots VALUES (6, 'shoulders', 'Shoulders', 'Pauldrons and energy emitter mounts. Provides structural support and style.', 3, '2026-03-05 22:40:08.882121-05', 5);
+INSERT INTO public.gear_slots VALUES (7, 'hands', 'Hands', 'Gauntlets, gloves, and haptic interfaces. Enhances grip and energy channeling.', 5, '2026-03-05 22:40:08.882121-05', 4);
+INSERT INTO public.gear_slots VALUES (8, 'wrist_1', 'Wrist (L)', 'Left wrist bracelet or data band. Compact enhancement slot.', 6, '2026-03-05 22:40:08.882121-05', NULL);
+INSERT INTO public.gear_slots VALUES (9, 'wrist_2', 'Wrist (R)', 'Right wrist bracelet or data band. Compact enhancement slot.', 7, '2026-03-05 22:40:08.882121-05', NULL);
+INSERT INTO public.gear_slots VALUES (10, 'finger_1', 'Ring (L)', 'Left hand ring. Small but potent enhancement — often Akashic-infused.', 8, '2026-03-05 22:40:08.882121-05', NULL);
+INSERT INTO public.gear_slots VALUES (11, 'finger_2', 'Ring (R)', 'Right hand ring. Small but potent enhancement — often Akashic-infused.', 9, '2026-03-05 22:40:08.882121-05', NULL);
+INSERT INTO public.gear_slots VALUES (12, 'legs', 'Legs', 'Leg armor and exoskeleton components. Mobility and structural defense.', 10, '2026-03-05 22:40:08.882121-05', 2);
+INSERT INTO public.gear_slots VALUES (13, 'feet', 'Feet', 'Boots and stabilizer platforms. Ground-contact enhancement and movement speed.', 11, '2026-03-05 22:40:08.882121-05', 2);
+INSERT INTO public.gear_slots VALUES (14, 'off_hand', 'Off Hand', 'Secondary hand — shields, focus orbs, or dual-wield weapons.', 13, '2026-03-05 22:40:08.882121-05', 7);
+INSERT INTO public.gear_slots VALUES (15, 'back', 'Back', 'Cloaks, jetpacks, and energy wings. Provides passive aura effects.', 14, '2026-03-05 22:40:08.882121-05', 1);
+INSERT INTO public.gear_slots VALUES (16, 'waist', 'Waist', 'Belts and utility harnesses. Compact storage and stat augmentation.', 16, '2026-03-05 22:40:08.882121-05', 3);
+INSERT INTO public.gear_slots VALUES (3, 'trinket', 'Trinket', 'Passive enhancement accessory. Boosts Intelligence and provides unique effects.', 15, '2026-03-05 20:58:05.123136-05', NULL);
 
 
 
@@ -959,6 +959,82 @@ INSERT INTO public.skill_prerequisites VALUES (40, 18, 'character_level', NULL, 
 
 
 
+
+
+-- ============================================================================
+-- Data for Name: movement_types; Type: TABLE DATA; Schema: public; Owner: -
+-- ============================================================================
+
+INSERT INTO public.movement_types (name, description, y_offset_min, y_offset_max, bob_amplitude, bob_frequency, speed_multiplier, can_change_lane, trail_effect)
+VALUES
+    ('ground',   'Walks/crawls on the ground plane',         0,  0, 0, 1.0, 1.0, FALSE, NULL),
+    ('hover',    'Floats slightly above ground with shadow',  15, 30, 4, 0.8, 0.9, FALSE, 'shadow'),
+    ('flying',   'High altitude flight with lane changes',    40, 70, 8, 1.2, 1.3, TRUE,  NULL),
+    ('burrowing','Partially submerged with particle effects', -5,  0, 2, 0.5, 0.7, FALSE, 'particles'),
+    ('teleport', 'Blinks between positions with afterimage',   0,  0, 0, 1.0, 0.5, TRUE,  'afterimage')
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ============================================================================
+-- Data for Name: size_classes; Type: TABLE DATA; Schema: public; Owner: -
+-- ============================================================================
+
+INSERT INTO public.size_classes (name, description, scale_min, scale_max, width_base, height_base, hitbox_radius, hp_bar_width, sort_order)
+VALUES
+    ('tiny',   'Very small creatures (insects, wisps)',   0.4, 0.6, 12, 14,  8, 16, 1),
+    ('small',  'Small creatures (rats, imps)',            0.7, 0.9, 18, 22, 12, 22, 2),
+    ('medium', 'Standard humanoid-sized',                1.0, 1.2, 24, 30, 16, 28, 3),
+    ('large',  'Large creatures (ogres, bears)',          1.3, 1.6, 32, 40, 22, 36, 4),
+    ('huge',   'Massive creatures (dragons, giants)',     1.8, 2.2, 44, 54, 30, 48, 5)
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ============================================================================
+-- Data for Name: animation_styles; Type: TABLE DATA; Schema: public; Owner: -
+-- ============================================================================
+
+INSERT INTO public.animation_styles (name, description, idle_scale_x, idle_scale_y, idle_cycle_ms, idle_translate_x, idle_translate_y, attack_recoil, death_style, death_duration_ms, death_particle_count)
+VALUES
+    ('ooze',    'Slow squishing blob motion',         1.15, 0.88, 2000, 0,  0, 2.0, 'dissolve', 500,  6),
+    ('stalk',   'Subtle side-to-side prowl',          1.0,  1.0,  1500, -4, 0, 4.0, 'fade',     400,  8),
+    ('pulse',   'Rhythmic uniform pulsing',           1.05, 1.05, 2500, 0,  0, 2.0, 'shatter',  600, 12),
+    ('aggro',   'Fast aggressive bobbing',            1.0,  1.0,  1000, 0, -3, 5.0, 'explode',  300, 15),
+    ('flap',    'Wing-beat vertical motion',          1.0,  1.0,  800,  0, -4, 3.0, 'fade',     400, 10),
+    ('swarm',   'Jittery multi-unit drift',           1.0,  1.0,  2000, 2,  0, 1.0, 'dissolve', 500, 20),
+    ('slither', 'Horizontal wave undulation',         1.08, 1.0,  1800, 2,  0, 2.0, 'shrink',   400,  6)
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ============================================================================
+-- Data for Name: silhouette_types; Type: TABLE DATA; Schema: public; Owner: -
+-- ============================================================================
+
+INSERT INTO public.silhouette_types (name, description, body_shape, body_ratio_w, body_ratio_h, corner_radius, has_limbs, limb_count, has_head, has_wings, has_weapon_slot, has_eye_glow, sub_unit_count)
+VALUES
+    ('blob',      'Amorphous shapeless mass',        'ellipse', 1.2, 0.7, 0.5, FALSE, 0, FALSE, FALSE, FALSE, FALSE, 1),
+    ('quadruped', 'Four-legged beast',               'rect',    1.4, 0.8, 0.1, TRUE,  4, TRUE,  FALSE, FALSE, TRUE,  1),
+    ('biped',     'Two-legged humanoid',             'rect',    0.7, 1.3, 0.1, TRUE,  2, TRUE,  FALSE, TRUE,  FALSE, 1),
+    ('orb',       'Floating sphere with eye glow',   'circle',  1.0, 1.0, 1.0, FALSE, 0, FALSE, FALSE, FALSE, TRUE,  1),
+    ('winged',    'Winged flying creature',          'ellipse', 1.5, 0.6, 0.3, FALSE, 0, TRUE,  TRUE,  FALSE, TRUE,  1),
+    ('cluster',   'Multi-unit swarm cluster',        'multi',   0.8, 0.8, 0.2, FALSE, 0, FALSE, FALSE, FALSE, FALSE, 4)
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ============================================================================
+-- Data for Name: armor_classes; Type: TABLE DATA; Schema: public; Owner: -
+-- ============================================================================
+
+INSERT INTO public.armor_classes (code, display_name, description, overlay_opacity, color_tint_base, texture_pattern, glow_intensity, outline_width, weight_class, sort_order)
+VALUES
+    ('cloth',   'Cloth',   'Light fabric wrappings',              0.4,  '#645040', 'solid',      0,   0.5, 'light',  1),
+    ('leather', 'Leather', 'Tanned hide armor',                   0.55, '#8b5a2b', 'solid',      0,   1.0, 'light',  2),
+    ('chain',   'Chain',   'Interlocking metal rings',            0.5,  '#b4b4b4', 'crosshatch', 0,   1.0, 'medium', 3),
+    ('plate',   'Plate',   'Heavy forged metal plates',           0.65, '#c8c8dc', 'gradient',   0.1, 1.5, 'heavy',  4),
+    ('divine',  'Divine',  'Blessed golden armor',                0.5,  '#ffd700', 'shimmer',    0.8, 1.0, 'medium', 5),
+    ('magic',   'Magic',   'Arcane-infused protective garments',  0.45, '#8844cc', 'shimmer',    0.6, 0.5, 'light',  6),
+    ('bone',    'Bone',    'Skeletal plating and spurs',          0.55, '#b4aa8c', 'solid',      0,   1.0, 'medium', 7),
+    ('shadow',  'Shadow',  'Dark ethereal wrappings',             0.35, '#28283c', 'solid',      0.2, 0.5, 'light',  8)
+ON CONFLICT (code) DO NOTHING;
 
 
 -- Re-enable triggers

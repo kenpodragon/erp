@@ -1,162 +1,110 @@
-# START_AUTONOMOUS.ps1 — Pre-flight setup for ERP generator watchdog
-# Backs up settings, verifies environment, creates tools/.env, and launches the watchdog.
-#
-# Usage:
+# START_AUTONOMOUS.ps1 — Setup for the overnight ERP generator agent
+# Run from PowerShell:
 #   cd C:\Users\ssala\OneDrive\Desktop\MMORPG\erp
 #   powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
 
-$ErrorActionPreference = "Stop"
-$WorkDir = "C:\Users\ssala\OneDrive\Desktop\MMORPG\erp"
-$WatchdogDir = Join-Path $WorkDir "tools\watchdog"
-$ClaudeSettingsDir = Join-Path $env:USERPROFILE ".claude"
-$ClaudeSettings = Join-Path $ClaudeSettingsDir "settings.local.json"
-$ClaudeSettingsBackup = Join-Path $WatchdogDir ".settings_backup.json"
-
+$WorkDir = 'C:\Users\ssala\OneDrive\Desktop\MMORPG\erp'
 Set-Location $WorkDir
 
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Green
-Write-Host "  ERP GENERATOR PIPELINE — AUTONOMOUS STARTUP" -ForegroundColor Green
-Write-Host "================================================" -ForegroundColor Green
-Write-Host ""
+Write-Host ''
+Write-Host '=== ERP Generator Pipeline - Autonomous Setup ===' -ForegroundColor Cyan
+Write-Host ('Started: ' + (Get-Date))
+Write-Host ''
 
-# --- Step 1: Back up Claude Code settings ---
-Write-Host "[1/7] Backing up Claude settings..." -ForegroundColor Cyan
-if (Test-Path $ClaudeSettings) {
-    Copy-Item $ClaudeSettings $ClaudeSettingsBackup -Force
-    Write-Host "  Backed up to: $ClaudeSettingsBackup" -ForegroundColor DarkGray
+# 0. Pre-flight manual checks
+Write-Host '=========================================' -ForegroundColor Yellow
+Write-Host '  MANUAL CHECKS BEFORE STARTING' -ForegroundColor Yellow
+Write-Host '=========================================' -ForegroundColor Yellow
+Write-Host ''
+Write-Host '  [ ] Pause Windows Update:'
+Write-Host '      Settings > Windows Update > Pause updates'
+Write-Host ''
+Write-Host '  [ ] Disable sleep/hibernation:'
+Write-Host '      Settings > System > Power > Screen and sleep > Never'
+Write-Host ''
+Write-Host '  [ ] Pause OneDrive sync:'
+Write-Host '      System tray > OneDrive icon > Pause syncing > 24 hours'
+Write-Host ''
+Write-Host '  [ ] Plug in power adapter'
+Write-Host ''
+Write-Host '  [ ] Verify backend/.env has DATABASE_URL for localhost PostgreSQL'
+Write-Host ''
+Write-Host '  [ ] Verify claude CLI is installed and authenticated'
+Write-Host ''
+Read-Host 'Press ENTER when all checks are done, or Ctrl+C to abort'
+
+# 1. Backup current settings
+Write-Host '[1/5] Backing up settings...' -ForegroundColor Green
+$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+$settingsFile = Join-Path $env:USERPROFILE '.claude\settings.local.json'
+$backupDir = Join-Path $WorkDir 'tools\watchdog'
+if (Test-Path $settingsFile) {
+    Copy-Item $settingsFile (Join-Path $backupDir ".settings_backup.$timestamp.json")
+    Copy-Item $settingsFile (Join-Path $backupDir '.settings_backup.json')
+    Write-Host ('  Backed up to .settings_backup.' + $timestamp + '.json')
 } else {
-    Write-Host "  No settings.local.json found (using defaults)" -ForegroundColor DarkGray
+    Write-Host '  No existing settings.local.json found - OK for first run'
 }
 
-# --- Step 2: Verify Docker is running (for PostgreSQL) ---
-Write-Host "[2/7] Checking Docker..." -ForegroundColor Cyan
-try {
-    $dockerStatus = docker ps --format "{{.Names}}" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  WARNING: Docker not running. Start Docker Desktop first!" -ForegroundColor Yellow
-        Write-Host "  The generators need PostgreSQL. Press Enter to continue anyway, or Ctrl+C to abort."
-        Read-Host
-    } else {
-        $pgContainer = $dockerStatus | Select-String "postgres|erp.*db"
-        if ($pgContainer) {
-            Write-Host "  PostgreSQL container found: $pgContainer" -ForegroundColor Green
-        } else {
-            Write-Host "  WARNING: No PostgreSQL container detected. Containers running:" -ForegroundColor Yellow
-            Write-Host "  $dockerStatus" -ForegroundColor DarkGray
-            Write-Host "  Press Enter to continue anyway, or Ctrl+C to abort."
-            Read-Host
-        }
-    }
-} catch {
-    Write-Host "  WARNING: Docker check failed. Continuing..." -ForegroundColor Yellow
-}
-
-# --- Step 3: Verify backend/.env has DATABASE_URL ---
-Write-Host "[3/7] Checking backend/.env..." -ForegroundColor Cyan
-$backendEnv = Join-Path $WorkDir "backend\.env"
-if (Test-Path $backendEnv) {
-    $dbUrl = Get-Content $backendEnv | Select-String "DATABASE_URL"
-    if ($dbUrl) {
-        Write-Host "  DATABASE_URL found in backend/.env" -ForegroundColor Green
-    } else {
-        Write-Host "  ERROR: DATABASE_URL not found in backend/.env!" -ForegroundColor Red
-        exit 1
-    }
-} else {
-    Write-Host "  ERROR: backend/.env not found!" -ForegroundColor Red
-    exit 1
-}
-
-# --- Step 4: Create/verify tools/.env ---
-Write-Host "[4/7] Checking tools/.env..." -ForegroundColor Cyan
-$toolsEnv = Join-Path $WorkDir "tools\.env"
-$toolsEnvExample = Join-Path $WorkDir "tools\.env.example"
+# 2. Create tools/.env if missing
+Write-Host '[2/5] Checking tools/.env...' -ForegroundColor Green
+$toolsEnv = Join-Path $WorkDir 'tools\.env'
+$toolsEnvExample = Join-Path $WorkDir 'tools\.env.example'
 if (-not (Test-Path $toolsEnv)) {
     if (Test-Path $toolsEnvExample) {
         Copy-Item $toolsEnvExample $toolsEnv
-        Write-Host "  Created tools/.env from .env.example" -ForegroundColor Green
+        Write-Host '  Created tools/.env from .env.example'
     } else {
-        # Create a default tools/.env
-        @"
-AI_CLI_PROVIDER=claude
-AI_CLI_PROVIDER_FALLBACK=gemini
-AI_CLI_MODEL=claude-sonnet-4-6
-AI_CLI_TIMEOUT=120
-AI_CLI_MAX_RETRIES=3
-"@ | Set-Content $toolsEnv
-        Write-Host "  Created tools/.env with defaults" -ForegroundColor Green
+        Set-Content $toolsEnv "AI_CLI_PROVIDER=claude`nAI_CLI_PROVIDER_FALLBACK=gemini`nAI_CLI_MODEL=claude-sonnet-4-6`nAI_CLI_TIMEOUT=120`nAI_CLI_MAX_RETRIES=3"
+        Write-Host '  Created tools/.env with defaults'
     }
 } else {
-    Write-Host "  tools/.env exists" -ForegroundColor Green
+    Write-Host '  tools/.env exists'
 }
 
-# --- Step 5: Verify Python + dependencies ---
-Write-Host "[5/7] Checking Python environment..." -ForegroundColor Cyan
-try {
-    $pyVersion = python --version 2>&1
-    Write-Host "  $pyVersion" -ForegroundColor Green
+# 3. Initialize progress file
+Write-Host '[3/5] Initializing progress file...' -ForegroundColor Green
+$progressFile = Join-Path $backupDir 'AUTONOMOUS_PROGRESS.md'
+$timestamp2 = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+$currentBranch = git branch --show-current 2>&1
+Set-Content $progressFile "# ERP Generator Watchdog - Autonomous Progress`n`n## Current State`n- Phase: 0 Pre-flight`n- Started: $timestamp2`n- Branch: $currentBranch`n- DB backup: pending`n- Baseline gaps: pending`n`n## Heartbeat Log"
+Write-Host ('  Branch: ' + $currentBranch)
 
-    # Quick check for required packages
-    python -c "import psycopg2, dotenv, tqdm; print('  Required packages: OK')" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  Installing missing packages..." -ForegroundColor Yellow
-        pip install psycopg2-binary python-dotenv tqdm 2>&1 | Out-Null
-        Write-Host "  Packages installed" -ForegroundColor Green
+# 4. Verify key files exist
+Write-Host '[4/5] Verifying key files...' -ForegroundColor Green
+$requiredFiles = @(
+    'tools\watchdog\AGENT_INSTRUCTIONS.md',
+    'tools\watchdog\AGENT_GOALS.md',
+    'tools\watchdog\WATCHDOG_AUTO.ps1',
+    'backend\.env',
+    'AGENTS.md'
+)
+$allOk = $true
+foreach ($f in $requiredFiles) {
+    $fullPath = Join-Path $WorkDir $f
+    if (Test-Path $fullPath) {
+        Write-Host ('  OK: ' + $f) -ForegroundColor DarkGray
+    } else {
+        Write-Host ('  MISSING: ' + $f) -ForegroundColor Red
+        $allOk = $false
     }
-} catch {
-    Write-Host "  ERROR: Python not found!" -ForegroundColor Red
+}
+if (-not $allOk) {
+    Write-Host '  Some files missing. Fix before continuing.' -ForegroundColor Red
     exit 1
 }
 
-# --- Step 6: Verify DB connection ---
-Write-Host "[6/7] Testing DB connection..." -ForegroundColor Cyan
-$dbTest = python -c "from tools.lib.db_client import DBClient; db = DBClient(); print('DB OK'); db.close()" 2>&1
-if ($dbTest -match "DB OK") {
-    Write-Host "  Database connection OK" -ForegroundColor Green
-} else {
-    Write-Host "  WARNING: DB connection failed. Output:" -ForegroundColor Yellow
-    Write-Host "  $dbTest" -ForegroundColor DarkGray
-    Write-Host "  The agent will retry. Press Enter to continue, or Ctrl+C to abort."
-    Read-Host
-}
+Write-Host ''
+Write-Host '=== Setup Complete ===' -ForegroundColor Green
+Write-Host ''
 
-# --- Step 7: Create dev branch ---
-Write-Host "[7/7] Setting up git branch..." -ForegroundColor Cyan
-$currentBranch = git branch --show-current 2>&1
-Write-Host "  Current branch: $currentBranch" -ForegroundColor DarkGray
-# We stay on the current branch (feature/generator-pipeline) — no need for a separate dev branch
-# The generators only modify the database, not code files
-
-# --- Initialize progress file ---
-$progressFile = Join-Path $WatchdogDir "AUTONOMOUS_PROGRESS.md"
-$timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-@"
-# ERP Generator Watchdog — Autonomous Progress
-
-## Current State
-- Phase: 0 (Pre-flight)
-- Started: $timestamp
-- Branch: $currentBranch
-- DB backup: pending
-- Baseline gaps: pending
-
-## Heartbeat Log
-"@ | Set-Content $progressFile
-
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Green
-Write-Host "  PRE-FLIGHT COMPLETE — LAUNCHING WATCHDOG" -ForegroundColor Green
-Write-Host "================================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "The watchdog will open Claude in a NEW window." -ForegroundColor Cyan
-Write-Host "You can close THIS terminal — the watchdog owns the Claude process." -ForegroundColor Cyan
-Write-Host "To stop: run tools\watchdog\STOP_AUTONOMOUS.ps1" -ForegroundColor Cyan
-Write-Host ""
-
-# --- Launch watchdog in separate window ---
-Start-Process powershell `
-    -ArgumentList "-ExecutionPolicy", "Bypass", "-NoExit", "-File", (Join-Path $WatchdogDir "WATCHDOG_AUTO.ps1") `
-    -WorkingDirectory $WorkDir
-
-Write-Host "Watchdog launched in new window. You may close this terminal." -ForegroundColor Green
+# 5. Launch watchdog in a new terminal window
+Write-Host '[LAUNCH] Starting watchdog in new window...' -ForegroundColor Cyan
+$watchdogPath = Join-Path $WorkDir 'tools\watchdog\WATCHDOG_AUTO.ps1'
+Start-Process powershell -ArgumentList '-ExecutionPolicy', 'Bypass', '-NoExit', '-File', $watchdogPath -WorkingDirectory $WorkDir
+Write-Host '  Watchdog launched - it will spawn Claude automatically.' -ForegroundColor Green
+Write-Host ''
+Write-Host '  Check status anytime:  type tools\watchdog\.autonomous_status' -ForegroundColor DarkGray
+Write-Host '  In the morning:  powershell -ExecutionPolicy Bypass -File tools\watchdog\STOP_AUTONOMOUS.ps1' -ForegroundColor DarkGray
+Write-Host ''
+Write-Host '  You can close this terminal now. The watchdog window owns everything.' -ForegroundColor DarkGray
