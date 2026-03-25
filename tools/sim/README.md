@@ -1,7 +1,5 @@
 # Elysium Rising — Simulation Toolkit
 
-Validates game scaling parameters against the 60-hour casual completion target. Three simulation layers run independently or together.
-
 ## Install
 
 ```bash

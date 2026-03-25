@@ -81,3 +81,53 @@ Tools for finding duplicate or near-duplicate content across the processed book 
 ### `test_helpers.py` — Test Utilities
 
 Shared helper functions used by other tool scripts.
+
+---
+
+## Simulation Toolkit
+
+### `tools/sim/` — Progression & Scaling Validation
+
+Three-layer simulation (math model, API bot, browser bot) validates game scaling against the 60-hour casual completion target. See `tools/sim/README.md` for full usage and player profiles.
+
+```bash
+python tools/sim/sim_math.py --profile profiles/casual.json
+python tools/sim/sim_api.py --profile profiles/power_gamer.json
+python tools/sim/sim_browser.py --profile profiles/new_user.json
+```
+
+---
+
+## Content Generators
+
+### `tools/generators/` — AI-Powered Content Pipeline
+
+16 generators producing game content (sprites, lore, backgrounds, icons, atmospheres). Framework library in `tools/generators/lib/` (BaseGenerator ABC, AI provider, DB client, cache).
+
+See `docs/how-to/GENERATOR_INSTRUCTIONS.md` for execution guide and `docs/how-to/GENERATOR_AI_RULES.md` for quality rules.
+
+---
+
+## Watchdog Agent
+
+### `tools/watchdog/` — Autonomous Content Quality Agent
+
+PowerShell supervisor that runs Claude overnight for bulk content regeneration. Auto-restarts on crash/stall (20 min timeout, max 10 restarts).
+
+See `tools/watchdog/AGENT_INSTRUCTIONS.md` for execution guide and `tools/watchdog/AGENT_GOALS.md` for acceptance criteria.
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
+```
+
+---
+
+## OpenSpec Workflow
+
+Feature development follows the OpenSpec spec-driven development cycle:
+
+1. **Propose** (`/opsx:propose`) — Create a new feature spec with design, requirements, and tasks
+2. **Apply** (`/opsx:apply`) — Implement tasks from an approved spec
+3. **Archive** (`/opsx:archive`) — Finalize and archive a completed change
+
+Specs live in `openspec/specs/` (one folder per capability). Active changes in `openspec/changes/`, archived in `openspec/changes/archive/`.
