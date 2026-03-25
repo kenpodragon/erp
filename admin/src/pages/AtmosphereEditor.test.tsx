@@ -1,164 +1,400 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import AtmosphereEditor from './AtmosphereEditor'
 import { api } from '../api'
 
-vi.mock('../api', () => ({
-  api: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  },
-}))
+/* ------------------------------------------------------------------ */
+/* Mock Web Audio API                                                  */
+/* ------------------------------------------------------------------ */
 
-function mockResponse(data: unknown, ok = true, status = 200) {
-  return { ok, status, json: () => Promise.resolve(data) }
+const mockOscillator = {
+  type: 'sine',
+  frequency: { value: 440, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+  connect: vi.fn(),
+  start: vi.fn(),
+  stop: vi.fn(),
 }
 
-const ATMOSPHERES = [
-  {
-    id: 1, name: 'Mundane Dread', archetype: 'mundane_dread', description: 'Test',
-    generator_bpm: 100, generator_key: 'C', generator_scale: 'minor',
-    generator_complexity: 5, scene_count: 3, chapter_count: 1, book_count: 0,
-  },
-  {
-    id: 2, name: 'Occult Sanctum', archetype: 'occult_sanctum', description: 'Occult',
-    generator_bpm: 80, generator_key: 'A', generator_scale: 'minor',
-    generator_complexity: 6, scene_count: 0, chapter_count: 0, book_count: 1,
-  },
-]
-
-const DETAIL = {
-  ...ATMOSPHERES[0],
-  music_definitions: { explore: { bpm: 100 }, combat: null, boss: null, mystery: null },
-  generator_seed: 42,
-  assigned_scene_ids: [1, 2, 3],
-  assigned_chapters: [{ id: 1, title: 'Chapter 1' }],
-  assigned_books: [],
+const mockGain = {
+  gain: { value: 1, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn() },
+  connect: vi.fn(),
 }
+
+const mockAudioCtx = {
+  currentTime: 0,
+  state: 'running',
+  destination: {},
+  createOscillator: vi.fn(() => ({ ...mockOscillator })),
+  createGain: vi.fn(() => ({ ...mockGain })),
+  resume: vi.fn(),
+  close: vi.fn(() => Promise.resolve()),
+}
+
+globalThis.AudioContext = vi.fn(() => mockAudioCtx) as any
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+const mockedApi = api as {
+  get: ReturnType<typeof vi.fn>
+  post: ReturnType<typeof vi.fn>
+  put: ReturnType<typeof vi.fn>
+  delete: ReturnType<typeof vi.fn>
+}
+
+function makeAtmosphere(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 1,
+    name: 'Dark Sanctum',
+    archetype: 'occult_sanctum',
+    description: 'A dark and eerie atmosphere',
+    generator_bpm: 80,
+    generator_key: 'D',
+    generator_scale: 'minor',
+    generator_complexity: 7,
+    scene_count: 5,
+    chapter_count: 2,
+    book_count: 1,
+    ...overrides,
+  }
+}
+
+function makeDetail(overrides: Record<string, unknown> = {}) {
+  return {
+    ...makeAtmosphere(),
+    music_definitions: {
+      explore: { bpm: 80, melody: { oscillator: 'square', volume: 0.3, sequence: [{ note: 'C4', beats: 1 }] } },
+    },
+    generator_seed: 42,
+    assigned_scene_ids: [10, 20],
+    assigned_chapters: [{ id: 1, title: 'Chapter One' }],
+    assigned_books: [{ id: 1, title: 'Book One' }],
+    ...overrides,
+  }
+}
+
+function mockOk(body: unknown) {
+  return Promise.resolve({ ok: true, json: () => Promise.resolve(body) })
+}
+
+function mockFail(status = 500, body: unknown = { detail: 'Server error' }) {
+  return Promise.resolve({ ok: false, status, json: () => Promise.resolve(body) })
+}
+
+/* ------------------------------------------------------------------ */
+/* Setup                                                               */
+/* ------------------------------------------------------------------ */
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+  mockedApi.get.mockImplementation((url: string) => {
+    if (url === '/api/admin/atmospheres') return mockOk([makeAtmosphere()])
+    if (url.match(/\/api\/admin\/atmospheres\/\d+/)) return mockOk(makeDetail())
+    return mockOk([])
+  })
+  mockedApi.post.mockImplementation(() => mockOk({ id: 2, ...makeAtmosphere({ id: 2, name: 'New Atmo' }) }))
+  mockedApi.put.mockImplementation(() => mockOk(makeAtmosphere()))
+  mockedApi.delete.mockImplementation(() => mockOk({}))
+})
+
+/* ------------------------------------------------------------------ */
+/* Tests                                                               */
+/* ------------------------------------------------------------------ */
 
 describe('AtmosphereEditor', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(api.get).mockImplementation((path: string) => {
-      if (path.includes('/atmospheres/')) return Promise.resolve(mockResponse(DETAIL) as Response)
-      return Promise.resolve(mockResponse(ATMOSPHERES) as Response)
-    })
+  it('renders the page heading', async () => {
+    render(<AtmosphereEditor />)
+    expect(screen.getByText('Atmosphere Editor')).toBeDefined()
   })
 
-  it('renders loading state', () => {
-    vi.mocked(api.get).mockReturnValue(new Promise(() => {}))
+  it('fetches atmospheres on mount and renders the table', async () => {
     render(<AtmosphereEditor />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
-  })
-
-  it('renders atmosphere list after fetch', async () => {
-    render(<AtmosphereEditor />)
-    await waitFor(() => {
-      expect(screen.getByText('Mundane Dread')).toBeInTheDocument()
-      expect(screen.getByText('Occult Sanctum')).toBeInTheDocument()
-    })
-  })
-
-  it('shows correct column headers', async () => {
-    render(<AtmosphereEditor />)
-    await waitFor(() => {
-      expect(screen.getByText('Name')).toBeInTheDocument()
-      expect(screen.getByText('Archetype')).toBeInTheDocument()
-      expect(screen.getByText('Scenes')).toBeInTheDocument()
-    })
-  })
-
-  it('shows detail panel when atmosphere is clicked', async () => {
-    render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('Mundane Dread'))
-
-    fireEvent.click(screen.getByText('Mundane Dread'))
 
     await waitFor(() => {
-      expect(screen.getByText('explore')).toBeInTheDocument()
-      expect(screen.getByText('3 scenes')).toBeInTheDocument()
+      expect(screen.getByText('Dark Sanctum')).toBeDefined()
+    })
+
+    expect(mockedApi.get).toHaveBeenCalledWith('/api/admin/atmospheres')
+  })
+
+  it('shows loading state initially', () => {
+    mockedApi.get.mockImplementation(() => new Promise(() => {})) // never resolves
+    render(<AtmosphereEditor />)
+    expect(screen.getByText('Loading...')).toBeDefined()
+  })
+
+  it('shows empty state when no atmospheres exist', async () => {
+    mockedApi.get.mockImplementation(() => mockOk([]))
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => {
+      expect(screen.getByText('No atmospheres found')).toBeDefined()
     })
   })
 
-  it('shows create form when Create button clicked', async () => {
+  it('renders table column headers', async () => {
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('+ Create'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Dark Sanctum')).toBeDefined()
+    })
+    expect(screen.getByText('Archetype')).toBeDefined()
+    expect(screen.getByText('Scenes')).toBeDefined()
+  })
+
+  it('selects an atmosphere and loads detail', async () => {
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Dark Sanctum')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+
+    await waitFor(() => {
+      expect(mockedApi.get).toHaveBeenCalledWith('/api/admin/atmospheres/1')
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Chapter One')).toBeDefined()
+    })
+  })
+
+  it('shows detail info fields after selecting atmosphere', async () => {
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Assignments')).toBeDefined()
+    })
+    expect(screen.getByText('Music Definitions')).toBeDefined()
+    expect(screen.getByText('2 scenes')).toBeDefined()
+  })
+
+  it('filters by archetype', async () => {
+    const atmospheres = [
+      makeAtmosphere({ id: 1, name: 'Dark Sanctum', archetype: 'occult_sanctum' }),
+      makeAtmosphere({ id: 2, name: 'Training Field', archetype: 'training_grounds' }),
+    ]
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url === '/api/admin/atmospheres') return mockOk(atmospheres)
+      return mockOk(makeDetail())
+    })
+
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Dark Sanctum')).toBeDefined()
+      expect(screen.getByText('Training Field')).toBeDefined()
+    })
+
+    const filterSelect = screen.getByDisplayValue('All Archetypes')
+    fireEvent.change(filterSelect, { target: { value: 'training_grounds' } })
+
+    expect(screen.queryByText('Dark Sanctum')).toBeNull()
+    expect(screen.getByText('Training Field')).toBeDefined()
+  })
+
+  it('enters create mode when clicking + Create', async () => {
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
     fireEvent.click(screen.getByText('+ Create'))
 
-    expect(screen.getByText('Create New Atmosphere')).toBeInTheDocument()
+    expect(screen.getByText('Create New Atmosphere')).toBeDefined()
   })
 
-  it('calls POST on create', async () => {
-    vi.mocked(api.post).mockResolvedValue(mockResponse({ id: 99, name: 'New' }) as Response)
+  it('create form has required fields', async () => {
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('+ Create'))
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
     fireEvent.click(screen.getByText('+ Create'))
-    const nameInput = screen.getAllByRole('textbox')[0]
+
+    expect(screen.getByText('BPM')).toBeDefined()
+    expect(screen.getByText('Key')).toBeDefined()
+    expect(screen.getByText('Scale')).toBeDefined()
+    expect(screen.getByText('Complexity')).toBeDefined()
+    expect(screen.getByText('Seed')).toBeDefined()
+    expect(screen.getByText('Description')).toBeDefined()
+  })
+
+  it('submits create form and calls POST', async () => {
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('+ Create'))
+
+    // Fill in name — first text input in the create form
+    const inputs = screen.getAllByRole('textbox')
+    const nameInput = inputs[0]
     fireEvent.change(nameInput, { target: { value: 'New Atmosphere' } })
-    fireEvent.click(screen.getByText('Create'))
+
+    const createBtn = screen.getByRole('button', { name: 'Create' })
+    fireEvent.click(createBtn)
 
     await waitFor(() => {
-      expect(vi.mocked(api.post)).toHaveBeenCalledWith(
+      expect(mockedApi.post).toHaveBeenCalledWith(
         '/api/admin/atmospheres',
         expect.objectContaining({ name: 'New Atmosphere' })
       )
     })
   })
 
-  it('calls DELETE on delete', async () => {
-    vi.mocked(api.delete).mockResolvedValue(mockResponse({ deleted: true }) as Response)
-    window.confirm = vi.fn(() => true)
-
+  it('enters edit mode and populates fields', async () => {
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('Mundane Dread'))
-    fireEvent.click(screen.getByText('Mundane Dread'))
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
-    await waitFor(() => screen.getByText('Delete'))
-    fireEvent.click(screen.getByText('Delete'))
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+    await waitFor(() => expect(screen.getByText('Assignments')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Edit'))
+
+    expect(screen.getByDisplayValue('Dark Sanctum')).toBeDefined()
+    expect(screen.getByDisplayValue('80')).toBeDefined()
+    expect(screen.getByDisplayValue('D')).toBeDefined()
+  })
+
+  it('save in edit mode calls PUT with correct URL', async () => {
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+    await waitFor(() => expect(screen.getByText('Assignments')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Edit'))
+    fireEvent.click(screen.getByText('Save'))
 
     await waitFor(() => {
-      expect(vi.mocked(api.delete)).toHaveBeenCalledWith('/api/admin/atmospheres/1')
+      expect(mockedApi.put).toHaveBeenCalledWith(
+        '/api/admin/atmospheres/1',
+        expect.objectContaining({ name: 'Dark Sanctum' })
+      )
     })
   })
 
-  it('filters by archetype', async () => {
+  it('delete calls DELETE with confirmation', async () => {
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('Mundane Dread'))
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
-    const filter = screen.getByRole('combobox')
-    fireEvent.change(filter, { target: { value: 'occult_sanctum' } })
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+    await waitFor(() => expect(screen.getByText('Assignments')).toBeDefined())
 
-    expect(screen.queryByText('Mundane Dread')).not.toBeInTheDocument()
-    expect(screen.getByText('Occult Sanctum')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Delete'))
+
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalled()
+      expect(mockedApi.delete).toHaveBeenCalledWith('/api/admin/atmospheres/1')
+    })
   })
 
-  it('shows batch assign modal', async () => {
+  it('delete is cancelled when user declines confirmation', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false)
+
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('Batch Assign'))
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+    await waitFor(() => expect(screen.getByText('Assignments')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Delete'))
+
+    expect(mockedApi.delete).not.toHaveBeenCalled()
+  })
+
+  it('handles API error on fetch list', async () => {
+    mockedApi.get.mockImplementation(() => mockFail())
+    render(<AtmosphereEditor />)
+
+    await waitFor(() => {
+      expect(screen.getByText('No atmospheres found')).toBeDefined()
+    })
+  })
+
+  it('handles API error on save and shows message', async () => {
+    mockedApi.put.mockImplementation(() => mockFail(400, { detail: 'Validation failed' }))
+
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Dark Sanctum'))
+    await waitFor(() => expect(screen.getByText('Assignments')).toBeDefined())
+
+    fireEvent.click(screen.getByText('Edit'))
+    fireEvent.click(screen.getByText('Save'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Error: Validation failed')).toBeDefined()
+    })
+  })
+
+  it('shows empty detail prompt when nothing selected', async () => {
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    expect(screen.getByText('Select an atmosphere or create a new one')).toBeDefined()
+  })
+
+  it('opens batch assign modal', async () => {
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
     fireEvent.click(screen.getByText('Batch Assign'))
-    expect(screen.getByText('Batch Assign Atmosphere')).toBeInTheDocument()
+
+    expect(screen.getByText('Batch Assign Atmosphere')).toBeDefined()
+    expect(screen.getByText('Target Type')).toBeDefined()
+    expect(screen.getByText('Target ID')).toBeDefined()
   })
 
-  it('shows edit form when Edit button clicked', async () => {
+  it('batch assign modal cancel closes it', async () => {
     render(<AtmosphereEditor />)
-    await waitFor(() => screen.getByText('Mundane Dread'))
-    fireEvent.click(screen.getByText('Mundane Dread'))
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
 
-    await waitFor(() => screen.getByText('Edit'))
-    fireEvent.click(screen.getByText('Edit'))
+    fireEvent.click(screen.getByText('Batch Assign'))
+    expect(screen.getByText('Batch Assign Atmosphere')).toBeDefined()
 
-    expect(screen.getByText('Save')).toBeInTheDocument()
-  })
+    fireEvent.click(screen.getByText('Cancel'))
 
-  it('shows empty state when no atmosphere selected', async () => {
-    render(<AtmosphereEditor />)
     await waitFor(() => {
-      expect(screen.getByText('Select an atmosphere or create a new one')).toBeInTheDocument()
+      expect(screen.queryByText('Batch Assign Atmosphere')).toBeNull()
+    })
+  })
+
+  it('cancel in create mode exits create mode', async () => {
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('+ Create'))
+    expect(screen.getByText('Create New Atmosphere')).toBeDefined()
+
+    const cancelBtns = screen.getAllByText('Cancel')
+    fireEvent.click(cancelBtns[0])
+
+    await waitFor(() => {
+      expect(screen.queryByText('Create New Atmosphere')).toBeNull()
+    })
+  })
+
+  it('handles create API error', async () => {
+    mockedApi.post.mockImplementation(() => mockFail(400, { detail: 'Name required' }))
+
+    render(<AtmosphereEditor />)
+    await waitFor(() => expect(screen.getByText('Dark Sanctum')).toBeDefined())
+
+    fireEvent.click(screen.getByText('+ Create'))
+
+    const inputs = screen.getAllByRole('textbox')
+    fireEvent.change(inputs[0], { target: { value: 'Test' } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Error: Name required')).toBeDefined()
     })
   })
 })
