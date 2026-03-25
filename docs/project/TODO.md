@@ -5,18 +5,27 @@
 
 ## Resume Prompt (Copy & Paste to Start Next Session)
 ```
-Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
+Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
-All tests green (853+457+368+76 passing, 0 failures). Migration consolidation complete (001-003).
-Current: Documentation cleanup & consolidation.
+All tests green (853+457+368+76 passing, 0 failures).
+Documentation standardization complete — OpenSpec + Diataxis.
+Feature specs: openspec/specs/. Docs: docs/{how-to,reference,explanation,project}/.
 ```
 
 ---
 
-## Active Work — Documentation Cleanup & Consolidation
+## Active Work — None (ready for next priority)
 
-### Documentation Cleanup & Consolidation
-- [ ] Investigate SDD frameworks (Open Spec) for documentation format
+### Documentation Standardization — COMPLETE (2026-03-25)
+- [x] Investigated SDD frameworks (OpenSpec, Arc42, C4, Diataxis, ADRs)
+- [x] Installed and initialized OpenSpec SDD framework
+- [x] Created Diataxis directory structure (how-to, reference, explanation, project)
+- [x] Migrated 67 source files into 28 consolidated OpenSpec specs (RFC-2119 + GIVEN/WHEN/THEN)
+- [x] Archived 5 historical superpowers specs/plans
+- [x] Deleted 68 old source files (37,505 lines removed)
+- [x] Updated AGENTS.md with new documentation hierarchy and process mandates
+- [x] Fixed broken references across 14+ files
+- [x] Classified user_manuals under docs/how-to/
 - [ ] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
 - [ ] Update user guides, API reference, admin docs
 
@@ -75,4 +84,4 @@ v1 ran all generators but produced template/generic data. v2 is a quality improv
 
 ---
 
-*Updated: 2026-03-25 (All tests green. Test health complete. Next: documentation cleanup & consolidation.)*
+*Updated: 2026-03-25 (Documentation standardization complete. OpenSpec + Diataxis adopted. Next: backlog priorities.)*

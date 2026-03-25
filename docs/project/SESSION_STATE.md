@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-25
-**Last session focus:** Test health triage + frontend runtime fixes
+**Last session focus:** Documentation standardization (OpenSpec + Diataxis migration)
 
 ---
 
@@ -23,7 +23,8 @@
 | Watchdog v1 (Overnight) | Complete | All data populated but low quality — template text, identical BGs (2026-03-24) |
 | Generator Reorg | Complete | Moved to `tools/generators/`, proper package imports, sys.path hacks removed (2026-03-24) |
 | Migration Consolidation | Complete | 061-068 merged into 001-003, archived to db/old/ (2026-03-24) |
-| **Test Health** | **Complete** | All tests green: 853+457+368+76 passing, 0 failures (2026-03-25) |
+| Test Health | Complete | All tests green: 853+457+368+76 passing, 0 failures (2026-03-25) |
+| **Documentation Standardization** | **Complete** | OpenSpec (28 specs) + Diataxis (4 categories). 67 source files → 28 specs, 68 old files deleted (2026-03-25) |
 | **Watchdog v2 (Quality)** | **Not yet run** | Quality improvement pass — audit/keep/replace workflow (2026-03-24) |
 
 ## Database State
@@ -59,10 +60,8 @@
 
 ## What's Left (see TODO.md)
 
-### Active — Documentation Cleanup
-1. Investigate SDD frameworks (Open Spec) for documentation format
-2. Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
-3. Update user guides, API reference, admin docs
+### Active — None (ready for next priority)
+Documentation standardization complete. Feature specs in `openspec/specs/`, docs in `docs/{how-to,reference,explanation,project}/`.
 
 ### Backlog — Watchdog v2 Review
 1. Run v2 overnight, review results, visual verification
@@ -92,4 +91,4 @@
 
 ## Branch Status
 
-- **main:** All tests green. Documentation cleanup next.
+- **main:** All tests green. Documentation standardization complete. Backlog priorities next.

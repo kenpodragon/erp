@@ -5,6 +5,42 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-25*
 
+## Documentation Standardization — COMPLETE (2026-03-25)
+
+### OpenSpec SDD Framework
+- [x] Researched SDD frameworks (OpenSpec, Arc42, C4, Diataxis, ADRs)
+- [x] Installed `@fission-ai/openspec` globally, initialized in project
+- [x] Created 28 capability spec folders in `openspec/specs/`
+- [x] Migrated 67 source files (RECS/DESIGN/SCHEMA triplets) into consolidated `spec.md` files with RFC-2119 language + GIVEN/WHEN/THEN scenarios
+- [x] Decomposed master requirements (`0_REQUIREMENTS.md`) across capability specs
+- [x] Archived 5 historical superpowers specs/plans to `openspec/changes/archive/`
+
+### Diataxis Documentation Structure
+- [x] Created 4-category Diataxis structure: `docs/how-to/`, `docs/reference/`, `docs/explanation/`, `docs/project/`
+- [x] Moved 8 how-to guides from `docs/inst/` → `docs/how-to/`
+- [x] Moved 6 reference docs from `docs/inst/` + `docs/` → `docs/reference/`
+- [x] Moved 7 explanation docs (3 top-level + 4 lore) → `docs/explanation/`
+- [x] Moved 5 project state files → `docs/project/`
+- [x] Classified `user_manuals/` (86 files incl. screenshots) under `docs/how-to/`
+
+### Cleanup
+- [x] Deleted 68 old source files from `docs/done/recs/` and `docs/recs/` (37,505 lines removed)
+- [x] Removed empty directories: `docs/inst/`, `docs/lore/`, `docs/done/`, `docs/specs/`, `docs/plans/`, `docs/superpowers/`
+- [x] Updated `AGENTS.md`: new documentation hierarchy, directory structure, process mandates, all path references
+- [x] Fixed broken doc path references across 14+ files (README, admin docs, watchdog, generators, coding guide, etc.)
+
+### Final Structure
+```
+openspec/specs/       → 28 capability folders (feature specs)
+openspec/changes/     → active + 5 archived changes
+docs/how-to/          → 8 guides + user_manuals/ (admin + end_user + screenshots)
+docs/reference/       → 6 lookup docs (API, architecture, coding, style, assets, tools)
+docs/explanation/     → 3 top-level + lore/ (4 files)
+docs/project/         → TODO, DONE, SESSION_STATE + done/ (2 historical)
+```
+
+---
+
 ## Test Health + Frontend Fixes — COMPLETE (2026-03-25)
 
 ### Frontend Runtime Fixes
