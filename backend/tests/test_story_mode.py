@@ -13,6 +13,7 @@ from models import (
 from models.story_mode import (
     GameConfig, PlayerStorySession, PlayerMetaProgression,
     CharacterSkillLevel, EntitySceneAppearance, DevContentAudit,
+    SessionUpgrade,
 )
 from models.gameplay import Skill, Entity, EntityGameplayData
 from models.classification import EntityType
@@ -304,6 +305,301 @@ class TestCombatTick:
         resp = full_client.post(f"/api/game/story/session/{uuid.uuid4()}/tick", json={
             "clicks": 5, "elapsed_ms": 1000, "zone": 1, "wave": 1,
             "gold_delta": 10.0, "waves_completed_delta": 0,
+        })
+        assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Tests: GET /session/{id} (get_session_state)
+# ---------------------------------------------------------------------------
+
+class TestGetSessionState:
+    def _start_session(self, client, scene_id: int) -> str:
+        resp = client.post("/api/game/story/session/start", json={"scene_id": scene_id})
+        return resp.json()["session_id"]
+
+    def test_returns_session_state(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        assert resp.status_code == 200
+        data = resp.json()
+        # model_dump() uses 'id' as the key (from PlayerStorySession.id)
+        assert data["id"] == sid
+        assert data["scene_id"] == test_scene.id
+        assert data["current_zone"] == 1
+        assert data["session_gold"] == 0.0
+
+    def test_includes_upgrade_multipliers(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert "click_dmg_multiplier" in data
+        assert "auto_dps_multiplier" in data
+        assert "click_upgrade_level" in data
+        assert "auto_upgrade_level" in data
+
+    def test_includes_essence_fields(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert "essence_earned" in data
+        assert "converted_essence" in data
+
+    def test_includes_upgrades_list(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert "upgrades" in data
+        assert isinstance(data["upgrades"], list)
+
+    def test_includes_skill_tree_and_idle_bonuses(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert "skill_tree" in data
+        assert "idle_bonuses" in data
+
+    def test_previously_completed_false_for_new_scene(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert data["previously_completed"] is False
+
+    def test_session_not_found(self, full_client):
+        resp = full_client.get(f"/api/game/story/session/{uuid.uuid4()}")
+        assert resp.status_code == 404
+
+    def test_reflects_gold_after_tick(self, full_client, test_scene, game_configs):
+        sid = self._start_session(full_client, test_scene.id)
+        # Earn some gold via a tick
+        full_client.post(f"/api/game/story/session/{sid}/tick", json={
+            "clicks": 5, "elapsed_ms": 2000, "zone": 1, "wave": 3,
+            "gold_delta": 50.0, "waves_completed_delta": 1,
+        })
+        resp = full_client.get(f"/api/game/story/session/{sid}")
+        data = resp.json()
+        assert data["session_gold"] > 0
+
+
+# ---------------------------------------------------------------------------
+# Tests: POST /session/{id}/upgrade (purchase_upgrade)
+# ---------------------------------------------------------------------------
+
+class TestPurchaseUpgrade:
+    def _start_session_with_gold(self, client, scene_id: int, gold: float,
+                                  session_db: Session) -> str:
+        resp = client.post("/api/game/story/session/start", json={"scene_id": scene_id})
+        sid_str = resp.json()["session_id"]
+        sid = uuid.UUID(sid_str)
+        story_session = session_db.get(PlayerStorySession, sid)
+        story_session.session_gold = gold
+        session_db.add(story_session)
+        session_db.commit()
+        return sid_str
+
+    def test_purchase_click_dmg_upgrade(self, full_client, test_scene, game_configs,
+                                         session: Session):
+        # session/start seeds click_dmg at level 1, so after +1 we expect level 2
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["upgrade_type"] == "click_dmg"
+        assert data["click_upgrade_level"] == 2  # 1 (seeded) + 1 (purchased)
+        assert data["cost_paid"] > 0
+        assert data["session_gold"] < 1000.0
+
+    def test_purchase_auto_dps_upgrade(self, full_client, test_scene, game_configs,
+                                        session: Session):
+        # session/start seeds auto_dps at level 1, so after +1 we expect level 2
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "auto_dps", "quantity": 1,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["upgrade_type"] == "auto_dps"
+        assert data["auto_upgrade_level"] == 2  # 1 (seeded) + 1 (purchased)
+        assert data["cost_paid"] > 0
+
+    def test_purchase_multiple_quantity(self, full_client, test_scene, game_configs,
+                                         session: Session):
+        # session/start seeds click_dmg at level 1, so after +5 we expect level 6
+        sid = self._start_session_with_gold(full_client, test_scene.id, 5000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 5,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["click_upgrade_level"] == 6  # 1 (seeded) + 5 (purchased)
+        # Cost should be sum of 5 levels with scaling
+        assert data["cost_paid"] > 0
+
+    def test_insufficient_gold(self, full_client, test_scene, game_configs,
+                                session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 0.5, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        assert resp.status_code == 400
+        assert "Insufficient" in resp.json()["detail"]
+
+    def test_unknown_upgrade_type(self, full_client, test_scene, game_configs,
+                                   session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "bogus_type", "quantity": 1,
+        })
+        assert resp.status_code == 400
+        assert "Unknown upgrade_type" in resp.json()["detail"]
+
+    def test_session_not_found(self, full_client):
+        resp = full_client.post(f"/api/game/story/session/{uuid.uuid4()}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        assert resp.status_code == 404
+
+    def test_stacking_upgrades_increases_level(self, full_client, test_scene, game_configs,
+                                                session: Session):
+        # session/start seeds click_dmg at level 1; two more purchases -> level 3
+        sid = self._start_session_with_gold(full_client, test_scene.id, 10000.0, session)
+        # First purchase (1 -> 2)
+        full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        # Second purchase (2 -> 3)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["click_upgrade_level"] == 3  # 1 (seeded) + 2 (purchased)
+
+    def test_gold_deducted_correctly(self, full_client, test_scene, game_configs,
+                                      session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/upgrade", json={
+            "upgrade_type": "click_dmg", "quantity": 1,
+        })
+        data = resp.json()
+        expected_remaining = round(1000.0 - data["cost_paid"], 2)
+        assert data["session_gold"] == expected_remaining
+
+
+# ---------------------------------------------------------------------------
+# Tests: POST /session/{id}/skill (activate_skill)
+# ---------------------------------------------------------------------------
+
+class TestActivateSkill:
+    def _start_session_with_gold(self, client, scene_id: int, gold: float,
+                                  session_db: Session) -> str:
+        resp = client.post("/api/game/story/session/start", json={"scene_id": scene_id})
+        sid_str = resp.json()["session_id"]
+        sid = uuid.UUID(sid_str)
+        story_session = session_db.get(PlayerStorySession, sid)
+        story_session.session_gold = gold
+        session_db.add(story_session)
+        session_db.commit()
+        return sid_str
+
+    def _create_skill(self, session_db: Session, name: str = "Clickstorm",
+                      benefits: dict = None) -> Skill:
+        skill = Skill(
+            name=name, category="hotbar",
+            description=f"{name} skill",
+            benefits_json=benefits or {"click_multiplier": 2.0},
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        session_db.add(skill)
+        session_db.commit()
+        session_db.refresh(skill)
+        return skill
+
+    def _unlock_skill_for_session(self, session_db: Session, session_id: str,
+                                   skill_id: int):
+        unlock = SessionUpgrade(
+            id=uuid.uuid4(),
+            session_id=uuid.UUID(session_id),
+            upgrade_type="skill_unlock",
+            target_id=skill_id,
+            level=1,
+            total_cost_paid=50.0,
+            current_multiplier=1.0,
+        )
+        session_db.add(unlock)
+        session_db.commit()
+
+    def test_activate_unlocked_skill(self, full_client, test_scene, game_configs,
+                                      session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        skill = self._create_skill(session)
+        self._unlock_skill_for_session(session, sid, skill.id)
+
+        resp = full_client.post(f"/api/game/story/session/{sid}/skill", json={
+            "skill_id": skill.id,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["skill_id"] == skill.id
+        assert data["skill_name"] == "Clickstorm"
+        assert data["activated"] is True
+        assert data["benefits"] == {"click_multiplier": 2.0}
+
+    def test_skill_not_found(self, full_client, test_scene, game_configs, session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        resp = full_client.post(f"/api/game/story/session/{sid}/skill", json={
+            "skill_id": 99999,
+        })
+        assert resp.status_code == 404
+        assert "Skill not found" in resp.json()["detail"]
+
+    def test_skill_not_purchased(self, full_client, test_scene, game_configs,
+                                  session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        skill = self._create_skill(session, name="Powersurge")
+        # Don't unlock — should get 403
+        resp = full_client.post(f"/api/game/story/session/{sid}/skill", json={
+            "skill_id": skill.id,
+        })
+        assert resp.status_code == 403
+        assert "not purchased" in resp.json()["detail"]
+
+    def test_dark_ritual_multiplier_applied(self, full_client, test_scene, game_configs,
+                                             session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        skill = self._create_skill(session, name="The Dark Ritual",
+                                    benefits={"dark_ritual_multiplier": 1.05})
+        self._unlock_skill_for_session(session, sid, skill.id)
+
+        resp = full_client.post(f"/api/game/story/session/{sid}/skill", json={
+            "skill_id": skill.id,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["dark_ritual_multiplier"] == pytest.approx(1.05, rel=1e-4)
+
+    def test_dark_ritual_stacks_multiplicatively(self, full_client, test_scene, game_configs,
+                                                  session: Session):
+        sid = self._start_session_with_gold(full_client, test_scene.id, 1000.0, session)
+        skill = self._create_skill(session, name="The Dark Ritual",
+                                    benefits={"dark_ritual_multiplier": 1.05})
+        self._unlock_skill_for_session(session, sid, skill.id)
+
+        # Activate twice
+        full_client.post(f"/api/game/story/session/{sid}/skill",
+                          json={"skill_id": skill.id})
+        resp = full_client.post(f"/api/game/story/session/{sid}/skill",
+                                 json={"skill_id": skill.id})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["dark_ritual_multiplier"] == pytest.approx(1.05 * 1.05, rel=1e-4)
+
+    def test_session_not_found(self, full_client):
+        resp = full_client.post(f"/api/game/story/session/{uuid.uuid4()}/skill", json={
+            "skill_id": 1,
         })
         assert resp.status_code == 404
 
