@@ -1,5 +1,8 @@
 # Admin API Guide
 
+> **Audience:** Admin dashboard end-users. Action-oriented guide for common workflows and operations.
+> For technical API details (endpoints, schemas, parameters), see [`docs/reference/API_REFERENCE.md`](../../docs/reference/API_REFERENCE.md).
+
 This guide covers authentication, key endpoints, and curl examples for the Elysium Rising admin dashboard.
 
 ---
@@ -176,7 +179,7 @@ curl -s http://localhost:8000/api/admin/config/xp_multiplier \
 
 ## Further Reading
 
-- Full API reference: [`docs/inst/API_REFERENCE.md`](../../docs/reference/API_REFERENCE.md) — Section 21 covers all admin endpoints in detail.
+- Full API reference: [`docs/reference/API_REFERENCE.md`](../../docs/reference/API_REFERENCE.md) — Section 21 covers all admin endpoints in detail.
 - Database schema: [`db/data_dictionary.md`](../../db/data_dictionary.md)
 - Auth implementation: `backend/routes/auth.py`
 - Admin route implementations: `backend/routes/admin*.py`

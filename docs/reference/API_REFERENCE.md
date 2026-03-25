@@ -1,5 +1,8 @@
 # Elysium Rising API Reference
 
+> **Audience:** Backend developers and API consumers. Technical endpoint reference with HTTP methods, paths, request/response schemas.
+> For the admin dashboard user guide, see [`admin/docs/API_GUIDE.md`](../../admin/docs/API_GUIDE.md).
+
 > Generated from backend route scan. Serves as developer reference and simulation bot contract.
 >
 > **Base URL:** `http://localhost:8000` (dev) | `https://play.does-god-exist.org` (prod)
