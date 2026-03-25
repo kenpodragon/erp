@@ -8,9 +8,9 @@
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
 All tests green (853+457+368+76 passing, 0 failures).
-Watchdog v3 ready to run: tools/watchdog/ (AGENT_INSTRUCTIONS.md, AGENT_GOALS.md)
-Launch: powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
-NEXT: Consolidate and deduplicate docs, and updating the user guides, and security scanning.
+Watchdog v3 still pending — run when ready: powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
+Docs consolidation DONE (7 commits: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS).
+NEXT: Code Quality backlog — break god-classes, DB optimization, dead code removal, error handling standardization, type hints, test coverage. This is a big one.
 ```
 
 ---
@@ -40,18 +40,15 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 ---
 
 ## Backlog — Documentation Cleanup
-- [x] Consolidate and deduplicate docs (merge overlapping specs, remove stale files)
 - [ ] Update user guides, API reference, admin docs
 - [ ] Security scan and assessment
-- [ ] Remove Lore and Inpsiration documents, ERP specific lore bits from the documentation (should be generic and apply to anyone who is building this). This is a pass to be done once the generators are completed.
-- [ ] Remove the TODO, DONE, and SESISON_STATE, from teh repo. CLean up AGENTS CLAUDE, GEMINI. Remove the db old.
-- [ ] Update README.md to contain more relevant information about the project, quick install guide (and link to the deeper ADMIN setup guide).
 
 ---
 
-## Backlog — Code Quality
+## Backlog — Code Quality (NEXT)
 
 - [ ] Break god-class files into focused modules (identify top offenders by LOC)
+- [ ] DB optimization, improvement, schema normalization, and dead tables removal (beware some tables are empty and needed) - so cross reference in the code to requirements.
 - [ ] Remove dead code, unused imports, commented-out blocks
 - [ ] Standardize error handling patterns across backend routes
 - [ ] Audit and fix any remaining `sys.path` hacks outside generators
@@ -78,4 +75,4 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 
 ---
 
-*Updated: 2026-03-25 (Watchdog v3 ready — full content regeneration with real quality gates. Run tonight.)*
+*Updated: 2026-03-25 (Docs consolidation complete — 7 commits. Watchdog v3 still pending. Code quality backlog is next.)*

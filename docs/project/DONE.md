@@ -5,6 +5,22 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-25*
 
+## Docs Consolidation & Deduplication — COMPLETE (2026-03-25)
+
+- [x] AGENTS.md — Trimmed doc hierarchy (removed 13-item consultation order) + tech stack references ARCHITECTURE.md now
+- [x] DEPLOY.md — Removed testing content, deploy-only now, cross-refs TESTING.md
+- [x] INIT_INFRA.md — Trimmed DB migration detail (-98 lines), cross-refs DB_MIGRATIONS.md and DEPLOY.md
+- [x] API_REFERENCE.md + API_GUIDE.md — Added audience headers and cross-references (technical vs end-user)
+- [x] STYLE_GUIDE.md + GAME_ASSETS_GUIDE.md — Added audience headers and cross-references
+- [x] TOOLS.md — Expanded with generators, watchdog, simulation toolkit, and OpenSpec workflow sections
+- [x] tools/sim/README.md — Removed duplicate overview (now in TOOLS.md)
+- [x] Verification pass — no remaining overlaps, all cross-reference links valid
+- **Net:** ~74 lines of duplicated content removed, clear cross-references replacing duplication
+- **Spec:** `docs/superpowers/specs/2026-03-25-docs-consolidation-design.md`
+- **Plan:** `docs/superpowers/plans/2026-03-25-docs-consolidation.md`
+
+---
+
 ## Watchdog v1-v2 + v3 Design — COMPLETE (2026-03-24/25)
 
 ### Watchdog Infrastructure (2026-03-24)
