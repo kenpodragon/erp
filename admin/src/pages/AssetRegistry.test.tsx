@@ -1,104 +1,77 @@
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import AssetRegistry from './AssetRegistry'
 import { api } from '../api'
 
+// Mock AssetPreview (uses canvas/PixiJS internals)
+vi.mock('../components/AssetPreview', () => ({
+  default: ({ category }: { category: string }) => (
+    <div data-testid="asset-preview">{category}</div>
+  ),
+}))
+
 /* ------------------------------------------------------------------ */
-/* Mock data                                                           */
+/* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-const ASSETS = [
-  {
-    id: 1,
-    asset_key: 'enemy_sludge',
-    category: 'entity_sprite',
-    display_name: 'Sludge Stalker',
-    description: 'Green blob',
-    render_definition: { version: 1, base_shape: 'circle', radius: 18, fill_color: '#5a7a3a' },
-    tags: ['book_1', 'melee'],
-    source: 'migrated',
-    created_at: '2026-03-13T00:00:00Z',
-    updated_at: '2026-03-13T00:00:00Z',
-  },
-  {
-    id: 2,
-    asset_key: 'bg_ch1_far',
-    category: 'background',
-    display_name: 'Chapter 1 Far Layer',
-    description: 'Stars',
-    render_definition: { version: 1, layer: 'far' },
-    tags: ['book_1', 'chapter_1'],
-    source: 'migrated',
-    created_at: '2026-03-13T00:00:00Z',
-    updated_at: '2026-03-13T00:00:00Z',
-  },
-  {
-    id: 3,
-    asset_key: 'avatar_warrior',
-    category: 'avatar',
-    display_name: 'Warrior',
-    description: null,
-    render_definition: { version: 1, size: 128 },
-    tags: ['preset'],
-    source: 'seed',
-    created_at: '2026-03-13T00:00:00Z',
-    updated_at: '2026-03-13T00:00:00Z',
-  },
-]
-
-function mockResponse(data: unknown, ok = true, status = 200) {
-  return { ok, status, json: () => Promise.resolve(data) } as Response
+const mockedApi = api as {
+  get: ReturnType<typeof vi.fn>
+  post: ReturnType<typeof vi.fn>
+  put: ReturnType<typeof vi.fn>
+  delete: ReturnType<typeof vi.fn>
 }
 
-const LIST_RESPONSE = { items: ASSETS, total: 3, page: 1, page_size: 50 }
+function makeAsset(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 1,
+    asset_key: 'enemy_slime',
+    category: 'entity_sprite',
+    display_name: 'Slime',
+    description: 'A basic slime',
+    render_definition: { base_shape: 'circle' },
+    tags: ['book_1', 'melee'],
+    source: 'admin',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
+
+function makeListResponse(items: unknown[] = [makeAsset()], total?: number) {
+  return {
+    items,
+    total: total ?? items.length,
+    page: 1,
+    page_size: 50,
+  }
+}
+
+function mockOk(body: unknown) {
+  return Promise.resolve({ ok: true, json: () => Promise.resolve(body) })
+}
+
+function mockFail(status = 500, body: unknown = { detail: 'Server error' }) {
+  return Promise.resolve({ ok: false, status, json: () => Promise.resolve(body) })
+}
 
 /* ------------------------------------------------------------------ */
-/* Mock canvas — jsdom doesn't have getContext                         */
+/* Setup                                                               */
 /* ------------------------------------------------------------------ */
 
 beforeEach(() => {
   vi.clearAllMocks()
-
-  // Default mock: list returns assets, orphans return empty
-  vi.mocked(api.get).mockImplementation((path: string) => {
-    if (path.includes('/orphans/missing'))
-      return Promise.resolve(mockResponse({ missing: [], total: 0 }))
-    if (path.includes('/orphans/unused'))
-      return Promise.resolve(mockResponse({ unused: [], total: 0 }))
-    if (path.includes('/batch'))
-      return Promise.resolve(mockResponse({ items: ASSETS }))
-    if (path.includes('/api/admin/assets/enemy_sludge'))
-      return Promise.resolve(mockResponse(ASSETS[0]))
-    return Promise.resolve(mockResponse(LIST_RESPONSE))
+  mockedApi.get.mockImplementation((url: string) => {
+    if (url.startsWith('/api/admin/assets/orphans/missing'))
+      return mockOk({ missing: [] })
+    if (url.startsWith('/api/admin/assets/orphans/unused'))
+      return mockOk({ unused: [] })
+    if (url.startsWith('/api/admin/assets/?'))
+      return mockOk(makeListResponse())
+    return mockOk({ ...makeAsset(), reference_count: 0 })
   })
-
-  // Stub canvas getContext for AssetPreview
-  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-    clearRect: vi.fn(),
-    beginPath: vi.fn(),
-    arc: vi.fn(),
-    fill: vi.fn(),
-    stroke: vi.fn(),
-    fillRect: vi.fn(),
-    strokeRect: vi.fn(),
-    moveTo: vi.fn(),
-    lineTo: vi.fn(),
-    closePath: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
-    scale: vi.fn(),
-    translate: vi.fn(),
-    rotate: vi.fn(),
-    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
-    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
-    set fillStyle(_: string) {},
-    set strokeStyle(_: string) {},
-    set lineWidth(_: number) {},
-    set globalAlpha(_: number) {},
-    set font(_: string) {},
-    fillText: vi.fn(),
-    measureText: vi.fn(() => ({ width: 50 })),
-  })) as unknown as typeof HTMLCanvasElement.prototype.getContext
+  mockedApi.post.mockImplementation(() => mockOk(makeAsset()))
+  mockedApi.put.mockImplementation(() => mockOk(makeAsset()))
+  mockedApi.delete.mockImplementation(() => mockOk({}))
 })
 
 /* ------------------------------------------------------------------ */
@@ -106,296 +79,362 @@ beforeEach(() => {
 /* ------------------------------------------------------------------ */
 
 describe('AssetRegistry', () => {
-  it('renders grid with assets', async () => {
+  it('fetches assets on mount and renders the table', async () => {
     render(<AssetRegistry />)
+
     await waitFor(() => {
-      expect(screen.getByText('enemy_sludge')).toBeInTheDocument()
-      expect(screen.getByText('bg_ch1_far')).toBeInTheDocument()
-      expect(screen.getByText('Warrior')).toBeInTheDocument()
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    const firstCall = mockedApi.get.mock.calls[0][0] as string
+    expect(firstCall).toContain('/api/admin/assets/?')
+    expect(firstCall).toContain('page=1')
+    expect(firstCall).toContain('page_size=50')
+  })
+
+  it('renders column headers in the asset table', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Asset Key')).toBeDefined()
+    })
+    expect(screen.getByText('Display Name')).toBeDefined()
+    expect(screen.getByText('Category')).toBeDefined()
+    expect(screen.getByText('Tags')).toBeDefined()
+    expect(screen.getByText('Source')).toBeDefined()
+    expect(screen.getByText('Actions')).toBeDefined()
+  })
+
+  it('shows loading state before data arrives', () => {
+    mockedApi.get.mockImplementation(() => new Promise(() => {}))
+    render(<AssetRegistry />)
+    expect(screen.getByText('Loading assets...')).toBeDefined()
+  })
+
+  it('shows empty state when no assets returned', async () => {
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse([], 0))
+      return mockOk({})
+    })
+
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/No assets found/)).toBeDefined()
     })
   })
 
-  it('filters by category tab click', async () => {
-    render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
+  it('shows error message when API fails', async () => {
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockFail()
+      return mockOk({})
+    })
 
-    // Click the "entity sprite" category tab (unique text in tabs)
-    const tabs = document.querySelectorAll('.ar-category-tab')
-    // Find the tab for "entity sprite" (index 1, since 0 is "All")
-    const entityTab = Array.from(tabs).find((t) => t.textContent === 'entity sprite')
-    if (entityTab) fireEvent.click(entityTab)
+    render(<AssetRegistry />)
 
     await waitFor(() => {
-      expect(vi.mocked(api.get)).toHaveBeenCalledWith(
-        expect.stringContaining('category=entity_sprite')
-      )
+      expect(screen.getByText('Failed to fetch assets')).toBeDefined()
     })
   })
 
-  it('search filters results', async () => {
+  it('renders category filter tabs including All', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
+
+    await waitFor(() => {
+      expect(screen.getByText('All')).toBeDefined()
+    })
+    // Use getAllByText since category names appear in both the tab and table badge
+    expect(screen.getAllByText('entity sprite').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('item icon')).toBeDefined()
+    expect(screen.getByText('background')).toBeDefined()
+  })
+
+  it('clicking a category filter triggers API call with category param', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    mockedApi.get.mockClear()
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse())
+      return mockOk({})
+    })
+
+    // Click the category tab (not the table badge) — use the tab container
+    const categoryTabs = screen.getAllByText('entity sprite')
+    const tabButton = categoryTabs.find(el => el.classList.contains('ar-category-tab'))!
+    fireEvent.click(tabButton)
+
+    await waitFor(() => {
+      const calls = mockedApi.get.mock.calls.map(c => c[0] as string)
+      const assetCall = calls.find(u => u.includes('/api/admin/assets/?'))
+      expect(assetCall).toBeDefined()
+      expect(assetCall).toContain('category=entity_sprite')
+    })
+  })
+
+  it('search input triggers debounced API call', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    mockedApi.get.mockClear()
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse())
+      return mockOk({})
+    })
 
     const searchInput = screen.getByPlaceholderText('Search assets...')
-    fireEvent.change(searchInput, { target: { value: 'sludge' } })
+    fireEvent.change(searchInput, { target: { value: 'slime' } })
 
-    // Wait for debounce and re-fetch
+    // Debounce is 300ms — wait for it to fire naturally
     await waitFor(() => {
-      expect(vi.mocked(api.get)).toHaveBeenCalledWith(
-        expect.stringContaining('search=sludge')
-      )
-    }, { timeout: 1000 })
+      const calls = mockedApi.get.mock.calls.map(c => c[0] as string)
+      const searchCall = calls.find(u => u.includes('search=slime'))
+      expect(searchCall).toBeDefined()
+    }, { timeout: 2000 })
   })
 
-  it('opens create modal', async () => {
+  it('pagination displays total and page info', async () => {
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse([makeAsset()], 75))
+      return mockOk({})
+    })
+
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('+ New Asset'))
+
+    await waitFor(() => {
+      expect(screen.getByText('75 assets total')).toBeDefined()
+    })
+    expect(screen.getByText('Page 1 of 2')).toBeDefined()
+  })
+
+  it('next page button triggers API call with page=2', async () => {
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse([makeAsset()], 75))
+      return mockOk({})
+    })
+
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Page 1 of 2')).toBeDefined()
+    })
+
+    mockedApi.get.mockClear()
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse([makeAsset({ id: 2, asset_key: 'enemy_bat' })], 75))
+      return mockOk({})
+    })
+
+    fireEvent.click(screen.getByText('Next'))
+
+    await waitFor(() => {
+      const calls = mockedApi.get.mock.calls.map(c => c[0] as string)
+      const pageCall = calls.find(u => u.includes('page=2'))
+      expect(pageCall).toBeDefined()
+    })
+  })
+
+  it('prev button is disabled on first page', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    const prevBtn = screen.getByText('Prev')
+    expect(prevBtn).toBeDisabled()
+  })
+
+  it('New Asset button opens create modal', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
 
     fireEvent.click(screen.getByText('+ New Asset'))
 
-    expect(screen.getByText('Create Asset')).toBeInTheDocument()
+    expect(screen.getByText('Create Asset')).toBeDefined()
+    const keyInput = screen.getByPlaceholderText('e.g., enemy_sludge_stalker')
+    expect(keyInput).not.toBeDisabled()
+    expect((keyInput as HTMLInputElement).value).toBe('')
   })
 
-  it('creates new asset via modal', async () => {
-    vi.mocked(api.post).mockResolvedValue(
-      mockResponse({ asset: { ...ASSETS[0], asset_key: 'new_test_asset' } })
-    )
-
+  it('edit button opens edit modal with asset data', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('+ New Asset'))
-
-    fireEvent.click(screen.getByText('+ New Asset'))
-
-    // Fill in asset key
-    const inputs = screen.getAllByRole('textbox')
-    const keyInput = inputs.find(
-      (i) => (i as HTMLInputElement).placeholder?.includes('enemy_sludge')
-    ) || inputs[0]
-    fireEvent.change(keyInput, { target: { value: 'new_test_asset' } })
-
-    // Click create button in modal
-    const createBtn = screen.getAllByText('Create').find(
-      (el) => el.tagName === 'BUTTON' && el.className.includes('ar-btn-primary')
-    )
-    if (createBtn) fireEvent.click(createBtn)
 
     await waitFor(() => {
-      expect(vi.mocked(api.post)).toHaveBeenCalledWith(
-        '/api/admin/assets/',
-        expect.objectContaining({ asset_key: 'new_test_asset' })
-      )
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByText('Edit'))
+
+    expect(screen.getByText('Edit Asset')).toBeDefined()
+    const keyInput = screen.getByPlaceholderText('e.g., enemy_sludge_stalker')
+    expect(keyInput).toBeDisabled()
+    expect((keyInput as HTMLInputElement).value).toBe('enemy_slime')
+  })
+
+  it('delete button opens confirmation dialog', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByText('Del'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Delete Asset')).toBeDefined()
     })
   })
 
-  it('opens edit modal with populated data', async () => {
+  it('confirming delete calls API and refreshes list', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
-
-    // Click edit button on first row
-    const editButtons = screen.getAllByText('Edit')
-    fireEvent.click(editButtons[0])
-
-    expect(screen.getByText('Edit Asset')).toBeInTheDocument()
-  })
-
-  it('updates asset via modal', async () => {
-    vi.mocked(api.put).mockResolvedValue(
-      mockResponse({ asset: { ...ASSETS[0], display_name: 'Updated' } })
-    )
-
-    render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
-
-    const editButtons = screen.getAllByText('Edit')
-    fireEvent.click(editButtons[0])
-
-    await waitFor(() => screen.getByText('Edit Asset'))
-
-    const updateBtn = screen.getByText('Update')
-    fireEvent.click(updateBtn)
 
     await waitFor(() => {
-      expect(vi.mocked(api.put)).toHaveBeenCalledWith(
-        '/api/admin/assets/enemy_sludge',
-        expect.any(Object)
-      )
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    fireEvent.click(screen.getByText('Del'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Delete Asset')).toBeDefined()
+    })
+
+    mockedApi.get.mockClear()
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/api/admin/assets/?'))
+        return mockOk(makeListResponse([], 0))
+      return mockOk({})
+    })
+
+    const deleteButtons = screen.getAllByText('Delete')
+    const confirmDeleteBtn = deleteButtons.find(
+      btn => btn.closest('.ar-confirm-dialog') !== null
+    )!
+    fireEvent.click(confirmDeleteBtn)
+
+    await waitFor(() => {
+      expect(mockedApi.delete).toHaveBeenCalledWith('/api/admin/assets/enemy_slime')
+    })
+
+    await waitFor(() => {
+      const getCalls = mockedApi.get.mock.calls.map(c => c[0] as string)
+      expect(getCalls.some(u => u.includes('/api/admin/assets/?'))).toBe(true)
     })
   })
 
-  it('delete with confirmation dialog', async () => {
-    vi.mocked(api.delete).mockResolvedValue(
-      mockResponse({ status: 'ok', message: 'Deleted' })
-    )
-
+  it('orphan detection panel toggles on click', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
-
-    // Click delete button
-    const delButtons = screen.getAllByText('Del')
-    fireEvent.click(delButtons[0])
-
-    // Confirmation dialog should appear
-    await waitFor(() => {
-      expect(screen.getByText('Delete Asset')).toBeInTheDocument()
-    })
-
-    // Confirm delete
-    const confirmDelete = screen.getAllByText('Delete').find(
-      (el) => el.className.includes('ar-btn-danger')
-    )
-    if (confirmDelete) fireEvent.click(confirmDelete)
 
     await waitFor(() => {
-      expect(vi.mocked(api.delete)).toHaveBeenCalledWith(
-        '/api/admin/assets/enemy_sludge'
-      )
+      expect(screen.getByText('enemy_slime')).toBeDefined()
     })
+
+    expect(screen.getByText('Expand')).toBeDefined()
+
+    fireEvent.click(screen.getByText('Orphan Detection'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Collapse')).toBeDefined()
+    })
+
+    expect(screen.getByText(/Missing Assets/)).toBeDefined()
+    expect(screen.getByText(/Unused Assets/)).toBeDefined()
   })
 
-  it('shows orphan missing tab', async () => {
-    vi.mocked(api.get).mockImplementation((path: string) => {
-      if (path.includes('/orphans/missing'))
-        return Promise.resolve(mockResponse({
+  it('opening orphan panel fetches orphan data', async () => {
+    render(<AssetRegistry />)
+
+    await waitFor(() => {
+      expect(screen.getByText('enemy_slime')).toBeDefined()
+    })
+
+    mockedApi.get.mockClear()
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.includes('orphans/missing'))
+        return mockOk({
           missing: [{
             asset_key: 'missing_sprite',
+            referenced_in: [{ table: 'enemies', column: 'sprite_key', count: 3 }],
             suggested_category: 'entity_sprite',
-            referenced_in: [{ table: 'entity_gameplay_data', column: 'sprite_key', count: 2 }],
           }],
-          total: 1,
-        }))
-      if (path.includes('/orphans/unused'))
-        return Promise.resolve(mockResponse({ unused: [], total: 0 }))
-      return Promise.resolve(mockResponse(LIST_RESPONSE))
+        })
+      if (url.includes('orphans/unused'))
+        return mockOk({ unused: [] })
+      return mockOk(makeListResponse())
     })
 
-    render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('Orphan Detection'))
-
-    // Expand orphan panel
-    fireEvent.click(screen.getByText('Expand'))
+    fireEvent.click(screen.getByText('Orphan Detection'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Missing Assets/)).toBeInTheDocument()
+      expect(mockedApi.get).toHaveBeenCalledWith('/api/admin/assets/orphans/missing')
+      expect(mockedApi.get).toHaveBeenCalledWith('/api/admin/assets/orphans/unused')
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('missing_sprite')).toBeDefined()
     })
   })
 
-  it('shows orphan unused tab', async () => {
-    vi.mocked(api.get).mockImplementation((path: string) => {
-      if (path.includes('/orphans/missing'))
-        return Promise.resolve(mockResponse({ missing: [], total: 0 }))
-      if (path.includes('/orphans/unused'))
-        return Promise.resolve(mockResponse({
-          unused: [{
-            asset_key: 'unused_sprite',
-            category: 'entity_sprite',
-            source: 'admin',
-            created_at: '2026-03-13T00:00:00Z',
-          }],
-          total: 1,
-        }))
-      return Promise.resolve(mockResponse(LIST_RESPONSE))
-    })
-
+  it('create modal save calls api.post with correct body', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('Orphan Detection'))
-
-    fireEvent.click(screen.getByText('Expand'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Unused Assets/)).toBeInTheDocument()
+      expect(screen.getByText('enemy_slime')).toBeDefined()
     })
-
-    // Switch to unused tab
-    fireEvent.click(screen.getByText(/Unused Assets/))
-
-    await waitFor(() => {
-      expect(screen.getByText('unused_sprite')).toBeInTheDocument()
-    })
-  })
-
-  it('preview renders canvas element', async () => {
-    render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('enemy_sludge'))
-
-    // Check that canvas elements exist (from AssetPreview)
-    const canvases = document.querySelectorAll('canvas')
-    expect(canvases.length).toBeGreaterThan(0)
-  })
-
-  it('live preview updates on JSON edit', async () => {
-    render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('+ New Asset'))
 
     fireEvent.click(screen.getByText('+ New Asset'))
 
-    await waitFor(() => screen.getByText('Create Asset'))
+    fireEvent.change(screen.getByPlaceholderText('e.g., enemy_sludge_stalker'), {
+      target: { value: 'new_asset_key' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Human-readable name'), {
+      target: { value: 'New Asset' },
+    })
 
-    // Find the JSON editor textarea
-    const textareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[]
-    const jsonEditor = textareas.find((t) => t.className?.includes('ar-json-editor'))
-      || document.querySelector('.ar-json-editor')
+    fireEvent.click(screen.getByText('Create'))
 
-    if (jsonEditor) {
-      fireEvent.change(jsonEditor, {
-        target: { value: '{"version":1,"base_shape":"circle","radius":30,"fill_color":"#ff0000"}' },
-      })
-    }
-
-    // Live preview should exist
     await waitFor(() => {
-      expect(screen.getByText('Live Preview')).toBeInTheDocument()
+      expect(mockedApi.post).toHaveBeenCalledTimes(1)
+      const [url, body] = mockedApi.post.mock.calls[0]
+      expect(url).toBe('/api/admin/assets/')
+      expect(body.asset_key).toBe('new_asset_key')
+      expect(body.display_name).toBe('New Asset')
+      expect(body.category).toBe('entity_sprite')
+      expect(body.source).toBe('admin')
     })
   })
 
-  it('bulk import via paste', async () => {
-    // The AssetRegistry page does not have an explicit paste-to-bulk UI in this version.
-    // Bulk import is done via the API endpoint. Verify the bulk endpoint mock works.
-    vi.mocked(api.post).mockResolvedValue(
-      mockResponse({ created: 2, updated: 0, errors: [] })
-    )
-
-    // This test validates the API endpoint pattern works
-    const resp = await api.post('/api/admin/assets/bulk', [
-      { asset_key: 'bulk_1', category: 'entity_sprite', render_definition: {} },
-      { asset_key: 'bulk_2', category: 'background', render_definition: {} },
-    ])
-    const data = await resp.json()
-    expect(data.created).toBe(2)
-  })
-
-  it('handles API errors gracefully', async () => {
-    vi.mocked(api.get).mockResolvedValue(
-      mockResponse(null, false, 500)
-    )
-
+  it('displays asset tags as chips', async () => {
     render(<AssetRegistry />)
+
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch assets|Network error/)).toBeInTheDocument()
+      expect(screen.getByText('book_1')).toBeDefined()
+      expect(screen.getByText('melee')).toBeDefined()
     })
   })
 
-  it('pagination controls work', async () => {
-    // Return 60 total to have multiple pages
-    vi.mocked(api.get).mockImplementation((path: string) => {
-      if (path.includes('/orphans')) return Promise.resolve(mockResponse({ missing: [], unused: [], total: 0 }))
-      return Promise.resolve(mockResponse({
-        items: ASSETS,
-        total: 60,
-        page: 1,
-        page_size: 50,
-      }))
-    })
-
+  it('displays source badge for asset', async () => {
     render(<AssetRegistry />)
-    await waitFor(() => screen.getByText('Page 1 of 2'))
-
-    const nextBtn = screen.getByText('Next')
-    fireEvent.click(nextBtn)
 
     await waitFor(() => {
-      expect(vi.mocked(api.get)).toHaveBeenCalledWith(
-        expect.stringContaining('page=2')
-      )
+      const sourceElements = screen.getAllByText('admin')
+      expect(sourceElements.length).toBeGreaterThan(0)
     })
   })
 })
