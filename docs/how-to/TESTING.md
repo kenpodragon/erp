@@ -118,7 +118,7 @@ test('buy shards', async ({ page }) => {
 For integration tests that verify real Stripe API calls, webhook delivery, and payment processing:
 
 1. **Prerequisites:**
-   - Stripe test keys in `backend/.env` (see `docs/inst/INIT_INFRA.md` §5.1)
+   - Stripe test keys in `backend/.env` (see `docs/how-to/INIT_INFRA.md` §5.1)
    - Stripe CLI running: `stripe listen --forward-to localhost:8000/api/webhooks/stripe`
    - Docker stack running: `docker-compose up --build -d`
 

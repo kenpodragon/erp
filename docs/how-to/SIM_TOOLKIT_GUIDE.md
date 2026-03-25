@@ -9,7 +9,7 @@ The simulation toolkit validates and tunes all game scaling parameters to hit th
 3. **Compare Tool** — Diff two runs, highlight what changed
 
 **Full Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
-**Session State:** `docs/SIM_PROC_BAL_SESSION_STATE.md`
+**Session State:** `docs/project/done/SIM_PROC_BAL_SESSION_STATE.md`
 
 ---
 
@@ -206,7 +206,7 @@ python generate_migration.py --config results/config_overrides.json
 # Review the SQL first
 cat db/062_balanced_game_configs.sql
 
-# Apply to dev DB (see docs/inst/DB_MIGRATIONS.md)
+# Apply to dev DB (see docs/how-to/DB_MIGRATIONS.md)
 source backend/.env
 psql "$DATABASE_URL" -f db/062_balanced_game_configs.sql
 ```

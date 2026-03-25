@@ -65,7 +65,7 @@ The system SHALL generate immersive 3–6 sentence post-boss lore text for every
 #### Scenario: Lore accuracy review gate
 - GIVEN a batch of lore texts has been generated
 - WHEN the operator prepares to deploy
-- THEN all generated texts SHALL be reviewed against `docs/lore/` guides before merging to production
+- THEN all generated texts SHALL be reviewed against `docs/explanation/lore/` guides before merging to production
 
 ### Requirement: Suno Music Generation Pipeline
 The system SHALL support generating at least 4 unique atmospheric background tracks per chapter using standardized prompts derived from chapter descriptions, with seamless loop points.
@@ -121,7 +121,7 @@ All generators output manifests compatible with the Asset Registry bulk import e
 
 Generator pipeline integration points:
 - **PNG Text Generator:** `NarrativeBlock.tsx` hook on `image_path` in `StoryBeat`
-- **Lore-to-Content Generator:** Reads `docs/lore/` + `BOOKS.md`; writes to entities, items, skills tables; bulk-registers assets via 5.7
+- **Lore-to-Content Generator:** Reads `docs/explanation/lore/` + `BOOKS.md`; writes to entities, items, skills tables; bulk-registers assets via 5.7
 - **Boss Lore Text Generator:** Reads `story_beats` per chapter; writes to `chapters.transition_lore_text` and `books.transition_lore_text`
 - **Content Scanner:** Uses `log_content_audit()` from `services/dev_audit_service.py`; 7 scan targets
 
@@ -136,4 +136,4 @@ Scan targets for Proactive Content Scanner:
 
 Background parallax: current state has Chapter 1–4 placeholders using generic dark-fantasy gradients. All remaining chapters need generated assets.
 
-Reference: `docs/inst/GAME_ASSETS_GUIDE.md` for asset generation and insertion instructions.
+Reference: `docs/reference/GAME_ASSETS_GUIDE.md` for asset generation and insertion instructions.

@@ -68,7 +68,7 @@ Admins create and edit assets via the **Asset Registry** page in the admin dashb
 
 ## 4. Render Definition Format
 
-Each category has a recommended JSON structure. See `docs/recs/5.7_ASSET_REGISTRY_DESIGN.md` sections 3.1-3.11 for complete schemas.
+Each category has a recommended JSON structure. See `openspec/specs/5.7_ASSET_REGISTRY_DESIGN.md` sections 3.1-3.11 for complete schemas.
 
 ### Example: Entity Sprite
 ```json

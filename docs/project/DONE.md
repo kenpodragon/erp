@@ -121,11 +121,11 @@ This document tracks the completed development phases for the Elysium Rising mmo
 
 ## Simulation Toolkit Phases 5-6 + Progression Balancing — COMPLETE (2026-03-22)
 
-**Toolkit guide:** `docs/inst/SIM_TOOLKIT_GUIDE.md`
+**Toolkit guide:** `docs/how-to/SIM_TOOLKIT_GUIDE.md`
 
 ### Phase 5: Results & Migration Tooling
 - [x] Migration generator (`tools/sim/generate_migration.py`) — reads config_overrides.json, outputs SQL (9 tests)
-- [x] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`) — full usage guide for all 3 layers + iteration workflow
+- [x] Toolkit guide (`docs/how-to/SIM_TOOLKIT_GUIDE.md`) — full usage guide for all 3 layers + iteration workflow
 - [x] TODO.md and session state updates
 
 ### Phase 6: First Iteration Run — Casual 59.53h (Target: 60h)
@@ -168,7 +168,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
 **Session state:** `docs/SIM_PROC_BAL_SESSION_STATE.md`
 
 ### Phase 1: API Documentation
-- [x] Scanned all backend routes → generated `docs/inst/API_REFERENCE.md`
+- [x] Scanned all backend routes → generated `docs/reference/API_REFERENCE.md`
 - [x] Created `admin/docs/API_GUIDE.md` and updated `admin/README.md`
 
 ### Phase 2: Math Model
@@ -226,7 +226,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
 
 ## Docker PostgreSQL Migration (DB Deploy)
 
-- [x] **PostgreSQL Docker Migration** — Dockerized PostgreSQL 17 container integrated into `docker-compose.yml` (port 5433). Init scripts create `erp_app_user` + `erp_production` DB from SQL scripts (001/002/003) or from a `pg_dump` snapshot. `tools/refresh_dump.py` dumps localhost to `db/deploy/dump.sql`; `tools/toggle_db.py` toggles `backend/.env` between localhost and Docker. Fixed `backend/routes/discovery.py`: `PlayerProgress.current_chapter_id` → `chapter_number`, Etheric Registry + Discovery Library response shapes aligned to frontend contracts. See `docs/inst/TOOLS.md` for usage.
+- [x] **PostgreSQL Docker Migration** — Dockerized PostgreSQL 17 container integrated into `docker-compose.yml` (port 5433). Init scripts create `erp_app_user` + `erp_production` DB from SQL scripts (001/002/003) or from a `pg_dump` snapshot. `tools/refresh_dump.py` dumps localhost to `db/deploy/dump.sql`; `tools/toggle_db.py` toggles `backend/.env` between localhost and Docker. Fixed `backend/routes/discovery.py`: `PlayerProgress.current_chapter_id` → `chapter_number`, Etheric Registry + Discovery Library response shapes aligned to frontend contracts. See `docs/reference/TOOLS.md` for usage.
 
 ---
 
@@ -407,7 +407,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
  - [x] **2.2.3 — Narrative & Combat Sync**        
  - [x] **2.2.4 — In-Session Progression & Scaling**        
  - [x] **2.2.5 — Victory & Meta-Rewards**        
- - [x] **2.2.6 — Frontend Tests** *(Ref: `docs/inst/TESTING.md`)*        
+ - [x] **2.2.6 — Frontend Tests** *(Ref: `docs/how-to/TESTING.md`)*        
  - [x] **2.2.7 — Polish & Remaining Requirements** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*
  - [x] **2.2.8 — BUGS AND FIXES** *(from `2.2_STORY_MODE.md` + `2.2.1_STORY_MODE_UI.md`)*   (backend/routes/story_mode.py and frontend/src/game/components/story/CombatStage.tsx)
  - [x] **2.2.9 — NARRATIVE INTERSTITIALS** (1.2 Option C)
@@ -476,7 +476,7 @@ This document tracks the completed development phases for the Elysium Rising mmo
 - [x] **7.12 — Harden Admin Auth** *(RECS §2.2, FR-2.7 through FR-2.10)*
 - [x] **7.13 — Onboarding & Admin: Polishing & Refinements**
 - [x] **7.14 — Styling, Theming & Lore Alignment**
-  - Created: `docs/SUMMARY_MARKETING.md`, `docs/BOOKS_SUMMARY.md`, `docs/STYLE_GUIDE.md`, `docs/CHARACTER_GUIDE.md`, `docs/ENVIRONMENT_GUIDE.md`, `docs/ANNOUNCEMENT.md`
+  - Created: `docs/explanation/SUMMARY_MARKETING.md`, `docs/BOOKS_SUMMARY.md`, `docs/reference/STYLE_GUIDE.md`, `docs/CHARACTER_GUIDE.md`, `docs/ENVIRONMENT_GUIDE.md`, `docs/ANNOUNCEMENT.md`
   - Full CSS variable refactor (17 files, crimson/cyan palette from book cover)
   - Lore rewrite: Splash + About pages updated from generic fantasy to sci-fi cosmic horror
   - Character class rename: Sentinel→Engineer, Arcanist→Conduit, Wanderer→Drifter, Invoker→Vessel

@@ -13,12 +13,12 @@ The game draws its lore, characters, and enemies directly from the *Towers of El
 ## Documentation
 Detailed documentation is available in the `docs/` folder:
 
-- [Architecture & Tech Stack](docs/ARCHITECTURE.md)
-- [Functional Requirements](docs/recs/0_REQUIREMENTS.md)
-- [Infrastructure Setup Guide](docs/inst/INIT_INFRA.md)
-- [Project TODO List](docs/TODO.md)
+- [Architecture & Tech Stack](docs/reference/ARCHITECTURE.md)
+- [Functional Requirements](openspec/specs/0_REQUIREMENTS.md)
+- [Infrastructure Setup Guide](docs/how-to/INIT_INFRA.md)
+- [Project TODO List](docs/project/TODO.md)
 
 ---
 
 ## Getting Started
-Refer to the [Infrastructure Setup Guide](docs/inst/INIT_INFRA.md) for initial environment configuration. Technical implementation details are tracked in the [Architecture](docs/ARCHITECTURE.md) document.
+Refer to the [Infrastructure Setup Guide](docs/how-to/INIT_INFRA.md) for initial environment configuration. Technical implementation details are tracked in the [Architecture](docs/reference/ARCHITECTURE.md) document.

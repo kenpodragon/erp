@@ -94,7 +94,7 @@ curl -s http://localhost:8000/api/admin/players/<player_uuid> \
   -H "X-Dev-Player-Id: <admin_player_uuid>"
 ```
 
-The player profile response includes: account metadata, character list, subscription status, and last login timestamp. For full field details see [API_REFERENCE.md Section 21](../../docs/inst/API_REFERENCE.md#21-admin-endpoints).
+The player profile response includes: account metadata, character list, subscription status, and last login timestamp. For full field details see [API_REFERENCE.md Section 21](../../docs/reference/API_REFERENCE.md#21-admin-endpoints).
 
 ---
 
@@ -118,7 +118,7 @@ curl -s http://localhost:8000/api/admin/analytics/payments \
   -H "X-Dev-Player-Id: <admin_player_uuid>"
 ```
 
-For the full list of analytics routes, see [API_REFERENCE.md Section 21](../../docs/inst/API_REFERENCE.md#21-admin-endpoints).
+For the full list of analytics routes, see [API_REFERENCE.md Section 21](../../docs/reference/API_REFERENCE.md#21-admin-endpoints).
 
 ---
 
@@ -176,7 +176,7 @@ curl -s http://localhost:8000/api/admin/config/xp_multiplier \
 
 ## Further Reading
 
-- Full API reference: [`docs/inst/API_REFERENCE.md`](../../docs/inst/API_REFERENCE.md) — Section 21 covers all admin endpoints in detail.
+- Full API reference: [`docs/inst/API_REFERENCE.md`](../../docs/reference/API_REFERENCE.md) — Section 21 covers all admin endpoints in detail.
 - Database schema: [`db/data_dictionary.md`](../../db/data_dictionary.md)
 - Auth implementation: `backend/routes/auth.py`
 - Admin route implementations: `backend/routes/admin*.py`

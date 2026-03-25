@@ -128,7 +128,7 @@ Sessions 1-4 from the original manual plan are now automated by the simulation t
 ### Implementation Progress
 
 #### Phase 1: API Documentation
-- [x] Scan all backend routes → generate `docs/inst/API_REFERENCE.md`
+- [x] Scan all backend routes → generate `docs/reference/API_REFERENCE.md`
 - [x] Create `admin/docs/API_GUIDE.md` and update `admin/README.md`
 
 #### Phase 2: Math Model
@@ -157,7 +157,7 @@ Sessions 1-4 from the original manual plan are now automated by the simulation t
 
 #### Phase 5: Results & Migration
 - [x] Migration 062 generator (`tools/sim/generate_migration.py` — 9 tests)
-- [x] Toolkit guide (`docs/inst/SIM_TOOLKIT_GUIDE.md`)
+- [x] Toolkit guide (`docs/how-to/SIM_TOOLKIT_GUIDE.md`)
 - [x] TODO.md updates
 
 #### Phase 6: First Iteration Run
@@ -308,7 +308,7 @@ The original manual sessions are preserved below for reference. The toolkit auto
 
 ## API Surface (discovered 2026-03-20)
 
-Key endpoints for simulation (full reference pending in `docs/inst/API_REFERENCE.md`):
+Key endpoints for simulation (full reference pending in `docs/reference/API_REFERENCE.md`):
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
@@ -358,7 +358,7 @@ SELECT * FROM player_story_progress WHERE player_id = 5;
 ```
 Simulation & Progression Balancing is COMPLETE (Phases 1-6).
 Casual: 59.53h (target: 60h). Migration 062 applied. API bot validated.
-Toolkit guide: docs/inst/SIM_TOOLKIT_GUIDE.md
+Toolkit guide: docs/how-to/SIM_TOOLKIT_GUIDE.md
 Full results: docs/done/DONE.md
 
 If re-tuning is needed in the future:

@@ -5,8 +5,8 @@
 This document is a prompt for an AI agent to populate ALL missing assets in the ERP game database. Follow the steps below in exact order. Do not skip phases. Do not parallelize across phases — only within a phase where noted.
 
 **Reference docs (read if you need more detail):**
-- `docs/inst/GENERATOR_INSTRUCTIONS.md` — full setup, usage examples, troubleshooting
-- `docs/recs/C_STORY_ASSET_GENERATORS.md` — generator requirements and priority list
+- `docs/how-to/GENERATOR_INSTRUCTIONS.md` — full setup, usage examples, troubleshooting
+- `openspec/specs/C_STORY_ASSET_GENERATORS.md` — generator requirements and priority list
 - `docs/superpowers/specs/2026-03-23-generator-pipeline-design.md` — architecture spec
 
 ---
@@ -183,7 +183,7 @@ python tools/scan_content_gaps.py --verbose
 
 **Success criteria:** The scanner reports **0 gaps** across all tables (excluding known exceptions like `death_sfx_key` which requires dedicated SFX generation).
 
-If gaps remain, identify which generator is responsible using the Generator List in `docs/inst/GENERATOR_INSTRUCTIONS.md`, re-run that generator, check `status`, and re-scan.
+If gaps remain, identify which generator is responsible using the Generator List in `docs/how-to/GENERATOR_INSTRUCTIONS.md`, re-run that generator, check `status`, and re-scan.
 
 ---
 
@@ -264,4 +264,4 @@ The run is complete when ALL of the following are true:
 
 ---
 
-## For detailed troubleshooting, see `docs/inst/GENERATOR_INSTRUCTIONS.md`.
+## For detailed troubleshooting, see `docs/how-to/GENERATOR_INSTRUCTIONS.md`.

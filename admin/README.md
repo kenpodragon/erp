@@ -69,9 +69,9 @@ See [`docs/API_GUIDE.md`](docs/API_GUIDE.md) for full auth details and curl exam
 | Document | Description |
 |----------|-------------|
 | [`docs/API_GUIDE.md`](docs/API_GUIDE.md) | Auth flow, key endpoints, curl examples for debugging and config tuning |
-| [`docs/inst/API_REFERENCE.md`](../docs/inst/API_REFERENCE.md) | Full API reference — Section 21 covers all admin endpoints |
+| [`docs/reference/API_REFERENCE.md`](../docs/reference/API_REFERENCE.md) | Full API reference — Section 21 covers all admin endpoints |
 | [`db/data_dictionary.md`](../db/data_dictionary.md) | Database schema reference |
-| [`docs/inst/TESTING.md`](../docs/inst/TESTING.md) | Testing guide |
+| [`docs/how-to/TESTING.md`](../docs/how-to/TESTING.md) | Testing guide |
 
 ---
 

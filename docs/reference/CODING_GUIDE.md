@@ -104,5 +104,5 @@ backend/
 ## Testing Conventions
 
 - Tests import `app` from `main`, models from `models`, and auth/db from their source modules.
-- Each route file's endpoints are tested through the existing test structure (see `@docs/inst/TESTING.md`).
+- Each route file's endpoints are tested through the existing test structure (see `@docs/how-to/TESTING.md`).
 - New test files go in `backend/tests/` and should follow the `test_*.py` naming convention.

@@ -18,7 +18,7 @@ docker-compose up --build -d
 ### Database
 Backend connects to **localhost PostgreSQL** (host machine, port 5432) via `host.docker.internal`. The Docker postgres container on port 5433 exists for future isolated testing but is **not used during active development or E2E testing**.
 
-To switch to the Docker DB later: `python tools/toggle_db.py docker` (see `docs/inst/TOOLS.md`).
+To switch to the Docker DB later: `python tools/toggle_db.py docker` (see `docs/reference/TOOLS.md`).
 
 ### Auth Bypass
 - `ALLOW_AUTH_BYPASS=true` in `backend/.env`
@@ -1081,6 +1081,6 @@ and what's been completed. Start the Docker stack with `docker-compose up --buil
 Backend uses localhost PostgreSQL (host machine, port 5432) — not the Docker DB.
 Auth bypass is enabled. Use the Playwright MCP tools (browser_navigate, browser_click,
 browser_snapshot, browser_run_code) for interactive browser testing. For automated tests,
-run specs from the testing/ directory. See docs/inst/TOOLS.md for all tool scripts.
+run specs from the testing/ directory. See docs/reference/TOOLS.md for all tool scripts.
 Continue from the current checkpoint.
 ```
