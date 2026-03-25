@@ -27,7 +27,7 @@ Before starting, verify the environment is ready:
 
 ```bash
 # 1. Check DB connection (use localhost from host, not host.docker.internal)
-python -c "from tools.lib.db_client import DBClient; db = DBClient(); print('DB connection OK'); db.close()"
+python -c "from tools.generators.lib.db_client import DBClient; db = DBClient(); print('DB connection OK'); db.close()"
 # Expected: "DB connection OK"
 # If it fails with host.docker.internal error: set DATABASE_URL env var with localhost:
 #   export DATABASE_URL="postgresql://<user>:<pass>@localhost:5432/<dbname>"

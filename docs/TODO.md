@@ -3,80 +3,67 @@
 
 ---
 
-## 🚀 Resume Prompt (Copy & Paste to Start Next Session)
+## Resume Prompt (Copy & Paste to Start Next Session)
 ```
 Read docs/TODO.md for active work. See docs/SESSION_STATE.md for current status.
-Branch: feature/generator-pipeline (merge to main when visual verification passes).
-Next: AI-driven full population, death_sfx_key generation, visual verification.
-Instructions: docs/inst/GENERATOR_INSTRUCTIONS.md
-AI Rules: docs/inst/GENERATOR_AI_RULES.md
-Admin Asset Viewer: admin/src/pages/AssetViewer.tsx + backend/routes/admin_visual.py
+Branch: main
+Current: Watchdog v2 quality improvement pass (overnight). Review results in AM.
+Watchdog steps will process tonight, so let's work on the near-term items.
 ```
 
 ---
 
-## Generator Pipeline — Active Work
+## Active Work — AI Watchdog Quality Pass
 
-### Step 1: AI-Driven Full Population (GENERATOR_AI_RULES.md)
-Current data was generated with Python fallback (generic/repetitive). Need to regenerate with `--ai` mode for lore-appropriate, unique content.
+### Watchdog v2 — Overnight Quality Improvement (2026-03-24)
+v1 ran all generators but produced template/generic data. v2 is a quality improvement pass with direct DB updates (no generators).
 
-**Process:** Follow `docs/inst/GENERATOR_AI_RULES.md` step-by-step:
-1. Take DB backup: `python tools/db_dump_restore.py dump`
-2. Reset fallback data where needed (NULL out visual columns to force regeneration)
-3. Run each generator in phase order with `--ai` (see AI Rules doc for full sequence)
-4. Verify: `python tools/scan_content_gaps.py --verbose` → 0 gaps (excluding known exceptions)
-5. Review in admin Asset Viewer (`admin/src/pages/AssetViewer.tsx`)
+- [x] Built watchdog infrastructure (WATCHDOG_AUTO.ps1, START/STOP scripts)
+- [x] Ran v1 overnight — all 3,936 entities populated, 87/103 goals passed
+- [x] Audited v1 results — identified quality issues (template lore, identical BGs, null music)
+- [x] Built v2 with quality gates, content sampling, template detection
+- [x] Updated AGENT_INSTRUCTIONS.md — audit-first, keep good/replace bad, direct SQL
+- [x] Updated AGENT_GOALS.md — 129 goals with quality checks, lore data chain docs
+- [ ] **Run v2 tonight** — launch via `powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1`
+- [ ] **Review v2 results in AM** — run STOP script, check goals scorecard, spot-check content
+- [ ] **Visual verification** — Admin Asset Viewer + Chrome DevTools on all combat surfaces
+- [ ] **Iterate if needed** — update watchdog docs, run v3 if quality still insufficient
 
-### Step 2: Death SFX Key + Sound Generation
-- [ ] **death_sfx_key for 3,936 entities** — AI-assisted assignment of SFX preset keys based on entity type, family, size, and description
-- [ ] **Generate actual SFX presets** — extend `audio_configs` table with death SFX presets per entity family/type
-- [ ] Cross-reference existing `audio_configs` SFX presets (17 rows) for valid keys
+### Post-Watchdog Verification
+- [ ] Admin Asset Viewer review — entity sprites, item sprites, backgrounds, achievement icons
+- [ ] BottomAnimatedBanner — enemy renders at level 1/20/40/70/90
+- [ ] CombatStage — attack animations, projectile colors, impact effects
+- [ ] BossStage — boss entity scale, attack cycling, interrupt rendering
+- [ ] InventoryPanel — paper doll with armor overlays
+- [ ] ActiveTrainingSimulator — idle entities with skill themes
 
-### Step 3: Visual Verification (All Combat Surfaces)
-- [ ] **Admin Asset Viewer review** — screenshot each section, verify uniqueness + lore-appropriateness
-- [ ] **BottomAnimatedBanner** — Test at level 1/20/40/70/90: enemy count scales, entities render with correct sprites/colors
-- [ ] **CombatStage** — Attack animations per entity attack_type, projectile colors, impact effects
-- [ ] **BossStage** — Boss entity at large scale, attack type cycling, interrupt rendering
-- [ ] **ActiveTrainingSimulator** — Idle training entities with shared renderers, skill-based themes
-- [ ] **InventoryPanel** — Paper doll preview with armor class overlays, weapon sprites
-
-Use Chrome DevTools MCP or admin Asset Viewer (`backend/routes/admin_visual.py`) for verification.
-
-### Step 4: Finalization
-- [ ] **Migration 069** — NOT NULL constraints on entity_gameplay_data visual columns
-- [ ] **Replace remaining 33 default sprite_keys** — re-run `generate_entity_sprites.py --ai`
-- [ ] **Merge feature/generator-pipeline → main**
-- [ ] **Update DONE.md** — move completed generator pipeline section
+### Finalization (after quality is confirmed)
+- [ ] Migration 069 — NOT NULL constraints on entity_gameplay_data visual columns
+- [ ] Final gap scan: `python tools/scan_content_gaps.py --verbose` → 0 gaps
+- [ ] Update DONE.md with full generator pipeline + watchdog completion
 
 ---
 
-## Music and SFX Overhaul
-- [ ] Generate death_sfx_key for 3,936 entities (generate sound effects as well)
-- [ ] Update music definition JSON schemas to support longer sequences
-- [ ] Update `generate_8bit_music.py` generator to produce longer compositions (more variation, sections, transitions)
-- [ ] Review all 21 atmosphere music definitions and extend/regenerate as needed
+## Near-Term — Structural & Deployment Prep
 
----
+### Generator Directory Reorganization
+- [x] Move generators from `tools/` root to `tools/generators/` subdirectory
+- [x] Update imports in all generator scripts (tools.lib → generators.lib or relative)
+- [x] Update GENERATOR_INSTRUCTIONS.md and GENERATOR_AI_RULES.md paths
+- [x] Update AGENTS.md directory structure section
+- [x] Verify all generator `status` commands still work post-move
 
-## Future Work
+### Documentation Cleanup & Consolidation
+- [ ] Collapse DB migrations into clean seed scripts (keep game code + necessary seeds)
+- [ ] Generic seed data for fresh DB spin-up — test from scratch
+- [ ] Update user guides, API reference, admin docs
+- [ ] Investigate SDD frameworks (Open Spec) for documentation format
+- [ ] Link code to requirements — inline comments referencing docs/done/recs/ specs
+- [ ] Remove unecessary files, documents, merge and consolidate, make produciton ready.
+- [ ] Code bloat cleanup — break god-class files into modules
 
-### Generators (Framework Complete)
-- [x] Generator framework built (`tools/lib/` — ai_provider, db_client, base_generator, cache)
-- [x] 16 generators implemented with AI mode + Python fallback
-- [x] Requirements consolidated in `C_STORY_ASSET_GENERATORS.md`
-- [x] GENERATOR_INSTRUCTIONS.md + GENERATOR_AI_RULES.md written
-- [x] Admin Asset Viewer built
 
-#### Cosmetic Asset Generation *(Ref: 3.3 §19)*
-- [ ] Pixel-art skins, badges, flair, avatars — `generate_cosmetics.py` (deferred, depends on Emporium)
-
-### Structural Improvements
-- [ ] Investigate SDD frameworks (Open Spec) — consider converting documentation
-- [ ] Code bloat cleanup (break god-class files into modules)
-- [ ] Code documentation — link to requirements, functional specs, inline comments
-- [ ] Documentation final check — update user guides, manuals, collapse DB merges
-
-### Cloud Deployment
+### Cloud Deployment Prep
 - [ ] Explore Firebase JSON storage for user data (capacity, update frequency)
 - [ ] Evaluate free cloud DB alternatives
 - [ ] If viable: Postgres Docker container auto-loaded with DB dump (minus player data)
@@ -85,4 +72,4 @@ Use Chrome DevTools MCP or admin Asset Viewer (`backend/routes/admin_visual.py`)
 
 ---
 
-*Updated: 2026-03-23 (Generator pipeline complete. Next: AI-driven full population, death_sfx_key, visual verification.)*
+*Updated: 2026-03-24 (Watchdog v2 built, v1 results audited. Next: run v2 overnight, review AM.)*

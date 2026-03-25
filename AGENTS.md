@@ -48,7 +48,11 @@ All code changes must be verified locally before pushing to the cloud. **Refer t
 - `/db`: SQL migrations, seeding scripts for lore/enemies. Any SQL changes must be created as .SQL files in this folder. **Refer to `@docs/inst/DB_MIGRATIONS.md` for applying changes and `db/data_dictionary.md` for the current schema overview. Any schema change MUST update the data dictionary.**
 - `/docs`: All technical, architectural, and requirement specs.
 - `/infra`: Dockerfiles, Cloud Build YAMLs, Deployment scripts.
-- `/tools`: Book processor, duplicate analysis, and initial data ingestion tools.
+- `/tools`: Content generation pipeline, simulation, watchdog agent.
+  - `/tools/generators`: 15 generators, 6 supporting scripts, framework library (`lib/`).
+  - `/tools/generators/lib`: BaseGenerator ABC, AI provider, DB client, cache.
+  - `/tools/watchdog`: Autonomous overnight agent for bulk content quality passes.
+  - `/tools/sim`: Simulation & progression balancing toolkit.
 - `/testing`: Unified test runners and system-wide E2E tests.
 - `../Books`: **Read-only** source material (ER_Kindle.docx, etc.).
 

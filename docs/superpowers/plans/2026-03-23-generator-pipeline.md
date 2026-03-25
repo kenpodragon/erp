@@ -90,7 +90,7 @@ import json
 import asyncio
 from unittest.mock import patch, AsyncMock, MagicMock
 
-# Will import from tools.lib.ai_provider once implemented
+# Will import from tools.generators.lib.ai_provider once implemented
 # For now, these define the expected interface
 
 
@@ -107,7 +107,7 @@ class TestAIProviderConfig:
             "AI_CLI_TIMEOUT=120\n"
             "AI_CLI_MAX_RETRIES=3\n"
         )
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file=str(env_file))
         assert provider.primary == "claude"
         assert provider.fallback == "gemini"
@@ -117,14 +117,14 @@ class TestAIProviderConfig:
 
     def test_default_config_without_env(self):
         """Defaults to claude if no env file."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
         assert provider.primary == "claude"
         assert provider.timeout == 120
 
     def test_build_cli_command_claude(self):
         """Claude CLI command is built correctly."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
         cmd = provider._build_command("claude", "Generate data for entity X")
         assert cmd[0] == "claude"
@@ -133,7 +133,7 @@ class TestAIProviderConfig:
 
     def test_build_cli_command_gemini(self):
         """Gemini CLI command is built correctly."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
         provider.primary = "gemini"
         cmd = provider._build_command("gemini", "Generate data for entity X")
@@ -145,7 +145,7 @@ class TestAIProviderGenerate:
 
     def test_generate_parses_json_response(self):
         """generate() returns parsed JSON from CLI stdout."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
 
         mock_result = json.dumps({"movement_type": "ground", "size_class": "medium"})
@@ -161,7 +161,7 @@ class TestAIProviderGenerate:
 
     def test_generate_retries_on_failure(self):
         """generate() retries up to max_retries on subprocess failure."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
         provider.max_retries = 2
         provider.timeout = 5
@@ -191,7 +191,7 @@ class TestAIProviderBatch:
 
     def test_generate_batch_groups_items(self):
         """generate_batch groups items by group_key and sends batches."""
-        from tools.lib.ai_provider import AIProvider
+        from tools.generators.lib.ai_provider import AIProvider
         provider = AIProvider(env_file="/nonexistent/.env")
 
         items = [
@@ -224,16 +224,16 @@ class TestAIProviderBatch:
 - [ ] **Step 3: Run tests to verify they fail**
 
 Run: `cd tools && python -m pytest tests/test_ai_provider.py -v`
-Expected: ImportError — `tools.lib.ai_provider` does not exist yet
+Expected: ImportError — `tools.generators.lib.ai_provider` does not exist yet
 
 - [ ] **Step 4: Implement `tools/lib/__init__.py`**
 
 ```python
 """Generator framework library."""
-from tools.lib.ai_provider import AIProvider
-from tools.lib.db_client import DBClient
-from tools.lib.base_generator import BaseGenerator
-from tools.lib.cache import GeneratorCache
+from tools.generators.lib.ai_provider import AIProvider
+from tools.generators.lib.db_client import DBClient
+from tools.generators.lib.base_generator import BaseGenerator
+from tools.generators.lib.cache import GeneratorCache
 ```
 
 - [ ] **Step 5: Implement `tools/lib/ai_provider.py`**
@@ -477,7 +477,7 @@ import sqlite3
 import json
 
 # Monkey-patch for testing without psycopg2
-import tools.lib.db_client as db_module
+import tools.generators.lib.db_client as db_module
 
 
 @pytest.fixture
@@ -524,7 +524,7 @@ def mock_db(tmp_path):
 
 class TestDBClientQuery:
     def test_query_returns_dicts(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         result = client.query("SELECT * FROM movement_types ORDER BY id")
@@ -532,7 +532,7 @@ class TestDBClientQuery:
         assert result[0]["name"] == "ground"
 
     def test_query_with_params(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         result = client.query(
@@ -543,7 +543,7 @@ class TestDBClientQuery:
 
 class TestDBClientInsert:
     def test_insert_one(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         client.insert_one("movement_types", {"id": 3, "name": "flying"})
@@ -551,7 +551,7 @@ class TestDBClientInsert:
         assert len(result) == 1
 
     def test_insert_batch(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         rows = [
@@ -565,7 +565,7 @@ class TestDBClientInsert:
 
 class TestDBClientGetMissing:
     def test_get_missing_finds_null_columns(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         # Entity 2 and 3 have no entity_gameplay_data rows
@@ -580,7 +580,7 @@ class TestDBClientGetMissing:
 
 class TestDBClientGetLookup:
     def test_get_lookup_returns_name_id_map(self, mock_db):
-        from tools.lib.db_client import DBClient
+        from tools.generators.lib.db_client import DBClient
         client = DBClient.__new__(DBClient)
         client._conn = mock_db
         client.get_lookup = lambda table: {
@@ -770,7 +770,7 @@ Create `tools/tests/test_cache.py`:
 import pytest
 import json
 from pathlib import Path
-from tools.lib.cache import GeneratorCache
+from tools.generators.lib.cache import GeneratorCache
 
 
 @pytest.fixture
@@ -980,9 +980,9 @@ Create `tools/tests/test_base_generator.py`:
 import pytest
 import asyncio
 from unittest.mock import MagicMock, patch
-from tools.lib.base_generator import BaseGenerator
-from tools.lib.db_client import DBClient
-from tools.lib.cache import GeneratorCache
+from tools.generators.lib.base_generator import BaseGenerator
+from tools.generators.lib.db_client import DBClient
+from tools.generators.lib.cache import GeneratorCache
 
 
 class MockGenerator(BaseGenerator):
@@ -1093,9 +1093,9 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from tools.lib.ai_provider import AIProvider
-from tools.lib.db_client import DBClient
-from tools.lib.cache import GeneratorCache
+from tools.generators.lib.ai_provider import AIProvider
+from tools.generators.lib.db_client import DBClient
+from tools.generators.lib.cache import GeneratorCache
 
 
 class BaseGenerator(ABC):
