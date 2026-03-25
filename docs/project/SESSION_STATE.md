@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-25
-**Last session focus:** Docs consolidation & deduplication (7 files, ~74 lines of duplication removed)
+**Last session focus:** Code Quality Phase 1 — Test Audit & Hardening (+87 new tests across 12 god-classes)
 
 ---
 
@@ -23,11 +23,12 @@
 | Watchdog v1 (Overnight) | Complete | All data populated but low quality — template text, identical BGs (2026-03-24) |
 | Generator Reorg | Complete | Moved to `tools/generators/`, proper package imports, sys.path hacks removed (2026-03-24) |
 | Migration Consolidation | Complete | 061-068 merged into 001-003, archived to db/old/ (2026-03-24) |
-| Test Health | Complete | All tests green: 853+457+368+76 passing, 0 failures (2026-03-25) |
+| Test Health | Complete | All tests green: 875+554+412+76 passing, 0 failures (2026-03-25) |
 | **Documentation Standardization** | **Complete** | OpenSpec (28 specs) + Diataxis (4 categories). 67 source files → 28 specs, 68 old files deleted (2026-03-25) |
 | Watchdog v2 (Quality) | Complete | Ran overnight, 129/129 structural goals passed — but content still garbage (blobs, templates) (2026-03-25) |
 | **Watchdog v3 (Regen)** | **Ready to run** | Full content regeneration — upserts, family body plans, story_beats lore, 84 visual quality goals (2026-03-25) |
 | **Docs Consolidation** | **Complete** | 7 files consolidated: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS. ~74 lines dedup (2026-03-25) |
+| **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
 
 ## Database State
 
@@ -47,7 +48,12 @@
 
 ## Test Health (2026-03-25) — Complete
 
-### Fixes applied this session
+### Phase 1 hardening (this session)
+- **Backend:** +22 tests for story_mode (upgrade, skill, get_session endpoints)
+- **Frontend:** +107 tests — CombatStage (26), BossStage (27), StoryMode (25), BottomAnimatedBanner (29)
+- **Admin:** +72 tests — AssetRegistry (20), PlayerDetail (30), AtmosphereEditor (22); ContentEditor already had 31
+
+### Previous fixes
 - **Frontend:** Type imports for interfaces (white screen), early-return-before-hooks in PaperDollRenderer + EntityRenderer, backend Docker port binding
 - **Backend:** PIL→raw PNG, pytest.ini (integration marker + default exclusion), discovery response shape, websocket test, admin finance plan keys + column names, admin players field names
 - **Generator:** Mock paths updated for reorg, non-SDK provider names force CLI path
@@ -55,9 +61,9 @@
 ### Current test counts
 | Suite | Passed | Skipped | Deselected | Notes |
 |-------|--------|---------|------------|-------|
-| Backend (pytest) | 853 | 2 | 25 | 25 deselected = Stripe E2E (need live server + Firebase token) |
-| Frontend (vitest) | 457 | 1 | — | act() warnings in stderr (non-blocking) |
-| Admin (vitest) | 368 | — | — | All clean |
+| Backend (pytest) | 875 | 2 | 25 | 25 deselected = Stripe E2E (need live server + Firebase token) |
+| Frontend (vitest) | 554 | 1 | — | act() warnings in stderr (non-blocking) |
+| Admin (vitest) | 412 | — | — | All clean |
 | Generator (pytest) | 76 | — | — | All clean |
 
 ## What's Left (see TODO.md)
@@ -68,12 +74,18 @@
 3. Visual verification via Asset Viewer + Chrome DevTools
 4. Migration 069 (NOT NULL constraints after quality confirmed)
 
-### Next Up — Code Quality (big effort)
-1. Break god-class files into focused modules (identify top offenders by LOC)
-2. DB optimization, schema normalization, dead tables removal
-3. Remove dead code, unused imports, commented-out blocks
-4. Standardize error handling patterns across backend routes
-5. Type hints, code documentation, test coverage
+### Next Up — Code Quality Phase 2: God-Class Decomposition
+Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
+Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
+
+1. Write Phase 2 implementation plan (backend decomposition first)
+2. Break `story_mode.py` (1,833 lines) → `routes/story/` (combat, scenes, bosses, rewards)
+3. Break `admin_character_service.py` (1,506) → `services/character/` (crud, progression, validation)
+4. Break `admin_game.py` (1,453) → `routes/admin/game/` + shared `utils/crud_helpers.py`
+5. Break `admin_content_service.py` (1,391) → `services/content/` (lore, sprites, backgrounds, bulk_ops)
+6. Frontend/Admin: Extract custom hooks from 8 god-components
+7. Broad sweep: dead code, error handling, type hints (Phase 3)
+8. Documentation + DB audit report (Phase 4)
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)
@@ -95,4 +107,4 @@
 
 ## Branch Status
 
-- **main:** All tests green. Docs consolidation complete. Watchdog v3 pending. Code quality backlog next.
+- **main:** All tests green (1,841 unit + 76 E2E). Code Quality Phase 1 complete. Phase 2 decomposition next. Watchdog v3 still pending.
