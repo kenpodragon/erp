@@ -8,9 +8,9 @@
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
 All backend tests green (864 passed, 0 failures). Frontend/admin test counts: 554+412+76.
-Code Quality Phase 2 IN PROGRESS — backend decomposition DONE (4 god-classes → 20 modules).
-NEXT: Frontend god-class decomposition. Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
-Start with CombatStage.tsx (715 lines) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator.
+Code Quality Phase 2 IN PROGRESS — backend decomposition DONE, CombatStage DONE.
+NEXT: BossStage.tsx (692 lines) → useBossPhases hook + renderer.
+Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
 ```
 
 ---
@@ -56,7 +56,7 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 **Backend: DONE** — 4 god-classes (6,179 lines) → 20 modules. See DONE.md.
 
 **Frontend (NEXT):**
-- [ ] Frontend: `CombatStage.tsx` (715) → custom hooks + sub-components
+- [x] Frontend: `CombatStage.tsx` (715) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator
 - [ ] Frontend: `BossStage.tsx` (692) → useBossPhases hook + renderer
 - [ ] Frontend: `StoryMode.tsx` (567) → hooks + renderer
 - [ ] Frontend: `BottomAnimatedBanner.tsx` (583) → hooks + renderer
@@ -101,4 +101,4 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
 ---
 
-*Updated: 2026-03-25 (Code Quality Phase 2 backend decomposition complete — 6,179 lines → 20 modules, 864/864 tests. Frontend decomposition next.)*
+*Updated: 2026-03-26 (CombatStage.tsx decomposed: 715 lines → 4 files (useCombatState, useCombatAnimations, CombatHUD, slim orchestrator). 554/554 frontend tests green.)*
