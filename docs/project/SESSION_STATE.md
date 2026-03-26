@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-26
-**Last session focus:** Code Quality Phase 2 — Frontend decomposition started. CombatStage.tsx (715 lines) → 4 files: useCombatState, useCombatAnimations, CombatHUD, slim orchestrator. Next: BossStage.tsx.
+**Last session focus:** Code Quality Phase 2 — Frontend decomposition DONE. 4 god-components (2,557 lines) → 8 hook+renderer pairs. Next: Admin decomposition (4 components).
 
 ---
 
@@ -29,7 +29,7 @@
 | **Watchdog v3 (Regen)** | **Ready to run** | Full content regeneration — upserts, family body plans, story_beats lore, 84 visual quality goals (2026-03-25) |
 | **Docs Consolidation** | **Complete** | 7 files consolidated: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS. ~74 lines dedup (2026-03-25) |
 | **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
-| **Code Quality Phase 2** | **In Progress** | Backend DONE (4 god-classes→20 modules). Frontend: CombatStage DONE (715→4 files). Next: BossStage, StoryMode, BottomAnimatedBanner + 4 admin components (2026-03-26) |
+| **Code Quality Phase 2** | **In Progress** | Backend DONE (4→20 modules). Frontend DONE (4→8 hook+renderer pairs). Next: Admin decomposition (4 components) (2026-03-26) |
 
 ## Database State
 
@@ -107,4 +107,4 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
 ## Branch Status
 
-- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2: backend done, CombatStage done, BossStage next. Watchdog v3 still pending.
+- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2: backend + frontend done, admin next. Watchdog v3 still pending.

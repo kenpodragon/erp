@@ -9,8 +9,8 @@ Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for
 Branch: main
 All backend tests green (864 passed, 0 failures). Frontend/admin test counts: 554+412+76.
 Code Quality Phase 2 IN PROGRESS — backend decomposition DONE, CombatStage DONE.
-NEXT: BossStage.tsx (692 lines) → useBossPhases hook + renderer.
-Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
+Frontend decomposition DONE (4 god-components → 8 hook+renderer pairs). 554/554 tests green.
+NEXT: Admin god-class decomposition (4 components). Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
 ```
 
 ---
@@ -55,11 +55,11 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 ### Phase 2 — God-Class Decomposition (IN PROGRESS)
 **Backend: DONE** — 4 god-classes (6,179 lines) → 20 modules. See DONE.md.
 
-**Frontend (NEXT):**
+**Frontend: DONE**
 - [x] Frontend: `CombatStage.tsx` (715) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator
-- [ ] Frontend: `BossStage.tsx` (692) → useBossPhases hook + renderer
-- [ ] Frontend: `StoryMode.tsx` (567) → hooks + renderer
-- [ ] Frontend: `BottomAnimatedBanner.tsx` (583) → hooks + renderer
+- [x] Frontend: `BossStage.tsx` (692) → useBossPhases + slim renderer
+- [x] Frontend: `StoryMode.tsx` (567) → useStorySession + slim renderer
+- [x] Frontend: `BottomAnimatedBanner.tsx` (583) → useBannerSimulation + slim renderer
 - [ ] Admin: `AssetRegistry.tsx` (750) → useAssetFilters + useAssetOperations + AssetTable
 - [ ] Admin: `PlayerDetail.tsx` (706) → usePlayerData + modal extraction
 - [ ] Admin: `AtmosphereEditor.tsx` (672) → form hook + section components
@@ -101,4 +101,4 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
 ---
 
-*Updated: 2026-03-26 (CombatStage.tsx decomposed: 715 lines → 4 files (useCombatState, useCombatAnimations, CombatHUD, slim orchestrator). 554/554 frontend tests green.)*
+*Updated: 2026-03-26 (Frontend decomposition complete: 4 god-components (2,557 lines) → 8 hook+renderer pairs. Backend + Frontend done. Admin decomposition next.)*
