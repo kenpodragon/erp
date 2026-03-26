@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-26
-**Last session focus:** Code Quality Phase 3 COMPLETE — Broad sweep done: dead code cleaned, 24 exception handlers converted to specific types, nested ternaries refactored, prop drilling confirmed acceptable. Phase 4 Documentation & DB Audit next.
+**Last session focus:** Phase 4 Design COMPLETE — Comprehensive documentation audit & traceability design spec written and committed. Covers: requirement ID assignment (28 specs), reverse-sync specs to code, structured docstrings for ~488 files, traceability matrix, operational docs audit, DB audit report. Four-wave parallel approach. Implementation plan next.
 
 ---
 
@@ -31,6 +31,7 @@
 | **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
 | **Code Quality Phase 2** | **Complete** | Backend DONE (4→20 modules). Frontend DONE (4→8 hook+renderer pairs). Admin DONE (4→15 focused files). All 12 god-classes decomposed (2026-03-26) |
 | **Code Quality Phase 3** | **Complete** | Broad sweep: dead code cleaned, 24/46 exception handlers converted to specific types (22 kept as legitimate fallbacks), 3 nested ternaries refactored, prop drilling confirmed acceptable, sys.path and type hints already clean (2026-03-26) |
+| **Code Quality Phase 4 Design** | **Complete** | Design spec written: bidirectional traceability, req IDs for 28 specs, ~488 file docstrings, traceability matrix, full ops docs audit. 4-wave parallel approach (2026-03-26) |
 
 ## Database State
 
@@ -83,11 +84,13 @@ Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 2. ~~Phase 2: 12 god-classes decomposed~~ **DONE**
 3. ~~Phase 3: Broad sweep~~ **DONE** — dead code, error handling (24 converted), ternaries (3 refactored), prop drilling (acceptable), sys.path (clean), type hints (clean)
 
-### Next — Code Quality Phase 4: Documentation & DB Audit
-1. Module-level docstrings + folder READMEs for new modules
-2. DB audit report: dead tables, unused columns, normalization opportunities
-3. Update TODO.md/DONE.md, AGENTS.md directory structure
-4. Update all userguides, manuals and other components with final changes
+### Next — Code Quality Phase 4: Implementation (Design Complete)
+Design spec: `docs/superpowers/specs/2026-03-26-phase4-doc-audit-design.md`
+
+**Wave 1:** Assign requirement IDs to 28 specs + reverse-sync specs to code + DB audit report
+**Wave 2:** Structured docstrings for ~488 code files (backend/frontend/admin/tools in parallel) + traceability matrix
+**Wave 3:** Operational docs audit (accuracy + restructure + completeness) + AGENTS.md + TODO/DONE reconciliation
+**Wave 4:** Validation (test suites + spot-check + cross-reference verification)
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)
@@ -109,4 +112,4 @@ Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 
 ## Branch Status
 
-- **main:** All tests green (875 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 3 COMPLETE — broad sweep done. Phase 4 Documentation & DB Audit next. Watchdog v3 still pending.
+- **main:** All tests green (875 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 4 design spec committed. Implementation plan next. Watchdog v3 still pending.

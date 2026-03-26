@@ -8,9 +8,9 @@
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
 All tests green: 875 backend + 554 frontend + 412 admin + 76 E2E.
-Code Quality Phase 3 COMPLETE — dead code cleaned, 24 exception handlers converted to specific types, nested ternaries refactored.
-NEXT: Phase 4 — Documentation & DB Audit Report.
-Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
+Code Quality Phase 4 DESIGN COMPLETE — bidirectional traceability, req IDs, ~488 file docstrings, ops docs audit.
+NEXT: Write implementation plan, then execute 4-wave parallel approach.
+Design spec at docs/superpowers/specs/2026-03-26-phase4-doc-audit-design.md.
 ```
 
 ---
