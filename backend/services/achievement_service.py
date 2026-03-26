@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Optional
 
 from sqlmodel import Session, select, text, func
+from sqlalchemy.exc import SQLAlchemyError
 
 from models.home_base import (
     Achievement, PlayerAchievement, PlayerTitle, Title,
@@ -181,7 +182,7 @@ def get_player_cumulative_stats(player_id: int, db: Session) -> dict:
             "SELECT COUNT(*) FROM activity_events WHERE player_id = :pid AND event_type = 'item_salvaged'"
         ), params={"pid": player_id}).first()
         stats["marketplace_salvages"] = int(salvage_count[0]) if salvage_count else 0
-    except Exception:
+    except SQLAlchemyError:
         stats["marketplace_listings"] = 0
         stats["marketplace_sales"] = 0
         stats["marketplace_purchases"] = 0

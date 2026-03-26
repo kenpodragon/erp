@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from sqlmodel import Session, select
+from firebase_admin import exceptions as firebase_exceptions
 
 from db import engine, get_session
 from auth import verify_firebase_token
@@ -41,7 +42,7 @@ async def chat_websocket(
     # Firebase token verification
     try:
         decoded = verify_firebase_token(token)
-    except Exception:
+    except (ValueError, firebase_exceptions.FirebaseError):
         await websocket.close(code=4001, reason="Invalid token")
         return
 

@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 from sqlmodel import Session, create_engine, select
+from sqlalchemy.exc import SQLAlchemyError
 from models import AdminWhitelistEmail, AdminWhitelistIP, Player, ServerConfig
 
 load_dotenv()
@@ -44,7 +45,7 @@ def check_access_control():
             for p in players:
                 print(f" - {p.email} (Owner: {p.is_owner}, SysAdmin: {p.is_system_admin})")
                 
-    except Exception as e:
+    except SQLAlchemyError as e:
         print(f"Error checking DB: {e}")
 
 if __name__ == "__main__":

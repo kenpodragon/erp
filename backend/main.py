@@ -11,9 +11,8 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from sqlmodel import Session, select, text
 
-from db import get_session
 from auth import init_firebase
-from models import SupportTicket, ActivityEvent
+from models import SupportTicket
 from utils import load_profanity_blocklist
 import config_cache
 
@@ -120,7 +119,6 @@ async def lifespan(app: FastAPI):
     load_profanity_blocklist()
     # Load server config into memory cache
     try:
-        from sqlmodel import Session
         from db import engine
         with Session(engine) as session:
             config_cache.load_config(session)

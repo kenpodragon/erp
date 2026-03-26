@@ -17,6 +17,18 @@ import type { Enemy } from './useCombatState';
 import type { DamageNumber, DeathParticle, Shockwave } from './useCombatAnimations';
 import type { StorySession } from '../../GameContext';
 
+function getEnemyColors(enemy: Enemy): { primary: string | null; secondary: string | null } {
+  if (enemy.isPrimal) return { primary: '#ffd700', secondary: '#b8860b' };
+  if (enemy.isRare) return { primary: '#60a5fa', secondary: '#3b82f6' };
+  return { primary: null, secondary: null };
+}
+
+function getEnemyNameColor(enemy: Enemy): string {
+  if (enemy.isRare) return '#60a5fa';
+  if (enemy.isBoss) return '#ff6666';
+  return '#aaaacc';
+}
+
 const PLAYER_ATTACK_DATA = {
   attack_animation_type: 'melee_swing' as const,
   projectile_color: null,
@@ -99,14 +111,15 @@ const CombatHUD: React.FC<CombatHUDProps> = ({
   // ── Enemy visual data ──────────────────────────────────────────────────
   const enemyVisualData = useMemo<EnemyVisualData | null>(() => {
     if (!enemy) return null;
+    const { primary, secondary } = getEnemyColors(enemy);
     return {
       entity_id: enemy.entityId ?? 0,
       name: enemy.name,
       sprite_key: enemy.spriteKey,
       base_hp: enemy.maxHp,
       base_gold: enemy.baseGold,
-      color_primary: enemy.isPrimal ? '#ffd700' : enemy.isRare ? '#60a5fa' : null,
-      color_secondary: enemy.isPrimal ? '#b8860b' : enemy.isRare ? '#3b82f6' : null,
+      color_primary: primary,
+      color_secondary: secondary,
       movement: null,
       size: enemy.isBoss ? {
         name: 'large', scale_min: 1.3, scale_max: 1.5,
@@ -231,7 +244,7 @@ const CombatHUD: React.FC<CombatHUDProps> = ({
       )}
 
       {/* UI Elements */}
-      {enemy && <pixiText text={`${enemy.isRare ? '\u2726 ' : ''}${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: enemy.isRare ? '#60a5fa' : enemy.isBoss ? '#ff6666' : '#aaaacc', align: 'center', fontWeight: 'bold' })} />}
+      {enemy && <pixiText text={`${enemy.isRare ? '\u2726 ' : ''}${enemy.name} | HP: ${formatNumber(enemy.currentHp)} / ${formatNumber(enemy.maxHp)}`} x={enemyX} y={floorY + 50} zIndex={11} anchor={0.5} style={new TextStyle({ fontFamily: 'monospace', fontSize: 12 * textScale, fill: getEnemyNameColor(enemy), align: 'center', fontWeight: 'bold' })} />}
       {!reduceMotion && (
         <pixiContainer zIndex={20}>{dmgNumbers.map(dn => <pixiText key={dn.id} text={dn.value} x={dn.x} y={dn.y} alpha={dn.alpha} style={new TextStyle({ fontFamily: 'monospace', fontSize: (dn.type === 'crit' ? 20 : 14) * textScale, fill: dn.type === 'crit' ? '#ffcc00' : classColors.damageText, stroke: { width: 2, color: '#000000' } })} />)}</pixiContainer>
       )}

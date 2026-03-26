@@ -7,7 +7,7 @@ import time
 from collections import deque
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 
 
 class ChatRateLimiter:
@@ -65,7 +65,7 @@ class ConnectionManager:
             for old_ws in stale:
                 try:
                     await old_ws.close(code=4010, reason="Replaced by new connection")
-                except Exception:
+                except (RuntimeError, WebSocketDisconnect):
                     pass
         else:
             self.active_connections[player_id] = []
@@ -87,7 +87,7 @@ class ConnectionManager:
             for ws in sockets:
                 try:
                     await ws.send_json(message)
-                except Exception:
+                except (RuntimeError, WebSocketDisconnect):
                     disconnected.append((player_id, ws))
         for player_id, ws in disconnected:
             self.disconnect(player_id, ws)
@@ -98,7 +98,7 @@ class ConnectionManager:
             for ws in self.active_connections[player_id]:
                 try:
                     await ws.send_json(message)
-                except Exception:
+                except (RuntimeError, WebSocketDisconnect):
                     pass
 
     def get_history(self) -> List[dict]:

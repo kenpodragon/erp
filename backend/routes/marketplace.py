@@ -5,6 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session
 
 from db import get_session
@@ -102,7 +103,7 @@ async def browse_listings(
 
     try:
         return marketplace_service.get_browse_listings(filters, page, page_size, session)
-    except Exception as e:
+    except (SQLAlchemyError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -295,7 +296,7 @@ async def mark_notifications_read(
         result = marketplace_notification_service.mark_read(player.id, body.notification_ids, session)
         session.commit()
         return result
-    except Exception as e:
+    except (SQLAlchemyError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -321,7 +322,7 @@ async def salvage_item(
         result = salvage_service.salvage_single(player.id, body.item_type, body.item_ref_id, session)
         session.commit()
         return result
-    except Exception as e:
+    except (SQLAlchemyError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -347,7 +348,7 @@ async def salvage_bulk(
         result = salvage_service.salvage_bulk(player.id, body.items, session)
         session.commit()
         return result
-    except Exception as e:
+    except (SQLAlchemyError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -370,7 +371,7 @@ async def salvage_preview(
 
     try:
         return salvage_service.get_salvage_value(player.id, body.items, session)
-    except Exception as e:
+    except (SQLAlchemyError, ValueError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 

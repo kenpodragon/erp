@@ -9,6 +9,7 @@ import os
 import logging
 from dotenv import load_dotenv
 from sqlmodel import Session, create_engine
+from sqlalchemy.exc import SQLAlchemyError, ArgumentError
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ else:
 try:
     engine = create_engine(DATABASE_URL)
     logger.info("db.py: Engine created successfully")
-except Exception as e:
+except (SQLAlchemyError, ArgumentError) as e:
     logger.error("db.py: Failed to create engine: %s", e)
     raise
 

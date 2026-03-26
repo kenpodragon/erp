@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select, func
 
 import stripe
@@ -61,7 +62,7 @@ async def reconcile_receipts(
                 try:
                     credit_shards(order.id, session)
                     reconciled += 1
-                except Exception as e:
+                except (SQLAlchemyError, ValueError) as e:
                     errors += 1
                     logger.error("Reconciliation error for order %s: %s", order_id, e)
     except stripe.error.StripeError as e:
@@ -176,7 +177,7 @@ async def poll_refunds(
                 session.commit()
                 refunds_processed += 1
 
-            except Exception as e:
+            except (SQLAlchemyError, ValueError) as e:
                 errors += 1
                 logger.error("Error processing polled refund %s: %s", refund["id"], e)
 
@@ -245,7 +246,7 @@ async def poll_refunds(
                 session.commit()
                 disputes_processed += 1
 
-            except Exception as e:
+            except (SQLAlchemyError, ValueError) as e:
                 errors += 1
                 logger.error("Error processing polled dispute %s: %s", dispute["id"], e)
 

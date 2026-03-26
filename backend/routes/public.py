@@ -6,6 +6,7 @@ import logging
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, text
 
+from sqlalchemy.exc import SQLAlchemyError
 from db import get_session
 import config_cache
 
@@ -31,7 +32,7 @@ def health_check(session: Session = Depends(get_session)):
     error = None
     try:
         session.exec(text("SELECT 1"))
-    except Exception as e:
+    except SQLAlchemyError as e:
         db_status = "disconnected"
         error = str(e)
 

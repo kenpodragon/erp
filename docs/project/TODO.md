@@ -7,9 +7,9 @@
 ```
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
-All tests green: 864 backend + 554 frontend + 412 admin + 76 E2E.
-Code Quality Phase 2 COMPLETE — all 12 god-classes decomposed (4 backend → 20 modules, 4 frontend → 8 hook+renderer pairs, 4 admin → 15 focused files).
-NEXT: Phase 3 — Broad Sweep (dead code, error handling, sys.path hacks, nested ternaries, prop drilling).
+All tests green: 875 backend + 554 frontend + 412 admin + 76 E2E.
+Code Quality Phase 3 COMPLETE — dead code cleaned, 24 exception handlers converted to specific types, nested ternaries refactored.
+NEXT: Phase 4 — Documentation & DB Audit Report.
 Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
 ```
 
@@ -45,20 +45,12 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 
 ---
 
-## Active Work — Code Quality Phase 3: Broad Sweep (NEXT)
+## Active Work — Code Quality Phase 4: Documentation & DB Audit Report (NEXT)
 
 Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 
-### Phase 3 — Broad Sweep
-- [ ] Remove dead code: `main.py` 48 unused imports, 1,144+ commented lines across backend
-- [ ] Fix `sys.path` hacks outside `tools/generators/`
-- [ ] Replace nested ternaries in CombatStage (15) and PostBattleSummary (4)
-- [ ] Reduce prop drilling in 75 files via custom hooks/context
-- [ ] Standardize error handling (64 generic handlers → specific exceptions)
-- [ ] Fill remaining type hint gaps
-
-### Phase 4 — Documentation & DB Audit Report (after Phase 3)
-- [ ] Module-level docstrings + folder READMEs for new modules
+### Phase 4 — Documentation & DB Audit Report
+- [ ] Module-level docstrings (updating any of the document from code - review code, ensure documentation matches)
 - [ ] DB audit report: dead tables, unused columns, normalization opportunities → new TODO
 - [ ] Update TODO.md/DONE.md, AGENTS.md directory structure
 - [ ] Update all userguides, manuals and other components with the final changes.
@@ -68,9 +60,11 @@ Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 - [ ] Full test suite green, Docker builds verified, clean git history
 
 ## Backlog — Pre-launch bits.
+- [ ] Review all the files about to be deleted and captuer lessons learne (DON, session memories, etc...).
 - [ ] Remove Lore and Inpsiration documents, ERP specific lore bits from the documentation (should be generic and apply to anyone who is building this). This is a pass to be done once the generators are completed.
 - [ ] Remove the TODO, DONE, and SESISON_STATE, from teh repo. CLean up AGENTS CLAUDE, GEMINI. Remove the db old.
 - [ ] Update README.md to contain more relevant information about the project, quick install guide (and link to the deeper ADMIN setup guide).
+
 
 
 ---
@@ -85,4 +79,4 @@ Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 
 ---
 
-*Updated: 2026-03-26 (Phase 2 COMPLETE — all 12 god-classes decomposed: 4 backend, 4 frontend, 4 admin. Phase 3 Broad Sweep next.)*
+*Updated: 2026-03-26 (Phase 3 COMPLETE — broad sweep done: dead code, error handling, ternaries, prop drilling all addressed. Phase 4 Documentation & DB Audit next.)*

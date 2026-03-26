@@ -1,3 +1,4 @@
+import logging
 import math
 from datetime import datetime, timezone
 from typing import Optional, List, Any
@@ -17,6 +18,8 @@ from services.character_progression import (
 from services.achievement_service import evaluate_achievements
 from services.boost_service import get_effective_multipliers
 from services.shop_service import increment_booster_time
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/game/training", tags=["Idle Training"])
 
@@ -82,7 +85,7 @@ def get_config_val(session: Session, key: str, default: Any, val_type=float) -> 
         return default
     try:
         return val_type(conf.value_json)
-    except:
+    except (ValueError, TypeError):
         return default
 
 def get_essence_xp_rate(session: Session, essence_pct: float) -> float:
@@ -219,7 +222,7 @@ def apply_offline_calc(session: Session, character: PlayerCharacter) -> Optional
     try:
         achievements_earned = evaluate_achievements(character.player_id, session)
     except Exception:
-        pass
+        logger.warning("Achievement evaluation failed for player %s", character.player_id, exc_info=True)
 
     session.commit()
 

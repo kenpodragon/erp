@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 from sqlmodel import Session, select, col, func
 from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 
 from models.classification import EntityType, EntityFamily, VisualBehavior
@@ -750,7 +751,7 @@ def bulk_assign(session: Session, entity_ids: list, action: str, payload: dict) 
             else:
                 errors.append({"entity_id": eid, "error": f"Unknown action: {action}"})
                 continue
-        except Exception as e:
+        except (SQLAlchemyError, ValueError, KeyError) as e:
             errors.append({"entity_id": eid, "error": str(e)})
 
     session.commit()

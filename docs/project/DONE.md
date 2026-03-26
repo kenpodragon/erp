@@ -5,6 +5,36 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-26*
 
+## Code Quality Phase 3 — Broad Sweep — COMPLETE (2026-03-26)
+
+All 6 sweep categories addressed. 24 exception handlers converted to specific types, 3 nested ternaries refactored, 1 latent bug fixed. All tests pass (875 backend + 554 frontend + 412 admin + 76 E2E).
+
+### Dead Code Removal
+- [x] `main.py` — removed unused imports (`get_session`, `ActivityEvent`, redundant `Session` re-import)
+- [x] Commented-out code audit — 0 found (Phase 2 already cleaned)
+
+### Error Handling Standardization (24 handlers converted, 22 kept as legitimate fallbacks)
+- [x] `game_training.py` — bare `except:` → `(ValueError, TypeError)`, silent `pass` → logged warning
+- [x] `routes/chat.py` — `Exception` → `(ValueError, firebase_exceptions.FirebaseError)`
+- [x] `services/chat.py` — 3× `Exception` → `(RuntimeError, WebSocketDisconnect)`
+- [x] `auth.py` — `Exception` → `(firebase_exceptions.FirebaseError, ValueError)`
+- [x] `admin_assets.py` — `Exception` → `SQLAlchemyError` + fixed latent Row comparison bug
+- [x] `admin_payments.py` — 3× `Exception` → `(SQLAlchemyError, ValueError)`
+- [x] `marketplace.py` — 5× `Exception` → `(SQLAlchemyError, ValueError)`
+- [x] `check_db.py`, `db.py`, `admin_visual.py`, `players.py`, `public.py` — → specific types
+- [x] `achievement_service.py`, `admin_classification_service.py`, `donation_service.py` — → specific types
+
+### Nested Ternaries
+- [x] `CombatHUD.tsx` — extracted `getEnemyColors()` + `getEnemyNameColor()` helpers
+- [x] `CharacterLevelBar.tsx` — ternary chain → `if/else if` block
+
+### Audited — No Action Needed
+- [x] `sys.path` hacks — 0 found outside `tools/generators/`
+- [x] Prop drilling — only 6 files with `props.`, none with 3+ level chains
+- [x] Type hint gaps — 0 gaps found
+
+---
+
 ## Code Quality Phase 2 — God-Class Decomposition — COMPLETE (2026-03-26)
 
 All 12 god-classes (11,467 lines total) decomposed into 43 focused modules. All tests pass (864 backend + 554 frontend + 412 admin + 76 E2E).

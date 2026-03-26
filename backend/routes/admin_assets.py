@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlmodel import Session, select, func
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from db import get_session
 from auth import get_current_admin
@@ -424,10 +425,10 @@ async def delete_asset(
                 f"SELECT COUNT(*) FROM {table} WHERE {column} = :key"
             )
             row = session.exec(count_sql, params={"key": asset_key}).one()  # type: ignore[arg-type]
-            count = row[0] if isinstance(row, (tuple, list)) else row
-            if count and count > 0:
+            count = row[0] if hasattr(row, '__getitem__') else row
+            if count and int(count) > 0:
                 references.append({"table": table, "column": column, "count": count})
-        except Exception:
+        except SQLAlchemyError:
             # Table may not exist (e.g., in test environments)
             pass
 

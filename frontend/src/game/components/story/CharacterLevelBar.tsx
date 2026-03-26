@@ -33,7 +33,10 @@ const CharacterLevelBar: React.FC = () => {
   const atCap = data.level >= data.level_cap;
   const xpInLevel = data.character_xp - data.xp_for_current_level;
   const xpNeeded = data.xp_for_next_level - data.xp_for_current_level;
-  const pct = atCap ? 100 : xpNeeded > 0 ? Math.min(100, (xpInLevel / xpNeeded) * 100) : 0;
+
+  let pct = 0;
+  if (atCap) pct = 100;
+  else if (xpNeeded > 0) pct = Math.min(100, (xpInLevel / xpNeeded) * 100);
 
   return (
     <div className="char-level-bar">

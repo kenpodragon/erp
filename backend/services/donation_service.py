@@ -169,7 +169,7 @@ def process_donation_webhook(payment_order_id: int, session_obj: dict, session: 
         try:
             pi = stripe.PaymentIntent.retrieve(pi_id)
             order.stripe_charge_id = pi.get("latest_charge")
-        except Exception as exc:
+        except stripe.error.StripeError as exc:
             logger.warning("Could not retrieve PI %s: %s", pi_id, exc)
 
     order.status = "completed"

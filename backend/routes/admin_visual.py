@@ -232,7 +232,7 @@ def create_row(
     body.pop("created_at", None)
     try:
         row = model(**body, created_at=datetime.now(timezone.utc))
-    except Exception as e:
+    except (TypeError, ValueError) as e:
         raise HTTPException(status_code=422, detail=str(e))
     session.add(row)
     session.commit()

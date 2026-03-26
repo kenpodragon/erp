@@ -173,7 +173,7 @@ async def upload_avatar(
     try:
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
-    except Exception as e:
+    except (IOError, OSError) as e:
         logger.error("Failed to save avatar: %s", e)
         raise HTTPException(status_code=500, detail="Failed to save avatar")
 

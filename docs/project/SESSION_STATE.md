@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-26
-**Last session focus:** Code Quality Phase 2 COMPLETE — All 12 god-classes decomposed (4 backend, 4 frontend, 4 admin). Phase 3 Broad Sweep next.
+**Last session focus:** Code Quality Phase 3 COMPLETE — Broad sweep done: dead code cleaned, 24 exception handlers converted to specific types, nested ternaries refactored, prop drilling confirmed acceptable. Phase 4 Documentation & DB Audit next.
 
 ---
 
@@ -30,6 +30,7 @@
 | **Docs Consolidation** | **Complete** | 7 files consolidated: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS. ~74 lines dedup (2026-03-25) |
 | **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
 | **Code Quality Phase 2** | **Complete** | Backend DONE (4→20 modules). Frontend DONE (4→8 hook+renderer pairs). Admin DONE (4→15 focused files). All 12 god-classes decomposed (2026-03-26) |
+| **Code Quality Phase 3** | **Complete** | Broad sweep: dead code cleaned, 24/46 exception handlers converted to specific types (22 kept as legitimate fallbacks), 3 nested ternaries refactored, prop drilling confirmed acceptable, sys.path and type hints already clean (2026-03-26) |
 
 ## Database State
 
@@ -62,7 +63,7 @@
 ### Current test counts
 | Suite | Passed | Skipped | Deselected | Notes |
 |-------|--------|---------|------------|-------|
-| Backend (pytest) | 875 | 2 | 25 | 25 deselected = Stripe E2E (need live server + Firebase token) |
+| Backend (pytest) | 875 | 3 | 25 | 25 deselected = Stripe E2E (need live server + Firebase token) |
 | Frontend (vitest) | 554 | 1 | — | act() warnings in stderr (non-blocking) |
 | Admin (vitest) | 412 | — | — | All clean |
 | Generator (pytest) | 76 | — | — | All clean |
@@ -75,18 +76,18 @@
 3. Visual verification via Asset Viewer + Chrome DevTools
 4. Migration 069 (NOT NULL constraints after quality confirmed)
 
-### Active — Code Quality Phase 2: God-Class Decomposition
+### Complete — Code Quality Phases 1-3
 Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
-Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
-1. ~~Break `story_mode.py` (1,833 lines) → `routes/story/`~~ **DONE** — helpers, schemas, scenes, combat, rewards
-2. ~~Break `admin_character_service.py` (1,506) → `services/character/`~~ **DONE** — crud, items, progression, timeline
-3. ~~Break `admin_game.py` (1,453) → `routes/admin_game/`~~ **DONE** — configs, classes, skills, items, helpers
-4. ~~Break `admin_content_service.py` (1,391) → `services/content/`~~ **DONE** — books, chapters, scenes, backgrounds, waves
-5. ~~Frontend: Extract custom hooks from 4 god-components~~ **DONE** — CombatStage, BossStage, StoryMode, BottomAnimatedBanner
-6. ~~Admin: Extract custom hooks from 4 god-components (AssetRegistry, PlayerDetail, AtmosphereEditor, ContentEditor)~~ **DONE**
-7. Broad sweep: dead code, error handling, type hints (Phase 3)
-8. Documentation + DB audit report (Phase 4)
+1. ~~Phase 1: Test audit + 87 new tests~~ **DONE**
+2. ~~Phase 2: 12 god-classes decomposed~~ **DONE**
+3. ~~Phase 3: Broad sweep~~ **DONE** — dead code, error handling (24 converted), ternaries (3 refactored), prop drilling (acceptable), sys.path (clean), type hints (clean)
+
+### Next — Code Quality Phase 4: Documentation & DB Audit
+1. Module-level docstrings + folder READMEs for new modules
+2. DB audit report: dead tables, unused columns, normalization opportunities
+3. Update TODO.md/DONE.md, AGENTS.md directory structure
+4. Update all userguides, manuals and other components with final changes
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)
@@ -108,4 +109,4 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
 ## Branch Status
 
-- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2 COMPLETE — all 12 god-classes decomposed. Phase 3 Broad Sweep next. Watchdog v3 still pending.
+- **main:** All tests green (875 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 3 COMPLETE — broad sweep done. Phase 4 Documentation & DB Audit next. Watchdog v3 still pending.

@@ -17,7 +17,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 import firebase_admin
-from firebase_admin import auth as firebase_auth, credentials
+from firebase_admin import auth as firebase_auth, credentials, exceptions as firebase_exceptions
 from fastapi import Depends, HTTPException, Request
 from sqlmodel import Session, select
 
@@ -154,7 +154,7 @@ async def get_decoded_token(
 
     try:
         return firebase_auth.verify_id_token(token)
-    except Exception as e:
+    except (firebase_exceptions.FirebaseError, ValueError) as e:
         logger.error(f"Token verification failed: {e}")
         raise HTTPException(status_code=401, detail={"error": "Invalid or expired token"})
 
