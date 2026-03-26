@@ -29,7 +29,7 @@ from routes.admin_config import router as admin_config_router
 from routes.admin_support import router as admin_support_router
 from routes.admin_players import router as admin_players_router
 from routes.admin_analytics import router as admin_analytics_router
-from routes.story_mode import router as story_mode_router
+from routes.story import router as story_mode_router
 from routes.game_training import router as game_training_router
 from routes.character_progression import router as character_progression_router
 from routes.inventory import router as inventory_router

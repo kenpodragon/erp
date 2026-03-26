@@ -202,33 +202,33 @@ class TestComputeRankThresholds:
 
     def test_rank_none_for_zero_kills(self, session: Session):
         _seed_rank_configs(session)
-        from routes.story_mode import _compute_rank
+        from routes.story.helpers import _compute_rank
         assert _compute_rank(0, session) is None
 
     def test_rank_e_for_low_kills(self, session: Session):
         _seed_rank_configs(session)
-        from routes.story_mode import _compute_rank
+        from routes.story.helpers import _compute_rank
         assert _compute_rank(1, session) == "E"
         assert _compute_rank(10, session) == "E"
         assert _compute_rank(24, session) == "E"
 
     def test_rank_c_threshold(self, session: Session):
         _seed_rank_configs(session)
-        from routes.story_mode import _compute_rank
+        from routes.story.helpers import _compute_rank
         assert _compute_rank(25, session) == "C"
         assert _compute_rank(50, session) == "C"
         assert _compute_rank(99, session) == "C"
 
     def test_rank_a_threshold(self, session: Session):
         _seed_rank_configs(session)
-        from routes.story_mode import _compute_rank
+        from routes.story.helpers import _compute_rank
         assert _compute_rank(100, session) == "A"
         assert _compute_rank(250, session) == "A"
         assert _compute_rank(499, session) == "A"
 
     def test_rank_ss_threshold(self, session: Session):
         _seed_rank_configs(session)
-        from routes.story_mode import _compute_rank
+        from routes.story.helpers import _compute_rank
         assert _compute_rank(500, session) == "SS"
         assert _compute_rank(1000, session) == "SS"
 
@@ -238,7 +238,7 @@ class TestWaveValidationClampsExcessiveWaves:
 
     def test_clamps_excessive_waves(self, session: Session, test_character: PlayerCharacter):
         _seed_base_configs(session)
-        from routes.story_mode import _validate_waves
+        from routes.story.helpers import _validate_waves
 
         # Create a minimal story session to pass to _validate_waves
         story_session = PlayerStorySession(
@@ -268,7 +268,7 @@ class TestWaveValidationClampsExcessiveWaves:
 
     def test_zero_waves_pass_through(self, session: Session, test_character: PlayerCharacter):
         _seed_base_configs(session)
-        from routes.story_mode import _validate_waves
+        from routes.story.helpers import _validate_waves
 
         story_session = PlayerStorySession(
             id=uuid.uuid4(),
@@ -329,7 +329,7 @@ class TestAnomalyLogging:
     """Test that _log_anomaly creates an ActivityEvent with correct payload."""
 
     def test_log_anomaly_creates_event(self, session: Session, test_player: Player):
-        from routes.story_mode import _log_anomaly
+        from routes.story.helpers import _log_anomaly
 
         fake_session_id = uuid.uuid4()
         _log_anomaly(
@@ -360,12 +360,12 @@ class TestRareSpawnEngine:
     """Test _check_rare_spawn helper."""
 
     def test_no_spawn_with_zero_waves(self, session: Session, test_chapter):
-        from routes.story_mode import _check_rare_spawn
+        from routes.story.helpers import _check_rare_spawn
         result = _check_rare_spawn(session, 0, test_chapter.id)
         assert result is None
 
     def test_no_spawn_with_zero_chance(self, session: Session, test_chapter):
-        from routes.story_mode import _check_rare_spawn
+        from routes.story.helpers import _check_rare_spawn
         # Set base chance to 0
         session.add(GameConfig(key="rare_spawn_base_chance", value_json=0, description="test"))
         session.commit()
@@ -373,7 +373,7 @@ class TestRareSpawnEngine:
         assert result is None
 
     def test_spawn_with_guaranteed_chance(self, session: Session, test_chapter, test_entity_type):
-        from routes.story_mode import _check_rare_spawn
+        from routes.story.helpers import _check_rare_spawn
         # Set base chance to 1 (100%)
         session.add(GameConfig(key="rare_spawn_base_chance", value_json=1.0, description="test"))
         session.commit()
@@ -395,7 +395,7 @@ class TestRareSpawnEngine:
     def test_spawn_returns_none_when_no_rare_pool(
         self, session: Session, test_chapter, test_scene, test_entity_type
     ):
-        from routes.story_mode import _check_rare_spawn
+        from routes.story.helpers import _check_rare_spawn
         from models.story_mode import EntitySceneAppearance
 
         session.add(GameConfig(key="rare_spawn_base_chance", value_json=1.0, description="test"))

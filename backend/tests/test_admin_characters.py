@@ -16,7 +16,7 @@ from models.home_base import (
     CuratedArtifact, CuratedArtifactTier, ArtifactTypeBase,
     ArtifactPrefix, ArtifactSuffix, PlayerArtifact,
 )
-from services.admin_character_service import (
+from services.character import (
     edit_character, reassign_class, get_stat_breakdown,
     craft_item_manual, craft_item_random, grant_crafted_item,
     edit_item, delete_item, edit_artifact,

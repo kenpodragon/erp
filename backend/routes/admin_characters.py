@@ -11,7 +11,7 @@ from sqlmodel import Session
 from db import get_session
 from auth import get_current_admin, get_client_ip
 from audit import write_audit_log
-from services.admin_character_service import (
+from services.character import (
     edit_character, get_stat_breakdown, get_item_components,
     craft_item_manual, craft_item_random, grant_crafted_item,
     get_character_inventory, edit_item, delete_item, edit_artifact,

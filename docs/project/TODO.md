@@ -7,10 +7,10 @@
 ```
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
-All tests green (875+554+412+76 = 1,917 passing, 0 failures).
-Watchdog v3 still pending — run when ready: powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
-Code Quality Phase 1 DONE — test audit + 87 new tests hardening 12 god-classes.
-NEXT: Code Quality Phase 2 — god-class decomposition. Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md. Start with backend story_mode.py (1,833 lines → routes/story/).
+All backend tests green (864 passed, 0 failures). Frontend/admin test counts: 554+412+76.
+Code Quality Phase 2 IN PROGRESS — backend decomposition DONE (4 god-classes → 20 modules).
+NEXT: Frontend god-class decomposition. Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
+Start with CombatStage.tsx (715 lines) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator.
 ```
 
 ---
@@ -50,17 +50,12 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
-### Phase 1 — Test Audit & Hardening (DONE)
-- [x] Test audit report — classified all 12 god-class test coverage
-- [x] Backend: 22 new tests for story_mode (upgrade, skill, get_session endpoints)
-- [x] Frontend: 107 new component tests (CombatStage 26, BossStage 27, StoryMode 25, BottomAnimatedBanner 29)
-- [x] Admin: 72 new component tests (AssetRegistry 20, PlayerDetail 30, AtmosphereEditor 22; ContentEditor already had 31)
+### Phase 1 — Test Audit & Hardening (DONE — see DONE.md)
 
-### Phase 2 — God-Class Decomposition (NEXT — needs Phase 2 plan)
-- [ ] Backend: `routes/story_mode.py` (1,833 lines) → `routes/story/` module
-- [ ] Backend: `services/admin_character_service.py` (1,506 lines) → `services/character/`
-- [ ] Backend: `routes/admin_game.py` (1,453 lines) → `routes/admin/game/` + `utils/crud_helpers.py`
-- [ ] Backend: `services/admin_content_service.py` (1,391 lines) → `services/content/`
+### Phase 2 — God-Class Decomposition (IN PROGRESS)
+**Backend: DONE** — 4 god-classes (6,179 lines) → 20 modules. See DONE.md.
+
+**Frontend (NEXT):**
 - [ ] Frontend: `CombatStage.tsx` (715) → custom hooks + sub-components
 - [ ] Frontend: `BossStage.tsx` (692) → useBossPhases hook + renderer
 - [ ] Frontend: `StoryMode.tsx` (567) → hooks + renderer
@@ -82,6 +77,8 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 - [ ] Module-level docstrings + folder READMEs for new modules
 - [ ] DB audit report: dead tables, unused columns, normalization opportunities → new TODO
 - [ ] Update TODO.md/DONE.md, AGENTS.md directory structure
+- [ ] Update all userguides, manuals and other components with the final changes. 
+
 
 ### Phase 5 — Validation (after Phase 4)
 - [ ] Full test suite green, Docker builds verified, clean git history
@@ -104,4 +101,4 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
 ---
 
-*Updated: 2026-03-25 (Code Quality Phase 1 complete — 87 new tests, 1,841 total passing. Phase 2 decomposition next.)*
+*Updated: 2026-03-25 (Code Quality Phase 2 backend decomposition complete — 6,179 lines → 20 modules, 864/864 tests. Frontend decomposition next.)*

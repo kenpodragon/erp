@@ -5,6 +5,26 @@ This document tracks the completed development phases for the Elysium Rising mmo
 ---
 *Updated: 2026-03-25*
 
+## Code Quality Phase 2 — Backend God-Class Decomposition — COMPLETE (2026-03-25)
+
+4 backend god-classes (6,179 lines total) decomposed into 20 focused modules. All 864 backend tests pass.
+
+- [x] `routes/story_mode.py` (1,833 lines) → `routes/story/` — helpers, schemas, scenes, combat, rewards
+- [x] `services/admin_character_service.py` (1,506 lines) → `services/character/` — crud, items, progression, timeline
+- [x] `routes/admin_game.py` (1,453 lines) → `routes/admin_game/` — configs, classes, skills, items, helpers
+- [x] `services/admin_content_service.py` (1,391 lines) → `services/content/` — books, chapters, scenes, backgrounds, waves
+- **Design spec:** `docs/superpowers/specs/2026-03-25-code-quality-design.md`
+
+## Code Quality Phase 1 — Test Audit & Hardening — COMPLETE (2026-03-25)
+
+- [x] Test audit report — classified all 12 god-class test coverage
+- [x] Backend: 22 new tests for story_mode (upgrade, skill, get_session endpoints)
+- [x] Frontend: 107 new component tests (CombatStage 26, BossStage 27, StoryMode 25, BottomAnimatedBanner 29)
+- [x] Admin: 72 new component tests (AssetRegistry 20, PlayerDetail 30, AtmosphereEditor 22; ContentEditor already had 31)
+- **Phase 1 plan:** `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
+
+---
+
 ## Docs Consolidation & Deduplication — COMPLETE (2026-03-25)
 
 - [x] AGENTS.md — Trimmed doc hierarchy (removed 13-item consultation order) + tech stack references ARCHITECTURE.md now

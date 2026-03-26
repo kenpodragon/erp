@@ -48,7 +48,7 @@ from sqlmodel import Session
 
 from db import get_session
 from auth import get_current_admin, get_client_ip
-from services.admin_content_service import (
+from services.content import (
     list_books, get_book, create_book, update_book, delete_book,
     list_chapters, get_chapter, create_chapter, update_chapter, delete_chapter,
     list_scenes, get_scene, create_scene, update_scene, delete_scene,

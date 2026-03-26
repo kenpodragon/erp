@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-25
-**Last session focus:** Code Quality Phase 1 — Test Audit & Hardening (+87 new tests across 12 god-classes)
+**Last session focus:** Code Quality Phase 2 — Backend god-class decomposition complete (4 files, 6,179 lines → 20 modules). Frontend next.
 
 ---
 
@@ -29,6 +29,7 @@
 | **Watchdog v3 (Regen)** | **Ready to run** | Full content regeneration — upserts, family body plans, story_beats lore, 84 visual quality goals (2026-03-25) |
 | **Docs Consolidation** | **Complete** | 7 files consolidated: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS. ~74 lines dedup (2026-03-25) |
 | **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
+| **Code Quality Phase 2** | **In Progress** | Backend decomposition DONE: 4 god-classes (6,179 lines)→20 modules, 864/864 tests. Next: frontend decomposition (4 components) + admin (4 components) (2026-03-25) |
 
 ## Database State
 
@@ -74,18 +75,17 @@
 3. Visual verification via Asset Viewer + Chrome DevTools
 4. Migration 069 (NOT NULL constraints after quality confirmed)
 
-### Next Up — Code Quality Phase 2: God-Class Decomposition
+### Active — Code Quality Phase 2: God-Class Decomposition
 Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
-1. Write Phase 2 implementation plan (backend decomposition first)
-2. Break `story_mode.py` (1,833 lines) → `routes/story/` (combat, scenes, bosses, rewards)
-3. Break `admin_character_service.py` (1,506) → `services/character/` (crud, progression, validation)
-4. Break `admin_game.py` (1,453) → `routes/admin/game/` + shared `utils/crud_helpers.py`
-5. Break `admin_content_service.py` (1,391) → `services/content/` (lore, sprites, backgrounds, bulk_ops)
-6. Frontend/Admin: Extract custom hooks from 8 god-components
-7. Broad sweep: dead code, error handling, type hints (Phase 3)
-8. Documentation + DB audit report (Phase 4)
+1. ~~Break `story_mode.py` (1,833 lines) → `routes/story/`~~ **DONE** — helpers, schemas, scenes, combat, rewards
+2. ~~Break `admin_character_service.py` (1,506) → `services/character/`~~ **DONE** — crud, items, progression, timeline
+3. ~~Break `admin_game.py` (1,453) → `routes/admin_game/`~~ **DONE** — configs, classes, skills, items, helpers
+4. ~~Break `admin_content_service.py` (1,391) → `services/content/`~~ **DONE** — books, chapters, scenes, backgrounds, waves
+5. Frontend/Admin: Extract custom hooks from 8 god-components
+6. Broad sweep: dead code, error handling, type hints (Phase 3)
+7. Documentation + DB audit report (Phase 4)
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)
@@ -107,4 +107,4 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
 ## Branch Status
 
-- **main:** All tests green (1,841 unit + 76 E2E). Code Quality Phase 1 complete. Phase 2 decomposition next. Watchdog v3 still pending.
+- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2 backend done, frontend next. Watchdog v3 still pending.
