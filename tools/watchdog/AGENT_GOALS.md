@@ -183,7 +183,7 @@ These passed quality in v1/v2. Quick structural verification — do NOT regenera
 
 ## FINAL: End-to-End Verification
 
-- [ ] FINAL.1 `python tools/scan_content_gaps.py --verbose` → 0 gaps
+- [ ] FINAL.1 `python tools/generators/scan_content_gaps.py --verbose` → 0 gaps
 - [ ] FINAL.2 Entity count match: entity_gameplay_data = entities = 3,936
 - [ ] FINAL.3 Every `sprite_key` in entity_gameplay_data exists in asset_registry
 - [ ] FINAL.4 Every `death_sfx_key` exists in audio_configs

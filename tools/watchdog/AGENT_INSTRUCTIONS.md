@@ -330,7 +330,7 @@ Execute IN ORDER. **Every phase starts by AUDITING what already exists.** Only t
 ### Phase 0: Pre-Flight
 1. Verify DB connection
 2. `python tools/db_dump_restore.py dump` — backup
-3. `python tools/scan_content_gaps.py --verbose` — baseline
+3. `python tools/generators/scan_content_gaps.py --verbose` — baseline
 4. Log to progress file
 
 ### Phase 1: Pre-Regeneration Baseline
@@ -428,7 +428,7 @@ Read 5 random SVGs from the family you just generated. For EACH one:
 
 For each batch:
 1. Run the batch context query (entity + chapter + location + family + atmosphere)
-2. Read `docs/lore/BOOKS_SUMMARY.md` for that book/chapter section
+2. Read `docs/explanation/lore/BOOKS_SUMMARY.md` for that book/chapter section
 3. For each entity, write:
    - `base_description`: 60+ words of unique prose that references the entity name, its family, the specific chapter location, and narrative context
    - `base_emotional_state`: specific and varied (NOT all "threatening" — use: wary, mournful, frenzied, contemplative, predatory, dormant, wrathful, curious, etc.)
@@ -553,7 +553,7 @@ These categories are already quality from v1/v2. Quick audit, fix only if gaps f
 
 ### Phase 12: Final Verification
 
-1. `python tools/scan_content_gaps.py --verbose` — 0 gaps
+1. `python tools/generators/scan_content_gaps.py --verbose` — 0 gaps
 2. Spawn REVIEW AGENT for full quality validation against ALL sections of AGENT_GOALS.md
 3. Write `STATUS: COMPLETE` only when review passes
 
@@ -602,7 +602,7 @@ FAIL CONDITIONS FOR SPRITES:
    "Deep within", "Known throughout", "Born of", "Dwelling in", "Emerging from",
    "Among the", "Beneath the", ending with "formidable opponent" or "testament to"
 4. Cross-reference lore claims: if a description says "in the Crystal Warrens of Chapter 4",
-   open docs/lore/BOOKS_SUMMARY.md and verify Chapter 4 actually involves Crystal Warrens.
+   open docs/explanation/lore/BOOKS_SUMMARY.md and verify Chapter 4 actually involves Crystal Warrens.
    If the claim contradicts BOOKS_SUMMARY → flag as INACCURATE, FAIL.
 5. Check 3 descriptions from the SAME chapter batch — verify they don't follow identical sentence
    structure (e.g., all starting with "[Name] is a [family] that [verbs] in [location]")

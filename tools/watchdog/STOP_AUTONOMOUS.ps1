@@ -106,7 +106,7 @@ Write-Host ''
 Write-Host '[6/9] Current Content Gaps...' -ForegroundColor Cyan
 Write-Host '  Running scan_content_gaps.py...' -ForegroundColor DarkGray
 try {
-    $gapOutput = python tools/scan_content_gaps.py 2>&1
+    $gapOutput = python tools/generators/scan_content_gaps.py 2>&1
     $summaryLines = $gapOutput | Select-String -Pattern 'TOTAL|gap|missing|complete|OK|FAIL'
     if ($summaryLines) {
         $summaryLines | ForEach-Object {
