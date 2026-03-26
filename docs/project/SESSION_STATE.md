@@ -83,9 +83,10 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 2. ~~Break `admin_character_service.py` (1,506) → `services/character/`~~ **DONE** — crud, items, progression, timeline
 3. ~~Break `admin_game.py` (1,453) → `routes/admin_game/`~~ **DONE** — configs, classes, skills, items, helpers
 4. ~~Break `admin_content_service.py` (1,391) → `services/content/`~~ **DONE** — books, chapters, scenes, backgrounds, waves
-5. Frontend/Admin: Extract custom hooks from 8 god-components
-6. Broad sweep: dead code, error handling, type hints (Phase 3)
-7. Documentation + DB audit report (Phase 4)
+5. ~~Frontend: Extract custom hooks from 4 god-components~~ **DONE** — CombatStage, BossStage, StoryMode, BottomAnimatedBanner
+6. Admin: Extract custom hooks from 4 god-components (AssetRegistry, PlayerDetail, AtmosphereEditor, ContentEditor)
+7. Broad sweep: dead code, error handling, type hints (Phase 3)
+8. Documentation + DB audit report (Phase 4)
 
 ### Medium-term — Deployment prep
 1. Cloud deployment strategy (Firebase, free DB alternatives)

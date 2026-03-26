@@ -7,10 +7,10 @@
 ```
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
-All backend tests green (864 passed, 0 failures). Frontend/admin test counts: 554+412+76.
-Code Quality Phase 2 IN PROGRESS — backend decomposition DONE, CombatStage DONE.
-Frontend decomposition DONE (4 god-components → 8 hook+renderer pairs). 554/554 tests green.
-NEXT: Admin god-class decomposition (4 components). Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
+All tests green: 864 backend + 554 frontend + 412 admin + 76 E2E.
+Code Quality Phase 2 IN PROGRESS — Backend DONE (4 god-classes → 20 modules). Frontend DONE (4 god-components → 12 focused files).
+NEXT: Admin god-class decomposition. Start with AssetRegistry.tsx (750 lines, 22 useState) → useAssetFilters + useAssetOperations + AssetTable.
+Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
 ```
 
 ---
