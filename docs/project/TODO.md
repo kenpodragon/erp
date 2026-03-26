@@ -8,8 +8,8 @@
 Read docs/project/TODO.md for active work. See docs/project/SESSION_STATE.md for current status.
 Branch: main
 All tests green: 864 backend + 554 frontend + 412 admin + 76 E2E.
-Code Quality Phase 2 IN PROGRESS — Backend DONE (4 god-classes → 20 modules). Frontend DONE (4 god-components → 12 focused files).
-NEXT: Admin god-class decomposition. Start with AssetRegistry.tsx (750 lines, 22 useState) → useAssetFilters + useAssetOperations + AssetTable.
+Code Quality Phase 2 COMPLETE — all 12 god-classes decomposed (4 backend → 20 modules, 4 frontend → 8 hook+renderer pairs, 4 admin → 15 focused files).
+NEXT: Phase 3 — Broad Sweep (dead code, error handling, sys.path hacks, nested ternaries, prop drilling).
 Design spec at docs/superpowers/specs/2026-03-25-code-quality-design.md.
 ```
 
@@ -45,27 +45,11 @@ v1 populated all data, v2 passed 129/129 structural goals but content was garbag
 
 ---
 
-## Active Work — Code Quality Phase 2: God-Class Decomposition (NEXT)
+## Active Work — Code Quality Phase 3: Broad Sweep (NEXT)
 
 Design spec: `docs/superpowers/specs/2026-03-25-code-quality-design.md`
-Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
-### Phase 1 — Test Audit & Hardening (DONE — see DONE.md)
-
-### Phase 2 — God-Class Decomposition (IN PROGRESS)
-**Backend: DONE** — 4 god-classes (6,179 lines) → 20 modules. See DONE.md.
-
-**Frontend: DONE**
-- [x] Frontend: `CombatStage.tsx` (715) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator
-- [x] Frontend: `BossStage.tsx` (692) → useBossPhases + slim renderer
-- [x] Frontend: `StoryMode.tsx` (567) → useStorySession + slim renderer
-- [x] Frontend: `BottomAnimatedBanner.tsx` (583) → useBannerSimulation + slim renderer
-- [ ] Admin: `AssetRegistry.tsx` (750) → useAssetFilters + useAssetOperations + AssetTable
-- [ ] Admin: `PlayerDetail.tsx` (706) → usePlayerData + modal extraction
-- [ ] Admin: `AtmosphereEditor.tsx` (672) → form hook + section components
-- [ ] Admin: `ContentEditor.tsx` (603) → tab extraction
-
-### Phase 3 — Broad Sweep (after Phase 2)
+### Phase 3 — Broad Sweep
 - [ ] Remove dead code: `main.py` 48 unused imports, 1,144+ commented lines across backend
 - [ ] Fix `sys.path` hacks outside `tools/generators/`
 - [ ] Replace nested ternaries in CombatStage (15) and PostBattleSummary (4)
@@ -77,7 +61,7 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 - [ ] Module-level docstrings + folder READMEs for new modules
 - [ ] DB audit report: dead tables, unused columns, normalization opportunities → new TODO
 - [ ] Update TODO.md/DONE.md, AGENTS.md directory structure
-- [ ] Update all userguides, manuals and other components with the final changes. 
+- [ ] Update all userguides, manuals and other components with the final changes.
 
 
 ### Phase 5 — Validation (after Phase 4)
@@ -101,4 +85,4 @@ Phase 1 plan: `docs/superpowers/plans/2026-03-25-code-quality-phase1.md` (DONE)
 
 ---
 
-*Updated: 2026-03-26 (Frontend decomposition complete: 4 god-components (2,557 lines) → 8 hook+renderer pairs. Backend + Frontend done. Admin decomposition next.)*
+*Updated: 2026-03-26 (Phase 2 COMPLETE — all 12 god-classes decomposed: 4 backend, 4 frontend, 4 admin. Phase 3 Broad Sweep next.)*

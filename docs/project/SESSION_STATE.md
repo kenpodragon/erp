@@ -1,7 +1,7 @@
 # ERP Project — Session State
 
 **Last updated:** 2026-03-26
-**Last session focus:** Code Quality Phase 2 — Frontend decomposition DONE. 4 god-components (2,557 lines) → 8 hook+renderer pairs. Next: Admin decomposition (4 components).
+**Last session focus:** Code Quality Phase 2 COMPLETE — All 12 god-classes decomposed (4 backend, 4 frontend, 4 admin). Phase 3 Broad Sweep next.
 
 ---
 
@@ -29,7 +29,7 @@
 | **Watchdog v3 (Regen)** | **Ready to run** | Full content regeneration — upserts, family body plans, story_beats lore, 84 visual quality goals (2026-03-25) |
 | **Docs Consolidation** | **Complete** | 7 files consolidated: AGENTS, DEPLOY, INIT_INFRA, API docs, STYLE/ASSETS, TOOLS. ~74 lines dedup (2026-03-25) |
 | **Code Quality Phase 1** | **Complete** | Test audit + 87 new tests hardening 12 god-classes. Safety net for Phase 2 decomposition (2026-03-25) |
-| **Code Quality Phase 2** | **In Progress** | Backend DONE (4→20 modules). Frontend DONE (4→8 hook+renderer pairs). Next: Admin decomposition (4 components) (2026-03-26) |
+| **Code Quality Phase 2** | **Complete** | Backend DONE (4→20 modules). Frontend DONE (4→8 hook+renderer pairs). Admin DONE (4→15 focused files). All 12 god-classes decomposed (2026-03-26) |
 
 ## Database State
 
@@ -84,7 +84,7 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 3. ~~Break `admin_game.py` (1,453) → `routes/admin_game/`~~ **DONE** — configs, classes, skills, items, helpers
 4. ~~Break `admin_content_service.py` (1,391) → `services/content/`~~ **DONE** — books, chapters, scenes, backgrounds, waves
 5. ~~Frontend: Extract custom hooks from 4 god-components~~ **DONE** — CombatStage, BossStage, StoryMode, BottomAnimatedBanner
-6. Admin: Extract custom hooks from 4 god-components (AssetRegistry, PlayerDetail, AtmosphereEditor, ContentEditor)
+6. ~~Admin: Extract custom hooks from 4 god-components (AssetRegistry, PlayerDetail, AtmosphereEditor, ContentEditor)~~ **DONE**
 7. Broad sweep: dead code, error handling, type hints (Phase 3)
 8. Documentation + DB audit report (Phase 4)
 
@@ -108,4 +108,4 @@ Phase 1 plan (DONE): `docs/superpowers/plans/2026-03-25-code-quality-phase1.md`
 
 ## Branch Status
 
-- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2: backend + frontend done, admin next. Watchdog v3 still pending.
+- **main:** All tests green (864 backend + 554 frontend + 412 admin + 76 E2E). Code Quality Phase 2 COMPLETE — all 12 god-classes decomposed. Phase 3 Broad Sweep next. Watchdog v3 still pending.

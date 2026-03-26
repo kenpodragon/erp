@@ -3,16 +3,30 @@
 This document tracks the completed development phases for the Elysium Rising mmorPg (ERP). Tasks are moved here from `TODO.md` once finalized.
 
 ---
-*Updated: 2026-03-25*
+*Updated: 2026-03-26*
 
-## Code Quality Phase 2 — Backend God-Class Decomposition — COMPLETE (2026-03-25)
+## Code Quality Phase 2 — God-Class Decomposition — COMPLETE (2026-03-26)
 
-4 backend god-classes (6,179 lines total) decomposed into 20 focused modules. All 864 backend tests pass.
+All 12 god-classes (11,467 lines total) decomposed into 43 focused modules. All tests pass (864 backend + 554 frontend + 412 admin + 76 E2E).
 
+### Backend (4 god-classes → 20 modules, 2026-03-25)
 - [x] `routes/story_mode.py` (1,833 lines) → `routes/story/` — helpers, schemas, scenes, combat, rewards
 - [x] `services/admin_character_service.py` (1,506 lines) → `services/character/` — crud, items, progression, timeline
 - [x] `routes/admin_game.py` (1,453 lines) → `routes/admin_game/` — configs, classes, skills, items, helpers
 - [x] `services/admin_content_service.py` (1,391 lines) → `services/content/` — books, chapters, scenes, backgrounds, waves
+
+### Frontend (4 god-components → 8 hook+renderer pairs, 2026-03-26)
+- [x] `CombatStage.tsx` (715 lines) → useCombatState + useCombatAnimations + CombatHUD + slim orchestrator
+- [x] `BossStage.tsx` (692 lines) → useBossPhases + slim renderer
+- [x] `StoryMode.tsx` (567 lines) → useStorySession + slim renderer
+- [x] `BottomAnimatedBanner.tsx` (583 lines) → useBannerSimulation + slim renderer
+
+### Admin (4 god-components → 15 focused files, 2026-03-26)
+- [x] `AssetRegistry.tsx` (750 lines) → useAssetFilters + useAssetOperations + AssetTable + slim orchestrator
+- [x] `PlayerDetail.tsx` (706 lines) → usePlayerData + PlayerCharacterCard + slim orchestrator
+- [x] `AtmosphereEditor.tsx` (672 lines) → atmosphereAudio + useAtmosphereEditor + BatchAssignModal + slim orchestrator
+- [x] `ContentEditor.tsx` (603 lines) → contentEditorWidgets + useContentEditor + slim orchestrator
+
 - **Design spec:** `docs/superpowers/specs/2026-03-25-code-quality-design.md`
 
 ## Code Quality Phase 1 — Test Audit & Hardening — COMPLETE (2026-03-25)
