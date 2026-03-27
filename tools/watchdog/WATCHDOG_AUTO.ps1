@@ -11,20 +11,20 @@ $ProgressFile = Join-Path $WatchdogDir "AUTONOMOUS_PROGRESS.md"
 $StatusFile = Join-Path $WatchdogDir ".autonomous_status"
 $LogFile = Join-Path $WatchdogDir "watchdog.log"
 $PromptFile = Join-Path $WatchdogDir ".claude_prompt.txt"
-$TimeoutSeconds = 1200  # 20 minutes no progress = stuck
+$TimeoutSeconds = 2700  # 45 minutes no progress = stuck (SVG composition is slow)
 $CheckInterval = 60     # poll every 60 seconds
-$MaxRestarts = 10
+$MaxRestarts = 40
 $RestartCount = 0
 $script:ClaudePID = $null
 
 Set-Location $WorkDir
 
 $InitialPrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v3 — FULL CONTENT REGENERATION. All visual data (sprites, lore, icons, backgrounds) exists but is garbage (blobs, template text, identical configs). REPLACE ALL IN-PLACE via upsert — never delete rows. Read ALL mandatory files — especially tools/watchdog/AGENT_GOALS.md (84 acceptance criteria). Read docs/explanation/lore/BOOKS_SUMMARY.md + CHARACTER_GUIDE.md + ENVIRONMENT_GUIDE.md for high-level lore context. Use story_beats.raw_text from DB as PRIMARY lore source for each entity. Execute phases 0-12 in order. Phase 2: design family body plans BEFORE generating sprites. Phase 3: regenerate ALL entity sprites family-by-family with recognizable silhouettes (NOT blobs). Phase 4: regenerate ALL entity lore with book-grounded prose. Phase 5-7: achievement icons, item sprites, backgrounds. Spawn REVIEW AGENTS that READ actual SVG structure and prose — string length checks are MEANINGLESS. Heartbeat every task. Write STATUS: COMPLETE to tools/watchdog/.autonomous_status only when quality gates pass.
+Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v4 — FULL CONTENT REGENERATION. CRITICAL: YOU write every piece of content yourself. Do NOT write Python scripts, template arrays, randomizers, or any automation. v1/v2/v3 ALL FAILED because they wrote scripts instead of composing content. For each entity: READ story_beats.raw_text (actual book prose), then COMPOSE a unique description/SVG yourself, then UPDATE. Read tools/watchdog/AGENT_GOALS.md (88 acceptance criteria). Read docs/explanation/lore/BOOKS_SUMMARY.md for high-level lore. Execute phases 0-12 in order. Phase 2: design family body plans. Phase 3: compose each sprite SVG by hand. Phase 4: write each lore description yourself after reading raw_text. Phases 5-7: compose each icon/sprite/background. Spawn REVIEW AGENTS that detect template structures — if 10+ descriptions share the same sentence pattern, FAIL. If .py files exist in tools/watchdog/, FAIL. Heartbeat every task. Write STATUS: COMPLETE only when quality gates pass.
 '@
 
 $ResumePrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as ORCHESTRATOR (v3 — full content regeneration via upsert). Read tools/watchdog/AGENT_GOALS.md (check which items are [x] vs [ ]). Resume from RESUME_STATE in tools/watchdog/AUTONOMOUS_PROGRESS.md. Skip completed families/phases. Use story_beats.raw_text from DB as PRIMARY lore source. Lore docs at docs/explanation/lore/BOOKS_SUMMARY.md for high-level context. REVIEW AGENTS must READ actual SVG elements and prose — NOT count string length. Template text or blob sprites are CRITICAL FAILs. Heartbeat every task. Write STATUS: COMPLETE only when all 84 quality gates pass.
+Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as ORCHESTRATOR (v4 — YOU write all content, no scripts). Read tools/watchdog/AGENT_GOALS.md (check [x] vs [ ]). Resume from RESUME_STATE in tools/watchdog/AUTONOMOUS_PROGRESS.md. CRITICAL: Do NOT write Python scripts or template arrays. YOU compose each description and SVG by hand after reading story_beats.raw_text. Review agents must detect template sentence structures — metric checks alone are insufficient. If .py files exist in tools/watchdog/, the entire run FAILS. Heartbeat every task. Write STATUS: COMPLETE only when all 88 quality gates pass.
 '@
 
 function Write-Log {

@@ -1,8 +1,10 @@
-# ERP Generator Watchdog v3 — Agent Goals & Acceptance Criteria
+# ERP Generator Watchdog v4 — Agent Goals & Acceptance Criteria
 
 **This is your scorecard.** Check off items ONLY when they pass the VISUAL VERIFICATION described in each section. The REVIEW AGENT must READ actual content — not just count rows or check string length.
 
-**v3 is a FULL CONTENT REGENERATION.** v1/v2 proved that structural checks (non-NULL, string length >= 300) are meaningless — all 129 goals "passed" but the content was garbage blobs and template text. This time:
+**v4 is a FULL CONTENT REGENERATION.** v1/v2/v3 ALL FAILED because the agent wrote Python scripts with template arrays instead of composing content itself. The content looked "diverse" to metric checks but was slot-filled garbage. This time:
+- **YOU write every piece of content yourself** — no scripts, no templates, no arrays, no randomizers
+- **You READ story_beats.raw_text** (actual book prose) before writing each description
 - **REPLACE IN-PLACE** all sprites, icons, lore, and backgrounds via upsert (never delete)
 - **VERIFY by READING actual SVG structure and prose** — not by counting bytes
 - **Family-first sprite strategy** — design body plans before generating individual sprites
@@ -82,6 +84,12 @@
 - [ ] LORE.B3 **Emotional state diversity:** `SELECT COUNT(DISTINCT base_emotional_state) FROM entities;` >= 20 distinct states (NOT all "threatening")
 - [ ] LORE.B4 **Sound diversity:** `SELECT COUNT(DISTINCT base_sounds) FROM entities;` >= 200 distinct values
 - [ ] LORE.B5 **Ability diversity:** `SELECT COUNT(DISTINCT base_abilities) FROM entities;` >= 200 distinct values
+
+### LORE-B2: Anti-Automation Checks (NEW — v3 failed these)
+- [ ] LORE.B6 **Template structure audit:** Review agent reads 20 random descriptions and counts HOW MANY DISTINCT SENTENCE STRUCTURES appear in the opening sentence. If >= 10 descriptions share the same grammatical template (e.g., "The [family] presence known as [name] [verb] [location]..."), this is a FAIL regardless of lexical uniqueness. Passing LORE.B2 (no duplicate text) does NOT exempt from this check.
+- [ ] LORE.B7 **Source grounding test:** For 5 random entities that HAVE story_beats rows, review agent runs the story_beats query and reads raw_text. Then reads the entity's description. At least ONE concrete detail in the description must match something in raw_text that is NOT also in the entity's metadata (name, family, chapter number, location name). If no such detail exists, the description was written without reading raw_text. FAIL. For entities with ZERO story_beats rows, verify the description contains a detail from `loc.base_visual` or `loc.base_auditory` that is NOT just restating `loc.canonical_name`.
+- [ ] LORE.B8 **No content-generation scripts exist in tools/watchdog/:** `ls tools/watchdog/*.py tools/watchdog/*.sh tools/watchdog/*.js tools/watchdog/*.ts tools/watchdog/*.sql 2>/dev/null` — if ANY script exists that contains arrays of sentence templates, OPENINGS, FAMILY_TRAITS, content randomizers, or similar machinery, the entire LORE section is an automatic FAIL. Also check: were descriptions bulk-generated via a single SQL UPDATE with string concatenation (e.g., `SET base_description = ef.description || ...`)? Review agent must verify 5 random descriptions contain details not derivable from any DB column.
+- [ ] LORE.B9 **No inline mass-generation:** Review agent reads the orchestrator's heartbeat log. If it shows all 3,936 entities completed in < 30 minutes, the content was mass-generated, not individually composed. FAIL.
 
 ### LORE-C: Boss Transition Lore
 - [ ] LORE.C1 All ~138 chapters have `transition_lore_text` >= 100 chars
@@ -199,19 +207,21 @@ These passed quality in v1/v2. Quick structural verification — do NOT regenera
 |---------|-------|-------|
 | QG | 10 | Phase-level quality gates |
 | SPR | 14 | **Entity sprites — family body plans + visual complexity** |
-| LORE | 14 | **Entity lore — book-grounded prose** |
+| LORE | 18 | **Entity lore — book-grounded prose + anti-automation checks** |
 | ACH | 11 | **Achievement icons — tiered progression + category symbols** |
 | ITEM | 8 | **Item sprites — slot-recognizable + artifact specials** |
 | BG | 9 | **Backgrounds — lore-appropriate parallax diversity** |
 | PRSV | 11 | Preserved categories (audit-only) |
 | FINAL | 7 | End-to-end verification |
-| **TOTAL** | **84** | |
+| **TOTAL** | **88** | |
 
 **Completion rules:**
 - ALL SPR, LORE, ACH, ITEM, BG goals must pass with QUOTED EVIDENCE from review agent
 - ALL PRSV goals must pass (structural verification)
 - ALL FINAL goals must pass
 - Template text or blob sprites = CRITICAL FAIL = do NOT signal completion
+- Any .py file in tools/watchdog/ containing content templates = CRITICAL FAIL = entire run void
 - Max 3 goals may be DEFERRED after 2 remediation attempts
 - **String length and non-NULL checks alone are NEVER sufficient** — review agent must READ actual content
 - **viewBox="0 0 64 64"** must be present in every SVG — no exceptions
+- **Content quality gates may NOT be self-certified by the orchestrator** — review agent must sign off

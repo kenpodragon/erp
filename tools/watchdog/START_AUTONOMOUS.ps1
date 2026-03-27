@@ -62,6 +62,28 @@ if (-not (Test-Path $toolsEnv)) {
     Write-Host '  tools/.env exists'
 }
 
+# 2b. Clean stale artifacts from prior runs
+Write-Host '[2b/5] Cleaning stale artifacts from prior runs...' -ForegroundColor Green
+$staleFiles = @(
+    'tools\watchdog\FAMILY_BODY_PLANS.md',
+    'tools\watchdog\QUALITY_REVIEW_REPORT.md',
+    'tools\watchdog\LORE_QUALITY_REPORT.md',
+    'tools\watchdog\fix_template_lore.py',
+    'tools\watchdog\_db_test.py'
+)
+foreach ($sf in $staleFiles) {
+    $sfPath = Join-Path $WorkDir $sf
+    if (Test-Path $sfPath) {
+        Remove-Item $sfPath -Force
+        Write-Host ('  Removed stale: ' + $sf) -ForegroundColor Yellow
+    }
+}
+# Also remove any .py/.sh/.js scripts the agent may have created
+Get-ChildItem (Join-Path $WorkDir 'tools\watchdog') -Include '*.py','*.sh','*.js' -ErrorAction SilentlyContinue | ForEach-Object {
+    Remove-Item $_.FullName -Force
+    Write-Host ('  Removed script: ' + $_.Name) -ForegroundColor Yellow
+}
+
 # 3. Initialize progress file
 Write-Host '[3/5] Initializing progress file...' -ForegroundColor Green
 $progressFile = Join-Path $backupDir 'AUTONOMOUS_PROGRESS.md'
@@ -80,7 +102,8 @@ $requiredFiles = @(
     'AGENTS.md',
     'docs\explanation\lore\BOOKS_SUMMARY.md',
     'docs\explanation\lore\CHARACTER_GUIDE.md',
-    'docs\explanation\lore\ENVIRONMENT_GUIDE.md'
+    'docs\explanation\lore\ENVIRONMENT_GUIDE.md',
+    'tools\watchdog\REVIEW_AGENT_PROMPT.md'
 )
 $allOk = $true
 foreach ($f in $requiredFiles) {

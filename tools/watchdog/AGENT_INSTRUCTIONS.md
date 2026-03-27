@@ -1,14 +1,20 @@
-# ERP Generator Watchdog v3 — Agent Instructions
+# ERP Generator Watchdog v4 — Agent Instructions
 
-You are an autonomous ORCHESTRATOR agent running a **FULL CONTENT REGENERATION** on the ERP (Elysium Rising) MMORPG. Prior runs populated all rows but with **garbage quality** — blob sprites, template lore, identical backgrounds. Your job is to:
+You are an autonomous ORCHESTRATOR agent running a **FULL CONTENT REGENERATION** on the ERP (Elysium Rising) MMORPG. Prior runs (v1/v2/v3) ALL FAILED because they wrote Python scripts with template arrays instead of composing content. Your job is to:
 
 1. **REPLACE IN-PLACE** all entity sprites, item sprites, achievement icons, artifact icons, and entity lore with quality content (upsert/update — never delete first)
 2. **REPLACE IN-PLACE** all backgrounds with lore-appropriate, visually distinct compositions
 3. **VERIFY** every piece of regenerated content meets the quality bar via ACTUAL VISUAL INSPECTION (not string length)
 
-You have direct DB access. No generators — you query, evaluate, craft content, and UPDATE/INSERT directly.
+**YOU ARE A WRITER, NOT A CODER.**
 
-**PRIOR RUN CONTEXT:** v1-v2 populated all rows but content is unusable:
+You do NOT write Python scripts, shell scripts, or any code that generates content. You do NOT create arrays of sentence fragments and pick from them with `random.choice()`. You do NOT write a loop that produces descriptions by slot-filling a template. You do NOT write helper functions, lambda expressions, or any automation. This is EXACTLY what v1/v2/v3 did — they wrote Python scripts with hardcoded template arrays and randomizers, and the output was garbage every time.
+
+What you DO: For each entity, you READ the source material (story_beats.raw_text, location fields, family description), then you COMPOSE the content yourself — prose for lore, SVG markup for sprites — writing it uniquely for that specific entity. You then execute a single SQL UPDATE for that entity. Then you do the next one.
+
+The existing generator classes in `tools/generators/` are off-limits. But writing NEW template machinery (scripts, arrays, randomizers) is EQUALLY FORBIDDEN. If you catch yourself writing a `.py` file, STOP — you are doing it wrong.
+
+**PRIOR RUN CONTEXT:** v1-v3 populated all rows but content is unusable:
 - **Entity sprites:** ALL are identical blob/circle shapes with color variations — zero visual distinction between families
 - **Entity lore:** Template text ("A mysterious entity known as...") — no actual book references
 - **Achievement icons:** Generic shapes, no visual representation of what was achieved
@@ -34,15 +40,13 @@ You have direct DB access. No generators — you query, evaluate, craft content,
 
 ## DB ACCESS
 
-```python
-import os, psycopg2, json
-from dotenv import load_dotenv
-load_dotenv('backend/.env')
-conn = psycopg2.connect(os.getenv('DATABASE_URL'))
-cur = conn.cursor()
-```
+Connect to the database using psycopg2 in your interactive execution environment. Connection string: load from `backend/.env` via `os.getenv('DATABASE_URL')`, replacing `host.docker.internal` with `localhost`.
 
-You have FULL read/write access. Work directly — no generators, no middleware.
+You have FULL read/write access. Execute SQL queries directly — SELECT to read context, UPDATE/INSERT to write content.
+
+**DO NOT write .py files, scripts, or any code that generates content programmatically. Every query and every UPDATE must be executed by you directly, not by a script you wrote.**
+
+**SQL parameter note:** The SQL examples below use `:param` placeholder style for readability. When executing via psycopg2, substitute values directly into the SQL string (for string values, use Python f-strings with properly escaped single quotes, or use `%s` positional parameters with `cursor.execute(sql, (val1, val2))`). The `:param` syntax will NOT work with psycopg2 directly.
 
 ---
 
@@ -103,7 +107,7 @@ This is the real narrative — what the book says happens where this entity appe
 
 ```sql
 -- Story beats where this entity is mentioned/appears
-SELECT sb.beat_number, sb.raw_text, sb.hidden_lore_text, sb.intensity, sb.pacing,
+SELECT sb.beat_number, sb.raw_text, sb.intensity, sb.pacing,
   s.title as scene_title, ch.chapter_number, ch.title as chapter_title
 FROM story_beats sb
 JOIN entity_beat_appearances eba ON eba.story_beat_id = sb.id
@@ -317,7 +321,7 @@ Before generating ANY entity sprites, design a "body plan template" for each of 
 - **What SVG structure defines this family?** (e.g., beast = quadruped body + head + tail + legs)
 - **What elements vary per entity?** (e.g., horn count, color, size ratio, eye count, marking patterns)
 - **What stays consistent?** (e.g., all beasts are quadrupeds, all phantasms float)
-Then generate per-entity sprites as VARIATIONS on the family template, not from scratch each time.
+Then compose per-entity sprites as STRUCTURAL VARIATIONS on the family body plan. Variation means different SVG structure — not different numbers in the same path. A beast body plan has 4 leg paths, but entity A might have splayed legs while entity B has coiled legs; entity C might have a shorter torso with a longer neck. The structural topology of the SVG changes, not just coordinate values. Changing `cx="32"` to `cx="30"` is NOT variation — it's the same blob shifted 2 pixels.
 
 **Orphaned entities (no scene appearances):** Some entities may have no `entity_scene_appearances` rows. For these, use only the entity's name, type, and family context. Don't skip them.
 
@@ -325,7 +329,7 @@ Then generate per-entity sprites as VARIATIONS on the family template, not from 
 
 ## EXECUTION PHASES
 
-Execute IN ORDER. **Every phase starts by AUDITING what already exists.** Only touch rows that fail quality. Keep good data intact.
+Execute IN ORDER. **For content phases (sprites, lore, icons, backgrounds): ALL existing content is confirmed garbage from v1/v2/v3 — replace every row you process.** For preserved phases (music, SFX, attacks, gameplay): quick audit, fix only if gaps found.
 
 ### Phase 0: Pre-Flight
 1. Verify DB connection
@@ -398,11 +402,11 @@ Work ONE FAMILY AT A TIME. For each family:
    WHERE ef.name = :family_name
    ORDER BY b.id, ch.chapter_number;
    ```
-3. For each entity, generate a UNIQUE SVG based on the family body plan + individual variations. SVG MUST have `viewBox="0 0 64 64"`.
+3. For each entity, YOU COMPOSE a unique SVG by hand based on the family body plan + individual variations. Do NOT write a script or function that generates SVGs. Write each SVG yourself, varying proportions, colors, appendages, and details for each entity. SVG MUST have `viewBox="0 0 64 64"`.
 4. UPSERT into asset_registry (replace in-place — existing rows get overwritten, new rows get created):
    ```sql
    INSERT INTO asset_registry (asset_key, category, render_definition, tags, source)
-   VALUES ('entity_sprite_' || :entity_id, 'entity_sprite', :render_def::jsonb, :tags::jsonb, 'ai_v3')
+   VALUES ('entity_sprite_' || :entity_id, 'entity_sprite', :render_def::jsonb, :tags::jsonb, 'ai_v4')
    ON CONFLICT (asset_key) DO UPDATE SET
      render_definition = EXCLUDED.render_definition,
      tags = EXCLUDED.tags,
@@ -424,25 +428,40 @@ Read 5 random SVGs from the family you just generated. For EACH one:
 
 ### Phase 4: Entity Lore — Full Regeneration
 
-**UPDATE all entity descriptions from scratch.** Work in batches of 20-50, grouped by chapter.
+**YOU write every description yourself. No scripts. No templates. No arrays.**
 
-For each batch:
-1. Run the batch context query (entity + chapter + location + family + atmosphere)
-2. Read `docs/explanation/lore/BOOKS_SUMMARY.md` for that book/chapter section
-3. For each entity, write:
-   - `base_description`: 60+ words of unique prose that references the entity name, its family, the specific chapter location, and narrative context
-   - `base_emotional_state`: specific and varied (NOT all "threatening" — use: wary, mournful, frenzied, contemplative, predatory, dormant, wrathful, curious, etc.)
-   - `base_sounds`: evocative audio unique to this entity ("wet scraping of chitin on stone, punctuated by sharp clicks" NOT "growling sounds")
-   - `base_abilities`: combat flavor referencing family traits ("ward-pulse blast, obsidian shield slam" NOT "attacks the player")
+**HOW LORE GENERATION WORKS — READ THIS CAREFULLY:**
 
-**AFTER EACH BATCH OF 50 — MANDATORY VERIFICATION:**
-Read 5 random descriptions from the batch. For EACH one:
-- Does it mention the entity BY NAME?
-- Does it reference the LOCATION or CHAPTER context?
-- Does it mention family-specific traits?
-- Does it read like fantasy novel prose (not a game database entry)?
-- Is it DIFFERENT from the other 4 samples?
-- If ANY fail, redo that specific entity
+You are a WRITER, not a script. For each entity:
+1. Run the entity context query (Step 1 above) to load its scene, location, chapter, family
+2. Run the story_beats query (Step 2 above) to get the ACTUAL BOOK TEXT for that entity's scenes
+3. READ the raw_text — this is the narrative prose from the Towers of Elysium books
+4. COMPOSE a unique description informed by what you just read — drawing on specific details, atmosphere, events from the raw_text
+5. Execute a single SQL UPDATE for that entity
+6. Move to the next entity
+
+You may load context data for 20 entities at once (a single SQL query) to understand the narrative neighborhood. But you WRITE each description INDIVIDUALLY, one at a time, drawing on the specific raw_text for that entity. There is no loop. There is no template. There are no arrays of sentence fragments. Each description is an act of authorship.
+
+**BEFORE writing ANY description, you MUST have executed the story_beats query for that entity and READ the raw_text.** If raw_text returns 0 rows, fall back to the scene-level beats query. If that also returns 0, note "no beats available" and use only location/family context — but you must have tried. A description that could have been written WITHOUT reading raw_text has failed this requirement.
+
+For each entity, compose:
+- `base_description`: 60+ words of unique prose. Must contain at least ONE detail that comes from raw_text and is NOT available from the entity's metadata alone (name, family, chapter number, location name). This is how we verify you actually read the source material.
+- `base_emotional_state`: specific and varied (NOT all "threatening" — use: wary, mournful, frenzied, contemplative, predatory, dormant, wrathful, curious, etc.)
+- `base_sounds`: evocative audio unique to this entity ("wet scraping of chitin on stone, punctuated by sharp clicks" NOT "growling sounds")
+- `base_abilities`: combat flavor referencing family traits ("ward-pulse blast, obsidian shield slam" NOT "attacks the player")
+
+**AFTER EVERY 20 ENTITIES — MANDATORY SELF-CHECK:**
+Read 3 of the descriptions you just wrote. For EACH one, ask yourself:
+- Could this description have been produced by substituting variables into a fixed sentence template? If yes — you are writing templates, not prose. STOP and change your approach.
+- Does this description contain a detail that ONLY exists in raw_text? If no — you didn't actually use the source material. Rewrite it.
+- Read all 3 back-to-back. Do they follow the same sentence structure? If yes — you're in a rut. Vary your style.
+
+**PER-SESSION REALITY CHECK:**
+Composing 3,936 unique descriptions by hand is NOT possible in one session. Do NOT try to rush through all of them. Aim for **150-300 genuinely authored descriptions per session**. The watchdog will restart you — each session picks up where the last left off. Quality over coverage, always.
+
+Log EVERY entity you complete in the heartbeat: `COMPLETED: lore entity_id=1847 (raw_text: yes/no)` so restarts can audit which entities were processed and whether raw_text was consulted.
+
+**DO NOT trust descriptions already in the DB from prior runs.** Assume ALL existing lore is template garbage from v1/v2/v3. Rewrite every entity you process, even if the existing description "looks okay." Prior runs wrote scripts that generated plausible-sounding but hollow content.
 
 ### Phase 5: Achievement Icons — Full Regeneration
 
@@ -494,7 +513,7 @@ Group by slot — design slot-specific shapes (swords, helmets, boots, etc.), th
 **Curated artifacts (50):**
 ```sql
 SELECT ca.id, ca.name, ca.lore_text, ca.source_type,
-  cat.rarity, cat.stat_multiplier,
+  cat.rarity, cat.stat_bonuses, cat.drop_chance_multiplier,
   atb.code as artifact_type
 FROM curated_artifacts ca
 JOIN curated_artifact_tiers cat ON cat.artifact_id = ca.id
@@ -563,110 +582,9 @@ These categories are already quality from v1/v2. Quick audit, fix only if gaps f
 
 Spawn after Phases 3, 4, 5, 6, 7, and at Phase 12 (final).
 
-```
-You are a QUALITY REVIEW AGENT. You validate CONTENT QUALITY by READING AND ANALYZING actual data — NOT by counting rows or checking string length.
+**The review agent prompt lives in `tools/watchdog/REVIEW_AGENT_PROMPT.md`.** When spawning a review agent, pass the ENTIRE contents of that file as the agent's prompt. Do NOT modify, summarize, or selectively quote the prompt — pass it verbatim.
 
-PERMISSIONS: READ-ONLY DB. WRITE only to AUTONOMOUS_PROGRESS.md and AGENT_GOALS.md.
-LORE REFERENCE: docs/explanation/lore/BOOKS_SUMMARY.md, docs/explanation/lore/CHARACTER_GUIDE.md, docs/explanation/lore/ENVIRONMENT_GUIDE.md
-PRIMARY LORE: story_beats.raw_text from DB (actual book content for each entity's scenes)
-
-## HOW TO VERIFY ENTITY SPRITES (CRITICAL)
-1. SELECT 10 random sprite render_definitions from asset_registry WHERE category='entity_sprite'
-2. For EACH SVG, parse the svg_template string and count:
-   - Number of <path> elements (should be >= 3)
-   - Number of <circle>/<ellipse> elements
-   - Number of <rect>/<polygon>/<line> elements
-   - Number of <linearGradient>/<radialGradient> definitions
-   - Number of <animate>/<animateTransform> elements
-   - TOTAL distinct elements must be >= 6
-3. Check that <path d="..."> values are UNIQUE across samples (not copy-pasted)
-4. Check that sprites from the SAME FAMILY share structural similarity (same number of limbs)
-5. Check that sprites from DIFFERENT FAMILIES look different (different body plans)
-
-FAIL CONDITIONS FOR SPRITES:
-- Any SVG with only <circle> and <ellipse> elements (no <path>) → BLOB, FAIL
-- Any two SVGs with identical <path d="..."> values → DUPLICATE, FAIL
-- Total elements < 6 → TOO SIMPLE, FAIL
-- All sprites in a family have identical structure → NO VARIATION, FAIL
-
-## HOW TO VERIFY ENTITY LORE
-1. SELECT 10 random base_descriptions
-2. Read each one. Check:
-   - Does it mention the entity's NAME?
-   - Does it reference a LOCATION or CHAPTER-specific detail?
-   - Does it mention FAMILY traits (e.g., "canine form", "spectral", "mechanical")?
-   - Is it prose (not a database entry like "Type: beast. Location: cave. Threat: medium.")?
-   - Is it DIFFERENT from the other 9 samples?
-3. Check for EXPANDED template patterns (LLMs love these):
-   "A mysterious", "A fearsome", "This creature", "An ancient", "A powerful",
-   "Deep within", "Known throughout", "Born of", "Dwelling in", "Emerging from",
-   "Among the", "Beneath the", ending with "formidable opponent" or "testament to"
-4. Cross-reference lore claims: if a description says "in the Crystal Warrens of Chapter 4",
-   open docs/explanation/lore/BOOKS_SUMMARY.md and verify Chapter 4 actually involves Crystal Warrens.
-   If the claim contradicts BOOKS_SUMMARY → flag as INACCURATE, FAIL.
-5. Check 3 descriptions from the SAME chapter batch — verify they don't follow identical sentence
-   structure (e.g., all starting with "[Name] is a [family] that [verbs] in [location]")
-
-FAIL CONDITIONS FOR LORE:
-- Any description matching template patterns → FAIL
-- Any description < 50 words → FAIL
-- Any two descriptions sharing > 50% of words → FAIL
-- Description reads like a game stat block, not prose → FAIL
-- Lore claim contradicts BOOKS_SUMMARY → FAIL
-- 3+ descriptions in same chapter follow identical sentence structure → FAIL
-
-## HOW TO VERIFY ACHIEVEMENT ICONS
-1. Query 2 tiered achievement chains (all tiers in each chain)
-2. For EACH tier, read the SVG and count elements
-3. Verify element count INCREASES with tier (tier 1 < tier 2 < tier 3)
-4. Verify core visual symbol is CONSISTENT across tiers — check `render_definition->>'base_symbol'` is identical across all tiers in the chain
-5. Query 3 standalone achievements from different categories
-6. Verify each icon's visual elements match its category (combat=weapon, exploration=compass, etc.)
-7. Verify EVERY achievement icon SVG has `viewBox="0 0 64 64"`
-
-## HOW TO VERIFY ITEM SPRITES
-1. Read 5 item sprites from DIFFERENT gear slots
-2. Verify each has a distinct silhouette appropriate to its slot
-3. Read 3 artifact icons — verify they are MORE complex than base items (more elements, glow effects)
-
-## HOW TO VERIFY BACKGROUNDS
-1. Read 3 backgrounds from each of the 3 books (9 total)
-2. Verify parallax_config layer types and colors are DIFFERENT between books
-3. Verify they're DIFFERENT within the same book
-4. Verify colors match the book's theme (Book 1=underground dark, Book 2=wilderness, Book 3=celestial)
-5. Verify each layer has a `type` that is NOT `solid` or `empty` — must be descriptive
-   (e.g., rock_wall, crystal_formation, forest_canopy, stone_architecture, celestial_sky)
-6. Verify each layer has a `colors` array with >= 2 colors
-7. SQL structural check:
-   ```sql
-   SELECT COUNT(*) FROM backgrounds
-   WHERE parallax_config->'far'->>'type' IS NULL
-      OR parallax_config->'mid'->>'type' IS NULL
-      OR parallax_config->'near'->>'type' IS NULL;
-   -- Must be 0.
-   ```
-
-## HOW TO VERIFY SVG VALIDITY
-For ANY SVG you review (sprites, icons, achievements):
-1. Check it starts with `<svg` and ends with `</svg>`
-2. Check it contains `viewBox="0 0 64 64"`
-3. Check all opened tags are closed (no truncated paths)
-4. If possible, parse with Python: `xml.etree.ElementTree.fromstring(svg_string)` — if it raises ParseError, FAIL
-
-CRITICAL FAILS (automatic rejection — do NOT check the goal off):
-- Entity sprites that are circles/blobs with no <path> elements
-- Template lore text (any of the 15+ patterns listed above)
-- Identical content across different entities (duplicate SVGs, duplicate descriptions)
-- Achievement tier chains with no visual progression or inconsistent base_symbol
-- Item sprites where you can't tell the slot from the SVG
-- Backgrounds with identical parallax_config across different books
-- Backgrounds with layer type = "solid" or "empty"
-- Any SVG that fails XML parse validation
-- Any SVG missing viewBox="0 0 64 64"
-
-Quote actual content samples as EVIDENCE in your PASS/FAIL verdict.
-BUDGET: Complete all checks within one context window. If you cannot finish, mark incomplete sections as DEFERRED — do NOT emit PASS for unchecked sections.
-```
+**You (the orchestrator) may NOT alter REVIEW_AGENT_PROMPT.md.** It is a read-only file for you. The review agent reads it directly and follows its own sampling protocol (ORDER BY RANDOM — the orchestrator does not choose which samples are reviewed).
 
 On FAIL: Log evidence with specific entity/asset IDs, fix via direct UPDATE, re-review. Max 2 attempts per batch. If still failing after 2 attempts, log as DEFERRED with explanation.
 
@@ -683,8 +601,18 @@ Watchdog kills after **20 minutes** of no file updates.
 
 ---
 
+## QUALITY GATE AUTHORITY
+
+- You (the orchestrator) may mark STRUCTURAL/METRIC gates as PASSED after verifying SQL output (e.g., row counts, FK validity, distinct counts).
+- You may NOT mark CONTENT QUALITY gates (any gate requiring "review agent reads X") as PASSED yourself. These must be marked by a SEPARATE review agent invocation that explicitly reads and quotes the content.
+- A gate marked PASSED after remediation requires re-running the FULL review check — not just verifying the fix ran. If you "fixed" 644 entities, the review agent must re-sample from THOSE 644 specifically, not from the full corpus where pre-existing good descriptions dilute the sample.
+- If LORE_QUALITY_REPORT.md or QUALITY_REVIEW_REPORT.md says FAIL for any gate, that gate CANNOT be checked off in AGENT_GOALS.md until a new review passes.
+
+---
+
 ## CONSTRAINTS
 
+- **Do NOT write .py, .sh, .js, .sql, or ANY script files that generate content.** You are a writer, not a coder. Every description, every SVG, every icon must be composed by you directly. Do NOT use SQL string concatenation to mass-generate content (e.g., `UPDATE SET base_description = family || ' entity near ' || location`). Running EXISTING tools (`tools/generators/scan_content_gaps.py`, `tools/db_dump_restore.py`) for diagnostics is permitted. Writing ANY new file is forbidden.
 - **Do NOT push to git.**
 - **Do NOT modify application code** (frontend/, backend/, admin/).
 - **Do NOT delete the DB backup.**
