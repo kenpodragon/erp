@@ -20,23 +20,25 @@ $script:ClaudePID = $null
 Set-Location $WorkDir
 
 $InitialPrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v5 — FULL CONTENT REGENERATION. v1/v2/v3 wrote Python scripts with template arrays. v4 wrote the SAME template functions INLINE (def make_sprite(params)) — 3,848 parametric color-swap sprites that were all garbage. BOTH approaches are banned. YOU compose each piece of content individually — unique path data, unique prose, unique silhouettes. If you write a function, a loop, or any reusable pattern that takes parameters and outputs SVG/text — STOP, you are doing v4 again. Read tools/watchdog/AGENT_GOALS.md (102 acceptance criteria). Read ../docs/explanation/lore/BOOKS_SUMMARY.md for high-level lore. Execute phases 0-12 in order. Phase 12 is a CONTINUOUS IMPROVEMENT LOOP — iterate until perfect, no ceiling. Every 50 entities run the skeleton uniqueness SQL check — if >5 sprites share the same skeleton (stripped of colors/numbers), STOP and recompose. Visually RENDER sprites in the browser and take screenshots — element counting alone is never sufficient. Spawn REVIEW AGENTS by file reference ("Read tools/watchdog/REVIEW_AGENT_PROMPT.md and execute it") — do NOT run review checks yourself. Keep RESUME_STATE updated after every significant action. Write STATUS: COMPLETE to tools/watchdog/.autonomous_status only when: review passes + zero deferred + adversarial self-audit passes + second independent review confirms.
+IMPORTANT: If tools/watchdog/AUTONOMOUS_PROGRESS.md exists and contains HUMAN AUDIT RESULTS or ROUND 2, read it FIRST — the prior run was partially invalidated and you must continue from RESUME_STATE, not Phase 0. Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR — check the CURRENT RUN PRIORITIES section at the top for what needs fixing. This is v5 Round 2. The prior run claimed STATUS: COMPLETE but a human visual review found backgrounds were near-total failure (~8 templates across 139 chapters) and sprites need within-family variation. Achievements, items, and artifacts PASSED — do NOT regenerate those. YOU compose each piece of content individually — unique path data, unique prose, unique silhouettes. No functions, no loops, no templates. Read tools/watchdog/AGENT_GOALS.md (102 acceptance criteria). Use the Playwright MCP (mcp__playwright-docker) to visually verify content via the QA page at http://host.docker.internal:5173/sprite-review — run the audit-fix-verify cycle described in AGENT_INSTRUCTIONS.md. SQL checks alone are NOT sufficient — they failed to catch the background problem in Round 1. Write STATUS: COMPLETE to tools/watchdog/.autonomous_status only when: review passes + zero deferred + adversarial self-audit passes + second independent review confirms + Playwright visual verification passes.
 '@
 
 $ResumePrompt = @'
 YOU ARE RESUMING A PRIOR SESSION. Do NOT restart from Phase 0.
 
-FIRST: Read tools/watchdog/AUTONOMOUS_PROGRESS.md — find the ## RESUME_STATE section. This tells you exactly where you left off: which phase, which family/batch, what's deferred, what review failures need fixing.
+ROUND 2 CONTEXT: A human visually reviewed Round 1 output and found backgrounds were near-total failure (~8 templates across 139 chapters) despite the agent claiming STATUS: COMPLETE. Achievements, items, and artifacts PASSED — do NOT regenerate those. Backgrounds need full redo. Sprites need within-family variation improvement. Use Playwright MCP to visually verify via the QA page at http://host.docker.internal:5173/sprite-review.
 
-SECOND: Read tools/watchdog/AGENT_GOALS.md — check which goals are [x] (done) vs [ ] (remaining). Do NOT blindly trust prior checkmarks — if a content quality goal is [x] but the progress file shows a review FAIL after it was checked, the goal needs re-validation. Cross-reference checkmarks against review results in AUTONOMOUS_PROGRESS.md.
+FIRST: Read tools/watchdog/AUTONOMOUS_PROGRESS.md — look for the ROUND 2 OVERRIDE warning at the top and the RESUME_STATE + HUMAN AUDIT RESULTS sections. RESUME_STATE overrides any prior COMPLETED entries in the heartbeat log.
+
+SECOND: Read tools/watchdog/AGENT_GOALS.md — check which goals are [x] (done) vs [ ] (remaining). Do NOT blindly trust prior checkmarks — if a content quality goal is [x] but the progress file shows a HUMAN AUDIT FAILURE, the goal needs redo. Background goals are INVALIDATED regardless of checkmarks.
 
 If AUTONOMOUS_PROGRESS.md does not exist or has no RESUME_STATE section, treat this as a fresh start and begin from Phase 0.
 
-THIRD: Read tools/watchdog/AGENT_INSTRUCTIONS.md for the full protocol.
+THIRD: Read tools/watchdog/AGENT_INSTRUCTIONS.md — especially the CURRENT RUN PRIORITIES section at the top and the VISUAL VERIFICATION PROTOCOL.
 
-THEN: Pick up exactly where RESUME_STATE says. If you were in the Phase 12 iteration loop, continue iterating — process deferred items, fix review failures, re-run adversarial reviews. If you were mid-phase, continue from the last completed batch.
+THEN: Pick up exactly where RESUME_STATE says. If RESUME_STATE says REDO_BACKGROUNDS, start with Phase 7 background regeneration using the before/after verification cycle. ALL 139 backgrounds must be replaced in batches of 5-10 with visual comparison each batch.
 
-CRITICAL RULES: Do NOT write Python scripts, template arrays, or any automation. YOU compose each description and SVG by hand after reading story_beats.raw_text. If .py files exist in tools/watchdog/, delete them and FAIL yourself. Heartbeat every task. Keep RESUME_STATE updated after every significant action. Write STATUS: COMPLETE only when: review agent passes + zero deferred items + adversarial self-audit passes.
+CRITICAL RULES: Do NOT write Python scripts, template arrays, or any automation. YOU compose each description and SVG by hand after reading story_beats.raw_text. If .py files exist in tools/watchdog/, delete them and FAIL yourself. Heartbeat every task. Keep RESUME_STATE updated after every significant action. Write STATUS: COMPLETE only when: review agent passes + zero deferred items + adversarial self-audit passes + second independent review confirms + Playwright visual verification passes (no DEFERRED visual items).
 '@
 
 function Write-Log {

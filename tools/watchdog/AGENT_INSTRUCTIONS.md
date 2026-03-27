@@ -26,7 +26,138 @@ The existing generator classes in `tools/generators/` are off-limits. But writin
 
 **CRITICAL MINDSET:** String length and non-NULL checks are MEANINGLESS for quality. A 500-char SVG of `<circle>` repeated 10 times is still garbage. Quality means: does this LOOK like a distinct fantasy creature from the Towers of Elysium? Does this lore text read like it was written by someone who read the books? Does this achievement icon clearly communicate what was achieved?
 
-**THE RATIONALIZATION TRAP:** v4's first attempt failed because the agent saw 3,936 entities and "optimized for coverage instead of quality." It hand-composed 88 genuine sprites, then convinced itself that "family body plan functions" (`mech_svg()`, `beast_svg()`) were different from "template arrays." They are NOT. The result was 3,848 parametric color-swaps that all looked identical. **Any time you feel the urge to "scale up" or "optimize" by writing a reusable function — STOP.** That urge is the failure mode. 150-300 genuinely unique sprites per session is the realistic pace. The watchdog restarts you. Progress is saved. Coverage will come over multiple sessions — but only if each session produces REAL content, not templated garbage that has to be thrown away and redone.
+**THE RATIONALIZATION TRAP:** v4's first attempt failed because the agent saw 3,936 entities and "optimized for coverage instead of quality." It hand-composed 88 genuine sprites, then convinced itself that "family body plan functions" (`mech_svg()`, `beast_svg()`) were different from "template arrays." They are NOT. The result was 3,848 parametric color-swaps that all looked identical. **Any time you feel the urge to "scale up" or "optimize" by writing a reusable function — STOP.** That urge is the failure mode. 150-300 genuinely unique sprites per session is the realistic pace.
+
+**DO NOT STOP VOLUNTARILY.** Sessions are continuous — keep working until the context window is exhausted or the user interrupts. Do NOT pause to "write session reports" or "wrap up." The RESUME_STATE, heartbeat log, and session lessons exist ONLY as recovery mechanisms in case the session is interrupted unexpectedly. Write progress updates to AUTONOMOUS_PROGRESS.md as you go (heartbeats after each batch), but do NOT treat session boundaries as stopping points. If you finish a phase, immediately start the next one. If you finish all phases, run the review. The goal is STATUS: COMPLETE, and you should pursue it without voluntary pauses.
+
+---
+
+## CURRENT RUN PRIORITIES (v5 Round 2 — Post-Audit)
+
+A human review of v5 round 1 output identified these issues, ranked by severity:
+
+**Source tag for Round 2:** Use `source='ai_v5_r2'` for all content created in this round. This distinguishes Round 2 improvements from Round 1 content and makes post-run auditing possible.
+
+### CRITICAL: Backgrounds (139) — Near-Total Failure
+The 139 backgrounds use only ~8 unique templates. Specific duplicates found:
+- `bg_chapter_1` and `bg_chapter_10` are **identical** — both `cave_ceiling / fungal_growth / rubble` with same dark blue-grey
+- `bg_chapter_100`, `102`, `109` all share `mountain_range / vine_curtain / flower_patch` with identical green palettes
+- `bg_chapter_103`, `105`, `110` all share `misty_horizon / stone_path / puddle`
+- `bg_chapter_104`, `106`, `111` all share `forest_line / underbrush / mushroom_cluster`
+- `bg_chapter_116` and `117` are identical `tower_silhouette / banister_rail / candle_row`
+- Colors within a book are nearly identical — all Book 2 backgrounds are the same shade of dark green
+
+**Action required:** Regenerate ALL 139 backgrounds from scratch. Each chapter's background must have:
+- Unique layer type combinations (not reused from other chapters)
+- Specific environmental features from the location's `base_visual` and `base_atmosphere`
+- Distinct color palettes even within the same book — a sulfur cave and an ice cavern in Book 1 should look nothing alike
+- Run the skeleton SQL check after: `SELECT regexp_replace(parallax_config::text, '(#[0-9a-fA-F]{3,8}|[0-9]+\.?[0-9]*)', 'N', 'g') as skeleton, COUNT(*) FROM backgrounds GROUP BY skeleton HAVING COUNT(*) > 1;` — target: 0 rows
+- Run the layer diversity check: `SELECT COUNT(DISTINCT parallax_config->'far'->>'type') as far_types, COUNT(DISTINCT parallax_config->'mid'->>'type') as mid_types, COUNT(DISTINCT parallax_config->'near'->>'type') as near_types FROM backgrounds;` — each must be >= 30. Generic labels like `cave_ceiling`, `rock_wall`, `ground`, `sky`, `forest`, `fog` indicate template reuse — use specific descriptive types like `sulfur_vent_ceiling`, `bioluminescent_fungal_grove`, `obsidian_rubble_field`
+- Run the visual verification cycle (Playwright MCP) — SQL alone is NOT sufficient. The prior run passed all SQL checks but the human found ~8 templates across 139 chapters
+
+### MODERATE: Entity Sprites — Within-Family Variation (after backgrounds are done)
+Family body plans ARE distinct (aberrations ≠ beasts ≠ mechanisms). BUT within a family, some sprites are too similar — same core shape with minor color/size tweaks.
+
+**Action required (AFTER backgrounds are complete):** For each of the 5 largest families (mechanisms 842, beasts 544, phantasms 509, elementals 507, collectives 455), visually review 24 sprites via the QA page. Identify the worst same-shape clusters and recompose them with structural variation: different appendage positions, different proportions, different detail elements — not just different colors on the same skeleton. Target: improve at least 50 sprites per large family (250 total). Use the before/after verification cycle for each batch.
+
+### GOOD: Achievements, Items, Artifacts — No Changes Needed
+These categories passed visual review. Tier progression works, slot silhouettes are recognizable, artifact icons are unique. Do NOT regenerate these — focus effort on backgrounds first, then sprite variation.
+
+---
+
+## VISUAL VERIFICATION PROTOCOL (Playwright MCP)
+
+You have access to a Playwright MCP server (`mcp__playwright-docker`) that can render pages in a real browser. **USE IT** to verify your work visually instead of just counting SVG elements.
+
+### QA Review Page
+A visual QA page is served by the frontend container at `http://host.docker.internal:5173/sprite-review` with tabs for: Entity Sprites (3,936), Achievements (111), Items (90), Artifacts (50), Backgrounds (139). It has pagination (24 items per page).
+
+**IMPORTANT:** From inside Docker, use `host.docker.internal` to reach host services. `localhost` will NOT work — it refers to the container itself.
+
+### Before → Change → After Verification Cycle (MANDATORY)
+
+**NEVER overwrite content without proving the replacement is better.** The prior run blindly wrote over content and claimed improvement without visual comparison. This cycle prevents regression.
+
+**HEARTBEAT during verification:** The watchdog kills after 45 minutes of no progress file updates. Verification cycles (rebuild, restart, screenshot) take several minutes. Write a heartbeat at the START of every verification step so the watchdog knows you're alive:
+- `HEARTBEAT: starting verification cycle batch-N at HH:MM:SS`
+- `HEARTBEAT: before screenshot taken for batch-N at HH:MM:SS`
+- `HEARTBEAT: after screenshot taken, comparing batch-N at HH:MM:SS`
+- `HEARTBEAT: batch-N committed/rolled-back at HH:MM:SS`
+
+For each batch of content changes (e.g., 10 backgrounds, 20 sprites):
+
+**Step 1: CAPTURE BEFORE STATE**
+- Rebuild QA data: `python tools/rebuild_qa_data.py`
+- Restart frontend: `cd code/infra/deploy && docker compose restart frontend`
+- Wait 5 seconds
+- Navigate to QA page: `browser_navigate(url: "http://host.docker.internal:5173/sprite-review")`
+- Click the relevant tab, navigate to the page containing items you're about to change
+- **Take a BEFORE screenshot:** `browser_take_screenshot(type: "png", filename: "before-bg-batch1.png")`
+- Note the specific items visible and their visual quality
+
+**Step 2: SAVE OLD CONTENT BEFORE OVERWRITING**
+- For each item you're about to change, save the old content so you can rollback:
+  ```sql
+  -- Save old background config before overwriting
+  SELECT background_key, parallax_config FROM backgrounds WHERE background_key = 'bg_chapter_X';
+  ```
+- Copy the result into your heartbeat log: `HEARTBEAT: BACKUP bg_chapter_X — old config: {far: cave_ceiling, mid: fungal_growth, near: rubble}`
+- Now compose the new content and UPDATE in place (direct overwrite — the backup is in the heartbeat log)
+
+**Step 3: VISUALLY COMPARE BEFORE vs AFTER**
+- Rebuild QA data: `python tools/rebuild_qa_data.py`
+- Restart frontend: `cd code/infra/deploy && docker compose restart frontend`
+- Wait 5 seconds, navigate to QA page, find the items you just changed
+- **Take an AFTER screenshot**
+- **COMPARE the BEFORE screenshot (Step 1) with the AFTER screenshot.** For each item ask:
+  - Is the new version visually MORE distinct than the old?
+  - Does it have more environmental detail, richer colors, more specific layer types?
+  - Does it better reflect the location's lore?
+  - Is it an actual improvement, or just a different flavor of the same template?
+
+**Step 4: COMMIT or ROLLBACK**
+- **If improved:** Keep the new content. Log: `HEARTBEAT: batch-1 bg_chapter_X — COMMITTED (before: generic cave_ceiling, after: sulfur_vent_with_crystalline_formations)`
+- **If NOT improved or regression:** Restore the old content from the backup you saved in Step 2:
+  ```sql
+  UPDATE backgrounds SET parallax_config = '<old config from heartbeat>' WHERE background_key = 'bg_chapter_X';
+  ```
+  Log: `HEARTBEAT: batch-1 bg_chapter_Y — ROLLED BACK (new version was same quality as old)`
+- Try a different approach for rolled-back items
+
+**Step 5: VERIFY FINAL STATE**
+- After committing improvements, rebuild QA data one more time
+- Screenshot the final state to confirm the committed changes look correct
+- Only then move to the next batch
+
+**NEVER do a blind mass-UPDATE.** If you UPDATE 139 backgrounds in one SQL statement without visual comparison, you have no way to know if any of them regressed. Work in batches of 5-10, visually compare each batch, commit only the improvements.
+
+**This cycle is NOT optional.** Every batch of content changes must have before/after visual evidence. The prior run's agent claimed 21/21 gates passed — a human looked at the content and found it was largely unchanged template garbage. Visual comparison with explicit improvement metrics prevents this.
+
+### MCP Availability Check (run at session start)
+
+Before beginning any content work, confirm Playwright MCP is available:
+1. Try `browser_navigate(url: "http://host.docker.internal:5173/sprite-review")`
+2. If it succeeds — MCP is up, proceed normally with visual verification
+3. If it fails — log `HEARTBEAT: Playwright MCP unavailable at session start`
+
+### If Playwright MCP Is Not Available
+
+**For backgrounds (Phase 7 REDO): Playwright is REQUIRED.** The prior round's backgrounds passed ALL SQL checks but failed human visual review. SQL alone cannot verify backgrounds.
+- If Playwright is unavailable and you are working on backgrounds: **STOP background work.** Write `BLOCKED: Playwright required for background visual QA — cannot proceed with Phase 7 without visual verification.` Continue with other work (sprite variation improvements) instead.
+
+**For all other categories:** You may continue with SQL structural checks as fallback:
+1. Run the skeleton uniqueness SQL for the category
+2. Run `rebuild_qa_data.py` and note it was rebuilt (the human will review visually later)
+3. Log: `HEARTBEAT: Playwright MCP unavailable — SQL checks only. Visual verification deferred to human.`
+4. **Do NOT mark visual verification checklist items as PASS** — mark them as `DEFERRED: Playwright MCP unavailable`
+5. **Do NOT write STATUS: COMPLETE** if any visual verification items are DEFERRED
+
+### Visual Verification Checklist (run after each content phase)
+- [ ] Navigate to QA page, screenshot sprites from 3+ families — do they have distinct shapes within the family?
+- [ ] Screenshot backgrounds from all 3 books — are they visually distinct within and across books?
+- [ ] Screenshot achievements — does tier progression show increasing complexity?
+- [ ] Screenshot items — can you identify the slot from the silhouette?
+- [ ] Screenshot artifacts — does each have a unique shape?
 
 ---
 

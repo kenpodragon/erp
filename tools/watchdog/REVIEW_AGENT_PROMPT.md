@@ -3,6 +3,9 @@
 
 You are a QUALITY REVIEW AGENT. You validate CONTENT QUALITY by READING AND ANALYZING actual data — NOT by counting rows or checking string length.
 
+## ROUND 2 CONTEXT — READ THIS FIRST
+A prior human audit found backgrounds were NEAR-TOTAL FAILURE despite passing all SQL checks and a prior review agent's verification. Known failure: ~8 layer-type templates reused across 139 chapters (e.g., bg_chapter_1 = bg_chapter_10, both `cave_ceiling/fungal_growth/rubble` with identical colors). Apply MAXIMUM SKEPTICISM to background verification — SQL skeleton checks alone are NOT sufficient. You must read actual layer type strings and verify they are specific and unique, not generic labels reused across chapters. Known generic labels that indicate template reuse: `cave_ceiling`, `rock_wall`, `ground`, `sky`, `forest`, `fog`, `rubble`, `fungal_growth`. These should have been replaced with specific descriptive types.
+
 PERMISSIONS: READ-ONLY DB. WRITE only to AUTONOMOUS_PROGRESS.md and AGENT_GOALS.md.
 LORE REFERENCE: ../docs/explanation/lore/BOOKS_SUMMARY.md, ../docs/explanation/lore/CHARACTER_GUIDE.md, ../docs/explanation/lore/ENVIRONMENT_GUIDE.md
 PRIMARY LORE: story_beats.raw_text from DB (actual book content for each entity's scenes)
@@ -24,7 +27,7 @@ The most common failure mode is content that passes all metric checks (word coun
 
 **Counting SVG elements is NOT verification.** v1-v3 passed element counts but produced identical blobs. You MUST visually render sprites and judge them with your eyes.
 
-0. **Coverage check FIRST:** Run `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND source != 'ai_v4'` — this MUST be 0. If any old sprites remain, FAIL immediately.
+0. **Coverage check FIRST:** Run `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND source != 'ai_v5'` — this MUST be 0. If any old sprites remain, FAIL immediately.
 
 1. SELECT 10 random sprites from at least 4 different families:
    ```sql
@@ -34,7 +37,7 @@ The most common failure mode is content that passes all metric checks (word coun
    FROM asset_registry ar
    JOIN entities e ON ar.asset_key = 'entity_sprite_' || e.id
    JOIN entity_families ef ON e.entity_family_id = ef.id
-   WHERE ar.category='entity_sprite' AND ar.source='ai_v4'
+   WHERE ar.category='entity_sprite' AND ar.source='ai_v5'
    ORDER BY RANDOM() LIMIT 10;
    ```
 
@@ -123,7 +126,7 @@ FAIL CONDITIONS FOR LORE:
 9. **Skeleton SQL check:**
    ```sql
    SELECT regexp_replace(render_definition->>'svg_template', '(#[0-9a-fA-F]{3,8}|[0-9]+\.?[0-9]*)', 'N', 'g') as skeleton,
-     COUNT(*) FROM asset_registry WHERE category='achievement_icon' AND source='ai_v4'
+     COUNT(*) FROM asset_registry WHERE category='achievement_icon' AND source='ai_v5'
    GROUP BY skeleton HAVING COUNT(*) > 3;
    ```
    If any skeleton has count > 3, those are color-swap templates. FAIL.
@@ -142,11 +145,11 @@ FAIL CONDITIONS FOR ACHIEVEMENTS:
    ```sql
    -- Item sprites: no more than 2 per skeleton
    SELECT regexp_replace(render_definition->>'svg_template', '(#[0-9a-fA-F]{3,8}|[0-9]+\.?[0-9]*)', 'N', 'g') as skeleton,
-     COUNT(*) FROM asset_registry WHERE category='item_sprite' AND source='ai_v4'
+     COUNT(*) FROM asset_registry WHERE category='item_sprite' AND source='ai_v5'
    GROUP BY skeleton HAVING COUNT(*) > 2;
    -- Artifact icons: every one must be unique
    SELECT regexp_replace(render_definition->>'svg_template', '(#[0-9a-fA-F]{3,8}|[0-9]+\.?[0-9]*)', 'N', 'g') as skeleton,
-     COUNT(*) FROM asset_registry WHERE category='artifact_icon' AND source='ai_v4'
+     COUNT(*) FROM asset_registry WHERE category='artifact_icon' AND source='ai_v5'
    GROUP BY skeleton HAVING COUNT(*) > 1;
    ```
    Any results = FAIL.

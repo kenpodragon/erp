@@ -5,6 +5,7 @@ import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebas
 import { api } from './api'
 import { chatClient } from './game/services/chatClient'
 import { NavBar } from './components/NavBar'
+import SpriteReview from './pages/SpriteReview'
 import { SplashPage } from './components/SplashPage'
 import { AboutPage } from './components/AboutPage'
 import { TermsPage } from './components/TermsPage'
@@ -449,6 +450,7 @@ function App() {
               <SplashPage onLogin={handleLogin} />
             )
           } />
+          <Route path="/sprite-review" element={<SpriteReview />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
