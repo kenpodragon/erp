@@ -7,7 +7,7 @@ Usage:
     python tools/toggle_db.py sync        # Dump localhost -> rebuild Docker -> switch to Docker
     python tools/toggle_db.py status      # Show which DB is currently active
 
-Also comments/uncomments the postgres service and depends_on block in docker-compose.yml
+Also comments/uncomments the postgres service and depends_on block in infra/deploy/docker-compose.yml
 so there's no dangling container when using localhost.
 """
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BACKEND_ENV = PROJECT_ROOT / "backend" / ".env"
-COMPOSE_FILE = PROJECT_ROOT / "docker-compose.yml"
+COMPOSE_FILE = PROJECT_ROOT / "infra" / "deploy" / "docker-compose.yml"
 
 
 # ---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ def uncomment_block(content, start_marker, end_marker):
 
 
 def enable_compose_postgres():
-    """Uncomment postgres service and depends_on in docker-compose.yml."""
+    """Uncomment postgres service and depends_on in infra/deploy/docker-compose.yml."""
     content = read_compose()
     content = uncomment_block(content, "# DOCKER_DB_START", "# DOCKER_DB_END")
     content = uncomment_block(content, "# DOCKER_DB_DEPENDS_START", "# DOCKER_DB_DEPENDS_END")
@@ -167,7 +167,7 @@ def enable_compose_postgres():
 
 
 def disable_compose_postgres():
-    """Comment out postgres service and depends_on in docker-compose.yml."""
+    """Comment out postgres service and depends_on in infra/deploy/docker-compose.yml."""
     content = read_compose()
     content = comment_block(content, "# DOCKER_DB_START", "# DOCKER_DB_END")
     content = comment_block(content, "# DOCKER_DB_DEPENDS_START", "# DOCKER_DB_DEPENDS_END")
@@ -201,13 +201,13 @@ def switch_to(mode):
     if mode == "docker":
         enable_compose_postgres()
         print("Switched DATABASE_URL to docker.")
-        print("Enabled postgres service in docker-compose.yml.")
+        print("Enabled postgres service in infra/deploy/docker-compose.yml.")
         print_status(updated)
-        print("\nRun 'docker-compose up -d' to start all services including postgres.")
+        print("\nRun 'docker-compose -f infra/deploy/docker-compose.yml up -d' to start all services including postgres.")
     else:
         disable_compose_postgres()
         print("Switched DATABASE_URL to localhost.")
-        print("Disabled postgres service in docker-compose.yml (commented out).")
+        print("Disabled postgres service in infra/deploy/docker-compose.yml (commented out).")
         print_status(updated)
         print("\nEnsure your local PostgreSQL is running on port 5432.")
 
@@ -227,9 +227,9 @@ def sync():
     enable_compose_postgres()
 
     print("\n=== Step 2/3: Rebuilding Docker image ===")
-    subprocess.run(["docker-compose", "down", "postgres"], cwd=str(PROJECT_ROOT))
+    subprocess.run(["docker-compose", "-f", "infra/deploy/docker-compose.yml", "down", "postgres"], cwd=str(PROJECT_ROOT))
     result = subprocess.run(
-        ["docker-compose", "build", "--no-cache", "postgres"],
+        ["docker-compose", "-f", "infra/deploy/docker-compose.yml", "build", "--no-cache", "postgres"],
         cwd=str(PROJECT_ROOT),
     )
     if result.returncode != 0:
@@ -237,7 +237,7 @@ def sync():
         sys.exit(1)
 
     result = subprocess.run(
-        ["docker-compose", "up", "-d", "postgres"],
+        ["docker-compose", "-f", "infra/deploy/docker-compose.yml", "up", "-d", "postgres"],
         cwd=str(PROJECT_ROOT),
     )
     if result.returncode != 0:

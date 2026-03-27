@@ -29,11 +29,11 @@ The system SHALL provide a `tools/db_dump_restore.py` script supporting dump, re
 #### Scenario: Dump operation
 - GIVEN the dev database is in a known good state
 - WHEN `python tools/db_dump_restore.py dump` is executed
-- THEN a `pg_dump` file SHALL be created at `db/backups/<timestamp>.dump` without the connection string appearing in logs or output
+- THEN a `pg_dump` file SHALL be created at `../db-backups/<timestamp>.dump` without the connection string appearing in logs or output
 
 #### Scenario: Restore operation
-- GIVEN a dump file exists at `db/backups/2026-03-25_120000.dump`
-- WHEN `python tools/db_dump_restore.py restore db/backups/2026-03-25_120000.dump` is executed
+- GIVEN a dump file exists at `../db-backups/2026-03-25_120000.dump`
+- WHEN `python tools/db_dump_restore.py restore ../db-backups/2026-03-25_120000.dump` is executed
 - THEN `pg_restore --clean` SHALL restore the database to the state in that dump file
 
 ### Requirement: Playwright Multi-Project Config

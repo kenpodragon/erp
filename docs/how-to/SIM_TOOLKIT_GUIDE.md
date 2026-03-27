@@ -9,7 +9,7 @@ The simulation toolkit validates and tunes all game scaling parameters to hit th
 3. **Compare Tool** — Diff two runs, highlight what changed
 
 **Full Spec:** `docs/specs/2026-03-20-simulation-toolkit-design.md`
-**Session State:** `docs/project/done/SIM_PROC_BAL_SESSION_STATE.md`
+**Session State:** `../docs/project/done/SIM_PROC_BAL_SESSION_STATE.md`
 
 ---
 

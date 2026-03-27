@@ -16,7 +16,7 @@ Detailed documentation is available in the `docs/` folder:
 - [Architecture & Tech Stack](docs/reference/ARCHITECTURE.md)
 - [Functional Requirements](openspec/specs/0_REQUIREMENTS.md)
 - [Infrastructure Setup Guide](docs/how-to/INIT_INFRA.md)
-- [Project TODO List](docs/project/TODO.md)
+- [Project TODO List](../docs/project/TODO.md)
 
 ---
 

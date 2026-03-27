@@ -101,7 +101,7 @@ python ../infra/push_env.py
 The project is configured to deploy automatically whenever code is pushed to the `main` branch.
 
 ### How it works
-Cloud Build uses the `cloudbuild.yaml` file to:
+Cloud Build uses the `cloudbuild.yaml` file (located in the krakalaken project wrapper at `../cloudbuild.yaml`) to:
 1.  **Build Images:** Creates Docker images for Backend, Frontend, and Admin.
 2.  **Push:** Uploads images to Google Artifact Registry.
 3.  **Deploy:** Deploys the images to Cloud Run.

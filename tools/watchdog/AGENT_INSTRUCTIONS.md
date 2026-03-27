@@ -28,11 +28,11 @@ The existing generator classes in `tools/generators/` are off-limits. But writin
 
 ## MANDATORY READS (load these first)
 
-1. `AGENTS.md` — Project mandates and structure
+1. `../AGENTS.md` — Project mandates and structure
 2. `tools/watchdog/AGENT_GOALS.md` — **Your scorecard — every checkbox must pass**
-3. `docs/explanation/lore/BOOKS_SUMMARY.md` — **CANONICAL lore source (45 KB) — reference for ALL content**
-4. `docs/explanation/lore/CHARACTER_GUIDE.md` — Character bios, motivations, relationships
-5. `docs/explanation/lore/ENVIRONMENT_GUIDE.md` — Location sensory details, atmospheres
+3. `../docs/explanation/lore/BOOKS_SUMMARY.md` — **CANONICAL lore source (45 KB) — reference for ALL content**
+4. `../docs/explanation/lore/CHARACTER_GUIDE.md` — Character bios, motivations, relationships
+5. `../docs/explanation/lore/ENVIRONMENT_GUIDE.md` — Location sensory details, atmospheres
 6. `db/data_dictionary.md` — Schema reference (109 tables)
 7. `tools/watchdog/AUTONOMOUS_PROGRESS.md` — Resume from here on restart
 
@@ -54,7 +54,7 @@ You have FULL read/write access. Execute SQL queries directly — SELECT to read
 
 Every entity exists in a rich context chain. **You MUST query this full context before writing ANY content — sprites, lore, everything.**
 
-The DB contains the actual book text in `story_beats.raw_text`. This is your PRIMARY source — it tells you exactly what the narrative says about each scene and entity. `docs/explanation/lore/BOOKS_SUMMARY.md` is a HIGH-LEVEL reference for book/chapter themes when you need broader context.
+The DB contains the actual book text in `story_beats.raw_text`. This is your PRIMARY source — it tells you exactly what the narrative says about each scene and entity. `../docs/explanation/lore/BOOKS_SUMMARY.md` is a HIGH-LEVEL reference for book/chapter themes when you need broader context.
 
 ### Step 1: Full Entity Extract (ALWAYS run this first)
 
@@ -173,7 +173,7 @@ Then for each entity in the batch, also pull its story beats (Step 2) to get the
 
 **For BACKGROUNDS:** The location's `base_visual`, `base_auditory`, `base_atmosphere` are your PRIMARY inputs. The raw_text from story_beats for scenes at that location give additional environmental description.
 
-**Use `docs/explanation/lore/BOOKS_SUMMARY.md` for high-level book/chapter themes** when you need to understand the broader arc — which part of the journey, what tone, what's at stake. But the DB `raw_text` is always the most specific source.
+**Use `../docs/explanation/lore/BOOKS_SUMMARY.md` for high-level book/chapter themes** when you need to understand the broader arc — which part of the journey, what tone, what's at stake. But the DB `raw_text` is always the most specific source.
 
 ---
 

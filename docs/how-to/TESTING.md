@@ -94,7 +94,7 @@ Located in `testing/helpers/`:
 ### DB Backup/Restore
 Before destructive E2E testing, create a backup:
 ```bash
-python tools/db_dump_restore.py dump     # Creates timestamped dump in db/backups/
+python tools/db_dump_restore.py dump     # Creates timestamped dump in ../db-backups/
 python tools/db_dump_restore.py list     # List available backups
 python tools/db_dump_restore.py restore <file>  # Restore from backup
 ```

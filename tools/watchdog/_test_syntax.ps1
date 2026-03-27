@@ -75,7 +75,7 @@ $pathChecks = @{
     "tools\lib\db_client.py" = Join-Path $WorkDir "tools\lib\db_client.py"
     "tools\scan_content_gaps.py" = Join-Path $WorkDir "tools\scan_content_gaps.py"
     "tools\db_dump_restore.py" = Join-Path $WorkDir "tools\db_dump_restore.py"
-    "AGENTS.md" = Join-Path $WorkDir "AGENTS.md"
+    "AGENTS.md" = Join-Path $WorkDir "..\AGENTS.md"
     "docs\inst\GENERATOR_INSTRUCTIONS.md" = Join-Path $WorkDir "docs\inst\GENERATOR_INSTRUCTIONS.md"
     "docs\inst\GENERATOR_AI_RULES.md" = Join-Path $WorkDir "docs\inst\GENERATOR_AI_RULES.md"
 }

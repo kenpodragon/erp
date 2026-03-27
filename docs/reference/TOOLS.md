@@ -21,10 +21,10 @@ python tools/toggle_db.py sync        # Dump localhost → rebuild Docker image 
 
 ### `refresh_dump.py` — Dump Localhost DB for Docker
 
-Runs `pg_dump` against the localhost PostgreSQL and saves the output to `db/deploy/dump.sql`. When the Docker postgres image is rebuilt, it restores from this dump instead of running the individual SQL scripts.
+Runs `pg_dump` against the localhost PostgreSQL and saves the output to `infra/deploy/db/dump.sql`. When the Docker postgres image is rebuilt, it restores from this dump instead of running the individual SQL scripts.
 
 ```bash
-python tools/refresh_dump.py             # Dump only (saves db/deploy/dump.sql)
+python tools/refresh_dump.py             # Dump only (saves infra/deploy/db/dump.sql)
 python tools/refresh_dump.py --rebuild   # Dump + rebuild Docker image + restart container
 ```
 

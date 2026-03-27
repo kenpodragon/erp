@@ -60,7 +60,7 @@ python tools/db_dump_restore.py dump
 
 Note the output filename (e.g., `erp_backup_20260323_191448.dump`). You will need it if you need to restore.
 
-Confirm the backup file exists in `db/backups/` before continuing.
+Confirm the backup file exists in `../db-backups/` before continuing.
 
 ---
 

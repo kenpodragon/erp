@@ -100,7 +100,7 @@ The system SHALL display a persistent progress indicator using `rich` showing cu
 
 ### Processing Architecture
 - Standalone Python CLI: `python book_processor.py [options]`
-- Input: `.docx` files from `../Books/` (read-only source material)
+- Input: `.docx` files from `../../Books/` (read-only source material)
 - State tracking: entirely in PostgreSQL (no file-based state)
 - Resume granularity: chapter level (interrupted chapters re-process from start)
 - AI providers: Claude (primary) → Gemini (fallback), provider + model ID recorded per element

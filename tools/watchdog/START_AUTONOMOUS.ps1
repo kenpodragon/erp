@@ -99,10 +99,10 @@ $requiredFiles = @(
     'tools\watchdog\AGENT_GOALS.md',
     'tools\watchdog\WATCHDOG_AUTO.ps1',
     'backend\.env',
-    'AGENTS.md',
-    'docs\explanation\lore\BOOKS_SUMMARY.md',
-    'docs\explanation\lore\CHARACTER_GUIDE.md',
-    'docs\explanation\lore\ENVIRONMENT_GUIDE.md',
+    '..\AGENTS.md',
+    '..\docs\explanation\lore\BOOKS_SUMMARY.md',
+    '..\docs\explanation\lore\CHARACTER_GUIDE.md',
+    '..\docs\explanation\lore\ENVIRONMENT_GUIDE.md',
     'tools\watchdog\REVIEW_AGENT_PROMPT.md'
 )
 $allOk = $true
