@@ -46,13 +46,32 @@ Before pushing to the cloud, verify your changes locally.
 ---
 
 ## 3. Local Orchestration (Docker Compose)
-Use this to run the entire stack in containers.
+Use this to run the entire stack in containers. All Dockerfiles and the compose file live in `infra/deploy/`.
 
 ```bash
-# From the project root
-docker-compose up --build
+# From the infra/deploy directory
+cd infra/deploy
+docker compose up --build
 ```
-*Note: Your local `.env` files are automatically used by the containers.*
+
+### Infrastructure Layout
+```
+infra/deploy/
+  docker-compose.yml     # Orchestrates all services
+  Dockerfile.backend     # Python/FastAPI image
+  Dockerfile.frontend    # Node/Vite player app image
+  Dockerfile.admin       # Node/Vite admin app image
+  Dockerfile.db          # PostgreSQL 17 with init scripts
+  db/                    # DB init scripts, dump.sql, .env
+    init-user.sh
+    init-db.sh
+    dump.sql
+    .env / .env.example
+```
+
+All Dockerfiles use the repo root as build context, so COPY paths reference `backend/`, `frontend/`, `admin/`, and `db/` from the repo root.
+
+*Note: Your local `.env` files in each service directory are used by the containers.*
 
 ---
 
@@ -66,13 +85,14 @@ The scripts look for variables ending in `_LIVE` in your `.env` files and use th
 ### Run the Full Deploy Script
 This script builds Docker images, pushes them to Artifact Registry, and redeploys the services with updated environment variables.
 ```powershell
-python infra/deploy_cloud.py
+# Scripts live in the krakalaken project wrapper (../infra/ relative to code/)
+python ../infra/deploy_cloud.py
 ```
 
 ### Sync Environment Variables Only
 If you only changed `.env` files and don't need to rebuild the code, use this faster script:
 ```powershell
-python infra/push_env.py
+python ../infra/push_env.py
 ```
 
 ---
@@ -108,10 +128,10 @@ You can stop all cloud services (Cloud SQL and Cloud Run) when not developing to
 
 ### Stop All Services
 ```powershell
-python infra/stop_cloud.py
+python ../infra/stop_cloud.py
 ```
 
 ### Start All Services
 ```powershell
-python infra/start_cloud.py
+python ../infra/start_cloud.py
 ```
