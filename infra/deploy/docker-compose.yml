@@ -1,6 +1,8 @@
 # Run from infra/deploy/: docker compose up
 # All paths relative to repo root (context: ../..)
 
+name: erp
+
 services:
   postgres:
     build:

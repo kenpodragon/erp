@@ -1,4 +1,4 @@
-# ERP Generator Watchdog v4 — Agent Goals & Acceptance Criteria
+# ERP Generator Watchdog v5 — Agent Goals & Acceptance Criteria
 
 **This is your scorecard.** Check off items ONLY when they pass the VISUAL VERIFICATION described in each section. The REVIEW AGENT must READ actual content — not just count rows or check string length.
 
@@ -27,7 +27,7 @@
 
 - [ ] QG.1 **Baseline logged** — Row counts for all categories recorded in progress file
 - [ ] QG.2 **Family body plans designed** — All ~15 families have documented body plan with example SVG
-- [ ] QG.3 **Entity sprites regenerated** — All old sprites deleted, new ones inserted, review agent PASSED
+- [ ] QG.3 **Entity sprites regenerated** — All old sprites replaced in-place via upsert (`source='ai_v4'`), `SELECT COUNT(*) FROM asset_registry WHERE category='entity_sprite' AND source != 'ai_v4'` = 0, review agent PASSED
 - [ ] QG.4 **Entity lore regenerated** — All descriptions rewritten, review agent PASSED
 - [ ] QG.5 **Achievement icons regenerated** — All deleted and recreated, review agent PASSED
 - [ ] QG.6 **Item sprites + artifact icons regenerated** — All created, review agent PASSED
@@ -90,6 +90,9 @@
 - [ ] LORE.B7 **Source grounding test:** For 5 random entities that HAVE story_beats rows, review agent runs the story_beats query and reads raw_text. Then reads the entity's description. At least ONE concrete detail in the description must match something in raw_text that is NOT also in the entity's metadata (name, family, chapter number, location name). If no such detail exists, the description was written without reading raw_text. FAIL. For entities with ZERO story_beats rows, verify the description contains a detail from `loc.base_visual` or `loc.base_auditory` that is NOT just restating `loc.canonical_name`.
 - [ ] LORE.B8 **No content-generation scripts exist in tools/watchdog/:** `ls tools/watchdog/*.py tools/watchdog/*.sh tools/watchdog/*.js tools/watchdog/*.ts tools/watchdog/*.sql 2>/dev/null` — if ANY script exists that contains arrays of sentence templates, OPENINGS, FAMILY_TRAITS, content randomizers, or similar machinery, the entire LORE section is an automatic FAIL. Also check: were descriptions bulk-generated via a single SQL UPDATE with string concatenation (e.g., `SET base_description = ef.description || ...`)? Review agent must verify 5 random descriptions contain details not derivable from any DB column.
 - [ ] LORE.B9 **No inline mass-generation:** Review agent reads the orchestrator's heartbeat log. If it shows all 3,936 entities completed in < 30 minutes, the content was mass-generated, not individually composed. FAIL.
+- [ ] LORE.B10 **Body paragraph uniqueness:** Review agent reads 30 random descriptions. For each, extract ALL sentences after the first. If any sentence (excluding entity name and location) appears verbatim in more than 3 descriptions, the lore was generated from family-level template strings. FAIL.
+- [ ] LORE.B11 **Story-beat grounding verification:** For 10 random entities that HAVE story_beats, the review agent reads the raw_text, then reads the description. The description must contain at least ONE specific detail (a noun, an image, a sensory detail) drawn from the raw_text that is NOT the entity name, family name, or location name. If the description could have been written without reading the story_beats, it fails this check.
+- [ ] LORE.B12 **Per-entity detail test:** Review agent reads 10 descriptions from the SAME family. If all 10 share the same descriptive phrases about family traits (e.g., all mechanisms mention "operational states that no manual documents"), this is a shared template string. FAIL. Each entity's family-trait description should use DIFFERENT words to describe what makes it a member of its family.
 
 ### LORE-C: Boss Transition Lore
 - [ ] LORE.C1 All ~138 chapters have `transition_lore_text` >= 100 chars
@@ -123,6 +126,8 @@
   - If `base_symbol` differs across tiers → FAIL
 - [ ] ACH.C3 **No generic shapes:** Review agent verifies NO achievement icon is just a star, circle, or generic badge shape — each has category-specific symbolism
 - [ ] ACH.C4 **All SVGs valid:** Every achievement icon SVG has `viewBox="0 0 64 64"` and parses as valid XML
+- [ ] ACH.C5 **Cross-chain uniqueness within category:** Review agent reads the Tier 1 icon from EVERY chain in the same category (e.g., all combat Tier 1 icons). Each must use a DIFFERENT base symbol and DIFFERENT SVG structure. Enemy Slayer uses a sword, Boss Slayer uses a skull, Wave Surfer uses waves — they should not share SVG skeletons.
+- [ ] ACH.C6 **Training icon diversity:** The 4 training chains (Attack/Magic/Lore/Precision) must have DIFFERENT visual symbols — not the same bar chart in different colors. Attack = sword/axe, Magic = wand/star, Lore = book/quill, Precision = crosshair/arrow.
 
 ---
 
@@ -135,12 +140,15 @@
 - [ ] ITEM.A2 **Slot recognition test:** Review agent reads 5 sprites from different gear slots (weapon, helmet, chest, boots, ring). Can identify the slot from SVG structure alone — swords have blade+hilt, helmets have dome+visor, boots have sole+cuff.
 - [ ] ITEM.A3 **Armor class differentiation:** Review agent reads 3 sprites of same slot but different armor classes. Cloth has soft/draped paths, plate has angular/rigid paths, magic has glow/gradient effects.
 - [ ] ITEM.A4 Each sprite has `render_definition` with: `svg_path`, `slot`, `paperdoll_layer`, `anchor_point`, `color_palette`, `scale`
+- [ ] ITEM.A5 **Per-slot visual uniqueness:** Review agent reads ALL items in the same gear slot (e.g., all 5 helmets). Each must have DIFFERENT `<path d="...">` values — not the same helmet shape in different colors. Helmets should vary: dome vs. visor vs. open-face vs. horned vs. circlet. Boots should vary: armored vs. cloth wrapping vs. hover-platform vs. greaves vs. sandals.
+- [ ] ITEM.A6 **Slot × armor-class matrix:** Each combination of slot + armor class should produce a visually distinct SVG. Cloth helmet ≠ plate helmet ≠ magic helmet — different shapes, not different colors on the same shape.
 
 ### ITEM-B: Curated Artifact Sprites (50 unique items)
 - [ ] ITEM.B1 **All 50 curated_artifacts have a UNIQUE sprite** in asset_registry (category = 'artifact_icon')
 - [ ] ITEM.B2 **Complexity test:** Review agent reads 3 artifact icons and 3 base item sprites. Artifact icons have MORE SVG elements (ornate border, glow, unique silhouette) than base items.
 - [ ] ITEM.B3 **Lore-driven:** Review agent reads 3 artifact icons alongside their `lore_text` — icon visually references the lore (e.g., "forged in celestial fire" → flame elements and gold coloring)
 - [ ] ITEM.B4 **Rarity progression:** Review agent compares a common artifact icon vs a legendary one — legendary is clearly more ornate/complex
+- [ ] ITEM.B5 **Artifact structural uniqueness:** Every artifact icon must have a DIFFERENT SVG skeleton. `SELECT COUNT(DISTINCT regexp_replace(regexp_replace(render_definition->>'svg_template', '#[0-9a-fA-F]{3,6}', '#C', 'g'), '[0-9]+\.?[0-9]*', 'N', 'g')) FROM asset_registry WHERE category='artifact_icon';` MUST equal the total artifact count. Each artifact's icon should reflect its specific `lore_text` — a fire-themed artifact gets flame shapes, a shadow-themed one gets void shapes.
 
 ---
 
@@ -197,7 +205,21 @@ These passed quality in v1/v2. Quick structural verification — do NOT regenera
 - [ ] FINAL.4 Every `death_sfx_key` exists in audio_configs
 - [ ] FINAL.5 DB backup retained from pre-flight
 - [ ] FINAL.6 **FULL CHAIN TEST:** Review agent picks 3 random entities → verifies each has: sprite (with >= 6 SVG elements) + lore (prose, not template) + scene + background (lore-appropriate) + atmosphere + music + death SFX — all resolve, all quality
-- [ ] FINAL.7 Write `STATUS: COMPLETE` only after review agent confirms ALL above
+- [ ] FINAL.7 **ZERO DEFERRED:** Every item deferred during phases 3-7 has been resolved. Query AUTONOMOUS_PROGRESS.md — if any DEFERRED entries lack a corresponding RESOLVED entry, this gate FAILS.
+- [ ] FINAL.8 **ADVERSARIAL SELF-AUDIT:** Orchestrator queries 10 random entities, 5 achievement chains, 5 backgrounds with `ORDER BY RANDOM()` and verifies quality independently of the review agent. Any failure → fix and re-audit.
+- [ ] FINAL.9 Write `STATUS: COMPLETE` only after review agent confirms ALL above AND FINAL.7 + FINAL.8 + FINAL.10 pass
+- [ ] FINAL.10 **SESSION LESSONS WRITTEN:** `tools/watchdog/SESSION_LESSONS.md` has been updated with this session's entry. Entry must include: what went wrong, what went right, and numbered actionable lessons. A session with no lessons entry is incomplete — this gate blocks STATUS: COMPLETE.
+
+---
+
+## SESSION: Iterative Improvement Protocol
+
+Every session MUST contribute to the cumulative learning log. This is a quality gate, not optional documentation.
+
+- [ ] SESS.1 **Lessons file read on startup:** Heartbeat log contains `LESSONS_REVIEWED: X entries from Y sessions`
+- [ ] SESS.2 **Lessons applied during work:** Heartbeat log contains at least one `LESSON_APPLIED:` entry showing a prior lesson was actively used to prevent a mistake
+- [ ] SESS.3 **Lessons written on completion:** `SESSION_LESSONS.md` has a new dated entry with all three required sections (wrong, right, lessons)
+- [ ] SESS.4 **Honest self-assessment:** The "what I did wrong" section is non-empty. Every session has at least one mistake or near-miss to report. "Nothing went wrong" is not credible and is an automatic FAIL of this gate.
 
 ---
 
@@ -207,13 +229,14 @@ These passed quality in v1/v2. Quick structural verification — do NOT regenera
 |---------|-------|-------|
 | QG | 10 | Phase-level quality gates |
 | SPR | 14 | **Entity sprites — family body plans + visual complexity** |
-| LORE | 18 | **Entity lore — book-grounded prose + anti-automation checks** |
-| ACH | 11 | **Achievement icons — tiered progression + category symbols** |
-| ITEM | 8 | **Item sprites — slot-recognizable + artifact specials** |
+| LORE | 21 | **Entity lore — book-grounded prose + anti-automation checks** |
+| ACH | 12 | **Achievement icons — tiered progression + category symbols + uniqueness** |
+| ITEM | 11 | **Item sprites — slot-recognizable + per-slot uniqueness + artifact specials** |
 | BG | 9 | **Backgrounds — lore-appropriate parallax diversity** |
 | PRSV | 11 | Preserved categories (audit-only) |
-| FINAL | 7 | End-to-end verification |
-| **TOTAL** | **88** | |
+| FINAL | 10 | End-to-end verification + deferred resolution + self-audit |
+| SESSION | 4 | Iterative improvement protocol |
+| **TOTAL** | **102** | |
 
 **Completion rules:**
 - ALL SPR, LORE, ACH, ITEM, BG goals must pass with QUOTED EVIDENCE from review agent
@@ -221,7 +244,8 @@ These passed quality in v1/v2. Quick structural verification — do NOT regenera
 - ALL FINAL goals must pass
 - Template text or blob sprites = CRITICAL FAIL = do NOT signal completion
 - Any .py file in tools/watchdog/ containing content templates = CRITICAL FAIL = entire run void
-- Max 3 goals may be DEFERRED after 2 remediation attempts
+- ZERO deferred items allowed at completion — all must be resolved during Phase 12 iteration loop
+- There is NO cap on remediation attempts — keep fixing until it passes
 - **String length and non-NULL checks alone are NEVER sufficient** — review agent must READ actual content
 - **viewBox="0 0 64 64"** must be present in every SVG — no exceptions
 - **Content quality gates may NOT be self-certified by the orchestrator** — review agent must sign off

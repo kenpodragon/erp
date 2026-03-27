@@ -10,10 +10,18 @@ Ensure `psql` is installed and locate its executable.
 - **Linux/Mac:** Usually available in the PATH as `psql`.
 
 ### 2. Retrieve Connection Details
-The production connection string is stored in `backend/.env` under the variable `DATABASE_URL_LIVE`.
+
+**Local development database** is the HOST machine's PostgreSQL on `localhost:5432` — NOT the Docker postgres container. The Docker postgres service is for clean deployment/CI only.
+
+```bash
+# Local dev access (credentials from backend/.env):
+PGPASSWORD='<APP_USER_PASSWORD from backend/.env>' psql -h localhost -U erp_app_user -d erp_production
+```
+
+**Production/Cloud SQL** connection string is stored in `backend/.env` under `DATABASE_URL_LIVE`.
 - Look for: `DATABASE_URL_LIVE=postgresql+psycopg2://<user>:<password>@/<dbname>?host=<instance_connection_name>`
 - Extract the username, password, and the Cloud SQL Public IP (which can be found via `gcloud sql instances describe <instance_name>`).
-- PLEASE NOTE that for local debugging, host.docker.internal -> locahost
+- NOTE: `host.docker.internal` in connection strings maps to `localhost` on the host machine.
 
 ### 3. Execute Migration
 Use the following command pattern to execute SQL files directly against the production instance:

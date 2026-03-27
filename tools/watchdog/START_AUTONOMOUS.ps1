@@ -1,9 +1,9 @@
 # START_AUTONOMOUS.ps1 — Setup for the overnight ERP generator agent
 # Run from PowerShell:
-#   cd C:\Users\ssala\OneDrive\Desktop\MMORPG\erp
+#   cd C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code
 #   powershell -ExecutionPolicy Bypass -File tools\watchdog\START_AUTONOMOUS.ps1
 
-$WorkDir = 'C:\Users\ssala\OneDrive\Desktop\MMORPG\erp'
+$WorkDir = 'C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code'
 Set-Location $WorkDir
 
 Write-Host ''
@@ -99,7 +99,7 @@ $requiredFiles = @(
     'tools\watchdog\AGENT_GOALS.md',
     'tools\watchdog\WATCHDOG_AUTO.ps1',
     'backend\.env',
-    '..\AGENTS.md',
+    '..\CLAUDE.md',
     '..\docs\explanation\lore\BOOKS_SUMMARY.md',
     '..\docs\explanation\lore\CHARACTER_GUIDE.md',
     '..\docs\explanation\lore\ENVIRONMENT_GUIDE.md',

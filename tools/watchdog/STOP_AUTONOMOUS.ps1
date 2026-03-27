@@ -2,10 +2,10 @@
 # Restores Claude settings, shows what was accomplished, provides restore instructions.
 #
 # Usage:
-#   cd C:\Users\ssala\OneDrive\Desktop\MMORPG\erp
+#   cd C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code
 #   powershell -ExecutionPolicy Bypass -File tools\watchdog\STOP_AUTONOMOUS.ps1
 
-$WorkDir = 'C:\Users\ssala\OneDrive\Desktop\MMORPG\erp'
+$WorkDir = 'C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code'
 $WatchdogDir = Join-Path $WorkDir 'tools\watchdog'
 $ClaudeSettingsDir = Join-Path $env:USERPROFILE '.claude'
 $ClaudeSettings = Join-Path $ClaudeSettingsDir 'settings.local.json'
@@ -128,7 +128,7 @@ try {
 # --- Step 7: DB restore instructions ---
 Write-Host ''
 Write-Host '[7/9] Database Restore Instructions...' -ForegroundColor Cyan
-$backupDir = Join-Path $WorkDir 'db\backups'
+$backupDir = Join-Path $WorkDir '..\db-backups'
 if (Test-Path $backupDir) {
     $latestBackup = Get-ChildItem $backupDir -Filter '*.dump' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     if ($latestBackup) {

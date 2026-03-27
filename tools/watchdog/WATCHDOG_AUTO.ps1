@@ -2,10 +2,10 @@
 # Spawns Claude in a separate window, tracks by PID, auto-restarts on failure.
 #
 # Usage:
-#   cd C:\Users\ssala\OneDrive\Desktop\MMORPG\erp
+#   cd C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code
 #   powershell -ExecutionPolicy Bypass -File tools\watchdog\WATCHDOG_AUTO.ps1
 
-$WorkDir = "C:\Users\ssala\OneDrive\Desktop\MMORPG\erp"
+$WorkDir = "C:\Users\ssala\OneDrive\Desktop\dev-tools\projects\erp\code"
 $WatchdogDir = Join-Path $WorkDir "tools\watchdog"
 $ProgressFile = Join-Path $WatchdogDir "AUTONOMOUS_PROGRESS.md"
 $StatusFile = Join-Path $WatchdogDir ".autonomous_status"
@@ -20,11 +20,23 @@ $script:ClaudePID = $null
 Set-Location $WorkDir
 
 $InitialPrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v4 — FULL CONTENT REGENERATION. CRITICAL: YOU write every piece of content yourself. Do NOT write Python scripts, template arrays, randomizers, or any automation. v1/v2/v3 ALL FAILED because they wrote scripts instead of composing content. For each entity: READ story_beats.raw_text (actual book prose), then COMPOSE a unique description/SVG yourself, then UPDATE. Read tools/watchdog/AGENT_GOALS.md (88 acceptance criteria). Read ../docs/explanation/lore/BOOKS_SUMMARY.md for high-level lore. Execute phases 0-12 in order. Phase 2: design family body plans. Phase 3: compose each sprite SVG by hand. Phase 4: write each lore description yourself after reading raw_text. Phases 5-7: compose each icon/sprite/background. Spawn REVIEW AGENTS that detect template structures — if 10+ descriptions share the same sentence pattern, FAIL. If .py files exist in tools/watchdog/, FAIL. Heartbeat every task. Write STATUS: COMPLETE only when quality gates pass.
+Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as the ORCHESTRATOR. This is v5 — FULL CONTENT REGENERATION. v1/v2/v3 wrote Python scripts with template arrays. v4 wrote the SAME template functions INLINE (def make_sprite(params)) — 3,848 parametric color-swap sprites that were all garbage. BOTH approaches are banned. YOU compose each piece of content individually — unique path data, unique prose, unique silhouettes. If you write a function, a loop, or any reusable pattern that takes parameters and outputs SVG/text — STOP, you are doing v4 again. Read tools/watchdog/AGENT_GOALS.md (102 acceptance criteria). Read ../docs/explanation/lore/BOOKS_SUMMARY.md for high-level lore. Execute phases 0-12 in order. Phase 12 is a CONTINUOUS IMPROVEMENT LOOP — iterate until perfect, no ceiling. Every 50 entities run the skeleton uniqueness SQL check — if >5 sprites share the same skeleton (stripped of colors/numbers), STOP and recompose. Visually RENDER sprites in the browser and take screenshots — element counting alone is never sufficient. Spawn REVIEW AGENTS by file reference ("Read tools/watchdog/REVIEW_AGENT_PROMPT.md and execute it") — do NOT run review checks yourself. Keep RESUME_STATE updated after every significant action. Write STATUS: COMPLETE to tools/watchdog/.autonomous_status only when: review passes + zero deferred + adversarial self-audit passes + second independent review confirms.
 '@
 
 $ResumePrompt = @'
-Read tools/watchdog/AGENT_INSTRUCTIONS.md and execute as ORCHESTRATOR (v4 — YOU write all content, no scripts). Read tools/watchdog/AGENT_GOALS.md (check [x] vs [ ]). Resume from RESUME_STATE in tools/watchdog/AUTONOMOUS_PROGRESS.md. CRITICAL: Do NOT write Python scripts or template arrays. YOU compose each description and SVG by hand after reading story_beats.raw_text. Review agents must detect template sentence structures — metric checks alone are insufficient. If .py files exist in tools/watchdog/, the entire run FAILS. Heartbeat every task. Write STATUS: COMPLETE only when all 88 quality gates pass.
+YOU ARE RESUMING A PRIOR SESSION. Do NOT restart from Phase 0.
+
+FIRST: Read tools/watchdog/AUTONOMOUS_PROGRESS.md — find the ## RESUME_STATE section. This tells you exactly where you left off: which phase, which family/batch, what's deferred, what review failures need fixing.
+
+SECOND: Read tools/watchdog/AGENT_GOALS.md — check which goals are [x] (done) vs [ ] (remaining). Do NOT blindly trust prior checkmarks — if a content quality goal is [x] but the progress file shows a review FAIL after it was checked, the goal needs re-validation. Cross-reference checkmarks against review results in AUTONOMOUS_PROGRESS.md.
+
+If AUTONOMOUS_PROGRESS.md does not exist or has no RESUME_STATE section, treat this as a fresh start and begin from Phase 0.
+
+THIRD: Read tools/watchdog/AGENT_INSTRUCTIONS.md for the full protocol.
+
+THEN: Pick up exactly where RESUME_STATE says. If you were in the Phase 12 iteration loop, continue iterating — process deferred items, fix review failures, re-run adversarial reviews. If you were mid-phase, continue from the last completed batch.
+
+CRITICAL RULES: Do NOT write Python scripts, template arrays, or any automation. YOU compose each description and SVG by hand after reading story_beats.raw_text. If .py files exist in tools/watchdog/, delete them and FAIL yourself. Heartbeat every task. Keep RESUME_STATE updated after every significant action. Write STATUS: COMPLETE only when: review agent passes + zero deferred items + adversarial self-audit passes.
 '@
 
 function Write-Log {
@@ -201,11 +213,11 @@ while ($true) {
         Write-Log ("Restart #" + $RestartCount + " of " + $MaxRestarts + " - respawning in 15s...") "Cyan"
         Start-Sleep -Seconds 15
 
+        $preRestartTasks = Get-TaskCount
         $claudeProc = Launch-Claude -Prompt $ResumePrompt
         $script:ClaudePID = $claudeProc.Id
         $launchTime = Get-Date
         $script:WatchdogStartTime = Get-Date
-        if (Test-Path $ProgressFile) { (Get-Item $ProgressFile).LastWriteTime = Get-Date }
 
         # Post-restart verification
         Start-Sleep -Seconds 10
@@ -216,6 +228,12 @@ while ($true) {
         }
 
         Start-Sleep -Seconds 50  # remaining grace period
+        # Only reset staleness clock if agent made progress after restart
+        $postRestartTasks = Get-TaskCount
+        if ($postRestartTasks -gt $preRestartTasks -and (Test-Path $ProgressFile)) {
+            (Get-Item $ProgressFile).LastWriteTime = Get-Date
+            Write-Log ("Progress confirmed after restart - tasks: $preRestartTasks -> $postRestartTasks") "Green"
+        }
         continue
     }
 
@@ -239,11 +257,11 @@ while ($true) {
         Write-Log ("Restart #" + $RestartCount + " of " + $MaxRestarts + " - respawning in 15s...") "Cyan"
         Start-Sleep -Seconds 15
 
+        $preRestartTasks = Get-TaskCount
         $claudeProc = Launch-Claude -Prompt $ResumePrompt
         $script:ClaudePID = $claudeProc.Id
         $launchTime = Get-Date
         $script:WatchdogStartTime = Get-Date
-        if (Test-Path $ProgressFile) { (Get-Item $ProgressFile).LastWriteTime = Get-Date }
 
         # Post-restart verification
         Start-Sleep -Seconds 10
@@ -254,6 +272,12 @@ while ($true) {
         }
 
         Start-Sleep -Seconds 50  # remaining grace period
+        # Only reset staleness clock if agent made progress after restart
+        $postRestartTasks = Get-TaskCount
+        if ($postRestartTasks -gt $preRestartTasks -and (Test-Path $ProgressFile)) {
+            (Get-Item $ProgressFile).LastWriteTime = Get-Date
+            Write-Log ("Progress confirmed after restart - tasks: $preRestartTasks -> $postRestartTasks") "Green"
+        }
         continue
     }
 
