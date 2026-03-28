@@ -1,7 +1,12 @@
 """
 Central configuration for the Book Agent Reader.
 All paths, constants, and book registry live here.
+
+Book-specific data (titles, filenames) is loaded from an external registry
+file. Set BOOK_REGISTRY_PATH to point at your registry JSON, or place a
+books_registry.json next to this file. See config.example.json for format.
 """
+import json
 import os
 from pathlib import Path
 
@@ -12,13 +17,22 @@ BOOKS_DIR    = Path(os.getenv("BOOKS_DIR", str(PROJECT_ROOT.parent / "Books")))
 LOG_DIR      = PARSER_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
-# ── Book Registry ──────────────────────────────────────────────────────────
-BOOK_REGISTRY: list[dict] = [
-    {"book_number": 1, "title": "Elysium Rising",      "source_file": "ER_Kindle.docx"},
-    {"book_number": 2, "title": "Elysium Fallen",       "source_file": "EF_Kindle.docx"},
-    {"book_number": 3, "title": "Escape from Elysium",  "source_file": "EFE_Kindle.docx"},
-]
+# ── Book Registry (loaded from external file) ─────────────────────────────
+_REGISTRY_PATH = Path(
+    os.getenv("BOOK_REGISTRY_PATH", str(PARSER_DIR / "books_registry.json"))
+)
 
+def _load_registry() -> list[dict]:
+    if _REGISTRY_PATH.exists():
+        with open(_REGISTRY_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return [
+        {"book_number": 1, "title": "Book 1", "source_file": "book_1.docx"},
+        {"book_number": 2, "title": "Book 2", "source_file": "book_2.docx"},
+        {"book_number": 3, "title": "Book 3", "source_file": "book_3.docx"},
+    ]
+
+BOOK_REGISTRY: list[dict] = _load_registry()
 BOOK_BY_NUMBER: dict[int, dict] = {b["book_number"]: b for b in BOOK_REGISTRY}
 
 # ── Phase Names ────────────────────────────────────────────────────────────

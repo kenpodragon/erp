@@ -31,7 +31,9 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parent.parent.parent  # tools/sim/data -> erp
 ENV_FILE = REPO_ROOT / "backend" / ".env"
-DEFAULT_OUTPUT = SCRIPT_DIR / "content_snapshot.json"
+DEFAULT_OUTPUT = Path(
+    os.getenv("CONTENT_SNAPSHOT_PATH", str(SCRIPT_DIR / "content_snapshot.json"))
+)
 
 
 # ---------------------------------------------------------------------------

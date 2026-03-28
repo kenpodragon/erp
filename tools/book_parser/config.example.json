@@ -1,0 +1,5 @@
+[
+  {"book_number": 1, "title": "Book 1 Title", "source_file": "book_1.docx"},
+  {"book_number": 2, "title": "Book 2 Title", "source_file": "book_2.docx"},
+  {"book_number": 3, "title": "Book 3 Title", "source_file": "book_3.docx"}
+]
