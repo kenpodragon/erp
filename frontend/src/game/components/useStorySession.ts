@@ -8,6 +8,7 @@ import { useGame } from '../GameContext';
 import { api } from '../../api';
 import type { StorySession } from '../GameContext';
 import { applyClassVisuals } from '../utils/classVisuals';
+import { preloadEntitySprites } from '../renderers/SpriteTextureCache';
 
 const TICK_INTERVAL_MS = 2000;
 
@@ -122,8 +123,14 @@ export function useStorySession(params: UseStorySessionParams) {
             bossType: sessionData.boss_type ?? null,
             bossName: sessionData.boss_name ?? 'Guardian',
             bossConfig: sessionData.boss_config ?? null,
+            bossVisualData: sessionData.boss_visual_data ?? undefined,
             isReplay: sessionData.is_replay ?? false,
           };
+          // Preload boss sprite BEFORE mounting BossStage so texture is cached
+          if (session.bossVisualData?.sprite_key) {
+            await preloadEntitySprites([session.bossVisualData.sprite_key]);
+          }
+
           setStorySession(session);
           setSkillTree(sessionData.skill_tree || []);
           applyClassVisuals(sessionData.visual_config);

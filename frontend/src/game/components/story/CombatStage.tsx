@@ -10,6 +10,7 @@ import type { StorySession } from '../../GameContext';
 import { formatNumber } from '../../utils/numbers';
 import { hexToPixiTint } from '../../utils/classVisuals';
 import { useAssets } from '../../providers/AssetProvider';
+import { preloadEntitySprites } from '../../renderers/SpriteTextureCache';
 import { useCombatState, MONSTERS_PER_ZONE_DEFAULT } from './useCombatState';
 import type { Enemy } from './useCombatState';
 import { useCombatAnimations } from './useCombatAnimations';
@@ -182,7 +183,7 @@ const CombatStage: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (!assets) return;
-    const spriteKeys = enemyPool.map(e => e.spriteKey).filter((k): k is string => !!k);
+    const spriteKeys = enemyPool.map(e => e.spriteKey || (e as any).sprite_key).filter((k): k is string => !!k);
     if (spriteKeys.length > 0) assets.preloadBatch(spriteKeys);
   }, [enemyPool, assets]);
 
@@ -208,7 +209,17 @@ const CombatStage: React.FC<Props> = (props) => {
 
   useEffect(() => {
     api.get(`/api/game/story/scenes/${props.session.sceneId}/enemies?zone=${props.session.currentZone}`)
-      .then(r => r.ok ? r.json() : null).then(data => { if (data?.enemies) setEnemyPool(data.enemies); });
+      .then(r => r.ok ? r.json() : null)
+      .then(async (data) => {
+        if (!data?.enemies) return;
+        // Preload SVG sprite textures BEFORE setting pool — ensures textures
+        // are cached before any EntityRenderer mounts (enemies die too fast otherwise)
+        const spriteKeys = data.enemies
+          .map((e: any) => e.sprite_key)
+          .filter((k: string | null): k is string => !!k);
+        if (spriteKeys.length > 0) await preloadEntitySprites(spriteKeys);
+        setEnemyPool(data.enemies);
+      });
   }, [props.session.sceneId, props.session.currentZone]);
 
   return (

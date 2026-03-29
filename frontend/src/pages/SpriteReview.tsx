@@ -13,6 +13,7 @@ interface AssetItem {
   label: string
   family?: string
   desc?: string
+  def?: string
   category?: string
   tags?: string
   len: number
@@ -131,10 +132,99 @@ function BackgroundCard({ item }: { item: AssetItem }) {
   )
 }
 
+/** Module-level lookup: asset_key → parsed render_definition for bg_component items. */
+let _bgComponentLookup: Map<string, any> | null = null
+function getBgComponentLookup(): Map<string, any> {
+  if (_bgComponentLookup) return _bgComponentLookup
+  _bgComponentLookup = new Map()
+  const items = getItems('bg_elements')
+  for (const item of items) {
+    if (item.category === 'bg_component' && item.def) {
+      try { _bgComponentLookup.set(item.key, JSON.parse(item.def)) } catch { /* */ }
+    }
+  }
+  return _bgComponentLookup
+}
+
+function resolveColor(c: string | undefined, colorSlots: Record<string, { base: string }>): string | null {
+  if (!c || c === 'none') return null
+  if (c.startsWith('{')) {
+    const slot = c.slice(1, -1)
+    return colorSlots[slot]?.base || '#FF00FF'
+  }
+  return c
+}
+
+function renderSvgPathsToCtx(
+  ctx: CanvasRenderingContext2D,
+  paths: Array<{ d: string; fill?: string; stroke?: string; stroke_width?: number }>,
+  colorSlots: Record<string, { base: string }>,
+) {
+  for (const path of paths) {
+    const path2d = new Path2D(path.d)
+    const fill = resolveColor(path.fill, colorSlots)
+    if (fill) {
+      ctx.fillStyle = fill
+      ctx.fill(path2d)
+    }
+    const stroke = resolveColor(path.stroke, colorSlots)
+    if (stroke) {
+      ctx.strokeStyle = stroke
+      ctx.lineWidth = (path.stroke_width || 1)
+      ctx.stroke(path2d)
+    }
+  }
+}
+
 function BgElementCard({ item }: { item: AssetItem }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   let tags: string[] = []
   try { tags = JSON.parse(item.tags || '[]') } catch { /* */ }
   const isDef = item.category === 'bg_element_def'
+
+  useEffect(() => {
+    if (!canvasRef.current) return
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return
+
+    ctx.fillStyle = '#0a0a1a'
+    ctx.fillRect(0, 0, 240, 100)
+
+    try {
+      const def = JSON.parse(item.def || '{}')
+
+      if (isDef) {
+        // Element definition: assemble first variant from each slot
+        const components: Record<string, string[]> = def.components || {}
+        const baseW = def.base_width || 30
+        const baseH = def.base_height || 60
+        const scale = Math.min(200 / baseW, 80 / baseH, 3.0)
+
+        ctx.save()
+        ctx.translate(120 - (baseW * scale) / 2, 90 - (baseH * scale))
+        ctx.scale(scale, scale)
+
+        for (const [_slot, variantKeys] of Object.entries(components)) {
+          const keys = variantKeys as string[]
+          if (!keys || keys.length === 0) continue
+          const variant = getBgComponentLookup().get(keys[0])
+          if (!variant) continue
+          renderSvgPathsToCtx(ctx, variant.svg_paths || [], variant.color_slots || {})
+        }
+        ctx.restore()
+      } else {
+        // Single component: render its paths
+        const paths = def.svg_paths || []
+        const colorSlots = def.color_slots || {}
+
+        ctx.save()
+        ctx.translate(120, 50)
+        ctx.scale(2.5, 2.5)
+        renderSvgPathsToCtx(ctx, paths, colorSlots)
+        ctx.restore()
+      }
+    } catch { /* skip bad defs */ }
+  }, [item, isDef])
 
   return (
     <div style={{
@@ -142,6 +232,7 @@ function BgElementCard({ item }: { item: AssetItem }) {
       borderRadius: 6, overflow: 'hidden', width: 240,
       background: isDef ? '#1a1a30' : '#111118',
     }}>
+      <canvas ref={canvasRef} width={240} height={100} style={{ display: 'block', width: 240, height: 100 }} />
       <div style={{ padding: 8, color: 'white', fontSize: 11 }}>
         <div style={{ fontWeight: 'bold', marginBottom: 2, color: isDef ? '#88aaff' : '#aaa' }}>
           {isDef ? '[ DEF ]' : '[ CMP ]'} {item.label}
@@ -166,6 +257,7 @@ export default function SpriteReview() {
   const [tab, setTab] = useState<Tab>('sprites')
   const [page, setPage] = useState(0)
   const [familyFilter, setFamilyFilter] = useState('All')
+  const [bossFilter, setBossFilter] = useState(false)
   const [bgElemFilter, setBgElemFilter] = useState('All')
   const [bgTagFilter, setBgTagFilter] = useState('All')
 
@@ -178,8 +270,13 @@ export default function SpriteReview() {
   // Apply filters
   const filteredItems = useMemo(() => {
     let items = allItems
-    if (tab === 'sprites' && familyFilter !== 'All') {
-      items = items.filter(i => (i.family || i.label) === familyFilter)
+    if (tab === 'sprites') {
+      if (bossFilter) {
+        items = items.filter(i => !!i.boss_role)
+      }
+      if (familyFilter !== 'All') {
+        items = items.filter(i => (i.family || i.label) === familyFilter)
+      }
     }
     if (tab === 'bg_elements') {
       if (bgElemFilter !== 'All') {
@@ -195,12 +292,12 @@ export default function SpriteReview() {
       }
     }
     return items
-  }, [allItems, tab, familyFilter, bgElemFilter, bgTagFilter])
+  }, [allItems, tab, familyFilter, bossFilter, bgElemFilter, bgTagFilter])
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE)
   const pageItems = filteredItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
 
-  const handleTabChange = (t: Tab) => { setTab(t); setPage(0); setFamilyFilter('All'); setBgElemFilter('All'); setBgTagFilter('All') }
+  const handleTabChange = (t: Tab) => { setTab(t); setPage(0); setFamilyFilter('All'); setBossFilter(false); setBgElemFilter('All'); setBgTagFilter('All') }
 
   const cardSize = tab === 'sprites' ? 96 : tab === 'backgrounds' ? 260 : tab === 'bg_elements' ? 240 : 80
 
@@ -232,12 +329,18 @@ export default function SpriteReview() {
       {/* Filters */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
         {tab === 'sprites' && (
-          <label style={{ color: '#aaa', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
-            Family:
-            <select value={familyFilter} onChange={e => { setFamilyFilter(e.target.value); setPage(0) }} style={selectStyle}>
-              {families.map(f => <option key={f} value={f}>{f} {f !== 'All' ? `(${allItems.filter(i => (i.family || i.label) === f).length})` : ''}</option>)}
-            </select>
-          </label>
+          <>
+            <label style={{ color: '#aaa', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
+              Family:
+              <select value={familyFilter} onChange={e => { setFamilyFilter(e.target.value); setPage(0) }} style={selectStyle}>
+                {families.map(f => <option key={f} value={f}>{f} {f !== 'All' ? `(${allItems.filter(i => (i.family || i.label) === f).length})` : ''}</option>)}
+              </select>
+            </label>
+            <label style={{ color: bossFilter ? '#ff6666' : '#aaa', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+              <input type="checkbox" checked={bossFilter} onChange={e => { setBossFilter(e.target.checked); setPage(0) }} />
+              Boss Only ({allItems.filter(i => !!i.boss_role).length})
+            </label>
+          </>
         )}
         {tab === 'bg_elements' && (
           <>
@@ -304,6 +407,7 @@ export default function SpriteReview() {
               {tab === 'sprites' && (
                 <>
                   <small style={{ display: 'block', marginTop: 2, fontSize: 9, color: '#8888cc', maxWidth: cardSize, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.boss_role && <span style={{ color: '#ff4444', fontWeight: 'bold', marginRight: 3 }}>[{item.boss_role}]</span>}
                     {item.family || '?'}
                   </small>
                   <small style={{ display: 'block', fontSize: 9, maxWidth: cardSize, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

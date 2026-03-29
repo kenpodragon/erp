@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTick } from '@pixi/react';
 import { useGame } from '../GameContext';
 import { api } from '../../api';
+import { preloadEntitySprites } from '../renderers/SpriteTextureCache';
 import type { EnemyVisualData } from './shared/EntityRenderer';
 import type { CharacterVisualData } from './shared/PaperDollRenderer';
 import type { AttackVisualData } from './shared/AttackRenderer';
@@ -86,7 +87,13 @@ export function useBannerSimulation(character: any) {
     const fetchData = async () => {
       try {
         const enemyRes = await api.get('/api/game/enemies/encountered');
-        if (enemyRes.ok) setEnemyPool(await enemyRes.json());
+        if (enemyRes.ok) {
+          const pool: EnemyVisualData[] = await enemyRes.json();
+          // Preload SVG sprite textures before setting pool
+          const spriteKeys = pool.map(e => e.sprite_key).filter((k): k is string => !!k);
+          if (spriteKeys.length > 0) await preloadEntitySprites(spriteKeys);
+          setEnemyPool(pool);
+        }
       } catch (err) { console.error('Banner: Failed to fetch enemy pool', err); }
 
       try {

@@ -16,7 +16,6 @@ import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
 import { Container, Graphics, Text, TextStyle, Texture, TilingSprite } from 'pixi.js';
 import type { StorySession } from '../../GameContext';
-import { useAssets } from '../../providers/AssetProvider';
 import { api } from '../../../api';
 import * as BackgroundRenderer from '../../renderers/BackgroundRenderer';
 import { backgroundComponentCache } from '../../renderers/BackgroundComponentCache';
@@ -170,15 +169,7 @@ const BossStage: React.FC<Props> = ({
   session, gameConfigs, onEnemyClick, onGoldEarned, onBossDefeated,
   textScale = 1.0, debugSuperClick = false, playSFX, reduceMotion = false,
 }) => {
-  // Preload boss sprite asset definition if available
-  let assets: ReturnType<typeof useAssets> | null = null;
-  try { assets = useAssets(); } catch { /* AssetProvider not mounted */ }
-
-  useEffect(() => {
-    if (!assets) return;
-    const bossKey = (session as any).bossSpriteKey;
-    if (bossKey) assets.preloadBatch([bossKey]);
-  }, [(session as any).bossSpriteKey, assets]);
+  // Boss sprite preloading is handled by useBossPhases via SpriteTextureCache
 
   // Boss background — per-chapter boss variant at reduced opacity
   const [bossBgTexture, setBossBgTexture] = useState<Texture | null>(null);

@@ -6,6 +6,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { StorySession, BossConfig } from '../../GameContext';
 import { zoneHp, formatNumber } from '../../utils/numbers';
+import { preloadEntitySprites } from '../../renderers/SpriteTextureCache';
 import type { EnemyVisualData } from '../shared/EntityRenderer';
 import type { AttackVisualData } from '../shared/AttackRenderer';
 
@@ -144,10 +145,32 @@ export function useBossPhases(params: UseBossPhasesParams) {
   const [interrupt, setInterrupt]   = useState<ActiveInterrupt | null>(null);
   const [interruptSuccess, setInterruptSuccess] = useState<boolean | null>(null);
 
-  const bossVisual: EnemyVisualData = (session as any).bossVisualData ?? {
+  const rawBossVisual: EnemyVisualData = session.bossVisualData ?? {
     ...DEFAULT_BOSS_VISUAL,
     name: bossName,
   };
+
+  // Override size for boss stage presentation — DB sizes are for regular combat,
+  // but bosses need to be large and imposing in the center-screen boss view.
+  const bossVisual: EnemyVisualData = {
+    ...rawBossVisual,
+    size: {
+      name: rawBossVisual.size?.name ?? 'huge',
+      scale_min: Math.max(rawBossVisual.size?.scale_min ?? 2.2, 2.0),
+      scale_max: Math.max(rawBossVisual.size?.scale_max ?? 2.4, 2.2),
+      width_base: Math.max(rawBossVisual.size?.width_base ?? 50, 50),
+      height_base: Math.max(rawBossVisual.size?.height_base ?? 70, 70),
+      hitbox_radius: Math.max(rawBossVisual.size?.hitbox_radius ?? 60, 50),
+      hp_bar_width: Math.max(rawBossVisual.size?.hp_bar_width ?? 200, 200),
+    },
+  };
+
+  // Preload boss sprite texture so it renders immediately
+  useEffect(() => {
+    if (bossVisual.sprite_key) {
+      preloadEntitySprites([bossVisual.sprite_key]);
+    }
+  }, [bossVisual.sprite_key]);
 
   // Attack cycling
   const attackTypes = [

@@ -137,7 +137,9 @@ export function useCombatState(params: UseCombatStateParams) {
         const finalGold = entityGold * (isBossWave ? 10 : isBoss ? 3 : 1) * (isPrimal ? 3 : 1);
         setEnemy({
           ...template,
+          entityId: template.entityId ?? (template as any).entity_id ?? null,
           name: template.name || (template as any).canonical_name || 'UNKNOWN ENTITY',
+          spriteKey: template.spriteKey || (template as any).sprite_key || null,
           maxHp: finalHp, currentHp: finalHp, baseGold: finalGold, isBoss, isPrimal, isFallback: false
         });
       }

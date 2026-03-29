@@ -4,9 +4,13 @@
  * Works as a child of any PixiJS Application across CombatStage, BossStage,
  * BottomAnimatedBanner, and ActiveTrainingSimulator.
  */
-import React, { useMemo, useRef, useCallback } from 'react';
-import { useTick } from '@pixi/react';
-import { TextStyle } from 'pixi.js';
+import React, { useMemo, useRef, useCallback, useState, useEffect } from 'react';
+import { useTick, extend } from '@pixi/react';
+import { TextStyle, Texture, Sprite } from 'pixi.js';
+import { svgTextureCache, onCacheUpdate, preloadEntitySprites } from '../../renderers/SpriteTextureCache';
+import { api } from '../../../api';
+
+extend({ Sprite });
 
 // ── Exported Interfaces ──────────────────────────────────────────────
 
@@ -143,6 +147,33 @@ const EntityRenderer: React.FC<EntityRendererProps> = ({
   const timeRef = useRef(0);
   const deathTimeRef = useRef(0);
   const deathFiredRef = useRef(false);
+
+  // ── Asset-based sprite rendering ─────────────────────────────────────
+  // Textures are pre-cached by CombatStage before enemies spawn.
+  // This component reads the shared cache synchronously on mount.
+  // Falls back to on-demand fetch + subscription for cache misses.
+  const [spriteTexture, setSpriteTexture] = useState<Texture | null>(
+    entity.sprite_key ? svgTextureCache.get(entity.sprite_key) ?? null : null,
+  );
+
+  useEffect(() => {
+    if (!entity.sprite_key) return;
+
+    // Already cached (preloaded by CombatStage)
+    const cached = svgTextureCache.get(entity.sprite_key);
+    if (cached) { setSpriteTexture(cached); return; }
+
+    // Not cached yet — subscribe to cache updates and trigger on-demand fetch
+    const unsubscribe = onCacheUpdate(() => {
+      const tex = svgTextureCache.get(entity.sprite_key!);
+      if (tex) { setSpriteTexture(tex); unsubscribe(); }
+    });
+
+    // Trigger fetch if not already in-flight (handles banner, training, boss)
+    preloadEntitySprites([entity.sprite_key]);
+
+    return unsubscribe;
+  }, [entity.sprite_key]);
 
   // Stable random values computed once per entity_id
   const stableValues = useMemo(() => {
@@ -427,8 +458,18 @@ const EntityRenderer: React.FC<EntityRendererProps> = ({
       {/* Shadow */}
       <pixiGraphics draw={drawShadow} />
 
-      {/* Body */}
-      <pixiGraphics draw={drawBody} />
+      {/* Body — sprite texture from asset registry, or procedural fallback */}
+      {spriteTexture ? (
+        <pixiSprite
+          texture={spriteTexture}
+          anchor={{ x: 0.5, y: 0.85 }}
+          width={baseW * bodyRatioW * 2.5}
+          height={baseH * bodyRatioH * 2.5}
+          y={0}
+        />
+      ) : (
+        <pixiGraphics draw={drawBody} />
+      )}
 
       {/* Death particles (explode/shatter) */}
       {(deathStyle === 'explode' || deathStyle === 'shatter') && deathProgress > 0 && (

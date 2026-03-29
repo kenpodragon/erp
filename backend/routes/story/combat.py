@@ -17,6 +17,8 @@ from models import (
     Scene, Chapter, Book, Skill, PlayerSettings,
     Entity, EntityGameplayData,
 )
+from models.visual import MovementType, SizeClass, AnimationStyle, SilhouetteType
+from models.attack_types import AttackType
 from models.story_mode import (
     GameConfig, PlayerStorySession, SessionUpgrade,
     CharacterSkillLevel, EntitySceneAppearance, BossCompletion,
@@ -216,16 +218,26 @@ async def start_session(
     ).all()
     click_mult, auto_mult, click_lvl, auto_lvl = _calc_multipliers(session, all_upgrades)
 
-    # --- Fetch boss name + compute boss HP from DB ---
+    # --- Fetch boss name, visual data, and compute boss HP from DB ---
     boss_name = "Guardian"
     boss_base_hp = None
+    boss_visual_data = None
     if is_boss_session:
+        # Try explicit boss roles first, then fall back to any enemy in the scene
         boss_entity = session.exec(
             select(Entity)
             .join(EntitySceneAppearance, Entity.id == EntitySceneAppearance.entity_id)
             .where(EntitySceneAppearance.scene_id == body.scene_id)
-            .where(col(EntitySceneAppearance.role).in_(["boss", "big-boss", "big_boss"]))
+            .where(col(EntitySceneAppearance.role).in_(["boss", "big-boss", "big_boss", "mini-boss", "mini_boss"]))
         ).first()
+        if not boss_entity:
+            # No boss-role entity — pick the first enemy in this scene
+            boss_entity = session.exec(
+                select(Entity)
+                .join(EntitySceneAppearance, Entity.id == EntitySceneAppearance.entity_id)
+                .where(EntitySceneAppearance.scene_id == body.scene_id)
+                .where(col(EntitySceneAppearance.role).in_(["enemy"]))
+            ).first()
         if boss_entity:
             boss_name = boss_entity.canonical_name
 
@@ -247,7 +259,7 @@ async def start_session(
         scene_hp_mult = math.pow(scene_hp_scale, scene_position - 1)
         hp_multiplier = boss_config.get("hp_multiplier", 8)
 
-        # Boss entity base_hp from DB, or fallback
+        # Boss entity base_hp + full visual data from DB
         boss_gp = None
         if boss_entity:
             boss_gp = session.exec(
@@ -256,6 +268,59 @@ async def start_session(
         entity_base_hp = float(boss_gp.base_hp) if boss_gp and boss_gp.base_hp else 50.0
         max_base_hp_cap = _get_config_float(session, "max_scene_base_hp", 500.0)
         boss_base_hp = round(min(entity_base_hp * scene_hp_mult, max_base_hp_cap * scene_hp_mult) * hp_multiplier, 2)
+
+        # Build full boss visual data for frontend rendering
+        if boss_entity and boss_gp:
+            from sqlalchemy.orm import aliased
+            PrimaryAtk = aliased(AttackType)
+            SecondaryAtk = aliased(AttackType)
+            TertiaryAtk = aliased(AttackType)
+
+            mov = session.get(MovementType, boss_gp.movement_type_id) if boss_gp.movement_type_id else None
+            sz = session.get(SizeClass, boss_gp.size_class_id) if boss_gp.size_class_id else None
+            anim = session.get(AnimationStyle, boss_gp.animation_style_id) if boss_gp.animation_style_id else None
+            sil = session.get(SilhouetteType, boss_gp.silhouette_type_id) if boss_gp.silhouette_type_id else None
+            p_atk = session.get(AttackType, boss_gp.primary_attack_type_id) if boss_gp.primary_attack_type_id else None
+            s_atk = session.get(AttackType, boss_gp.secondary_attack_type_id) if boss_gp.secondary_attack_type_id else None
+            t_atk = session.get(AttackType, boss_gp.tertiary_attack_type_id) if boss_gp.tertiary_attack_type_id else None
+
+            def _atk(a):
+                if not a: return None
+                return {"name": a.name, "attack_animation_type": a.attack_animation_type,
+                        "projectile_color": a.projectile_color, "cooldown_ms": a.cooldown_ms,
+                        "projectile_speed": a.projectile_speed, "impact_effect": a.impact_effect,
+                        "attack_range": a.attack_range, "arc_angle": a.arc_angle,
+                        "trail_type": a.trail_type, "screen_shake": a.screen_shake}
+
+            boss_visual_data = {
+                "entity_id": boss_entity.id,
+                "name": boss_entity.canonical_name,
+                "sprite_key": boss_gp.sprite_key,
+                "base_hp": float(boss_gp.base_hp) if boss_gp.base_hp else 0,
+                "base_gold": float(boss_gp.base_gold) if boss_gp.base_gold else 0,
+                "color_primary": boss_gp.color_primary,
+                "color_secondary": boss_gp.color_secondary,
+                "movement": {"name": mov.name, "y_offset_min": mov.y_offset_min, "y_offset_max": mov.y_offset_max,
+                             "bob_amplitude": mov.bob_amplitude, "bob_frequency": mov.bob_frequency,
+                             "speed_multiplier": mov.speed_multiplier, "trail_effect": mov.trail_effect} if mov else None,
+                "size": {"name": sz.name, "scale_min": sz.scale_min, "scale_max": sz.scale_max,
+                         "width_base": sz.width_base, "height_base": sz.height_base,
+                         "hitbox_radius": sz.hitbox_radius, "hp_bar_width": sz.hp_bar_width} if sz else None,
+                "animation": {"name": anim.name, "idle_scale_x": anim.idle_scale_x, "idle_scale_y": anim.idle_scale_y,
+                              "idle_cycle_ms": anim.idle_cycle_ms, "idle_translate_x": anim.idle_translate_x,
+                              "idle_translate_y": anim.idle_translate_y, "attack_recoil": anim.attack_recoil,
+                              "death_style": anim.death_style, "death_duration_ms": anim.death_duration_ms,
+                              "death_particle_count": anim.death_particle_count} if anim else None,
+                "silhouette": {"name": sil.name, "body_shape": sil.body_shape, "body_ratio_w": sil.body_ratio_w,
+                               "body_ratio_h": sil.body_ratio_h, "corner_radius": sil.corner_radius,
+                               "has_limbs": sil.has_limbs, "limb_count": sil.limb_count,
+                               "has_head": sil.has_head, "has_wings": sil.has_wings,
+                               "has_weapon_slot": sil.has_weapon_slot, "has_eye_glow": sil.has_eye_glow,
+                               "sub_unit_count": sil.sub_unit_count} if sil else None,
+                "primary_attack": _atk(p_atk),
+                "secondary_attack": _atk(s_atk),
+                "tertiary_attack": _atk(t_atk),
+            }
 
     return {
         "session_id": new_session.id,
@@ -282,6 +347,7 @@ async def start_session(
         "boss_name": boss_name,
         "boss_config": boss_config if is_boss_session else None,
         "boss_base_hp": boss_base_hp,
+        "boss_visual_data": boss_visual_data,
         "is_replay": is_replay,
         # 2.4: Class visual identity
         "visual_config": char_class.visual_config if char_class else None,

@@ -62,6 +62,7 @@ export interface StorySession {
   bossType: 'chapter_boss' | 'book_boss' | null;
   bossName?: string;
   bossConfig: BossConfig | null;
+  bossVisualData?: import('./components/shared/EntityRenderer').EnemyVisualData;
   isReplay: boolean;
   idle_bonuses?: {
     attack_lvl: number;

@@ -36,14 +36,27 @@ print("Fetching entity sprites...")
 cur.execute("""
     SELECT ar.asset_key, ar.render_definition->>'svg_template' as svg,
            ef.name as family_name, e.canonical_name,
-           length(ar.render_definition->>'svg_template') as svg_len
+           length(ar.render_definition->>'svg_template') as svg_len,
+           COALESCE(
+             (SELECT string_agg(DISTINCT esa.role, ',')
+              FROM entity_scene_appearances esa
+              WHERE esa.entity_id = e.id
+              AND esa.role IN ('mini-boss', 'big-boss', 'boss')),
+             (SELECT 'chapter-boss'
+              FROM entity_scene_appearances esa2
+              JOIN scenes s2 ON s2.id = esa2.scene_id
+              WHERE esa2.entity_id = e.id
+              AND s2.scene_type IN ('chapter_boss', 'book_boss')
+              AND esa2.role = 'enemy'
+              LIMIT 1)
+           ) as boss_role
     FROM asset_registry ar
     JOIN entities e ON ar.asset_key = 'entity_sprite_' || e.id
     JOIN entity_families ef ON e.entity_family_id = ef.id
     WHERE ar.category='entity_sprite'
     ORDER BY ef.name, e.canonical_name;
 """)
-sprites = [{"key": r[0], "svg": r[1], "family": r[2], "label": r[3], "len": r[4]} for r in cur.fetchall()]
+sprites = [{"key": r[0], "svg": r[1], "family": r[2], "label": r[3], "len": r[4], "boss_role": r[5]} for r in cur.fetchall()]
 
 # ALL achievement icons
 print("Fetching achievement icons...")

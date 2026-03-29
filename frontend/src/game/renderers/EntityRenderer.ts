@@ -53,6 +53,44 @@ const SIZE_MAP: Record<string, number> = {
 };
 
 export function render(definition: RenderDefinition): RenderResult {
+  // SVG template format (ai_v5 generated sprites) — render placeholder canvas.
+  // Full SVG rendering requires async Image loading; the PixiJS EntityRenderer
+  // component handles this directly.  Here we return a sized canvas so that
+  // Canvas-based consumers (QA page, admin viewer) get a reasonable fallback.
+  if (definition.svg_template && typeof definition.svg_template === 'string') {
+    const size = SIZE_MAP[definition.size_category || 'medium'] || 20;
+    const canvasSize = size * 4 + 40;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    const ctx = canvas.getContext('2d')!;
+    // Draw a placeholder circle with the primary color hint from the SVG
+    const cx = canvasSize / 2;
+    const cy = canvasSize / 2;
+    ctx.fillStyle = definition.fill_color as string || '#2a2a4a';
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#444466';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Render the SVG inline if possible (synchronous attempt via DOMParser)
+    try {
+      const svgStr = definition.svg_template as string;
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.src = url;
+      // If image is cached (same SVG seen before), drawImage works synchronously
+      if (img.complete && img.naturalWidth > 0) {
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
+        ctx.drawImage(img, 0, 0, canvasSize, canvasSize);
+      }
+      URL.revokeObjectURL(url);
+    } catch { /* fall through to placeholder */ }
+    return { canvas, width: canvasSize, height: canvasSize };
+  }
+
   const sizeCategory = definition.size_category || 'medium';
   const baseRadius = definition.radius || SIZE_MAP[sizeCategory] || 20;
 
