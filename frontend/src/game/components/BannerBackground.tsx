@@ -1,8 +1,9 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useTick, extend } from '@pixi/react';
 import { Texture, TilingSprite, Container, Graphics } from 'pixi.js';
 import { api } from '../../api';
 import * as BackgroundRenderer from '../renderers/BackgroundRenderer';
+import { backgroundComponentCache } from '../renderers/BackgroundComponentCache';
 
 // Register elements for v8
 extend({ TilingSprite, Container, Graphics });
@@ -13,6 +14,13 @@ interface BannerBackgroundProps {
   width: number;
   height: number;
 }
+
+/** Canvas widths per layer — mismatched to hide tiling seams. */
+const LAYER_WIDTHS = { far: 2048, mid: 1536, near: 1024 } as const;
+const LAYER_HEIGHT = 150;
+
+type LayerName = 'far' | 'mid' | 'near';
+const LAYERS: LayerName[] = ['far', 'mid', 'near'];
 
 /** Module-level cache for background definitions from the asset registry. */
 const bgDefCache = new Map<string, BackgroundRenderer.RenderDefinition>();
@@ -50,25 +58,22 @@ async function fetchBgDefinition(assetKey: string): Promise<BackgroundRenderer.R
 }
 
 /** Render a procedural fallback gradient background. */
-function renderFallbackBg(width: number, height: number, chapterId: number, layer: 'far' | 'mid'): HTMLCanvasElement {
+function renderFallbackBg(width: number, height: number, chapterId: number, layer: LayerName): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return canvas; // Test environment — return blank canvas
+  if (!ctx) return canvas;
 
-  // Dark gradient fallback
   const hue = ((chapterId - 1) * 60) % 360;
-  const alpha = layer === 'far' ? '0.3' : '0.5';
   const grad = ctx.createLinearGradient(0, 0, 0, height);
   grad.addColorStop(0, `hsla(${hue}, 30%, 8%, 1)`);
   grad.addColorStop(1, `hsla(${hue + 30}, 30%, 4%, 1)`);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, width, height);
 
-  // Add some stars for the far layer
   if (layer === 'far') {
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
     for (let i = 0; i < 30; i++) {
       const x = (Math.sin(i * 7.3 + chapterId) * 0.5 + 0.5) * width;
       const y = (Math.cos(i * 3.7 + chapterId) * 0.5 + 0.5) * height;
@@ -81,10 +86,60 @@ function renderFallbackBg(width: number, height: number, chapterId: number, laye
   return canvas;
 }
 
-/**
- * Handles infinite parallax layers with cross-fade transitions between chapters.
- * Uses procedural rendering from the Asset Registry instead of filesystem PNGs.
- */
+/** Load textures for a single chapter (all 3 layers).
+ *  Falls back to bg_default_far/mid/near when per-chapter assets aren't populated. */
+async function loadChapterTextures(chapterId: number): Promise<Record<string, Texture>> {
+  await backgroundComponentCache.load();
+  const cache = backgroundComponentCache;
+  const loaded: Record<string, Texture> = {};
+
+  // Per-chapter keys + default fallback keys
+  const chapterKeys = LAYERS.map(l => `bg_ch${chapterId}_${l}`);
+  const defaultKeys = LAYERS.map(l => `bg_default_${l}`);
+  const allKeysToFetch = [...new Set([...chapterKeys, ...defaultKeys])].filter(
+    k => !bgDefCache.has(k) && !bgDefFailed.has(k),
+  );
+
+  if (allKeysToFetch.length > 0) {
+    try {
+      const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(allKeysToFetch.join(','))}`);
+      if (res.ok) {
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : (data.items || []);
+        const byKey = new Map(items.map((i: any) => [i.asset_key, i.render_definition]));
+        for (const key of allKeysToFetch) {
+          if (byKey.has(key)) {
+            bgDefCache.set(key, byKey.get(key) as BackgroundRenderer.RenderDefinition);
+          } else {
+            bgDefFailed.add(key);
+          }
+        }
+      }
+    } catch { /* fall through to fallback */ }
+  }
+
+  for (const layer of LAYERS) {
+    const assetKey = `bg_ch${chapterId}_${layer}`;
+    const defaultKey = `bg_default_${layer}`;
+    const def = bgDefCache.get(assetKey) || bgDefCache.get(defaultKey) || null;
+    const layerWidth = LAYER_WIDTHS[layer];
+
+    let canvas: HTMLCanvasElement;
+    if (def) {
+      const result = BackgroundRenderer.render(
+        { ...def, width: layerWidth, height: LAYER_HEIGHT },
+        cache,
+      );
+      canvas = result.canvas;
+    } else {
+      canvas = renderFallbackBg(layerWidth, LAYER_HEIGHT, chapterId, layer);
+    }
+    loaded[`${chapterId}_${layer}`] = Texture.from(canvas);
+  }
+
+  return loaded;
+}
+
 const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSpeed, width, height }) => {
   const [textures, setTextures] = useState<Record<string, Texture>>({});
   const [currentChapter, setCurrentChapter] = useState(chapterId);
@@ -93,39 +148,25 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
 
   const FAR_FACTOR = 0.1;
   const MID_FACTOR = 0.5;
+  const NEAR_FACTOR = 0.9;
   const BASE_SPEED = 2;
 
-  // Load backgrounds from asset registry
+  // Load backgrounds for current chapter
   useEffect(() => {
-    const loadBgs = async () => {
-      const loaded: Record<string, Texture> = {};
-      for (let i = 1; i <= 4; i++) {
-        for (const layer of ['far', 'mid'] as const) {
-          const assetKey = `bg_ch${i}_${layer}`;
-          const def = await fetchBgDefinition(assetKey);
-          let canvas: HTMLCanvasElement;
-
-          if (def) {
-            const renderDef = { ...def, width: 512, height: 150 };
-            const result = BackgroundRenderer.render(renderDef);
-            canvas = result.canvas;
-          } else {
-            canvas = renderFallbackBg(512, 150, i, layer);
-          }
-
-          loaded[assetKey] = Texture.from(canvas);
-        }
-      }
-      setTextures(loaded);
-    };
-    loadBgs();
+    loadChapterTextures(chapterId).then(loaded => {
+      setTextures(prev => ({ ...prev, ...loaded }));
+    });
   }, []);
 
   // Handle Chapter Changes (Trigger Fade)
   useEffect(() => {
     if (chapterId !== currentChapter) {
-      setNextChapter(chapterId);
-      setFadeAlpha(0);
+      // Pre-load next chapter textures, then start fade
+      loadChapterTextures(chapterId).then(loaded => {
+        setTextures(prev => ({ ...prev, ...loaded }));
+        setNextChapter(chapterId);
+        setFadeAlpha(0);
+      });
     }
   }, [chapterId, currentChapter]);
 
@@ -151,10 +192,10 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
 
   if (Object.keys(textures).length === 0) return null;
 
-  const renderLayer = (chId: number, type: 'far' | 'mid', alpha: number) => {
-    const tex = textures[`bg_ch${chId}_${type}`];
+  const renderLayer = (chId: number, type: LayerName, alpha: number) => {
+    const tex = textures[`${chId}_${type}`];
     if (!tex) return null;
-    const factor = type === 'far' ? FAR_FACTOR : MID_FACTOR;
+    const factor = type === 'far' ? FAR_FACTOR : type === 'mid' ? MID_FACTOR : NEAR_FACTOR;
     return (
       <pixiTilingSprite
         texture={tex}
@@ -172,6 +213,7 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
       <pixiContainer zIndex={0}>
         {renderLayer(currentChapter, 'far', 1.0)}
         {renderLayer(currentChapter, 'mid', 1.0)}
+        {renderLayer(currentChapter, 'near', 1.0)}
       </pixiContainer>
 
       {/* Next Chapter (Fading In) */}
@@ -179,6 +221,7 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
         <pixiContainer zIndex={1}>
           {renderLayer(nextChapter, 'far', fadeAlpha)}
           {renderLayer(nextChapter, 'mid', fadeAlpha)}
+          {renderLayer(nextChapter, 'near', fadeAlpha)}
         </pixiContainer>
       )}
 
@@ -192,7 +235,6 @@ const BannerBackground: React.FC<BannerBackgroundProps> = ({ chapterId, scrollSp
       />
     </pixiContainer>
   );
-
 };
 
 export default BannerBackground;

@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import BannerBackground from './BannerBackground';
+import ParallaxBackground from './ParallaxBackground';
 
 // Mock api module
-vi.mock('../../api', () => ({
+vi.mock('../../../api', () => ({
   api: {
     get: vi.fn(() => Promise.resolve({ ok: false, status: 404 })),
   },
@@ -11,7 +11,7 @@ vi.mock('../../api', () => ({
 }));
 
 // Mock BackgroundComponentCache
-vi.mock('../renderers/BackgroundComponentCache', () => ({
+vi.mock('../../renderers/BackgroundComponentCache', () => ({
   backgroundComponentCache: {
     load: vi.fn(() => Promise.resolve()),
     isReady: true,
@@ -27,24 +27,19 @@ vi.mock('@pixi/react', () => ({
 }));
 
 vi.mock('pixi.js', () => ({
-  Container: 'Container',
-  Graphics: 'Graphics',
   TilingSprite: 'TilingSprite',
-  Assets: {
-    load: vi.fn().mockResolvedValue({}),
-  },
   Texture: Object.assign(vi.fn(), {
     from: vi.fn(() => ({ height: 150 })),
   }),
 }));
 
-// Provide mocked react-pixi elements for testing
+// Map pixi elements to divs for testing
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof import('react')>('react');
   return {
     ...actual,
     createElement: (type: any, props: any, ...children: any[]) => {
-      if (type === 'pixiContainer' || type === 'pixiGraphics' || type === 'pixiTilingSprite') {
+      if (type === 'pixiContainer' || type === 'pixiTilingSprite') {
         return actual.createElement('div', { 'data-testid': type, ...props }, ...children);
       }
       return actual.createElement(type, props, ...children);
@@ -52,21 +47,20 @@ vi.mock('react', async () => {
   };
 });
 
-describe('BannerBackground Component', () => {
-  it('renders without crashing given basic props', () => {
+describe('ParallaxBackground Component', () => {
+  it('renders without crashing', () => {
     const { container } = render(
-      <BannerBackground chapterId={1} scrollSpeed={1} width={800} height={150} />
+      <ParallaxBackground width={800} height={300} chapterId={1} waveCount={0} />
     );
     expect(container).toBeDefined();
   });
 
-  it('handles chapter changes without crashing', () => {
-    const { rerender, container } = render(
-      <BannerBackground chapterId={1} scrollSpeed={1} width={800} height={150} />
-    );
-    rerender(
-      <BannerBackground chapterId={2} scrollSpeed={1} width={800} height={150} />
-    );
-    expect(container).toBeDefined();
+  it('accepts different chapter IDs without error', () => {
+    for (const chapterId of [1, 50, 91, 114, 138]) {
+      const { container } = render(
+        <ParallaxBackground width={800} height={300} chapterId={chapterId} waveCount={5} />
+      );
+      expect(container).toBeDefined();
+    }
   });
 });

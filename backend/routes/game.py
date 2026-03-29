@@ -514,19 +514,31 @@ async def get_encountered_enemies(
 
 @router.get("/assets/batch")
 def public_asset_batch(
-    keys: str = Query(..., description="Comma-separated asset keys"),
+    keys: str = Query("", description="Comma-separated asset keys"),
+    category: str = Query("", description="Filter by category (e.g. bg_component)"),
     session: Session = Depends(get_session),
 ):
-    """Fetch asset render definitions by key.  No auth — assets are not secret."""
+    """Fetch asset render definitions by key or category.  No auth — assets are not secret."""
     key_list = [k.strip() for k in keys.split(",") if k.strip()]
-    if not key_list or len(key_list) > 50:
-        return {"items": []}
 
-    items = session.exec(
-        select(AssetRegistryEntry).where(
+    # Category-based fetch (for component library pre-fetch)
+    if category and not key_list:
+        items = session.exec(
+            select(AssetRegistryEntry).where(
+                AssetRegistryEntry.category == category
+            )
+        ).all()
+    elif key_list:
+        if len(key_list) > 50:
+            return {"items": []}
+        stmt = select(AssetRegistryEntry).where(
             AssetRegistryEntry.asset_key.in_(key_list)  # type: ignore[union-attr]
         )
-    ).all()
+        if category:
+            stmt = stmt.where(AssetRegistryEntry.category == category)
+        items = session.exec(stmt).all()
+    else:
+        return {"items": []}
 
     return {
         "items": [

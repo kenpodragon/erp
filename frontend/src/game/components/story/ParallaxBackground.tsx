@@ -3,6 +3,7 @@ import { useTick, extend } from '@pixi/react';
 import { Texture, TilingSprite } from 'pixi.js';
 import { api } from '../../../api';
 import * as BackgroundRenderer from '../../renderers/BackgroundRenderer';
+import { backgroundComponentCache } from '../../renderers/BackgroundComponentCache';
 
 // Register for v8 JSX
 extend({ TilingSprite });
@@ -14,39 +15,80 @@ interface ParallaxBackgroundProps {
   waveCount: number;
 }
 
+/** Canvas widths per layer — mismatched to hide tiling seams. */
+const LAYER_WIDTHS = { far: 2048, mid: 1536, near: 1024 } as const;
+
 /** Module-level cache for background definitions. */
 const bgDefCache = new Map<string, BackgroundRenderer.RenderDefinition>();
 const bgDefFailed = new Set<string>();
 
-async function fetchBgDef(assetKey: string): Promise<BackgroundRenderer.RenderDefinition | null> {
-  if (bgDefCache.has(assetKey)) return bgDefCache.get(assetKey)!;
-  if (bgDefFailed.has(assetKey)) return null;
+/** Fetch background layer info: scene → background → asset_registry FK columns. */
+async function fetchLayerDefs(chapterId: number): Promise<{
+  far: BackgroundRenderer.RenderDefinition | null;
+  mid: BackgroundRenderer.RenderDefinition | null;
+  near: BackgroundRenderer.RenderDefinition | null;
+}> {
+  // Try per-chapter background via scene → background FK chain
+  const cacheKey = `ch_${chapterId}`;
+  if (bgDefCache.has(`${cacheKey}_far`)) {
+    return {
+      far: bgDefCache.get(`${cacheKey}_far`) || null,
+      mid: bgDefCache.get(`${cacheKey}_mid`) || null,
+      near: bgDefCache.get(`${cacheKey}_near`) || null,
+    };
+  }
+
+  // Fetch per-chapter assets + defaults as fallback
+  const farKey = `bg_ch${chapterId}_far`;
+  const midKey = `bg_ch${chapterId}_mid`;
+  const nearKey = `bg_ch${chapterId}_near`;
+  const defaultKeys = ['bg_default_far', 'bg_default_mid', 'bg_default_near'];
+
+  const allKeys = [...new Set([farKey, midKey, nearKey, ...defaultKeys])].filter(k => !bgDefFailed.has(k));
+  if (allKeys.length === 0) return { far: null, mid: null, near: null };
 
   try {
-    const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(assetKey)}`);
+    const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent(allKeys.join(','))}`);
     if (res.ok) {
       const data = await res.json();
       const items = Array.isArray(data) ? data : (data.items || []);
-      const match = items.find((i: any) => i.asset_key === assetKey);
-      if (match?.render_definition) {
-        bgDefCache.set(assetKey, match.render_definition);
-        return match.render_definition as BackgroundRenderer.RenderDefinition;
+      const byKey = new Map(items.map((i: any) => [i.asset_key, i.render_definition]));
+
+      for (const key of allKeys) {
+        if (byKey.has(key)) {
+          bgDefCache.set(key, byKey.get(key)! as BackgroundRenderer.RenderDefinition);
+        } else {
+          bgDefFailed.add(key);
+        }
       }
+
+      // Per-chapter first, then default fallback
+      const farDef = byKey.get(farKey) || byKey.get('bg_default_far') || null;
+      const midDef = byKey.get(midKey) || byKey.get('bg_default_mid') || null;
+      const nearDef = byKey.get(nearKey) || byKey.get('bg_default_near') || null;
+
+      bgDefCache.set(`${cacheKey}_far`, farDef as BackgroundRenderer.RenderDefinition);
+      bgDefCache.set(`${cacheKey}_mid`, midDef as BackgroundRenderer.RenderDefinition);
+      bgDefCache.set(`${cacheKey}_near`, nearDef as BackgroundRenderer.RenderDefinition);
+
+      return {
+        far: farDef as BackgroundRenderer.RenderDefinition | null,
+        mid: midDef as BackgroundRenderer.RenderDefinition | null,
+        near: nearDef as BackgroundRenderer.RenderDefinition | null,
+      };
     }
-    bgDefFailed.add(assetKey);
-    return null;
-  } catch {
-    return null;
-  }
+  } catch { /* fall through to null */ }
+
+  return { far: null, mid: null, near: null };
 }
 
-/** Render a procedural fallback gradient. */
-function renderFallback(width: number, height: number, chapterId: number, layer: 'far' | 'mid'): HTMLCanvasElement {
+/** Render a procedural fallback gradient when asset data is unavailable. */
+function renderFallback(width: number, height: number, chapterId: number, layer: 'far' | 'mid' | 'near'): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
-  if (!ctx) return canvas; // Test environment — return blank canvas
+  if (!ctx) return canvas;
 
   const hue = ((chapterId - 1) * 60) % 360;
   const grad = ctx.createLinearGradient(0, 0, 0, height);
@@ -70,64 +112,73 @@ function renderFallback(width: number, height: number, chapterId: number, layer:
 }
 
 const ParallaxBackground: React.FC<ParallaxBackgroundProps> = ({ width, height, chapterId, waveCount }) => {
-  const [textures, setTextures] = useState<{ far: Texture | null; mid: Texture | null }>({ far: null, mid: null });
+  const [textures, setTextures] = useState<{
+    far: Texture | null;
+    mid: Texture | null;
+    near: Texture | null;
+  }>({ far: null, mid: null, near: null });
 
   const farOffset = useRef(0);
   const midOffset = useRef(0);
+  const nearOffset = useRef(0);
 
   const targetFar = waveCount * 40;
   const targetMid = waveCount * 120;
+  const targetNear = waveCount * 200;
 
   useEffect(() => {
-    const bgNum = ((chapterId - 1) % 4) + 1;
+    let cancelled = false;
 
     const load = async () => {
-      const farKey = `bg_ch${bgNum}_far`;
-      const midKey = `bg_ch${bgNum}_mid`;
+      // Ensure component cache is loaded
+      await backgroundComponentCache.load();
 
-      const [farDef, midDef] = await Promise.all([
-        fetchBgDef(farKey),
-        fetchBgDef(midKey),
-      ]);
+      const defs = await fetchLayerDefs(chapterId);
+      if (cancelled) return;
 
-      let farCanvas: HTMLCanvasElement;
-      if (farDef) {
-        const result = BackgroundRenderer.render({ ...farDef, width: 512, height });
-        farCanvas = result.canvas;
-      } else {
-        farCanvas = renderFallback(512, height, bgNum, 'far');
-      }
+      const cache = backgroundComponentCache;
 
-      let midCanvas: HTMLCanvasElement;
-      if (midDef) {
-        const result = BackgroundRenderer.render({ ...midDef, width: 512, height });
-        midCanvas = result.canvas;
-      } else {
-        midCanvas = renderFallback(512, height, bgNum, 'mid');
-      }
+      const makeTexture = (
+        def: BackgroundRenderer.RenderDefinition | null,
+        layer: 'far' | 'mid' | 'near',
+      ): Texture => {
+        const layerWidth = LAYER_WIDTHS[layer];
+        if (def) {
+          const result = BackgroundRenderer.render(
+            { ...def, width: layerWidth, height },
+            cache,
+          );
+          return Texture.from(result.canvas);
+        }
+        return Texture.from(renderFallback(layerWidth, height, chapterId, layer));
+      };
 
       setTextures({
-        far: Texture.from(farCanvas),
-        mid: Texture.from(midCanvas),
+        far: makeTexture(defs.far, 'far'),
+        mid: makeTexture(defs.mid, 'mid'),
+        near: makeTexture(defs.near, 'near'),
       });
     };
 
     load().catch(err => {
-      console.error("Failed to load parallax backgrounds:", err);
+      console.error('Failed to load parallax backgrounds:', err);
     });
+
+    return () => { cancelled = true; };
   }, [chapterId, height]);
 
   useTick((delta) => {
     const dt = delta.deltaTime;
     farOffset.current += (targetFar - farOffset.current) * 0.05 * dt;
     midOffset.current += (targetMid - midOffset.current) * 0.08 * dt;
+    nearOffset.current += (targetNear - nearOffset.current) * 0.12 * dt;
   });
 
   if (!textures.far || !textures.mid) return null;
 
-  // Use a safe scale factor. If texture is missing dimensions, fallback to 1.
   const farScale = textures.far.height ? height / textures.far.height : 1;
   const midScale = textures.mid.height ? height / textures.mid.height : 1;
+  const nearScale = textures.near?.height ? height / textures.near.height : 1;
 
   return (
     <pixiContainer>
@@ -147,6 +198,16 @@ const ParallaxBackground: React.FC<ParallaxBackgroundProps> = ({ width, height, 
         tileScale={{ x: midScale, y: midScale }}
         alpha={0.9}
       />
+      {textures.near && (
+        <pixiTilingSprite
+          texture={textures.near}
+          width={width}
+          height={height}
+          tilePosition={{ x: -nearOffset.current, y: 0 }}
+          tileScale={{ x: nearScale, y: nearScale }}
+          alpha={0.85}
+        />
+      )}
     </pixiContainer>
   );
 };

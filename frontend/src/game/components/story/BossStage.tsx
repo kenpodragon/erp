@@ -12,11 +12,14 @@
  *  - Auto-DPS tick (same logic as CombatStage)
  *  - No upgrade menu / no wave system
  */
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { Application, extend, useTick } from '@pixi/react';
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle, Texture, TilingSprite } from 'pixi.js';
 import type { StorySession } from '../../GameContext';
 import { useAssets } from '../../providers/AssetProvider';
+import { api } from '../../../api';
+import * as BackgroundRenderer from '../../renderers/BackgroundRenderer';
+import { backgroundComponentCache } from '../../renderers/BackgroundComponentCache';
 import EntityRenderer from '../shared/EntityRenderer';
 import type { EnemyVisualData } from '../shared/EntityRenderer';
 import AttackRenderer from '../shared/AttackRenderer';
@@ -25,7 +28,39 @@ import { useBossPhases, CANVAS_WIDTH, CANVAS_HEIGHT, BOSS_X, BOSS_Y, BOSS_RADIUS
 import type { BossDamageNumber } from './useBossPhases';
 import './BossStage.css';
 
-extend({ Container, Graphics, Text });
+extend({ Container, Graphics, Text, TilingSprite });
+
+// ── Boss background with mouse-driven parallax ────────────────────────────
+interface BossBackgroundProps {
+  texture: Texture;
+  width: number;
+  height: number;
+  offsetX: React.MutableRefObject<number>;
+  offsetY: React.MutableRefObject<number>;
+  targetX: React.MutableRefObject<number>;
+  targetY: React.MutableRefObject<number>;
+}
+
+const BossBackground: React.FC<BossBackgroundProps> = ({
+  texture, width, height, offsetX, offsetY, targetX, targetY,
+}) => {
+  useTick((delta) => {
+    const dt = delta.deltaTime;
+    // Smooth lerp toward mouse target
+    offsetX.current += (targetX.current - offsetX.current) * 0.08 * dt;
+    offsetY.current += (targetY.current - offsetY.current) * 0.06 * dt;
+  });
+
+  return (
+    <pixiTilingSprite
+      texture={texture}
+      width={width}
+      height={height}
+      tilePosition={{ x: offsetX.current, y: offsetY.current }}
+      alpha={0.6}
+    />
+  );
+};
 
 // ── Inner PixiJS component ──────────────────────────────────────────────────
 interface InnerProps {
@@ -145,13 +180,67 @@ const BossStage: React.FC<Props> = ({
     if (bossKey) assets.preloadBatch([bossKey]);
   }, [(session as any).bossSpriteKey, assets]);
 
+  // Boss background — per-chapter boss variant at reduced opacity
+  const [bossBgTexture, setBossBgTexture] = useState<Texture | null>(null);
+  useEffect(() => {
+    const chapterId = session.chapterId ?? session.currentScene?.chapterId;
+    if (!chapterId) return;
+
+    const loadBossBg = async () => {
+      await backgroundComponentCache.load();
+      const bossKey = `bg_ch${chapterId}_boss`;
+      const defaultKey = 'bg_default_boss';
+      try {
+        const res = await api.get(`/api/game/assets/batch?keys=${encodeURIComponent([bossKey, defaultKey].join(','))}`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data.items || []);
+          const byKey = new Map(items.map((i: any) => [i.asset_key, i.render_definition]));
+          const def = byKey.get(bossKey) || byKey.get(defaultKey);
+          if (def) {
+            const result = BackgroundRenderer.render(
+              { ...def, width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
+              backgroundComponentCache,
+            );
+            setBossBgTexture(Texture.from(result.canvas));
+            return;
+          }
+        }
+      } catch { /* fall through */ }
+      setBossBgTexture(null);
+    };
+    loadBossBg();
+  }, [session.chapterId, (session as any).currentScene?.chapterId]);
+
   const boss = useBossPhases({
     session, gameConfigs, onEnemyClick, onBossDefeated,
     debugSuperClick, playSFX, reduceMotion,
   });
 
+  // Mouse-driven parallax offset for boss background
+  const bgOffsetX = useRef(0);
+  const bgOffsetY = useRef(0);
+  const bgTargetX = useRef(0);
+  const bgTargetY = useRef(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      // Normalize mouse position to -1..1 from center
+      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      bgTargetX.current = nx * 40;  // noticeable horizontal movement
+      bgTargetY.current = ny * 8;   // subtle vertical movement
+    };
+    el.addEventListener('mousemove', handleMouseMove);
+    return () => el.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
-    <div className="boss-stage" onClick={boss.handleCanvasClick}>
+    <div className="boss-stage" ref={stageRef} onClick={boss.handleCanvasClick}>
       {/* Timer bar */}
       <div className="boss-timer-container">
         <div
@@ -165,6 +254,26 @@ const BossStage: React.FC<Props> = ({
 
       {/* PixiJS canvas */}
       <Application width={CANVAS_WIDTH} height={CANVAS_HEIGHT} background={0x0a0005} antialias>
+        {bossBgTexture && (
+          <BossBackground
+            texture={bossBgTexture}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+            offsetX={bgOffsetX}
+            offsetY={bgOffsetY}
+            targetX={bgTargetX}
+            targetY={bgTargetY}
+          />
+        )}
+        {/* Vignette overlay for boss atmosphere */}
+        <pixiGraphics
+          draw={(g: any) => {
+            g.clear();
+            // Subtle edge darkening only
+            g.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            g.fill({ color: 0x0a0005, alpha: 0.15 });
+          }}
+        />
         <BossContent
           bossHp={boss.bossHp}
           bossMaxHp={boss.bossMaxHp}

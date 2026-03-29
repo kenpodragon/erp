@@ -864,6 +864,10 @@ CREATE TABLE public.backgrounds (
     time_of_day character varying(50),
     mood character varying(50),
     color_palette jsonb,
+    far_asset_key character varying(150),
+    mid_asset_key character varying(150),
+    near_asset_key character varying(150),
+    boss_asset_key character varying(150),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -3358,7 +3362,8 @@ CREATE TABLE public.scenes (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     scene_type text DEFAULT 'normal'::text NOT NULL,
-    boss_config jsonb
+    boss_config jsonb,
+    background_id integer
 );
 
 
@@ -7199,6 +7204,13 @@ CREATE INDEX idx_scenes_primary_location_id ON public.scenes USING btree (primar
 
 
 --
+-- Name: idx_scenes_background_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_scenes_background_id ON public.scenes USING btree (background_id);
+
+
+--
 -- Name: idx_semantic_tags_beat_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -8668,6 +8680,46 @@ ALTER TABLE ONLY public.scenes
 
 ALTER TABLE ONLY public.scenes
     ADD CONSTRAINT scenes_primary_location_id_fkey FOREIGN KEY (primary_location_id) REFERENCES public.locations(id);
+
+
+--
+-- Name: scenes scenes_background_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenes
+    ADD CONSTRAINT scenes_background_id_fkey FOREIGN KEY (background_id) REFERENCES public.backgrounds(id) ON DELETE SET NULL;
+
+
+--
+-- Name: backgrounds backgrounds_far_asset_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backgrounds
+    ADD CONSTRAINT backgrounds_far_asset_key_fkey FOREIGN KEY (far_asset_key) REFERENCES public.asset_registry(asset_key) ON DELETE SET NULL;
+
+
+--
+-- Name: backgrounds backgrounds_mid_asset_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backgrounds
+    ADD CONSTRAINT backgrounds_mid_asset_key_fkey FOREIGN KEY (mid_asset_key) REFERENCES public.asset_registry(asset_key) ON DELETE SET NULL;
+
+
+--
+-- Name: backgrounds backgrounds_near_asset_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backgrounds
+    ADD CONSTRAINT backgrounds_near_asset_key_fkey FOREIGN KEY (near_asset_key) REFERENCES public.asset_registry(asset_key) ON DELETE SET NULL;
+
+
+--
+-- Name: backgrounds backgrounds_boss_asset_key_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.backgrounds
+    ADD CONSTRAINT backgrounds_boss_asset_key_fkey FOREIGN KEY (boss_asset_key) REFERENCES public.asset_registry(asset_key) ON DELETE SET NULL;
 
 
 --

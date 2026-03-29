@@ -1,19 +1,28 @@
 /**
- * BackgroundRenderer — renders `background` category to Canvas 2D.
+ * BackgroundRenderer — component assembly engine for parallax backgrounds.
  *
- * Draws gradient backgrounds with optional elements: stars, clouds,
- * buildings, nebula, pipes. Uses a seed for deterministic randomness.
+ * Renders backgrounds from render_definitions that reference element types
+ * and component variants stored in asset_registry. Uses seeded PRNG for
+ * deterministic assembly: variant selection, color shifts, scale, rotation.
+ *
+ * Flow:
+ *   render_definition → gradient + elements array
+ *   For each element entry → resolve element_definition from cache
+ *   For each instance → pick variant per slot → resolve colors → render SVG paths → composite
  */
 
 import type { RenderResult } from './PlaceholderRenderer';
+
+// ── Public Types ──────────────────────────────────────────────────────────
 
 export interface RenderDefinition {
   version?: number;
   width?: number;
   height?: number;
   gradient?: GradientDef;
-  elements?: ElementDef[];
+  elements?: ElementEntry[];
   seed?: number;
+  opacity?: number;
   [key: string]: unknown;
 }
 
@@ -23,25 +32,58 @@ interface GradientDef {
   stops?: Array<{ offset: number; color: string }>;
 }
 
-interface ElementDef {
-  type: string;
+/** An element placement in a background render_definition. */
+interface ElementEntry {
+  element_type: string;
   count?: number;
-  min_radius?: number;
-  max_radius?: number;
-  color?: string;
-  twinkle?: boolean;
   y_range?: [number, number];
-  width_range?: [number, number];
-  height_range?: [number, number];
-  x?: number;
-  y?: number;
-  radius?: number;
+  size_range?: [number, number];
+  rotation_range?: [number, number];
+  x_spacing?: 'random' | 'even' | 'clustered';
+  flip_chance?: number;
+  opacity?: number;
   [key: string]: unknown;
 }
 
-/**
- * Simple seeded PRNG (mulberry32).
- */
+/** Element type definition from asset_registry (category: bg_element_def). */
+export interface ElementDefinition {
+  type: 'element_definition';
+  element_type: string;
+  components: Record<string, string[]>;
+  anchor: { x: number; y: number };
+  base_width: number;
+  base_height: number;
+}
+
+/** SVG component variant from asset_registry (category: bg_component). */
+export interface ComponentVariant {
+  type: 'bg_component';
+  slot: string;
+  svg_paths: SvgPath[];
+  color_slots: Record<string, ColorSlot>;
+}
+
+interface SvgPath {
+  d: string;
+  fill?: string;
+  stroke?: string;
+  stroke_width?: number;
+}
+
+interface ColorSlot {
+  base: string;
+  variance: number;
+}
+
+/** Lookup interface for the component cache. */
+export interface ComponentCache {
+  getElementDef(elementType: string): ElementDefinition | null;
+  getComponent(assetKey: string): ComponentVariant | null;
+  isReady: boolean;
+}
+
+// ── Seeded PRNG (mulberry32) ──────────────────────────────────────────────
+
 function seededRandom(seed: number): () => number {
   let s = seed | 0;
   return () => {
@@ -52,13 +94,205 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-export function render(definition: RenderDefinition): RenderResult {
+// ── Color Utilities ───────────────────────────────────────────────────────
+
+function hexToHSL(hex: string): { h: number; s: number; l: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return { h: 0, s: 0, l: 0 };
+
+  const r = parseInt(result[1], 16) / 255;
+  const g = parseInt(result[2], 16) / 255;
+  const b = parseInt(result[3], 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+
+  if (max === min) return { h: 0, s: 0, l };
+
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+
+  return { h, s, l };
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+
+  let r: number, g: number, b: number;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  const toHex = (c: number) => {
+    const hex = Math.round(c * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function shiftColor(baseHex: string, variance: number, rand: () => number): string {
+  const hsl = hexToHSL(baseHex);
+  hsl.h += (rand() - 0.5) * variance;
+  hsl.s = Math.max(0, Math.min(1, hsl.s + (rand() - 0.5) * variance));
+  hsl.l = Math.max(0, Math.min(1, hsl.l + (rand() - 0.5) * variance * 0.5));
+  if (hsl.h < 0) hsl.h += 1;
+  if (hsl.h > 1) hsl.h -= 1;
+  return hslToHex(hsl.h, hsl.s, hsl.l);
+}
+
+// ── SVG Path → Canvas 2D Rendering ───────────────────────────────────────
+
+function renderSvgPaths(
+  ctx: CanvasRenderingContext2D,
+  paths: SvgPath[],
+  resolvedColors: Record<string, string>,
+  scale: number,
+  x: number,
+  y: number,
+  rotation: number,
+  flipX: boolean,
+  opacity: number,
+): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  if (flipX) ctx.scale(-1, 1);
+  ctx.scale(scale, scale);
+  ctx.globalAlpha *= opacity;
+
+  for (const path of paths) {
+    const path2d = new Path2D(path.d);
+
+    if (path.fill && path.fill !== 'none') {
+      const fillColor = path.fill.startsWith('{')
+        ? resolvedColors[path.fill.slice(1, -1)] || '#FF00FF'
+        : path.fill;
+      ctx.fillStyle = fillColor;
+      ctx.fill(path2d);
+    }
+
+    if (path.stroke && path.stroke !== 'none') {
+      const strokeColor = path.stroke.startsWith('{')
+        ? resolvedColors[path.stroke.slice(1, -1)] || '#FF00FF'
+        : path.stroke;
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = (path.stroke_width || 1) * scale;
+      ctx.stroke(path2d);
+    }
+  }
+
+  ctx.restore();
+}
+
+// ── Component Assembly ────────────────────────────────────────────────────
+
+function assembleElement(
+  ctx: CanvasRenderingContext2D,
+  elementDef: ElementDefinition,
+  entry: ElementEntry,
+  instanceIndex: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  rand: () => number,
+  cache: ComponentCache,
+): void {
+  const sizeRange = entry.size_range || [0.8, 1.2];
+  const yRange = entry.y_range || [0.6, 0.95];
+  const rotRange = entry.rotation_range || [0, 0];
+  const flipChance = entry.flip_chance || 0;
+  const elOpacity = entry.opacity ?? 1;
+
+  // Scale for this instance
+  const scale = sizeRange[0] + rand() * (sizeRange[1] - sizeRange[0]);
+
+  // Position
+  const spacing = entry.x_spacing || 'random';
+  let x: number;
+  const count = entry.count || 1;
+  if (spacing === 'even') {
+    const step = canvasWidth / count;
+    x = step * instanceIndex + step * 0.5 + (rand() - 0.5) * step * 0.3;
+  } else if (spacing === 'clustered') {
+    const center = rand() * canvasWidth;
+    x = center + (rand() - 0.5) * canvasWidth * 0.3;
+  } else {
+    x = rand() * canvasWidth;
+  }
+
+  const yFraction = yRange[0] + rand() * (yRange[1] - yRange[0]);
+  const y = yFraction * canvasHeight;
+
+  const rotation = rotRange[0] + rand() * (rotRange[1] - rotRange[0]);
+  const flipX = rand() < flipChance;
+
+  // For each component slot, pick a variant and render
+  for (const [_slot, variantKeys] of Object.entries(elementDef.components)) {
+    if (!variantKeys || variantKeys.length === 0) continue;
+
+    // Pick variant using PRNG
+    const variantKey = variantKeys[Math.floor(rand() * variantKeys.length)];
+    const variant = cache.getComponent(variantKey);
+    if (!variant) continue;
+
+    // Resolve color placeholders
+    const resolvedColors: Record<string, string> = {};
+    for (const [slotName, colorDef] of Object.entries(variant.color_slots || {})) {
+      resolvedColors[slotName] = shiftColor(colorDef.base, colorDef.variance, rand);
+    }
+
+    // Apply anchor offset
+    const anchorOffsetX = -elementDef.anchor.x * elementDef.base_width * scale;
+    const anchorOffsetY = -elementDef.anchor.y * elementDef.base_height * scale;
+
+    renderSvgPaths(
+      ctx,
+      variant.svg_paths,
+      resolvedColors,
+      scale,
+      x + anchorOffsetX,
+      y + anchorOffsetY,
+      rotation,
+      flipX,
+      elOpacity,
+    );
+  }
+}
+
+// ── Main Render Function ──────────────────────────────────────────────────
+
+export function render(
+  definition: RenderDefinition,
+  componentCache?: ComponentCache | null,
+): RenderResult {
   const width = definition.width || 512;
   const height = definition.height || 150;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;
+
+  const globalOpacity = definition.opacity ?? 1;
+  ctx.globalAlpha = globalOpacity;
 
   const rand = seededRandom(definition.seed ?? Date.now());
 
@@ -76,7 +310,6 @@ export function render(definition: RenderDefinition): RenderResult {
     } else if (gradient.direction === 'horizontal') {
       grad = ctx.createLinearGradient(0, 0, width, 0);
     } else {
-      // Default: vertical linear
       grad = ctx.createLinearGradient(0, 0, 0, height);
     }
 
@@ -90,165 +323,19 @@ export function render(definition: RenderDefinition): RenderResult {
     ctx.fillRect(0, 0, width, height);
   }
 
-  // Draw elements
+  // Draw elements via component assembly
   const elements = definition.elements || [];
-  for (const el of elements) {
-    switch (el.type) {
-      case 'stars':
-        drawStars(ctx, el, width, height, rand);
-        break;
-      case 'cloud':
-        drawClouds(ctx, el, width, height, rand);
-        break;
-      case 'building':
-      case 'buildings':
-        drawBuildings(ctx, el, width, height, rand);
-        break;
-      case 'nebula':
-        drawNebula(ctx, el, width, height, rand);
-        break;
-      case 'pipe':
-      case 'pipes':
-        drawPipes(ctx, el, width, height, rand);
-        break;
+  if (componentCache?.isReady) {
+    for (const entry of elements) {
+      if (!entry.element_type) continue;
+      const elemDef = componentCache.getElementDef(entry.element_type);
+      if (!elemDef) continue;
+      const count = entry.count || 1;
+      for (let i = 0; i < count; i++) {
+        assembleElement(ctx, elemDef, entry, i, width, height, rand, componentCache);
+      }
     }
   }
 
   return { canvas, width, height };
-}
-
-function drawStars(
-  ctx: CanvasRenderingContext2D,
-  el: ElementDef,
-  width: number,
-  height: number,
-  rand: () => number,
-) {
-  const count = el.count || 20;
-  const minR = el.min_radius || 1;
-  const maxR = el.max_radius || 2;
-  const color = el.color || '#ffffff44';
-
-  ctx.fillStyle = color;
-  for (let i = 0; i < count; i++) {
-    const x = rand() * width;
-    const y = rand() * height;
-    const r = minR + rand() * (maxR - minR);
-    const alpha = el.twinkle ? 0.3 + rand() * 0.7 : 1.0;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-function drawClouds(
-  ctx: CanvasRenderingContext2D,
-  el: ElementDef,
-  width: number,
-  height: number,
-  rand: () => number,
-) {
-  const count = el.count || 3;
-  const color = el.color || '#22224433';
-  const yRange = el.y_range || [10, 50];
-  const wRange = el.width_range || [40, 100];
-  const hRange = el.height_range || [15, 30];
-
-  ctx.fillStyle = color;
-  for (let i = 0; i < count; i++) {
-    const x = rand() * width;
-    const y = yRange[0] + rand() * (yRange[1] - yRange[0]);
-    const w = wRange[0] + rand() * (wRange[1] - wRange[0]);
-    const h = hRange[0] + rand() * (hRange[1] - hRange[0]);
-    ctx.beginPath();
-    ctx.ellipse(x, y, w / 2, h / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawBuildings(
-  ctx: CanvasRenderingContext2D,
-  el: ElementDef,
-  width: number,
-  height: number,
-  rand: () => number,
-) {
-  const color = el.color || '#111122';
-  ctx.fillStyle = color;
-
-  // Explicit single building (from DB definitions with x, width, height)
-  if (el.x !== undefined && el.width !== undefined && el.height !== undefined) {
-    const bw = el.width as number;
-    const bh = el.height as number;
-    const bx = el.x as number;
-    ctx.fillRect(bx, height - bh, bw, bh);
-    return;
-  }
-
-  // Random batch (legacy plural 'buildings' with count)
-  const count = el.count || 5;
-  for (let i = 0; i < count; i++) {
-    const bw = 20 + rand() * 40;
-    const bh = 30 + rand() * 60;
-    const x = rand() * width;
-    ctx.fillRect(x - bw / 2, height - bh, bw, bh);
-  }
-}
-
-function drawNebula(
-  ctx: CanvasRenderingContext2D,
-  el: ElementDef,
-  width: number,
-  height: number,
-  rand: () => number,
-) {
-  const x = el.x ?? width / 2;
-  const y = el.y ?? height / 2;
-  const radius = el.radius || Math.min(width, height) * 0.4;
-  const color = el.color || '#44228866';
-
-  const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  grad.addColorStop(0, color);
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawPipes(
-  ctx: CanvasRenderingContext2D,
-  el: ElementDef,
-  width: number,
-  height: number,
-  rand: () => number,
-) {
-  const color = el.color || '#333344';
-  ctx.strokeStyle = color;
-  ctx.lineWidth = (el.width as number) || 2;
-
-  // Explicit single pipe (from DB definitions with x1, y1, x2, y2)
-  if (el.x1 !== undefined && el.y1 !== undefined && el.x2 !== undefined && el.y2 !== undefined) {
-    ctx.beginPath();
-    ctx.moveTo(el.x1 as number, el.y1 as number);
-    ctx.lineTo(el.x2 as number, el.y2 as number);
-    ctx.stroke();
-    return;
-  }
-
-  // Random batch (legacy plural 'pipes' with count)
-  const count = el.count || 3;
-  for (let i = 0; i < count; i++) {
-    const x1 = rand() * width;
-    const y1 = rand() * height;
-    const x2 = rand() * width;
-    const y2 = rand() * height;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
 }

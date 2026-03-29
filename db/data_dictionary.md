@@ -344,6 +344,8 @@ Generated from live database on 2026-03-22. **109 tables**, PostgreSQL 17.
 | created_at | timestamp with time zone | NO | now() |  |
 | updated_at | timestamp with time zone | NO | now() |  |
 
+**Categories:** `entity_sprite`, `background`, `silhouette`, `bg_element_def` (element type definitions for parallax assembly), `bg_component` (SVG sub-component variants for element assembly)
+
 ## atmospheres
 
 **Rows:** 21
@@ -424,8 +426,18 @@ Generated from live database on 2026-03-22. **109 tables**, PostgreSQL 17.
 | time_of_day | varchar(50) | YES |  |  |
 | mood | varchar(50) | YES |  |  |
 | color_palette | jsonb | YES |  |  |
+| far_asset_key | varchar(150) | YES |  | FK->asset_registry.asset_key |
+| mid_asset_key | varchar(150) | YES |  | FK->asset_registry.asset_key |
+| near_asset_key | varchar(150) | YES |  | FK->asset_registry.asset_key |
+| boss_asset_key | varchar(150) | YES |  | FK->asset_registry.asset_key |
 | created_at | timestamp with time zone | NO | now() |  |
 | updated_at | timestamp with time zone | NO | now() |  |
+
+**Foreign Keys:**
+- `far_asset_key` -> `asset_registry.asset_key` (ON DELETE SET NULL)
+- `mid_asset_key` -> `asset_registry.asset_key` (ON DELETE SET NULL)
+- `near_asset_key` -> `asset_registry.asset_key` (ON DELETE SET NULL)
+- `boss_asset_key` -> `asset_registry.asset_key` (ON DELETE SET NULL)
 
 ## benefit_effect_data
 
@@ -1788,10 +1800,12 @@ Generated from live database on 2026-03-22. **109 tables**, PostgreSQL 17.
 | updated_at | timestamp with time zone | YES | CURRENT_TIMESTAMP |  |
 | scene_type | text | NO | normal |  |
 | boss_config | jsonb | YES |  |  |
+| background_id | integer | YES |  | FK->backgrounds.id |
 
 **Foreign Keys:**
 - `chapter_id` -> `chapters.id` (ON DELETE CASCADE)
 - `primary_location_id` -> `locations.id` (ON DELETE NO ACTION)
+- `background_id` -> `backgrounds.id` (ON DELETE SET NULL)
 
 ## semantic_tags
 
